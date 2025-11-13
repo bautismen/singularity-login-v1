@@ -99,9 +99,6 @@ export function Quotations() {
       <div className={styles.header}>
         <h1 className={styles.title}>{t('quote.title')}</h1>
         <div className={styles.actionBar}>
-          <button className={styles.backButton}>
-            <X size={20} />
-          </button>
           <button className={styles.actionBarSaveButton}>
             <Save size={18} />
             <span>{t('quote.save')}</span>
@@ -112,12 +109,10 @@ export function Quotations() {
           <button className={styles.actionBarDeleteButton}>
             <Trash2 size={18} />
           </button>
-          <div className={styles.actionBarDropdown}>
-            <button className={styles.actionBarDropdownButton}>
-              <span>{t('quote.actions')}</span>
-              <ChevronDown size={16} />
-            </button>
-          </div>
+          <button className={styles.actionBarDropdownButton}>
+            <span>{t('quote.actions')}</span>
+            <ChevronDown size={16} />
+          </button>
         </div>
       </div>
 

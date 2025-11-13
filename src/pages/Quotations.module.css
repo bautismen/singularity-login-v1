@@ -23,59 +23,34 @@
 
 .actionBar {
   display: flex;
-  align-items: center;
-  background-color: white;
+  align-items: stretch;
   border-radius: 0.5rem;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  gap: 1px;
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .dark .actionBar {
-  background-color: #1f2937;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-.backButton {
-  padding: 0.75rem 1rem;
-  background-color: #e5e7eb;
-  color: #6b7280;
-  border: none;
-  border-right: 1px solid #d1d5db;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.backButton:hover {
-  background-color: #d1d5db;
-  color: #374151;
-}
-
-.dark .backButton {
-  background-color: #374151;
-  color: #9ca3af;
-  border-right-color: #4b5563;
-}
-
-.dark .backButton:hover {
-  background-color: #4b5563;
-  color: #d1d5db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.3);
 }
 
 .actionBarSaveButton {
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   background-color: #14b8a6;
   color: white;
   border: none;
-  border-right: 1px solid #0f9d8f;
   font-weight: 500;
+  font-size: 0.9375rem;
   cursor: pointer;
   transition: background-color 0.15s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex: 1;
+  justify-content: center;
+  min-width: 100px;
 }
 
 .actionBarSaveButton:hover {
@@ -87,12 +62,12 @@
   background-color: #14b8a6;
   color: white;
   border: none;
-  border-right: 1px solid #0f9d8f;
   cursor: pointer;
   transition: background-color 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 50px;
 }
 
 .actionBarResetButton:hover {
@@ -104,33 +79,33 @@
   background-color: #10b981;
   color: white;
   border: none;
-  border-right: 1px solid #059669;
   cursor: pointer;
   transition: background-color 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 50px;
 }
 
 .actionBarDeleteButton:hover {
   background-color: #059669;
 }
 
-.actionBarDropdown {
-  position: relative;
-}
-
 .actionBarDropdownButton {
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   background-color: #22c55e;
   color: white;
   border: none;
   font-weight: 500;
+  font-size: 0.9375rem;
   cursor: pointer;
   transition: background-color 0.15s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex: 1;
+  justify-content: center;
+  min-width: 100px;
 }
 
 .actionBarDropdownButton:hover {
