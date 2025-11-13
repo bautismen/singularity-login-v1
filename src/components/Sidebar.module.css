@@ -103,6 +103,11 @@
   color: white;
 }
 
+.navButton.active {
+  background-color: #14b8a6;
+  color: white;
+}
+
 .navButton span {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -135,6 +140,11 @@
 
 .footerButton:hover {
   background-color: #1e3548;
+  color: white;
+}
+
+.footerButton.active {
+  background-color: #14b8a6;
   color: white;
 }
 

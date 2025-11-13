@@ -5,14 +5,16 @@ import styles from './Layout.module.css';
 
 interface LayoutProps {
   children: React.ReactNode;
+  currentRoute?: string;
+  onNavigate?: (route: string) => void;
 }
 
-export function Layout({ children }: LayoutProps) {
+export function Layout({ children, currentRoute, onNavigate }: LayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
     <div className={styles.layout}>
-      <Sidebar onCollapsedChange={setCollapsed} />
+      <Sidebar onCollapsedChange={setCollapsed} currentRoute={currentRoute} onNavigate={onNavigate} />
       <div className={`${styles.mainContainer} ${collapsed ? styles.collapsed : styles.expanded}`}>
         <Header />
         <main className={styles.content}>
