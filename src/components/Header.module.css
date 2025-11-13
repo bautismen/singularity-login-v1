@@ -1,239 +1,234 @@
 .header {
-  background-color: white;
-  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(to right, #1a8fa4, #1c9bab);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid #1a8fa4;
+}
+
+.dark .header {
+  background: linear-gradient(to right, #167888, #188997);
+}
+
+.headerContent {
   padding: 1rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 30;
+  gap: 1rem;
 }
 
-.dark .header {
-  background-color: #1f2937;
-  border-bottom-color: #374151;
-}
-
-.searchContainer {
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   flex: 1;
-  max-width: 32rem;
+}
+
+.logo {
+  height: 2.5rem;
+  width: auto;
+  object-fit: contain;
+}
+
+.searchWrapper {
   position: relative;
-}
-
-.searchInput {
-  width: 100%;
-  padding: 0.625rem 1rem 0.625rem 2.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  background-color: #f9fafb;
-  color: #1f2937;
-  font-size: 0.875rem;
-  transition: all 0.15s ease;
-}
-
-.searchInput:focus {
-  outline: none;
-  border-color: #14b8a6;
-  background-color: white;
-  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
-}
-
-.dark .searchInput {
-  background-color: #374151;
-  border-color: #4b5563;
-  color: white;
-}
-
-.dark .searchInput:focus {
-  background-color: #4b5563;
-  border-color: #14b8a6;
+  flex: 1;
+  max-width: 28rem;
 }
 
 .searchIcon {
   position: absolute;
-  left: 0.875rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #9ca3af;
+  left: 0.75rem;
+  top: 0.625rem;
+  color: white;
+  opacity: 0.7;
   pointer-events: none;
 }
 
-.actions {
+.searchInput {
+  width: 100%;
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.searchInput::placeholder {
+  color: white;
+  opacity: 0.7;
+}
+
+.searchInput:focus {
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.controls {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.locationButton {
+.languageButton {
+  padding: 0.5rem;
+  background-color: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.languageButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.languageText {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.themeButton {
+  padding: 0.5rem;
+  background-color: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.themeButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.divider {
+  height: 2rem;
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.userMenuWrapper {
+  position: relative;
+}
+
+.userButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem;
+  background-color: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.userButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.userAvatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.userName {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.userMenu {
+  position: absolute;
+  right: 0;
+  margin-top: 0.5rem;
+  width: 12rem;
+  background-color: white;
+  color: #111827;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  z-index: 50;
+}
+
+.dark .userMenu {
+  background-color: #1f2937;
+  color: white;
+  border-color: #374151;
+}
+
+.userMenuHeader {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dark .userMenuHeader {
+  border-bottom-color: #374151;
+}
+
+.userEmail {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.menuButton {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background-color: transparent;
-  color: #374151;
   border: none;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
+  color: inherit;
+  text-align: left;
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
-.locationButton:hover {
+.menuButton:hover {
   background-color: #f3f4f6;
 }
 
-.dark .locationButton {
-  color: #d1d5db;
-}
-
-.dark .locationButton:hover {
+.dark .menuButton:hover {
   background-color: #374151;
 }
 
-.iconButton {
-  position: relative;
-  padding: 0.5rem;
-  background-color: transparent;
-  border: none;
-  border-radius: 0.5rem;
-  color: #6b7280;
-  cursor: pointer;
-  transition: all 0.15s ease;
+.menuButton.logout {
+  border-top: 1px solid #e5e7eb;
 }
 
-.iconButton:hover {
-  background-color: #f3f4f6;
-  color: #374151;
+.dark .menuButton.logout {
+  border-top-color: #374151;
 }
 
-.dark .iconButton {
-  color: #9ca3af;
-}
-
-.dark .iconButton:hover {
-  background-color: #374151;
-  color: #d1d5db;
-}
-
-.badge {
-  position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
-  width: 0.5rem;
-  height: 0.5rem;
-  background-color: #ef4444;
-  border-radius: 9999px;
-  border: 2px solid white;
-}
-
-.dark .badge {
-  border-color: #1f2937;
-}
-
-.divider {
-  width: 1px;
-  height: 1.5rem;
-  background-color: #e5e7eb;
-}
-
-.dark .divider {
-  background-color: #374151;
-}
-
-.profileButton {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem;
-  background-color: transparent;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
-.profileButton:hover {
-  background-color: #f3f4f6;
-}
-
-.dark .profileButton:hover {
-  background-color: #374151;
-}
-
-.avatar {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
-  object-fit: cover;
-}
-
-.profileInfo {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.profileName {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #1f2937;
-}
-
-.dark .profileName {
-  color: white;
-}
-
-.profileRole {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.dark .profileRole {
-  color: #9ca3af;
-}
-
-.languageButton {
-  padding: 0.5rem 1rem;
-  background-color: transparent;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  color: #374151;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.languageButton:hover {
-  background-color: #f3f4f6;
-  border-color: #14b8a6;
-}
-
-.dark .languageButton {
-  border-color: #4b5563;
-  color: #d1d5db;
-}
-
-.dark .languageButton:hover {
-  background-color: #374151;
-  border-color: #14b8a6;
-}
-
-@media (max-width: 768px) {
-  .header {
+@media (max-width: 640px) {
+  .headerContent {
     padding: 0.75rem 1rem;
   }
 
-  .searchContainer {
+  .searchWrapper {
     max-width: 100%;
   }
 
-  .profileInfo {
-    display: none;
-  }
-
-  .locationButton span {
+  .userName {
     display: none;
   }
 }
