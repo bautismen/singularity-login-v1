@@ -68,6 +68,7 @@ const translations = {
     'quote.frequencyPeriod': 'Frecuencia',
     'quote.merchandise': 'Mercancía',
     'quote.search': 'Buscar',
+    'quote.actions': 'Acciones',
   },
   en: {
     'app.title': 'Singularity',
@@ -126,6 +127,7 @@ const translations = {
     'quote.frequencyPeriod': 'Frequency',
     'quote.merchandise': 'Merchandise',
     'quote.search': 'Search',
+    'quote.actions': 'Actions',
   },
 };
 

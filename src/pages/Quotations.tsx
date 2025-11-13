@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2, ChevronDown, Plus, Copy, X, MapPin, Search } from 'lucide-react';
+import { Trash2, ChevronDown, Plus, Copy, X, MapPin, Search, RotateCcw, Save } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import styles from './Quotations.module.css';
 
@@ -98,15 +98,26 @@ export function Quotations() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>{t('quote.title')}</h1>
-        <div className={styles.headerActions}>
-          <button className={styles.saveButton}>{t('quote.save')}</button>
-          <button className={styles.sendButton}>{t('quote.send')}</button>
-          <button className={styles.deleteButton}>
+        <div className={styles.actionBar}>
+          <button className={styles.backButton}>
+            <X size={20} />
+          </button>
+          <button className={styles.actionBarSaveButton}>
+            <Save size={18} />
+            <span>{t('quote.save')}</span>
+          </button>
+          <button className={styles.actionBarResetButton}>
+            <RotateCcw size={18} />
+          </button>
+          <button className={styles.actionBarDeleteButton}>
             <Trash2 size={18} />
           </button>
-          <button className={styles.moreButton}>
-            <ChevronDown size={18} />
-          </button>
+          <div className={styles.actionBarDropdown}>
+            <button className={styles.actionBarDropdownButton}>
+              <span>{t('quote.actions')}</span>
+              <ChevronDown size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
