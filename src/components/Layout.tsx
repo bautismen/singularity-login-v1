@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import styles from './Layout.module.css';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,11 +11,11 @@ export function Layout({ children }: LayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className={styles.layout}>
       <Sidebar onCollapsedChange={setCollapsed} />
-      <div className={`flex-1 ${collapsed ? 'ml-16' : 'ml-56'} transition-all duration-300 flex flex-col`}>
+      <div className={`${styles.mainContainer} ${collapsed ? styles.collapsed : styles.expanded}`}>
         <Header />
-        <main className="flex-1 overflow-auto">
+        <main className={styles.content}>
           {children}
         </main>
       </div>

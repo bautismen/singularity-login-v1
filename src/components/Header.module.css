@@ -1,0 +1,239 @@
+.header {
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.dark .header {
+  background-color: #1f2937;
+  border-bottom-color: #374151;
+}
+
+.searchContainer {
+  flex: 1;
+  max-width: 32rem;
+  position: relative;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.625rem 1rem 0.625rem 2.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background-color: #f9fafb;
+  color: #1f2937;
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #14b8a6;
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.dark .searchInput {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: white;
+}
+
+.dark .searchInput:focus {
+  background-color: #4b5563;
+  border-color: #14b8a6;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.locationButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  color: #374151;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.locationButton:hover {
+  background-color: #f3f4f6;
+}
+
+.dark .locationButton {
+  color: #d1d5db;
+}
+
+.dark .locationButton:hover {
+  background-color: #374151;
+}
+
+.iconButton {
+  position: relative;
+  padding: 0.5rem;
+  background-color: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.iconButton:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.dark .iconButton {
+  color: #9ca3af;
+}
+
+.dark .iconButton:hover {
+  background-color: #374151;
+  color: #d1d5db;
+}
+
+.badge {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: #ef4444;
+  border-radius: 9999px;
+  border: 2px solid white;
+}
+
+.dark .badge {
+  border-color: #1f2937;
+}
+
+.divider {
+  width: 1px;
+  height: 1.5rem;
+  background-color: #e5e7eb;
+}
+
+.dark .divider {
+  background-color: #374151;
+}
+
+.profileButton {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  background-color: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.profileButton:hover {
+  background-color: #f3f4f6;
+}
+
+.dark .profileButton:hover {
+  background-color: #374151;
+}
+
+.avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  object-fit: cover;
+}
+
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.profileName {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.dark .profileName {
+  color: white;
+}
+
+.profileRole {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.dark .profileRole {
+  color: #9ca3af;
+}
+
+.languageButton {
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.languageButton:hover {
+  background-color: #f3f4f6;
+  border-color: #14b8a6;
+}
+
+.dark .languageButton {
+  border-color: #4b5563;
+  color: #d1d5db;
+}
+
+.dark .languageButton:hover {
+  background-color: #374151;
+  border-color: #14b8a6;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 0.75rem 1rem;
+  }
+
+  .searchContainer {
+    max-width: 100%;
+  }
+
+  .profileInfo {
+    display: none;
+  }
+
+  .locationButton span {
+    display: none;
+  }
+}

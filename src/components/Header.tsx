@@ -3,6 +3,7 @@ import { Search, Globe, Moon, Sun, LogOut, User } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import styles from './Header.module.css';
 
 export function Header() {
   const { t, language, setLanguage } = useLanguage();
