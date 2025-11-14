@@ -150,10 +150,28 @@ export default function Customers() {
     try {
       setLoading(true);
 
+      const selectedCompany = companies.find(c => c._id === formData.company_id);
+
+      if (!selectedCompany && !formData.person_id) {
+        alert('Debe seleccionar una empresa o persona');
+        setLoading(false);
+        return;
+      }
+
+      const dataToSave = {
+        ...formData,
+        fiscal_data: selectedCompany ? {
+          business_name: selectedCompany.business_name,
+          taxid: formData.fiscal_data.taxid || selectedCompany.rfc_taxid,
+          country: selectedCompany.country,
+          state: selectedCompany.state,
+        } : formData.fiscal_data,
+      };
+
       if (editingCustomer) {
-        await updateCustomer(editingCustomer._idcustomer!, formData);
+        await updateCustomer(editingCustomer._idcustomer!, dataToSave);
       } else {
-        await createCustomer(formData);
+        await createCustomer(dataToSave);
       }
 
       await loadCustomers();
@@ -592,65 +610,63 @@ export default function Customers() {
               </div>
             )}
           </div>
-      </div>
-    );
-  }
 
-  if (showCompanyForm) {
-    return (
-      <div className={styles.modalOverlay}>
-        <div className={styles.modalContent}>
-          <div className={styles.modalHeader}>
-            <h3>Nueva Empresa</h3>
-            <button onClick={() => setShowCompanyForm(false)} className={styles.closeButton}>
-              <X size={24} />
-            </button>
-          </div>
-          <div className={styles.modalBody}>
-            <div className={styles.formRow}>
-              <label>
-                Razón Social
-                <input
-                  type="text"
-                  value={newCompany.business_name}
-                  onChange={(e) => setNewCompany({ ...newCompany, business_name: e.target.value })}
-                />
-              </label>
+        {showCompanyForm && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalContent}>
+              <div className={styles.modalHeader}>
+                <h3>Nueva Empresa</h3>
+                <button onClick={() => setShowCompanyForm(false)} className={styles.closeButton}>
+                  <X size={24} />
+                </button>
+              </div>
+              <div className={styles.modalBody}>
+                <div className={styles.formRow}>
+                  <label>
+                    Razón Social
+                    <input
+                      type="text"
+                      value={newCompany.business_name}
+                      onChange={(e) => setNewCompany({ ...newCompany, business_name: e.target.value })}
+                    />
+                  </label>
+                </div>
+                <div className={styles.formRow}>
+                  <label>
+                    RFC
+                    <input
+                      type="text"
+                      value={newCompany.rfc_taxid}
+                      onChange={(e) => setNewCompany({ ...newCompany, rfc_taxid: e.target.value })}
+                    />
+                  </label>
+                </div>
+                <div className={styles.formRow}>
+                  <label>
+                    Estado
+                    <select
+                      value={newCompany.state}
+                      onChange={(e) => setNewCompany({ ...newCompany, state: e.target.value })}
+                    >
+                      <option value="">Seleccionar estado</option>
+                      {MEXICAN_STATES.map((state) => (
+                        <option key={state} value={state}>{state}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <div className={styles.modalActions}>
+                <button onClick={() => setShowCompanyForm(false)} className={styles.cancelButton}>
+                  Cancelar
+                </button>
+                <button onClick={handleCreateCompany} className={styles.saveButton}>
+                  Guardar
+                </button>
+              </div>
             </div>
-            <div className={styles.formRow}>
-              <label>
-                RFC
-                <input
-                  type="text"
-                  value={newCompany.rfc_taxid}
-                  onChange={(e) => setNewCompany({ ...newCompany, rfc_taxid: e.target.value })}
-                />
-              </label>
-            </div>
-            <div className={styles.formRow}>
-              <label>
-                Estado
-                <select
-                  value={newCompany.state}
-                  onChange={(e) => setNewCompany({ ...newCompany, state: e.target.value })}
-                >
-                  <option value="">Seleccionar estado</option>
-                  {MEXICAN_STATES.map((state) => (
-                    <option key={state} value={state}>{state}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
           </div>
-          <div className={styles.modalActions}>
-            <button onClick={() => setShowCompanyForm(false)} className={styles.cancelButton}>
-              Cancelar
-            </button>
-            <button onClick={handleCreateCompany} className={styles.saveButton}>
-              Guardar
-            </button>
-          </div>
-        </div>
+        )}
       </div>
     );
   }
