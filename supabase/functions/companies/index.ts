@@ -74,11 +74,20 @@ Deno.serve(async (req: Request) => {
     if (method === "POST" && path.endsWith("/companies")) {
       const body = await req.json();
 
+      console.log("Received company data:", body);
+
+      if (!body.business_name || !body.rfc_taxid) {
+        return new Response(
+          JSON.stringify({ error: "Faltan datos requeridos: Razón Social y RFC" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const newCompany = {
         ...body,
-        status: "activo",
-        archivado: false,
-        datastate: 1,
+        status: body.status || "activo",
+        archivado: body.archivado !== undefined ? body.archivado : false,
+        datastate: body.datastate !== undefined ? body.datastate : 1,
         created_at: new Date(),
         created_by: {
           user_id: "system",
@@ -87,6 +96,15 @@ Deno.serve(async (req: Request) => {
       };
 
       const result = await collection.insertOne(newCompany);
+
+      if (!result.acknowledged) {
+        return new Response(
+          JSON.stringify({ error: "Error al insertar la empresa en la base de datos" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log("Company created with ID:", result.insertedId);
 
       return new Response(JSON.stringify({
         ...newCompany,

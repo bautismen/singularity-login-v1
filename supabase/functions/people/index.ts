@@ -74,10 +74,19 @@ Deno.serve(async (req: Request) => {
     if (method === "POST" && path.endsWith("/people")) {
       const body = await req.json();
 
+      console.log("Received person data:", body);
+
+      if (!body.name || !body.rfc) {
+        return new Response(
+          JSON.stringify({ error: "Faltan datos requeridos: Nombre y RFC" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const newPerson = {
         ...body,
-        status: "activo",
-        archivado: false,
+        status: body.status || "activo",
+        archivado: body.archivado !== undefined ? body.archivado : false,
         created_at: new Date(),
         created_by: {
           user_id: "system",
@@ -86,6 +95,15 @@ Deno.serve(async (req: Request) => {
       };
 
       const result = await collection.insertOne(newPerson);
+
+      if (!result.acknowledged) {
+        return new Response(
+          JSON.stringify({ error: "Error al insertar la persona en la base de datos" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log("Person created with ID:", result.insertedId);
 
       return new Response(JSON.stringify({
         ...newPerson,

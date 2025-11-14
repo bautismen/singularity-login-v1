@@ -117,20 +117,32 @@ export async function getPeople(status = 'activo'): Promise<Person[]> {
 
 export async function createPerson(person: Partial<Person>): Promise<Person> {
   try {
+    console.log('Creating person with data:', person);
     const response = await fetch(`${SUPABASE_URL}/functions/v1/people`, {
       method: 'POST',
       headers,
       body: JSON.stringify(person),
     });
 
+    console.log('Response status:', response.status);
+    const responseText = await response.text();
+    console.log('Response body:', responseText);
+
     if (!response.ok) {
-      throw new Error('Failed to create person');
+      let errorMessage = 'Failed to create person';
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.error || errorMessage;
+      } catch (e) {
+        errorMessage = responseText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
 
-    return await response.json();
+    return JSON.parse(responseText);
   } catch (error) {
     console.error('Error creating person:', error);
-    throw new Error('Failed to create person');
+    throw error;
   }
 }
 
@@ -152,19 +164,31 @@ export async function getCompanies(status = 'activo'): Promise<Company[]> {
 
 export async function createCompany(company: Partial<Company>): Promise<Company> {
   try {
+    console.log('Creating company with data:', company);
     const response = await fetch(`${SUPABASE_URL}/functions/v1/companies`, {
       method: 'POST',
       headers,
       body: JSON.stringify(company),
     });
 
+    console.log('Response status:', response.status);
+    const responseText = await response.text();
+    console.log('Response body:', responseText);
+
     if (!response.ok) {
-      throw new Error('Failed to create company');
+      let errorMessage = 'Failed to create company';
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.error || errorMessage;
+      } catch (e) {
+        errorMessage = responseText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
 
-    return await response.json();
+    return JSON.parse(responseText);
   } catch (error) {
     console.error('Error creating company:', error);
-    throw new Error('Failed to create company');
+    throw error;
   }
 }
