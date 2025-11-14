@@ -292,26 +292,35 @@ export default function Customers() {
     return (
       <div className={styles.container}>
         <div className={styles.formContainer}>
-          <div className={styles.formHeader}>
-            <h2>{editingCustomer ? t('cust.editCustomer') : t('cust.newCustomer')}</h2>
-            <button onClick={() => setIsFormOpen(false)} className={styles.closeButton}>
-              <X size={24} />
-            </button>
+          <div className={styles.formHeaderRow}>
+            <h2 className={styles.formTitle}>Nuevo cliente</h2>
+            <div className={styles.headerActions}>
+              <button onClick={handleSaveCustomer} className={styles.saveHeaderButton} disabled={loading}>
+                <Plus size={18} />
+                Guardar
+              </button>
+              <button onClick={() => setIsFormOpen(false)} className={styles.cancelHeaderButton}>
+                Cancelar
+              </button>
+              <button className={styles.actionsHeaderButton}>
+                Acciones
+                <ChevronDown size={18} />
+              </button>
+            </div>
           </div>
 
-          <div className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <h3>{t('cust.generalData')}</h3>
-            </div>
+          <div className={styles.sectionCard}>
+            <div className={styles.sectionTitle}>Datos Generales</div>
 
-            <div className={styles.sectionContent}>
-              <div className={styles.formGrid}>
-                <div className={styles.formRow}>
-                  <label>
-                    Seleccionar Empresa
+            <div className={styles.twoColumnGrid}>
+              <div className={styles.leftColumn}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>Seleccionar Empresa</label>
+                  <div className={styles.selectWithButton}>
                     <select
                       value={formData.company_id}
                       onChange={(e) => setFormData({ ...formData, company_id: e.target.value })}
+                      className={styles.selectInput}
                     >
                       <option value="">Seleccionar Empresa</option>
                       {companies.map((company) => (
@@ -320,63 +329,32 @@ export default function Customers() {
                         </option>
                       ))}
                     </select>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setShowCompanyForm(true)}
-                    className={styles.inlineButton}
-                  >
-                    <Plus size={16} />
-                    Nueva Empresa
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowCompanyForm(true)}
+                      className={styles.addNewButton}
+                    >
+                      <Plus size={16} />
+                      Nueva Empresa
+                    </button>
+                  </div>
                 </div>
 
-                <div className={styles.formRow}>
-                  <label>
-                    RFC/TAXID
-                    <input
-                      type="text"
-                      value={formData.fiscal_data.taxid}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        fiscal_data: { ...formData.fiscal_data, taxid: e.target.value }
-                      })}
-                      placeholder="RFC/TAXID"
-                    />
-                  </label>
-                </div>
-
-                <div className={styles.formRow}>
-                  <label className={styles.statusLabel}>
-                    Activo
-                    <label className={styles.switch}>
-                      <input
-                        type="checkbox"
-                        checked={formData.status === 'activo'}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          status: e.target.checked ? 'activo' : 'inactivo'
-                        })}
-                      />
-                      <span className={styles.slider}></span>
-                    </label>
-                  </label>
-                </div>
-              </div>
-
-              <div className={styles.checkboxesRow}>
-                <label className={styles.checkboxLabel}>
+                <div className={styles.checkboxField}>
                   <input
                     type="checkbox"
+                    id="is_branch"
                     checked={formData.is_branch}
                     onChange={(e) => setFormData({ ...formData, is_branch: e.target.checked })}
+                    className={styles.checkbox}
                   />
-                  Es Sucursal
-                </label>
+                  <label htmlFor="is_branch" className={styles.checkboxText}>Es Sucursal</label>
+                </div>
 
-                <label className={styles.checkboxLabel}>
+                <div className={styles.checkboxField}>
                   <input
                     type="checkbox"
+                    id="is_national"
                     checked={formData.is_national}
                     onChange={(e) => setFormData({
                       ...formData,
@@ -384,64 +362,97 @@ export default function Customers() {
                       is_persona_fisica: false,
                       curp: ''
                     })}
+                    className={styles.checkbox}
                   />
-                  Es nacional
-                </label>
+                  <label htmlFor="is_national" className={styles.checkboxText}>Es nacional</label>
+                </div>
+              </div>
 
-                {formData.is_national && (
-                  <label className={styles.checkboxLabel}>
+              <div className={styles.rightColumn}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>RFC/TAXID</label>
+                  <input
+                    type="text"
+                    value={formData.fiscal_data.taxid}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      fiscal_data: { ...formData.fiscal_data, taxid: e.target.value }
+                    })}
+                    className={styles.textInput}
+                    placeholder="RFC/TAXID"
+                  />
+                </div>
+
+                <div className={styles.statusField}>
+                  <span className={styles.statusText}>Activo</span>
+                  <label className={styles.switch}>
                     <input
                       type="checkbox"
+                      checked={formData.status === 'activo'}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        status: e.target.checked ? 'activo' : 'inactivo'
+                      })}
+                    />
+                    <span className={styles.slider}></span>
+                  </label>
+                </div>
+
+                {formData.is_branch && (
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.fieldLabel}>Nombre de sucursal</label>
+                    <input
+                      type="text"
+                      value={formData.branch_name}
+                      onChange={(e) => setFormData({ ...formData, branch_name: e.target.value })}
+                      className={styles.textInput}
+                      placeholder="Nombre de sucursal"
+                    />
+                  </div>
+                )}
+
+                {formData.is_national && (
+                  <div className={styles.checkboxField}>
+                    <input
+                      type="checkbox"
+                      id="is_persona_fisica"
                       checked={formData.is_persona_fisica}
                       onChange={(e) => setFormData({
                         ...formData,
                         is_persona_fisica: e.target.checked,
                         curp: e.target.checked ? formData.curp : ''
                       })}
+                      className={styles.checkbox}
                     />
-                    Persona física
-                  </label>
-                )}
-              </div>
-
-              <div className={styles.formGrid}>
-                {formData.is_branch && (
-                  <div className={styles.formRow}>
-                    <label>
-                      Nombre de sucursal
-                      <input
-                        type="text"
-                        value={formData.branch_name}
-                        onChange={(e) => setFormData({ ...formData, branch_name: e.target.value })}
-                        placeholder="Nombre de sucursal"
-                      />
-                    </label>
+                    <label htmlFor="is_persona_fisica" className={styles.checkboxText}>Persona física</label>
                   </div>
                 )}
 
                 {formData.is_national && formData.is_persona_fisica && (
-                  <div className={styles.formRow}>
-                    <label>
-                      CURP
-                      <input
-                        type="text"
-                        value={formData.curp}
-                        onChange={(e) => setFormData({ ...formData, curp: e.target.value })}
-                        placeholder="CURP"
-                      />
-                    </label>
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.fieldLabel}>CURP</label>
+                    <input
+                      type="text"
+                      value={formData.curp}
+                      onChange={(e) => setFormData({ ...formData, curp: e.target.value })}
+                      className={styles.textInput}
+                      placeholder="CURP"
+                    />
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          <div className={styles.section}>
+          <div className={styles.sectionCard}>
             <div
-              className={styles.sectionHeader}
+              className={styles.sectionTitleCollapsible}
               onClick={() => toggleSection('contacts')}
             >
-              <h3>Contacto</h3>
+              <div className={styles.sectionTitleWithDot}>
+                <span className={styles.greenDot}></span>
+                <span>Contacto</span>
+              </div>
               {collapsedSections.contacts ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
             </div>
 
@@ -508,18 +519,21 @@ export default function Customers() {
             )}
           </div>
 
-          <div className={styles.section}>
+          <div className={styles.sectionCard}>
             <div
-              className={styles.sectionHeader}
+              className={styles.sectionTitleCollapsible}
               onClick={() => toggleSection('address')}
             >
-              <h3>Domicilio</h3>
+              <div className={styles.sectionTitleWithDot}>
+                <span className={styles.greenDot}></span>
+                <span>Domicilio</span>
+              </div>
               {collapsedSections.address ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
             </div>
 
             {!collapsedSections.address && (
               <div className={styles.sectionContent}>
-                <button onClick={addAddress} className={styles.addButton}>
+                <button onClick={addAddress} className={styles.addDashedButton}>
                   <Plus size={20} />
                   Agregar Domicilio
                 </button>
@@ -580,20 +594,63 @@ export default function Customers() {
               </div>
             )}
           </div>
+        </div>
+      </div>
+    );
+  }
 
-          <div className={styles.formActions}>
-            <button
-              onClick={() => setIsFormOpen(false)}
-              className={styles.cancelButton}
-            >
+  if (showCompanyForm) {
+    return (
+      <div className={styles.modalOverlay}>
+        <div className={styles.modalContent}>
+          <div className={styles.modalHeader}>
+            <h3>Nueva Empresa</h3>
+            <button onClick={() => setShowCompanyForm(false)} className={styles.closeButton}>
+              <X size={24} />
+            </button>
+          </div>
+          <div className={styles.modalBody}>
+            <div className={styles.formRow}>
+              <label>
+                Razón Social
+                <input
+                  type="text"
+                  value={newCompany.business_name}
+                  onChange={(e) => setNewCompany({ ...newCompany, business_name: e.target.value })}
+                />
+              </label>
+            </div>
+            <div className={styles.formRow}>
+              <label>
+                RFC
+                <input
+                  type="text"
+                  value={newCompany.rfc_taxid}
+                  onChange={(e) => setNewCompany({ ...newCompany, rfc_taxid: e.target.value })}
+                />
+              </label>
+            </div>
+            <div className={styles.formRow}>
+              <label>
+                Estado
+                <select
+                  value={newCompany.state}
+                  onChange={(e) => setNewCompany({ ...newCompany, state: e.target.value })}
+                >
+                  <option value="">Seleccionar estado</option>
+                  {MEXICAN_STATES.map((state) => (
+                    <option key={state} value={state}>{state}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </div>
+          <div className={styles.modalActions}>
+            <button onClick={() => setShowCompanyForm(false)} className={styles.cancelButton}>
               Cancelar
             </button>
-            <button
-              onClick={handleSaveCustomer}
-              className={styles.saveButton}
-              disabled={loading}
-            >
-              {loading ? 'Guardando...' : 'Guardar'}
+            <button onClick={handleCreateCompany} className={styles.saveButton}>
+              Guardar
             </button>
           </div>
         </div>
