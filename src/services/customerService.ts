@@ -49,13 +49,14 @@ export async function createCustomer(customer: Partial<Customer>): Promise<Custo
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create customer');
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || 'Failed to create customer');
     }
 
     return await response.json();
   } catch (error) {
     console.error('Error creating customer:', error);
-    throw new Error('Failed to create customer');
+    throw error;
   }
 }
 

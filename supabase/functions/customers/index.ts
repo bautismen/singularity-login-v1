@@ -78,12 +78,19 @@ Deno.serve(async (req: Request) => {
     if (method === "POST" && path.endsWith("/customers")) {
       const body = await req.json();
 
+      if (!body.fiscal_data || !body.fiscal_data.business_name || !body.fiscal_data.taxid) {
+        return new Response(
+          JSON.stringify({ error: "Faltan datos fiscales requeridos (Razón Social y RFC)" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const maxIdDoc = await collection
         .find()
         .sort({ idcustomer: -1 })
         .limit(1)
         .toArray();
-      
+
       const nextId = maxIdDoc.length > 0 ? (maxIdDoc[0].idcustomer || 0) + 1 : 1;
 
       const newCustomer = {
@@ -92,7 +99,7 @@ Deno.serve(async (req: Request) => {
         ...body,
         datastate: 1,
         archivado: false,
-        status: "activo",
+        status: body.status || "activo",
         history: [],
         created_at: new Date(),
         created_by: {
@@ -101,7 +108,14 @@ Deno.serve(async (req: Request) => {
         },
       };
 
-      await collection.insertOne(newCustomer);
+      const result = await collection.insertOne(newCustomer);
+
+      if (!result.acknowledged) {
+        return new Response(
+          JSON.stringify({ error: "Error al insertar el cliente en la base de datos" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
       return new Response(JSON.stringify({
         ...newCustomer,

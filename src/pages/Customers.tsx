@@ -153,7 +153,8 @@ export default function Customers() {
       setEditingCustomer(null);
     } catch (error) {
       console.error('Error saving customer:', error);
-      alert(t('cust.errorSave'));
+      const errorMessage = error instanceof Error ? error.message : t('cust.errorSave');
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
