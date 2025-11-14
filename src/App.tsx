@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import { Login } from './pages/Login';
 import { Quotations } from './pages/Quotations';
+import { Executives } from './pages/Executives';
 import { Layout } from './components/Layout';
 
-type Route = 'dashboard' | 'quotations' | 'shipments' | 'customers' | 'operations' | 'documents' | 'analytics' | 'settings';
+type Route = 'dashboard' | 'quotations' | 'executives' | 'shipments' | 'customers' | 'operations' | 'documents' | 'analytics' | 'settings';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState<Route>('dashboard');
@@ -32,6 +33,8 @@ function App() {
       switch (currentRoute) {
         case 'quotations':
           return <Quotations />;
+        case 'executives':
+          return <Executives />;
         case 'dashboard':
           return (
             <div className="p-8">
