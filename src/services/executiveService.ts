@@ -1,25 +1,26 @@
-import { ObjectId } from 'mongodb';
-import { getExecutivesCollection } from './mongodb';
 import { Executive } from '../types/executive';
+
+const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/executives`;
+const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+const headers = {
+  'Authorization': `Bearer ${API_KEY}`,
+  'Content-Type': 'application/json',
+};
 
 export async function createExecutive(executive: Omit<Executive, '_id'>): Promise<Executive> {
   try {
-    const collection = await getExecutivesCollection();
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(executive),
+    });
 
-    const newExecutive = {
-      ...executive,
-      estado: 1,
-      archivado: false,
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
+    if (!response.ok) {
+      throw new Error('Failed to create executive');
+    }
 
-    const result = await collection.insertOne(newExecutive);
-
-    return {
-      ...newExecutive,
-      _id: result.insertedId.toString(),
-    };
+    return await response.json();
   } catch (error) {
     console.error('Error creating executive:', error);
     throw new Error('Failed to create executive');
@@ -28,19 +29,14 @@ export async function createExecutive(executive: Omit<Executive, '_id'>): Promis
 
 export async function getExecutives(includeArchived = false): Promise<Executive[]> {
   try {
-    const collection = await getExecutivesCollection();
+    const url = `${API_URL}?includeArchived=${includeArchived}`;
+    const response = await fetch(url, { headers });
 
-    const filter = includeArchived ? {} : { estado: 1 };
+    if (!response.ok) {
+      throw new Error('Failed to fetch executives');
+    }
 
-    const executives = await collection
-      .find(filter)
-      .sort({ created_at: -1 })
-      .toArray();
-
-    return executives.map((exec) => ({
-      ...exec,
-      _id: exec._id.toString(),
-    })) as Executive[];
+    return await response.json();
   } catch (error) {
     console.error('Error fetching executives:', error);
     throw new Error('Failed to fetch executives');
@@ -49,17 +45,16 @@ export async function getExecutives(includeArchived = false): Promise<Executive[
 
 export async function getExecutiveById(id: string): Promise<Executive | null> {
   try {
-    const collection = await getExecutivesCollection();
-    const executive = await collection.findOne({ _id: new ObjectId(id) });
+    const response = await fetch(`${API_URL}/${id}`, { headers });
 
-    if (!executive) {
-      return null;
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error('Failed to fetch executive');
     }
 
-    return {
-      ...executive,
-      _id: executive._id.toString(),
-    } as Executive;
+    return await response.json();
   } catch (error) {
     console.error('Error fetching executive:', error);
     throw new Error('Failed to fetch executive');
@@ -68,29 +63,20 @@ export async function getExecutiveById(id: string): Promise<Executive | null> {
 
 export async function updateExecutive(id: string, updates: Partial<Executive>): Promise<Executive | null> {
   try {
-    const collection = await getExecutivesCollection();
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(updates),
+    });
 
-    const updateData = {
-      ...updates,
-      updated_at: new Date(),
-    };
-
-    delete (updateData as any)._id;
-
-    const result = await collection.findOneAndUpdate(
-      { _id: new ObjectId(id) },
-      { $set: updateData },
-      { returnDocument: 'after' }
-    );
-
-    if (!result) {
-      return null;
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error('Failed to update executive');
     }
 
-    return {
-      ...result,
-      _id: result._id.toString(),
-    } as Executive;
+    return await response.json();
   } catch (error) {
     console.error('Error updating executive:', error);
     throw new Error('Failed to update executive');
@@ -99,20 +85,17 @@ export async function updateExecutive(id: string, updates: Partial<Executive>): 
 
 export async function deleteExecutive(id: string): Promise<boolean> {
   try {
-    const collection = await getExecutivesCollection();
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: 'DELETE',
+      headers,
+    });
 
-    const result = await collection.updateOne(
-      { _id: new ObjectId(id) },
-      {
-        $set: {
-          estado: 0,
-          archivado: true,
-          updated_at: new Date()
-        }
-      }
-    );
+    if (!response.ok) {
+      throw new Error('Failed to delete executive');
+    }
 
-    return result.modifiedCount > 0;
+    const result = await response.json();
+    return result.success;
   } catch (error) {
     console.error('Error deleting executive:', error);
     throw new Error('Failed to delete executive');
@@ -121,16 +104,15 @@ export async function deleteExecutive(id: string): Promise<boolean> {
 
 export async function checkNominaExists(numero_nomina: string, excludeId?: string): Promise<boolean> {
   try {
-    const collection = await getExecutivesCollection();
+    const url = `${API_URL}/check-nomina?nomina=${encodeURIComponent(numero_nomina)}${excludeId ? `&excludeId=${excludeId}` : ''}`;
+    const response = await fetch(url, { headers });
 
-    const filter: any = { numero_nomina, estado: 1 };
-
-    if (excludeId) {
-      filter._id = { $ne: new ObjectId(excludeId) };
+    if (!response.ok) {
+      return false;
     }
 
-    const count = await collection.countDocuments(filter);
-    return count > 0;
+    const result = await response.json();
+    return result.exists;
   } catch (error) {
     console.error('Error checking nomina:', error);
     return false;
