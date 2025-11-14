@@ -290,8 +290,7 @@ export default function Customers() {
 
   if (isFormOpen) {
     return (
-      <div className={styles.container}>
-        <div className={styles.formContainer}>
+      <div className={styles.formContainer}>
           <div className={styles.formHeaderRow}>
             <h2 className={styles.formTitle}>Nuevo cliente</h2>
             <div className={styles.headerActions}>
@@ -316,29 +315,28 @@ export default function Customers() {
               <div className={styles.leftColumn}>
                 <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel}>Seleccionar Empresa</label>
-                  <div className={styles.selectWithButton}>
-                    <select
-                      value={formData.company_id}
-                      onChange={(e) => setFormData({ ...formData, company_id: e.target.value })}
-                      className={styles.selectInput}
-                    >
-                      <option value="">Seleccionar Empresa</option>
-                      {companies.map((company) => (
-                        <option key={company._id} value={company._id}>
-                          {company.business_name}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => setShowCompanyForm(true)}
-                      className={styles.addNewButton}
-                    >
-                      <Plus size={16} />
-                      Nueva Empresa
-                    </button>
-                  </div>
+                  <select
+                    value={formData.company_id}
+                    onChange={(e) => setFormData({ ...formData, company_id: e.target.value })}
+                    className={styles.selectInput}
+                  >
+                    <option value="">Seleccionar Empresa</option>
+                    {companies.map((company) => (
+                      <option key={company._id} value={company._id}>
+                        {company.business_name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowCompanyForm(true)}
+                  className={styles.fullWidthGreenButton}
+                >
+                  <Plus size={16} />
+                  Nueva Empresa
+                </button>
 
                 <div className={styles.checkboxField}>
                   <input
@@ -458,6 +456,10 @@ export default function Customers() {
 
             {!collapsedSections.contacts && (
               <div className={styles.sectionContent}>
+                <button onClick={addContact} className={styles.addDashedButton}>
+                  <Plus size={20} />
+                  Agregar contacto
+                </button>
                 {formData.contacts.map((contact, index) => (
                   <div key={index} className={styles.itemCard}>
                     <div className={styles.itemHeader}>
@@ -511,10 +513,6 @@ export default function Customers() {
                     </div>
                   </div>
                 ))}
-                <button onClick={addContact} className={styles.addButton}>
-                  <Plus size={20} />
-                  Agregar contacto
-                </button>
               </div>
             )}
           </div>
@@ -594,7 +592,6 @@ export default function Customers() {
               </div>
             )}
           </div>
-        </div>
       </div>
     );
   }
