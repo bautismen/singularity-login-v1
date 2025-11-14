@@ -3,6 +3,7 @@ import { useAuth } from './contexts/AuthContext';
 import { Login } from './pages/Login';
 import { Quotations } from './pages/Quotations';
 import { Executives } from './pages/Executives';
+import Customers from './pages/Customers';
 import { Layout } from './components/Layout';
 
 type Route = 'dashboard' | 'quotations' | 'executives' | 'shipments' | 'customers' | 'operations' | 'documents' | 'analytics' | 'settings';
@@ -35,6 +36,8 @@ function App() {
           return <Quotations />;
         case 'executives':
           return <Executives />;
+        case 'customers':
+          return <Customers />;
         case 'dashboard':
           return (
             <div className="p-8">
