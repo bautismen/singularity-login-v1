@@ -6,22 +6,33 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-const MONGODB_URI = Deno.env.get("MONGODB_URI") || "";
-const MONGODB_DATABASE = Deno.env.get("MONGODB_DATABASE") || "";
+const MONGODB_URI = Deno.env.get("MONGODB_URI");
+const MONGODB_DATABASE = Deno.env.get("MONGODB_DATABASE");
 
 let cachedClient: MongoClient | null = null;
 
 async function getMongoClient(): Promise<MongoClient> {
+  if (!MONGODB_URI || !MONGODB_DATABASE) {
+    console.error("Missing MongoDB configuration:", {
+      hasUri: !!MONGODB_URI,
+      hasDb: !!MONGODB_DATABASE,
+    });
+    throw new Error("MongoDB configuration is missing. Please set MONGODB_URI and MONGODB_DATABASE environment variables.");
+  }
+
   if (cachedClient) {
     return cachedClient;
   }
 
   try {
+    console.log("Connecting to MongoDB...");
     cachedClient = new MongoClient(MONGODB_URI);
     await cachedClient.connect();
+    console.log("MongoDB connected successfully");
     return cachedClient;
   } catch (error) {
     console.error("MongoDB connection error:", error);
+    cachedClient = null;
     throw error;
   }
 }
@@ -39,8 +50,10 @@ Deno.serve(async (req: Request) => {
     const path = url.pathname;
     const method = req.method;
 
+    console.log(`Request: ${method} ${path}`);
+
     const client = await getMongoClient();
-    const db = client.db(MONGODB_DATABASE);
+    const db = client.db(MONGODB_DATABASE!);
     const collection = db.collection("ejecutivos");
 
     if (method === "GET" && path.endsWith("/executives")) {
@@ -93,6 +106,7 @@ Deno.serve(async (req: Request) => {
 
     if (method === "POST" && path.endsWith("/executives")) {
       const body = await req.json();
+      console.log("Creating executive:", body);
 
       const newExecutive = {
         ...body,
@@ -103,6 +117,7 @@ Deno.serve(async (req: Request) => {
       };
 
       const result = await collection.insertOne(newExecutive);
+      console.log("Executive created with ID:", result.insertedId);
 
       return new Response(
         JSON.stringify({
@@ -221,7 +236,10 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     console.error("Error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || "Internal server error",
+        details: error.toString(),
+      }),
       {
         status: 500,
         headers: {
