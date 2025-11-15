@@ -1,7 +1,45 @@
 import React, { useState } from 'react';
-import { Trash2, ChevronDown, Plus, Copy, X, MapPin, Search, RotateCcw, Save } from 'lucide-react';
+import { Trash2, ChevronDown, Plus, Copy, X, MapPin, Search, RotateCcw, Save, Eye } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import styles from './Quotations.module.css';
+
+interface Container {
+  id: number;
+  type: string;
+  quantity: number;
+}
+
+interface MerchandisePackage {
+  id: number;
+  type: string;
+  quantity: number;
+  length: number;
+  width: number;
+  height: number;
+  weight: number;
+}
+
+interface Merchandise {
+  id: number;
+  name: string;
+  dangerous: boolean;
+  imoClass: string;
+  un: string;
+  classification: string;
+  temperature: number;
+  tempUnit: string;
+  description: string;
+  stackable: boolean;
+  unitType: 'lbs' | 'kg';
+  totalVolume: number;
+  totalWeight: number;
+  packages: MerchandisePackage[];
+}
+
+interface Executive {
+  id: number;
+  name: string;
+}
 
 interface Service {
   id: number;
@@ -20,6 +58,8 @@ interface Service {
   quantity: string;
   unit: string;
   frequency: string;
+  containers: Container[];
+  merchandise: Merchandise[];
 }
 
 export function Quotations() {
@@ -42,8 +82,55 @@ export function Quotations() {
       quantity: '19',
       unit: 'Toneladas',
       frequency: 'Semanal',
+      containers: [
+        { id: 1, type: "Contenedor de 40' Standard", quantity: 10 },
+        { id: 2, type: "40' High Cube Pallet Wide", quantity: 10 }
+      ],
+      merchandise: [
+        {
+          id: 1,
+          name: 'Tenis de futbol',
+          dangerous: false,
+          imoClass: '',
+          un: '',
+          classification: 'General',
+          temperature: 80,
+          tempUnit: '°C',
+          description: '',
+          stackable: false,
+          unitType: 'kg',
+          totalVolume: 80,
+          totalWeight: 100,
+          packages: []
+        },
+        {
+          id: 2,
+          name: 'Mochilas Deportivas',
+          dangerous: false,
+          imoClass: '',
+          un: '',
+          classification: 'Refrigerada',
+          temperature: 80,
+          tempUnit: '°C',
+          description: '',
+          stackable: false,
+          unitType: 'kg',
+          totalVolume: 40,
+          totalWeight: 140,
+          packages: []
+        }
+      ],
     },
   ]);
+
+  const [executives, setExecutives] = useState<Executive[]>([
+    { id: 1, name: 'Fabiola Abigail Sanchez Paisfor' },
+    { id: 2, name: 'Denisse Alvarez Guerra' }
+  ]);
+
+  const [showMerchandiseModal, setShowMerchandiseModal] = useState(false);
+  const [editingMerchandise, setEditingMerchandise] = useState<Merchandise | null>(null);
+  const [currentServiceId, setCurrentServiceId] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     client: 'Nike Mexico SA DE CV',
@@ -74,12 +161,46 @@ export function Quotations() {
       quantity: '',
       unit: '',
       frequency: '',
+      containers: [],
+      merchandise: [],
     };
     setServices([...services, newService]);
   };
 
   const removeService = (id: number) => {
     setServices(services.filter(s => s.id !== id));
+  };
+
+  const removeContainer = (serviceId: number, containerId: number) => {
+    setServices(services.map(s =>
+      s.id === serviceId
+        ? { ...s, containers: s.containers.filter(c => c.id !== containerId) }
+        : s
+    ));
+  };
+
+  const removeMerchandise = (serviceId: number, merchandiseId: number) => {
+    setServices(services.map(s =>
+      s.id === serviceId
+        ? { ...s, merchandise: s.merchandise.filter(m => m.id !== merchandiseId) }
+        : s
+    ));
+  };
+
+  const removeExecutive = (id: number) => {
+    setExecutives(executives.filter(e => e.id !== id));
+  };
+
+  const openMerchandiseModal = (serviceId: number, merchandise?: Merchandise) => {
+    setCurrentServiceId(serviceId);
+    setEditingMerchandise(merchandise || null);
+    setShowMerchandiseModal(true);
+  };
+
+  const closeMerchandiseModal = () => {
+    setShowMerchandiseModal(false);
+    setEditingMerchandise(null);
+    setCurrentServiceId(null);
   };
 
   const duplicateService = (id: number) => {
@@ -473,33 +594,105 @@ export function Quotations() {
               </div>
             </div>
 
-            <div className={styles.merchandiseSection}>
-              <div className={styles.merchandiseHeader}>
-                <h3 className={styles.merchandiseTitle}>{t('quote.merchandise')}</h3>
-                <div className={styles.serviceActions}>
-                  <button className={styles.iconButton}>
-                    <Plus size={18} />
-                  </button>
-                  <button className={styles.iconButton}>
-                    <Copy size={18} />
-                  </button>
-                  <button className={styles.iconButton}>
-                    <Trash2 size={18} />
-                  </button>
-                </div>
+            <div className={styles.containersSection}>
+              <h3 className={styles.subsectionTitle}>CONTENEDORES</h3>
+              <div className={styles.searchBarSmall}>
+                <Search className={styles.searchIcon} size={16} />
+                <input
+                  type="text"
+                  placeholder="Buscar"
+                  className={styles.searchInputSmall}
+                />
               </div>
-              <div className={styles.searchBar}>
-                <div className={styles.inputWithIcon} style={{ flex: 1 }}>
-                  <Search className={styles.inputIcon} size={16} />
+              <div className={styles.containersTable}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Contenedores</th>
+                      <th>Cantidad</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {service.containers.map((container) => (
+                      <tr key={container.id}>
+                        <td>{container.type}</td>
+                        <td>{container.quantity}</td>
+                        <td>
+                          <button
+                            className={styles.removeRowButton}
+                            onClick={() => removeContainer(service.id, container.id)}
+                          >
+                            <X size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className={styles.merchandiseSection}>
+              <h3 className={styles.subsectionTitle}>MERCANCIA</h3>
+              <div className={styles.merchandiseToolbar}>
+                <button
+                  className={styles.toolbarButton}
+                  onClick={() => openMerchandiseModal(service.id)}
+                >
+                  <Plus size={18} />
+                </button>
+                <button className={styles.toolbarButton}>
+                  <Copy size={18} />
+                </button>
+                <button className={styles.toolbarButton}>
+                  <Trash2 size={18} />
+                </button>
+                <div className={styles.searchBarSmall} style={{ marginLeft: 'auto' }}>
+                  <Search className={styles.searchIcon} size={16} />
                   <input
                     type="text"
-                    placeholder={t('quote.search')}
-                    className={`${styles.input} ${styles.inputWithIconField}`}
+                    placeholder="Buscar"
+                    className={styles.searchInputSmall}
                   />
                 </div>
-                <button className={styles.iconButton}>
-                  <Search size={18} />
-                </button>
+              </div>
+              <div className={styles.merchandiseTable}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Mercancía</th>
+                      <th>Peligrosa</th>
+                      <th>Clasificación</th>
+                      <th>Estibable</th>
+                      <th>Vol. Total</th>
+                      <th>Peso Total</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {service.merchandise.map((merch) => (
+                      <tr key={merch.id}>
+                        <td>{merch.name}</td>
+                        <td>{merch.dangerous ? 'Sí' : 'No'}</td>
+                        <td>{merch.classification}</td>
+                        <td>{merch.stackable ? 'Sí' : 'No'}</td>
+                        <td>{merch.totalVolume} KG</td>
+                        <td>{merch.totalWeight} KG</td>
+                        <td>
+                          <div className={styles.tableActions}>
+                            <button
+                              className={styles.viewButton}
+                              onClick={() => openMerchandiseModal(service.id, merch)}
+                            >
+                              <Eye size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -510,6 +703,199 @@ export function Quotations() {
           <span>Agregar Servicio</span>
         </button>
       </div>
+
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Asignación de Ejecutivos</h2>
+        <div className={styles.executivesCard}>
+          <div className={styles.searchBarSmall} style={{ marginBottom: '1rem' }}>
+            <Search className={styles.searchIcon} size={16} />
+            <input
+              type="text"
+              placeholder="Buscar"
+              className={styles.searchInputSmall}
+            />
+          </div>
+          <div className={styles.executivesList}>
+            {executives.map((executive) => (
+              <div key={executive.id} className={styles.executiveItem}>
+                <span className={styles.executiveName}>Ejecutivo</span>
+                <span className={styles.executiveNameValue}>{executive.name}</span>
+                <button
+                  className={styles.removeExecutiveButton}
+                  onClick={() => removeExecutive(executive.id)}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {showMerchandiseModal && (
+        <div className={styles.modalOverlay} onClick={closeMerchandiseModal}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Mercancía</h2>
+              <button className={styles.closeButton} onClick={closeMerchandiseModal}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>*</span>Mercancía
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Baterías de Telefonos Modelo 388"
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Es peligrosa</label>
+                  <div className={styles.toggle} style={{ marginTop: '0.5rem' }}>
+                    <div className={`${styles.toggleSwitch} ${styles.active}`}>
+                      <div className={styles.toggleThumb}></div>
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>*</span>Clase /IMO CODE
+                  </label>
+                  <select className={styles.select}>
+                    <option>1.1 Materia y explosivos</option>
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>*</span>UN
+                  </label>
+                  <input type="text" placeholder="80" className={styles.input} />
+                </div>
+              </div>
+
+              <div className={styles.formGrid} style={{ marginTop: '1rem' }}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>*</span>Clasificación de la mercancía
+                  </label>
+                  <select className={styles.select}>
+                    <option>Refrigerada</option>
+                    <option>General</option>
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>*</span>Temperatura
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <input type="text" placeholder="80" className={styles.input} style={{ flex: 1 }} />
+                    <select className={styles.select} style={{ width: '80px' }}>
+                      <option>°C</option>
+                      <option>°F</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.formGroup} style={{ marginTop: '1rem' }}>
+                <label className={styles.label}>Descripción de mercancía</label>
+                <textarea className={styles.textarea} rows={3}></textarea>
+              </div>
+
+              <div className={styles.formGroup} style={{ marginTop: '1rem' }}>
+                <label className={styles.label}>Es estibable</label>
+                <div className={styles.toggle} style={{ marginTop: '0.5rem' }}>
+                  <div className={styles.toggleSwitch}>
+                    <div className={styles.toggleThumb}></div>
+                  </div>
+                  <span style={{ marginLeft: '0.5rem' }}>No</span>
+                </div>
+              </div>
+
+              <div className={styles.formGroup} style={{ marginTop: '1rem' }}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>CARGA
+                </label>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginTop: '0.5rem' }}>
+                  <span>Lbs/Pulgadas</span>
+                  <div className={styles.toggle}>
+                    <div className={styles.toggleSwitch}>
+                      <div className={styles.toggleThumb}></div>
+                    </div>
+                  </div>
+                  <span>Kgm/Cm</span>
+                  <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Volumen total</div>
+                    <div style={{ fontSize: '1.125rem', fontWeight: '600' }}>90 KG</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Peso total</div>
+                    <div style={{ fontSize: '1.125rem', fontWeight: '600' }}>90 KG</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '1.5rem' }}>
+                <button className={styles.addPackageButton}>
+                  <Plus size={18} />
+                </button>
+                <div className={styles.packagesTable} style={{ marginTop: '1rem' }}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>Embalaje</th>
+                        <th>Cantidad</th>
+                        <th>Largo</th>
+                        <th>Alto</th>
+                        <th>Ancho</th>
+                        <th>Peso</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Caja</td>
+                        <td>50</td>
+                        <td>40</td>
+                        <td>50</td>
+                        <td>30</td>
+                        <td>30</td>
+                        <td>
+                          <button className={styles.removeRowButton}>
+                            <X size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Bulto</td>
+                        <td>50</td>
+                        <td>50</td>
+                        <td>5</td>
+                        <td>60</td>
+                        <td>40</td>
+                        <td>
+                          <button className={styles.removeRowButton}>
+                            <X size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div className={styles.modalFooter}>
+              <button className={styles.saveModalButton} onClick={closeMerchandiseModal}>
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
