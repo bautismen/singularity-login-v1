@@ -674,11 +674,23 @@ export default function Customers() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>{t('cust.customers')}</h1>
-        <button onClick={handleNewCustomer} className={styles.newButton}>
-          <Plus size={20} />
-          {t('cust.new')}
-        </button>
+        <h1 className={styles.title}>Clientes</h1>
+        <div className={styles.buttonGroup}>
+          <button onClick={handleNewCustomer} className={styles.iconButton}>
+            <Plus size={20} />
+          </button>
+          <button onClick={loadCustomers} className={styles.iconButton}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+          </button>
+          <button className={styles.actionsButton}>
+            Acciones
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div className={styles.searchBar}>
