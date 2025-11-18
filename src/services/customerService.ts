@@ -8,6 +8,8 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
+
+//Obtener clientes
 export async function getCustomers(includeArchived = false): Promise<Customer[]> {
   try {
     const url = `${SUPABASE_URL}/functions/v1/customers?includeArchived=${includeArchived}`;
@@ -23,6 +25,9 @@ export async function getCustomers(includeArchived = false): Promise<Customer[]>
     throw new Error('Failed to fetch customers');
   }
 }
+
+
+
 
 export async function getCustomerById(id: string): Promise<Customer | null> {
   try {
