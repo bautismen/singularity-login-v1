@@ -13,6 +13,7 @@ const MONGODB_DATABASE = 'singulatiry_sandbox';
 
 let cachedClient: MongoClient | null = null;
 
+//MongoClient
 async function getMongoClient(): Promise<MongoClient> {
   if (!MONGODB_URI || !MONGODB_DATABASE) {
     throw new Error("MongoDB configuration is missing");
@@ -32,6 +33,11 @@ async function getMongoClient(): Promise<MongoClient> {
     throw error;
   }
 }
+
+
+
+
+
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -178,6 +184,9 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+
+
+    
     return new Response(JSON.stringify({ error: "Not found" }), {
       status: 404,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
