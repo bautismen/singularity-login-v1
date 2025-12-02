@@ -1442,6 +1442,15 @@
   color: #9ca3af;
 }
 
+.activeUnitLabel {
+  font-weight: 600;
+  color: #14b8a6;
+}
+
+.dark .activeUnitLabel {
+  color: #14b8a6;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;

@@ -156,6 +156,7 @@ export function Quotations() {
 
   const [showPackagingModal, setShowPackagingModal] = useState(false);
   const [currentPackages, setCurrentPackages] = useState<any[]>([]);
+  const [useMetricSystem, setUseMetricSystem] = useState(true);
 
   const [formData, setFormData] = useState({
     client: 'Nike Mexico SA DE CV',
@@ -976,11 +977,14 @@ export function Quotations() {
 
               <div className={styles.modalFooterInfo}>
                 <div className={styles.unitTypeToggle}>
-                  <span>Lbs/Pulgadas</span>
-                  <div className={styles.toggleSwitch}>
+                  <span className={!useMetricSystem ? styles.activeUnitLabel : ''}>Lbs/Pulgadas</span>
+                  <div
+                    className={`${styles.toggleSwitch} ${useMetricSystem ? styles.active : ''}`}
+                    onClick={() => setUseMetricSystem(!useMetricSystem)}
+                  >
                     <div className={styles.toggleThumb}></div>
                   </div>
-                  <span>Kgm/Cm</span>
+                  <span className={useMetricSystem ? styles.activeUnitLabel : ''}>Kgm/Cm</span>
                 </div>
                 <div className={styles.totalsDisplay}>
                   <div>
@@ -1079,7 +1083,7 @@ export function Quotations() {
               <div className={styles.formGrid}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>Largo (cm)
+                    <span className={styles.required}>*</span>Largo ({useMetricSystem ? 'cm' : 'plg'})
                   </label>
                   <input
                     type="number"
@@ -1090,7 +1094,7 @@ export function Quotations() {
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>Alto (cm)
+                    <span className={styles.required}>*</span>Alto ({useMetricSystem ? 'cm' : 'plg'})
                   </label>
                   <input
                     type="number"
@@ -1103,7 +1107,7 @@ export function Quotations() {
               <div className={styles.formGrid}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>Ancho (cm)
+                    <span className={styles.required}>*</span>Ancho ({useMetricSystem ? 'cm' : 'plg'})
                   </label>
                   <input
                     type="number"
@@ -1114,7 +1118,7 @@ export function Quotations() {
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>Peso (kg)
+                    <span className={styles.required}>*</span>Peso ({useMetricSystem ? 'kg' : 'lbs'})
                   </label>
                   <input
                     type="number"
