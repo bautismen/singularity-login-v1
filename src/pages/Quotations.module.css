@@ -976,6 +976,379 @@
   transform: translateX(24px);
 }
 
+.frequencyHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.checkboxLabel {
+  font-size: 0.9375rem;
+  color: #1f2937;
+  cursor: pointer;
+}
+
+.dark .checkboxLabel {
+  color: white;
+}
+
+.simpleTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.simpleTable thead {
+  background: transparent;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dark .simpleTable thead {
+  border-bottom-color: #374151;
+}
+
+.simpleTable th {
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dark .simpleTable th {
+  color: #9ca3af;
+}
+
+.simpleTable td {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  color: #1f2937;
+}
+
+.dark .simpleTable td {
+  border-bottom-color: #374151;
+  color: white;
+}
+
+.simpleTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.iconButtonSmall {
+  padding: 0.25rem;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  transition: all 0.15s;
+}
+
+.iconButtonSmall:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+.dark .iconButtonSmall:hover {
+  background: #374151;
+  color: white;
+}
+
+.viewButtonGreen {
+  padding: 0.25rem;
+  background: transparent;
+  border: none;
+  color: #10b981;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  transition: all 0.15s;
+}
+
+.viewButtonGreen:hover {
+  background: #d1fae5;
+}
+
+.dark .viewButtonGreen:hover {
+  background: rgba(16, 185, 129, 0.2);
+}
+
+.addItemButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 2px dashed #14b8a6;
+  border-radius: 0.5rem;
+  color: #14b8a6;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 1rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.addItemButton:hover {
+  background: #f0fdfa;
+  border-style: solid;
+}
+
+.dark .addItemButton {
+  background: transparent;
+  border-color: #14b8a6;
+}
+
+.dark .addItemButton:hover {
+  background: rgba(20, 184, 166, 0.1);
+}
+
+.executiveItemSimple {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  margin-bottom: 0.75rem;
+}
+
+.dark .executiveItemSimple {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+.executiveLabel {
+  font-size: 0.875rem;
+  color: #6b7280;
+  min-width: 70px;
+}
+
+.executiveNameSimple {
+  flex: 1;
+  font-size: 0.875rem;
+  color: #1f2937;
+}
+
+.dark .executiveNameSimple {
+  color: white;
+}
+
+.removeIconButton {
+  padding: 0.375rem;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  transition: all 0.15s;
+}
+
+.removeIconButton:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.dark .removeIconButton:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.addExecutiveButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 2px dashed #14b8a6;
+  border-radius: 0.5rem;
+  color: #14b8a6;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 0.5rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.addExecutiveButton:hover {
+  background: #f0fdfa;
+  border-style: solid;
+}
+
+.dark .addExecutiveButton {
+  background: transparent;
+  border-color: #14b8a6;
+}
+
+.dark .addExecutiveButton:hover {
+  background: rgba(20, 184, 166, 0.1);
+}
+
+.modalRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+
+.modalFieldLarge {
+  flex: 1;
+}
+
+.modalFieldSmall {
+  min-width: 150px;
+}
+
+.toggleContainer {
+  margin-top: 0.5rem;
+}
+
+.classificationGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: #f9fafb;
+  border-radius: 0.5rem;
+}
+
+.dark .classificationGrid {
+  background: #111827;
+}
+
+.classificationColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.classificationCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.classificationCheckbox:has(input:checked) {
+  background: #d1fae5;
+  border-color: #10b981;
+}
+
+.dark .classificationCheckbox {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+.dark .classificationCheckbox:has(input:checked) {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+}
+
+.classificationLabel {
+  font-size: 0.875rem;
+  color: #1f2937;
+  cursor: pointer;
+  flex: 1;
+}
+
+.dark .classificationLabel {
+  color: white;
+}
+
+.addPackageButtonIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  color: #14b8a6;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.addPackageButtonIcon:hover {
+  background: #f0fdfa;
+  border-color: #14b8a6;
+}
+
+.dark .addPackageButtonIcon {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+.dark .addPackageButtonIcon:hover {
+  background: rgba(20, 184, 166, 0.1);
+  border-color: #14b8a6;
+}
+
+.modalFooterInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.dark .modalFooterInfo {
+  border-top-color: #374151;
+}
+
+.unitTypeToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.totalsDisplay {
+  display: flex;
+  gap: 2rem;
+}
+
+.totalLabel {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.totalValue {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.dark .totalValue {
+  color: white;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
@@ -1006,5 +1379,13 @@
 
   .modalContent {
     max-height: 95vh;
+  }
+
+  .classificationGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .modalRow {
+    grid-template-columns: 1fr;
   }
 }
