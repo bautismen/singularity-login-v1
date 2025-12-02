@@ -4,9 +4,10 @@ import { Login } from './pages/Login';
 import { Quotations } from './pages/Quotations';
 import { Executives } from './pages/Executives';
 import Customers from './pages/Customers';
+import { CatalogIMO } from './pages/CatalogIMO';
 import { Layout } from './components/Layout';
 
-type Route = 'dashboard' | 'quotations' | 'executives' | 'shipments' | 'customers' | 'operations' | 'documents' | 'analytics' | 'settings';
+type Route = 'dashboard' | 'quotations' | 'executives' | 'shipments' | 'customers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState<Route>('dashboard');
@@ -38,6 +39,8 @@ function App() {
           return <Executives />;
         case 'customers':
           return <Customers />;
+        case 'catalogs/imo':
+          return <CatalogIMO />;
         case 'dashboard':
           return (
             <div className="p-8">
