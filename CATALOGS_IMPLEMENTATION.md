@@ -3,13 +3,22 @@
 ## Estado Actual
 
 ✅ **Completado:**
-- Base de datos creada con todas las tablas (cat001_imo, cat001_incoterms, cat001_services, cat018_request_types, cat018_status)
-- Datos iniciales insertados en todas las tablas
+- Edge function `catalog-imo` desplegada en Supabase (conecta a MongoDB)
+- Colección `Cat001Imo` en MongoDB con datos iniciales
 - Menú lateral actualizado con categoría "Catálogos" y todos los submenús
 - CSS compartido (Catalogs.module.css) para todos los módulos
 - Traducciones en español e inglés completadas
 - Tipos TypeScript definidos (src/types/catalog.ts)
-- Módulo IMO completamente funcional como ejemplo
+- Módulo IMO completamente funcional con CRUD conectado a MongoDB
+
+## ⚠️ IMPORTANTE: Este proyecto usa MongoDB
+
+**NO se usa PostgreSQL ni Supabase Database.** Todas las colecciones están en MongoDB Atlas:
+- **Conexión:** `mongodb+srv://fox1:modelotx30@arcobitscluster0.w6meunj.mongodb.net/`
+- **Base de datos:** `singulatiry_sandbox`
+- **Colección IMO:** `Cat001Imo`
+
+Los datos se acceden a través de Edge Functions que actúan como API intermediaria.
 
 ## Catálogos Pendientes
 
@@ -123,102 +132,93 @@ case 'catalogs/status':
 
 ---
 
-## Integración con Supabase
+## Integración con MongoDB
 
-Actualmente los catálogos usan datos mock. Para conectar con Supabase, reemplaza las funciones:
+El módulo IMO ya está completamente integrado con MongoDB. Para crear los demás catálogos:
 
-### loadData()
-```typescript
-const loadData = async () => {
-  const { data, error } = await supabase
-    .from('cat001_imo') // Cambiar por la tabla correspondiente
-    .select('*')
-    .eq('archived', false)
-    .order('id', { ascending: true });
+### 1. Crear Edge Function
 
-  if (error) {
-    console.error('Error loading data:', error);
-    return;
-  }
+Copiar `supabase/functions/catalog-imo/index.ts` y modificar:
+- Nombre de la colección: `Cat001Imo` → `Cat001Incoterms`, `Cat001Services`, etc.
+- Campos del documento según la colección
+- Nombre del endpoint en las rutas
 
-  setItems(data || []);
-};
+### 2. Desplegar Edge Function
+
+```bash
+# La edge function se despliega automáticamente desde el código
+# No necesitas usar el CLI de Supabase
 ```
 
-### handleSave()
+### 3. Actualizar el Frontend
+
+El componente CatalogIMO ya muestra el patrón correcto:
+
 ```typescript
-const handleSave = async () => {
-  if (editingItem) {
-    // Actualizar
-    const { error } = await supabase
-      .from('cat001_imo')
-      .update(formData)
-      .eq('id', editingItem.id);
+const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-imo`;
+const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-    if (error) {
-      console.error('Error updating:', error);
-      return;
-    }
-  } else {
-    // Insertar
-    const { error } = await supabase
-      .from('cat001_imo')
-      .insert([formData]);
+// GET - Cargar datos
+const response = await fetch(API_URL, {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+});
 
-    if (error) {
-      console.error('Error inserting:', error);
-      return;
-    }
-  }
+// POST - Crear nuevo
+const response = await fetch(API_URL, {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(formData),
+});
 
-  await loadData();
-  closeModal();
-};
-```
+// PUT - Actualizar
+const response = await fetch(`${API_URL}/${id}`, {
+  method: 'PUT',
+  headers: {
+    'Authorization': `Bearer ${API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(formData),
+});
 
-### handleDelete()
-```typescript
-const handleDelete = async (id: number) => {
-  if (confirm(t('catalog.confirmDelete'))) {
-    // Soft delete
-    const { error } = await supabase
-      .from('cat001_imo')
-      .update({ archived: true })
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error deleting:', error);
-      return;
-    }
-
-    await loadData();
-  }
-};
+// DELETE - Eliminar (soft delete)
+const response = await fetch(`${API_URL}/${id}`, {
+  method: 'DELETE',
+  headers: {
+    'Authorization': `Bearer ${API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+});
 ```
 
 ---
 
-## Estructura de Base de Datos
+## Estructura de Documentos MongoDB
 
-Todas las tablas siguen el mismo patrón:
+Todas las colecciones siguen el mismo patrón:
 
-```sql
-CREATE TABLE nombre_tabla (
-  id bigserial PRIMARY KEY,
-  -- campos específicos de la tabla
-  status smallint DEFAULT 1,
-  archived boolean DEFAULT false,
-  data_state smallint DEFAULT 1,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
-);
+```json
+{
+  "_id": 1,
+  "imo": "1.1",
+  "description": "Objetos con riesgo de explosión...",
+  "status": 1,
+  "archived": false,
+  "data_state": 1
+}
 ```
 
-**Políticas RLS:**
-- Todos los usuarios autenticados pueden leer (SELECT)
-- Todos los usuarios autenticados pueden insertar (INSERT)
-- Todos los usuarios autenticados pueden actualizar (UPDATE)
-- Todos los usuarios autenticados pueden eliminar (DELETE)
+**Campos comunes:**
+- `_id`: Number (auto-incrementado en la edge function)
+- `status`: Number (1 = Activo, 0 = Inactivo)
+- `archived`: Boolean (false = visible, true = eliminado)
+- `data_state`: Number (siempre 1, para control de versiones)
 
 ---
 
