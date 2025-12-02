@@ -77,7 +77,7 @@ export function Quotations() {
       customsClearance: false,
       comments: '',
       shippingType: 'Door to Door',
-      programFrequency: true,
+      programFrequency: false,
       frequency: 'Semanal',
       quantity: '19',
       unit: 'Toneladas',
@@ -130,6 +130,15 @@ export function Quotations() {
   const [showMerchandiseModal, setShowMerchandiseModal] = useState(false);
   const [editingMerchandise, setEditingMerchandise] = useState<Merchandise | null>(null);
   const [currentServiceId, setCurrentServiceId] = useState<number | null>(null);
+
+  const [showExecutiveModal, setShowExecutiveModal] = useState(false);
+  const [availableExecutives] = useState<Executive[]>([
+    { id: 1, name: 'Fabiola Abigail Sanchez Paisfor' },
+    { id: 2, name: 'Denisse Alvarez Guerra' },
+    { id: 3, name: 'Carlos Martinez Rodriguez' },
+    { id: 4, name: 'Ana Sofia Lopez Gutierrez' },
+    { id: 5, name: 'Roberto Fernandez Diaz' },
+  ]);
 
   const [formData, setFormData] = useState({
     client: 'Nike Mexico SA DE CV',
@@ -204,6 +213,22 @@ export function Quotations() {
           : s
       ));
     }
+  };
+
+  const openExecutiveModal = () => {
+    setShowExecutiveModal(true);
+  };
+
+  const closeExecutiveModal = () => {
+    setShowExecutiveModal(false);
+  };
+
+  const addExecutive = (executive: Executive) => {
+    const isAlreadyAdded = executives.some(e => e.id === executive.id);
+    if (!isAlreadyAdded) {
+      setExecutives([...executives, executive]);
+    }
+    closeExecutiveModal();
   };
 
   const duplicateService = (id: number) => {
@@ -538,43 +563,45 @@ export function Quotations() {
                   Programar frecuencia
                 </label>
               </div>
-              <div className={styles.frequencyGrid}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Frecuencia</label>
-                  <select
-                    value={service.frequency}
-                    onChange={(e) => updateService(service.id, 'frequency', e.target.value)}
-                    className={styles.select}
-                  >
-                    <option>Semanal</option>
-                    <option>Mensual</option>
-                    <option>Trimestral</option>
-                    <option>Anual</option>
-                  </select>
+              {service.programFrequency && (
+                <div className={styles.frequencyGrid}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Frecuencia</label>
+                    <select
+                      value={service.frequency}
+                      onChange={(e) => updateService(service.id, 'frequency', e.target.value)}
+                      className={styles.select}
+                    >
+                      <option>Semanal</option>
+                      <option>Mensual</option>
+                      <option>Trimestral</option>
+                      <option>Anual</option>
+                    </select>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Cantidad</label>
+                    <input
+                      type="text"
+                      value={service.quantity}
+                      onChange={(e) => updateService(service.id, 'quantity', e.target.value)}
+                      className={styles.input}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Medida</label>
+                    <select
+                      value={service.unit}
+                      onChange={(e) => updateService(service.id, 'unit', e.target.value)}
+                      className={styles.select}
+                    >
+                      <option>Toneladas</option>
+                      <option>Kilogramos</option>
+                      <option>Metros cúbicos</option>
+                      <option>Contenedores</option>
+                    </select>
+                  </div>
                 </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Cantidad</label>
-                  <input
-                    type="text"
-                    value={service.quantity}
-                    onChange={(e) => updateService(service.id, 'quantity', e.target.value)}
-                    className={styles.input}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Medida</label>
-                  <select
-                    value={service.unit}
-                    onChange={(e) => updateService(service.id, 'unit', e.target.value)}
-                    className={styles.select}
-                  >
-                    <option>Toneladas</option>
-                    <option>Kilogramos</option>
-                    <option>Metros cúbicos</option>
-                    <option>Contenedores</option>
-                  </select>
-                </div>
-              </div>
+              )}
             </div>
 
             <div className={styles.merchandiseSection}>
@@ -666,7 +693,7 @@ export function Quotations() {
               </div>
             ))}
           </div>
-          <button className={styles.addExecutiveButton}>
+          <button className={styles.addExecutiveButton} onClick={openExecutiveModal}>
             <Plus size={16} />
             Agregar ejecutivo
           </button>
@@ -841,6 +868,40 @@ export function Quotations() {
               <button className={styles.saveModalButton} onClick={closeMerchandiseModal}>
                 Guardar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showExecutiveModal && (
+        <div className={styles.modalOverlay} onClick={closeExecutiveModal}>
+          <div className={styles.modalContentSmall} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Seleccionar Ejecutivo</h2>
+              <button className={styles.closeButton} onClick={closeExecutiveModal}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.executiveSelectionList}>
+                {availableExecutives
+                  .filter(exec => !executives.some(e => e.id === exec.id))
+                  .map((executive) => (
+                    <div
+                      key={executive.id}
+                      className={styles.executiveSelectionItem}
+                      onClick={() => addExecutive(executive)}
+                    >
+                      <span>{executive.name}</span>
+                      <Plus size={18} className={styles.addIcon} />
+                    </div>
+                  ))}
+                {availableExecutives.filter(exec => !executives.some(e => e.id === exec.id)).length === 0 && (
+                  <div className={styles.noExecutivesMessage}>
+                    Todos los ejecutivos disponibles ya han sido agregados
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

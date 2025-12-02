@@ -1370,6 +1370,78 @@
   align-self: flex-start;
 }
 
+.modalContentSmall {
+  background: white;
+  border-radius: 0.75rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dark .modalContentSmall {
+  background: #1f2937;
+}
+
+.executiveSelectionList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.executiveSelectionItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.executiveSelectionItem:hover {
+  background: #f9fafb;
+  border-color: #14b8a6;
+}
+
+.dark .executiveSelectionItem {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+.dark .executiveSelectionItem:hover {
+  background: #4b5563;
+  border-color: #14b8a6;
+}
+
+.executiveSelectionItem span {
+  font-size: 0.875rem;
+  color: #1f2937;
+}
+
+.dark .executiveSelectionItem span {
+  color: white;
+}
+
+.addIcon {
+  color: #14b8a6;
+  flex-shrink: 0;
+}
+
+.noExecutivesMessage {
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.dark .noExecutivesMessage {
+  color: #9ca3af;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
