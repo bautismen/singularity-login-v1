@@ -133,11 +133,9 @@ export function Quotations() {
 
   const [formData, setFormData] = useState({
     client: 'Nike Mexico SA DE CV',
-    isProspect: false,
     isPriority: true,
     isQuote: false,
     requestType: 'Corresponsal',
-    applicant: 'J Forwarders Inc Revolution',
     created: '01/01/2022',
     responseDeadline: '',
   });
@@ -243,124 +241,77 @@ export function Quotations() {
       </div>
 
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>{t('quote.generalData')}</h2>
-        <div className={styles.formGrid}>
+        <h2 className={styles.sectionTitle}>Datos Generales</h2>
+        <div className={styles.generalDataGrid}>
           <div className={styles.formGroup}>
             <label className={styles.label}>
-              <span className={styles.required}>*</span>
-              {t('quote.client')}
+              <span className={styles.required}>*</span>Cliente
             </label>
-            <div className={styles.inputWithIcon}>
-              <input
-                type="text"
-                value={formData.client}
-                onChange={(e) => setFormData({ ...formData, client: e.target.value })}
-                className={`${styles.input} ${styles.inputWithIconField}`}
-              />
-              <button className={styles.clearButton}>
-                <X size={16} />
-              </button>
-            </div>
+            <input
+              type="text"
+              value={formData.client}
+              onChange={(e) => setFormData({ ...formData, client: e.target.value })}
+              className={styles.input}
+            />
           </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>&nbsp;</label>
-            <div className={styles.toggleGroup}>
-              <div className={styles.toggleItem}>
-                <input
-                  type="checkbox"
-                  checked={formData.isProspect}
-                  onChange={(e) => setFormData({ ...formData, isProspect: e.target.checked })}
-                  className={styles.checkbox}
-                />
-                <span className={styles.label}>{t('quote.isProspect')}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>&nbsp;</label>
-            <div className={styles.toggleGroup}>
-              <div className={styles.toggleItem}>
-                <label className={styles.label}>{t('quote.isPriority')}</label>
-                <div
-                  className={`${styles.toggle} ${formData.isPriority ? styles.active : ''}`}
-                  onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
-                >
-                  <div className={styles.toggleThumb}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>&nbsp;</label>
-            <div className={styles.toggleGroup}>
-              <div className={styles.toggleItem}>
-                <label className={styles.label}>{t('quote.isQuote')}</label>
-                <div
-                  className={`${styles.toggle} ${formData.isQuote ? styles.active : ''}`}
-                  onClick={() => setFormData({ ...formData, isQuote: !formData.isQuote })}
-                >
-                  <div className={styles.toggleThumb}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.formGrid} style={{ marginTop: '1.25rem' }}>
           <div className={styles.formGroup}>
             <label className={styles.label}>
-              <span className={styles.required}>*</span>
-              {t('quote.requestType')}
+              <span className={styles.required}>*</span>Tipo de solicitud
             </label>
-            <select value={formData.requestType} onChange={(e) => setFormData({ ...formData, requestType: e.target.value })} className={styles.select}>
+            <select
+              value={formData.requestType}
+              onChange={(e) => setFormData({ ...formData, requestType: e.target.value })}
+              className={styles.select}
+            >
               <option>Corresponsal</option>
               <option>Directo</option>
               <option>Agente</option>
             </select>
           </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              <span className={styles.required}>*</span>
-              {t('quote.applicant')}
-            </label>
-            <div className={styles.inputWithIcon}>
-              <input
-                type="text"
-                value={formData.applicant}
-                onChange={(e) => setFormData({ ...formData, applicant: e.target.value })}
-                className={`${styles.input} ${styles.inputWithIconField}`}
-              />
-              <button className={styles.clearButton}>
-                <X size={16} />
-              </button>
+          <div className={styles.formGroupWithToggle}>
+            <label className={styles.label}>Es prioritaria</label>
+            <div
+              className={`${styles.toggleSwitch} ${formData.isPriority ? styles.active : ''}`}
+              onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
+            >
+              <div className={styles.toggleThumb}></div>
             </div>
           </div>
 
           <div className={styles.formGroup}>
             <label className={styles.label}>
-              <span className={styles.required}>*</span>
-              {t('quote.created')}
+              <span className={styles.required}>*</span>Fecha solicitud
             </label>
             <input
               type="text"
               value={formData.created}
               onChange={(e) => setFormData({ ...formData, created: e.target.value })}
               className={styles.input}
+              placeholder="01/01/2022"
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>{t('quote.responseDeadline')}</label>
+            <label className={styles.label}>Límite de respuesta</label>
             <input
               type="date"
               value={formData.responseDeadline}
               onChange={(e) => setFormData({ ...formData, responseDeadline: e.target.value })}
               className={styles.input}
+              placeholder="dd/mm/aaaa"
             />
+          </div>
+
+          <div className={styles.formGroupWithToggle}>
+            <label className={styles.label}>Es licitación</label>
+            <div
+              className={`${styles.toggleSwitch} ${formData.isQuote ? styles.active : ''}`}
+              onClick={() => setFormData({ ...formData, isQuote: !formData.isQuote })}
+            >
+              <div className={styles.toggleThumb}></div>
+            </div>
           </div>
         </div>
       </div>

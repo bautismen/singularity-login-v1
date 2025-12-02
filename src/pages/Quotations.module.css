@@ -1349,6 +1349,27 @@
   color: white;
 }
 
+.generalDataGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.formGroupWithToggle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroupWithToggle .label {
+  margin-bottom: 0;
+}
+
+.formGroupWithToggle .toggleSwitch {
+  align-self: flex-start;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
@@ -1361,6 +1382,10 @@
   }
 
   .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .generalDataGrid {
     grid-template-columns: 1fr;
   }
 
