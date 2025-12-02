@@ -140,6 +140,23 @@ export function Quotations() {
     { id: 5, name: 'Roberto Fernandez Diaz' },
   ]);
 
+  const [merchandiseForm, setMerchandiseForm] = useState({
+    name: '',
+    description: '',
+    dangerous: false,
+    refrigerated: false,
+    oversized: false,
+    grain: false,
+    stackable: false,
+    imoClass: '',
+    un: '',
+    temperature: '',
+    tempUnit: '°C',
+  });
+
+  const [showPackagingModal, setShowPackagingModal] = useState(false);
+  const [currentPackages, setCurrentPackages] = useState<any[]>([]);
+
   const [formData, setFormData] = useState({
     client: 'Nike Mexico SA DE CV',
     isPriority: true,
@@ -193,6 +210,37 @@ export function Quotations() {
   const openMerchandiseModal = (serviceId: number, merchandise?: Merchandise) => {
     setCurrentServiceId(serviceId);
     setEditingMerchandise(merchandise || null);
+    if (merchandise) {
+      setMerchandiseForm({
+        name: merchandise.name,
+        description: merchandise.description || '',
+        dangerous: merchandise.dangerous,
+        refrigerated: merchandise.refrigerated,
+        oversized: merchandise.oversized,
+        grain: merchandise.grain,
+        stackable: merchandise.stackable,
+        imoClass: merchandise.imoClass || '',
+        un: merchandise.un || '',
+        temperature: merchandise.temperature?.toString() || '',
+        tempUnit: merchandise.tempUnit || '°C',
+      });
+      setCurrentPackages(merchandise.packages || []);
+    } else {
+      setMerchandiseForm({
+        name: '',
+        description: '',
+        dangerous: false,
+        refrigerated: false,
+        oversized: false,
+        grain: false,
+        stackable: false,
+        imoClass: '',
+        un: '',
+        temperature: '',
+        tempUnit: '°C',
+      });
+      setCurrentPackages([]);
+    }
     setShowMerchandiseModal(true);
   };
 
@@ -200,6 +248,23 @@ export function Quotations() {
     setShowMerchandiseModal(false);
     setEditingMerchandise(null);
     setCurrentServiceId(null);
+  };
+
+  const openPackagingModal = () => {
+    setShowPackagingModal(true);
+  };
+
+  const closePackagingModal = () => {
+    setShowPackagingModal(false);
+  };
+
+  const addPackage = (pkg: any) => {
+    setCurrentPackages([...currentPackages, { ...pkg, id: Date.now() }]);
+    closePackagingModal();
+  };
+
+  const removePackage = (packageId: number) => {
+    setCurrentPackages(currentPackages.filter(p => p.id !== packageId));
   };
 
   const copyMerchandise = (serviceId: number, merchandiseId: number) => {
@@ -719,12 +784,17 @@ export function Quotations() {
                     type="text"
                     placeholder="Baterías de Telefonos Modelo 388"
                     className={styles.input}
+                    value={merchandiseForm.name}
+                    onChange={(e) => setMerchandiseForm({ ...merchandiseForm, name: e.target.value })}
                   />
                 </div>
                 <div className={styles.modalFieldSmall}>
                   <label className={styles.label}>Es estibable</label>
                   <div className={styles.toggleContainer}>
-                    <div className={styles.toggleSwitch}>
+                    <div
+                      className={`${styles.toggleSwitch} ${merchandiseForm.stackable ? styles.active : ''}`}
+                      onClick={() => setMerchandiseForm({ ...merchandiseForm, stackable: !merchandiseForm.stackable })}
+                    >
                       <div className={styles.toggleThumb}></div>
                     </div>
                   </div>
@@ -733,7 +803,12 @@ export function Quotations() {
 
               <div className={styles.formGroup}>
                 <label className={styles.label}>Descripción de mercancía</label>
-                <textarea className={styles.textarea} rows={3}></textarea>
+                <textarea
+                  className={styles.textarea}
+                  rows={3}
+                  value={merchandiseForm.description}
+                  onChange={(e) => setMerchandiseForm({ ...merchandiseForm, description: e.target.value })}
+                ></textarea>
               </div>
 
               <div className={styles.formGroup}>
@@ -743,105 +818,160 @@ export function Quotations() {
                 <div className={styles.classificationGrid}>
                   <div className={styles.classificationColumn}>
                     <div className={styles.classificationCheckbox}>
-                      <input type="checkbox" id="peligrosa" className={styles.checkbox} />
+                      <input
+                        type="checkbox"
+                        id="peligrosa"
+                        className={styles.checkbox}
+                        checked={merchandiseForm.dangerous}
+                        onChange={(e) => setMerchandiseForm({ ...merchandiseForm, dangerous: e.target.checked })}
+                      />
                       <label htmlFor="peligrosa" className={styles.classificationLabel}>
                         Peligrosa
                       </label>
                     </div>
                     <div className={styles.classificationCheckbox}>
-                      <input type="checkbox" id="refrigerada" className={styles.checkbox} checked readOnly />
+                      <input
+                        type="checkbox"
+                        id="refrigerada"
+                        className={styles.checkbox}
+                        checked={merchandiseForm.refrigerated}
+                        onChange={(e) => setMerchandiseForm({ ...merchandiseForm, refrigerated: e.target.checked })}
+                      />
                       <label htmlFor="refrigerada" className={styles.classificationLabel}>
                         Refrigerada
                       </label>
                     </div>
                     <div className={styles.classificationCheckbox}>
-                      <input type="checkbox" id="sobredimensionada" className={styles.checkbox} checked readOnly />
+                      <input
+                        type="checkbox"
+                        id="sobredimensionada"
+                        className={styles.checkbox}
+                        checked={merchandiseForm.oversized}
+                        onChange={(e) => setMerchandiseForm({ ...merchandiseForm, oversized: e.target.checked })}
+                      />
                       <label htmlFor="sobredimensionada" className={styles.classificationLabel}>
                         Sobredimensionada
                       </label>
                     </div>
                   </div>
                   <div className={styles.classificationColumn}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>IMO</label>
-                      <select className={styles.select}>
-                        <option>1.1 Materia y explosivos</option>
-                      </select>
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Temperatura</label>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <input type="text" placeholder="80" className={styles.input} style={{ flex: 1 }} />
-                        <select className={styles.select} style={{ width: '80px' }}>
-                          <option>°C</option>
-                          <option>°F</option>
+                    {merchandiseForm.dangerous && (
+                      <div className={styles.formGroup}>
+                        <label className={styles.label}>IMO</label>
+                        <select
+                          className={styles.select}
+                          value={merchandiseForm.imoClass}
+                          onChange={(e) => setMerchandiseForm({ ...merchandiseForm, imoClass: e.target.value })}
+                        >
+                          <option value="">Seleccionar</option>
+                          <option>1.1 Materia y explosivos</option>
+                          <option>2.1 Gases inflamables</option>
+                          <option>3 Líquidos inflamables</option>
+                          <option>4.1 Sólidos inflamables</option>
+                          <option>5.1 Sustancias comburentes</option>
+                          <option>6.1 Sustancias tóxicas</option>
+                          <option>7 Material radioactivo</option>
+                          <option>8 Sustancias corrosivas</option>
+                          <option>9 Sustancias peligrosas varias</option>
                         </select>
                       </div>
-                    </div>
+                    )}
+                    {merchandiseForm.refrigerated && (
+                      <div className={styles.formGroup}>
+                        <label className={styles.label}>Temperatura</label>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <input
+                            type="text"
+                            placeholder="80"
+                            className={styles.input}
+                            style={{ flex: 1 }}
+                            value={merchandiseForm.temperature}
+                            onChange={(e) => setMerchandiseForm({ ...merchandiseForm, temperature: e.target.value })}
+                          />
+                          <select
+                            className={styles.select}
+                            style={{ width: '80px' }}
+                            value={merchandiseForm.tempUnit}
+                            onChange={(e) => setMerchandiseForm({ ...merchandiseForm, tempUnit: e.target.value })}
+                          >
+                            <option>°C</option>
+                            <option>°F</option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
                     <div className={styles.classificationCheckbox}>
-                      <input type="checkbox" id="granel" className={styles.checkbox} checked readOnly />
+                      <input
+                        type="checkbox"
+                        id="granel"
+                        className={styles.checkbox}
+                        checked={merchandiseForm.grain}
+                        onChange={(e) => setMerchandiseForm({ ...merchandiseForm, grain: e.target.checked })}
+                      />
                       <label htmlFor="granel" className={styles.classificationLabel}>
                         Granel
                       </label>
                     </div>
                   </div>
                   <div className={styles.classificationColumn}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>UN</label>
-                      <input type="text" placeholder="19" className={styles.input} />
-                    </div>
+                    {merchandiseForm.dangerous && (
+                      <div className={styles.formGroup}>
+                        <label className={styles.label}>UN</label>
+                        <input
+                          type="text"
+                          placeholder="19"
+                          className={styles.input}
+                          value={merchandiseForm.un}
+                          onChange={(e) => setMerchandiseForm({ ...merchandiseForm, un: e.target.value })}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
               <div style={{ marginTop: '1.5rem' }}>
-                <button className={styles.addPackageButtonIcon}>
+                <button className={styles.addPackageButtonIcon} onClick={openPackagingModal}>
                   <Plus size={18} />
                   Agregar embalaje
                 </button>
-                <div className={styles.packagesTable} style={{ marginTop: '1rem' }}>
-                  <table className={styles.simpleTable}>
-                    <thead>
-                      <tr>
-                        <th>EMBALAJE</th>
-                        <th>CANTIDAD</th>
-                        <th>LARGO</th>
-                        <th>ALTO</th>
-                        <th>ANCHO</th>
-                        <th>PESO</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Caja</td>
-                        <td>50</td>
-                        <td>40</td>
-                        <td>50</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>
-                          <button className={styles.removeRowButton}>
-                            <X size={14} />
-                          </button>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Bulto</td>
-                        <td>50</td>
-                        <td>50</td>
-                        <td>5</td>
-                        <td>60</td>
-                        <td>40</td>
-                        <td>
-                          <button className={styles.removeRowButton}>
-                            <X size={14} />
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                {currentPackages.length > 0 && (
+                  <div className={styles.packagesTable} style={{ marginTop: '1rem' }}>
+                    <table className={styles.simpleTable}>
+                      <thead>
+                        <tr>
+                          <th>EMBALAJE</th>
+                          <th>CANTIDAD</th>
+                          <th>LARGO</th>
+                          <th>ALTO</th>
+                          <th>ANCHO</th>
+                          <th>PESO</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentPackages.map((pkg) => (
+                          <tr key={pkg.id}>
+                            <td>{pkg.type}</td>
+                            <td>{pkg.quantity}</td>
+                            <td>{pkg.length}</td>
+                            <td>{pkg.height}</td>
+                            <td>{pkg.width}</td>
+                            <td>{pkg.weight}</td>
+                            <td>
+                              <button
+                                className={styles.removeRowButton}
+                                onClick={() => removePackage(pkg.id)}
+                              >
+                                <X size={14} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
 
               <div className={styles.modalFooterInfo}>
@@ -902,6 +1032,124 @@ export function Quotations() {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPackagingModal && (
+        <div className={styles.modalOverlay} onClick={closePackagingModal}>
+          <div className={styles.modalContentSmall} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Agregar Embalaje</h2>
+              <button className={styles.closeButton} onClick={closePackagingModal}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>Tipo de embalaje
+                </label>
+                <select
+                  className={styles.select}
+                  id="package-type"
+                  defaultValue=""
+                >
+                  <option value="">Seleccionar</option>
+                  <option>Caja</option>
+                  <option>Bulto</option>
+                  <option>Palet</option>
+                  <option>Contenedor</option>
+                  <option>Tambor</option>
+                  <option>Saco</option>
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>Cantidad
+                </label>
+                <input
+                  type="number"
+                  className={styles.input}
+                  placeholder="50"
+                  id="package-quantity"
+                />
+              </div>
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>*</span>Largo (cm)
+                  </label>
+                  <input
+                    type="number"
+                    className={styles.input}
+                    placeholder="40"
+                    id="package-length"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>*</span>Alto (cm)
+                  </label>
+                  <input
+                    type="number"
+                    className={styles.input}
+                    placeholder="50"
+                    id="package-height"
+                  />
+                </div>
+              </div>
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>*</span>Ancho (cm)
+                  </label>
+                  <input
+                    type="number"
+                    className={styles.input}
+                    placeholder="30"
+                    id="package-width"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>*</span>Peso (kg)
+                  </label>
+                  <input
+                    type="number"
+                    className={styles.input}
+                    placeholder="30"
+                    id="package-weight"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className={styles.modalFooter}>
+              <button
+                className={styles.saveModalButton}
+                onClick={() => {
+                  const type = (document.getElementById('package-type') as HTMLSelectElement).value;
+                  const quantity = (document.getElementById('package-quantity') as HTMLInputElement).value;
+                  const length = (document.getElementById('package-length') as HTMLInputElement).value;
+                  const height = (document.getElementById('package-height') as HTMLInputElement).value;
+                  const width = (document.getElementById('package-width') as HTMLInputElement).value;
+                  const weight = (document.getElementById('package-weight') as HTMLInputElement).value;
+
+                  if (type && quantity && length && height && width && weight) {
+                    addPackage({
+                      type,
+                      quantity: parseInt(quantity),
+                      length: parseInt(length),
+                      height: parseInt(height),
+                      width: parseInt(width),
+                      weight: parseInt(weight),
+                    });
+                  }
+                }}
+              >
+                Agregar
+              </button>
             </div>
           </div>
         </div>
