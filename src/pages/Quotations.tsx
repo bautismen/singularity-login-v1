@@ -182,6 +182,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     try {
       setLoading(true);
       const data = await quotationService.getById(id);
+
+      console.log('Loading quotation:', data);
+
       setFormData({
         referenceRequest: data.reference_request || '',
         customerId: data._id_customer || '',
@@ -194,6 +197,63 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         created: data.request_date ? new Date(data.request_date).toISOString().split('T')[0] : '',
         responseDeadline: data.deadline_date ? new Date(data.deadline_date).toISOString().split('T')[0] : '',
       });
+
+      if (data.services && data.services.length > 0) {
+        const loadedServices = data.services.map((svc: any, idx: number) => {
+          const shipment = svc.shipments?.[0] || {};
+          const cargo = shipment.cargo?.[0] || {};
+
+          return {
+            id: idx + 1,
+            service: svc.service_name || '',
+            operation: shipment.operation_type_name || '',
+            incoterm: shipment.incoterm || '',
+            origin: shipment.origin?.location || '',
+            destination: shipment.destination?.location || '',
+            destinationZip: '',
+            expectedDeparture: shipment.departure_date_approximate ? new Date(shipment.departure_date_approximate).toISOString().split('T')[0] : '',
+            custody: false,
+            insurance: false,
+            inspection: false,
+            customsClearance: false,
+            comments: shipment.comments || '',
+            shippingType: shipment.shippment_type_name || 'Door to Door',
+            programFrequency: false,
+            frequency: '',
+            quantity: '',
+            unit: '',
+            merchandise: shipment.cargo?.map((c: any, cIdx: number) => ({
+              id: cIdx + 1,
+              name: c.merchandise_name || '',
+              description: c.merchandise_description || '',
+              dangerous: false,
+              refrigerated: false,
+              oversized: false,
+              imoClass: '',
+              un: '',
+              temperature: 0,
+              tempUnit: '°C',
+              grain: false,
+              stackable: c.stowable || false,
+              unitType: 'kg' as const,
+              totalVolume: c.volume_total || 0,
+              totalWeight: c.weigth_total || 0,
+              packages: c.unit || []
+            })) || []
+          };
+        });
+        setServices(loadedServices);
+        console.log('Loaded services:', loadedServices);
+      }
+
+      if (data.assigned_to && data.assigned_to.length > 0) {
+        const loadedExecutives = data.assigned_to.map((exec: any, idx: number) => ({
+          id: exec._id_executive || idx + 1,
+          name: exec.complete_name || ''
+        }));
+        setExecutives(loadedExecutives);
+        console.log('Loaded executives:', loadedExecutives);
+      }
     } catch (error) {
       console.error('Error loading quotation:', error);
       alert('Error al cargar la cotización');
@@ -365,6 +425,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
       console.log('Selected customer:', selectedCustomer);
       console.log('Selected request type:', selectedRequestType);
+      console.log('Services to save:', services);
+      console.log('Executives to save:', executives);
 
       if (!selectedRequestType) {
         alert('Error: No se pudo encontrar el tipo de solicitud seleccionado');
@@ -394,11 +456,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           complete_name: exec.name,
           control_number: 'SN',
         })),
-        services: services.map((service, idx) => ({
-          id_service_item: idx + 1,
-          id_service: 1,
-          service_name: service.service,
-          shipments: [{
+        services: services.map((service, idx) => {
+          const selectedService = availableServices.find(s => s.service_name === service.service);
+          return {
+            id_service_item: idx + 1,
+            _id_service: selectedService?._id || null,
+            service_name: service.service,
+            shipments: [{
             id_shipment_item: 1,
             origin: {
               location: service.origin,
@@ -424,14 +488,38 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               unit: merch.packages,
             })),
           }],
-        })),
+        };
+        }),
       };
 
+      console.log('=== QUOTATION DATA TO SAVE ===');
+      console.log(JSON.stringify(quotationData, null, 2));
+      console.log('Services count:', quotationData.services.length);
+      console.log('Executives count:', quotationData.assigned_to.length);
+
+      if (quotationData.services.length === 0) {
+        const confirmNoServices = confirm('No has agregado ningún servicio. ¿Deseas continuar de todos modos?');
+        if (!confirmNoServices) {
+          setSaving(false);
+          return;
+        }
+      }
+
+      if (quotationData.assigned_to.length === 0) {
+        const confirmNoExecs = confirm('No has asignado ejecutivos. ¿Deseas continuar de todos modos?');
+        if (!confirmNoExecs) {
+          setSaving(false);
+          return;
+        }
+      }
+
       if (mode === 'edit' && quotationId) {
-        await quotationService.update(quotationId, quotationData);
+        const result = await quotationService.update(quotationId, quotationData);
+        console.log('Update result:', result);
         alert('Cotización actualizada exitosamente');
       } else {
-        await quotationService.create(quotationData);
+        const result = await quotationService.create(quotationData);
+        console.log('Create result:', result);
         alert('Cotización creada exitosamente');
       }
 
