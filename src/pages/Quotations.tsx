@@ -230,24 +230,34 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             frequency: '',
             quantity: '',
             unit: '',
-            merchandise: shipment.cargo?.map((c: any, cIdx: number) => ({
-              id: cIdx + 1,
-              name: c.merchandise_name || '',
-              description: c.merchandise_description || '',
-              dangerous: false,
-              refrigerated: false,
-              oversized: false,
-              imoClass: '',
-              un: '',
-              temperature: 0,
-              tempUnit: '°C',
-              grain: false,
-              stackable: c.stowable || false,
-              unitType: 'kg' as const,
-              totalVolume: c.volume_total || 0,
-              totalWeight: c.weigth_total || 0,
-              packages: c.unit || []
-            })) || []
+            merchandise: shipment.cargo?.map((c: any, cIdx: number) => {
+              const classifications = c.merchandise_classification || [];
+
+              const dangerousClass = classifications.find((cl: any) => cl._id_merchandise_classification === 5);
+              const refrigeratedClass = classifications.find((cl: any) => cl._id_merchandise_classification === 3);
+              const grainClass = classifications.find((cl: any) => cl._id_merchandise_classification === 2);
+              const oversizedClass = classifications.find((cl: any) => cl._id_merchandise_classification === 4);
+
+              return {
+                id: cIdx + 1,
+                name: c.merchandise_name || '',
+                description: c.merchandise_description || '',
+                dangerous: !!dangerousClass,
+                refrigerated: !!refrigeratedClass,
+                oversized: !!oversizedClass,
+                imoClass: dangerousClass ? `${dangerousClass.imo} ${dangerousClass.description_imo}` : '',
+                un: dangerousClass ? String(dangerousClass.UN || '') : '',
+                temperature: refrigeratedClass ? (refrigeratedClass.temperature || 0) : 0,
+                tempUnit: refrigeratedClass ? (refrigeratedClass.unit_temperature || '°C') : '°C',
+                grain: !!grainClass,
+                stackable: c.stowable || false,
+                unitType: 'kg' as const,
+                totalVolume: c.volume_total || 0,
+                totalWeight: c.weigth_total || 0,
+                packages: c.unit || [],
+                merchandise_classification: classifications
+              };
+            }) || []
           };
         });
         setServices(loadedServices);
@@ -315,6 +325,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     setCurrentServiceId(serviceId);
     setEditingMerchandise(merchandise || null);
     if (merchandise) {
+      const classifications = merchandise.merchandise_classification || [];
+      const dangerousClass = classifications.find((cl: any) => cl._id_merchandise_classification === 5);
+
       setMerchandiseForm({
         name: merchandise.name,
         description: merchandise.description || '',
@@ -324,7 +337,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         grain: merchandise.grain,
         stackable: merchandise.stackable,
         imoClass: merchandise.imoClass || '',
-        imoId: 0,
+        imoId: dangerousClass?._id_imo || 0,
         un: merchandise.un || '',
         temperature: merchandise.temperature?.toString() || '',
         tempUnit: merchandise.tempUnit || '°C',
