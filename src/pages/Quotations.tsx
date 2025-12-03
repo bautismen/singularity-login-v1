@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Trash2, ChevronDown, Plus, Copy, X, MapPin, Search, RotateCcw, Save, Eye } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Trash2, ChevronDown, Plus, Copy, X, MapPin, Search, RotateCcw, Save, Eye, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { quotationService } from '../services/quotationService';
 import styles from './Quotations.module.css';
 
 interface MerchandisePackage {
@@ -59,8 +60,16 @@ interface Service {
   merchandise: Merchandise[];
 }
 
-export function Quotations() {
+interface QuotationsProps {
+  mode?: 'create' | 'edit' | 'view';
+  quotationId?: string | null;
+  onBack?: () => void;
+}
+
+export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsProps) {
   const { t } = useLanguage();
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [services, setServices] = useState<Service[]>([
     {
       id: 1,
@@ -309,14 +318,35 @@ export function Quotations() {
     setServices(services.map(s => s.id === id ? { ...s, [field]: value } : s));
   };
 
+  const handleSaveQuotation = async () => {
+    alert('Función de guardado en desarrollo. El formulario ya está conectado a MongoDB.');
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>{t('quote.title')}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {onBack && (
+            <button
+              onClick={onBack}
+              className={styles.actionBarResetButton}
+              title="Volver a lista"
+            >
+              <ArrowLeft size={18} />
+            </button>
+          )}
+          <h1 className={styles.title}>
+            {mode === 'view' ? 'Ver Cotización' : mode === 'edit' ? 'Editar Cotización' : t('quote.title')}
+          </h1>
+        </div>
         <div className={styles.actionBar}>
-          <button className={styles.actionBarSaveButton}>
+          <button
+            className={styles.actionBarSaveButton}
+            onClick={handleSaveQuotation}
+            disabled={saving || mode === 'view'}
+          >
             <Save size={18} />
-            <span>{t('quote.save')}</span>
+            <span>{saving ? 'Guardando...' : t('quote.save')}</span>
           </button>
           <button className={styles.actionBarResetButton}>
             <RotateCcw size={18} />

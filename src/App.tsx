@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import { Login } from './pages/Login';
-import { Quotations } from './pages/Quotations';
+import { QuotationsManager } from './pages/QuotationsManager';
 import { Executives } from './pages/Executives';
 import Customers from './pages/Customers';
 import { CatalogIMO } from './pages/CatalogIMO';
@@ -39,7 +39,7 @@ function App() {
     const renderContent = () => {
       switch (currentRoute) {
         case 'quotations':
-          return <Quotations />;
+          return <QuotationsManager />;
         case 'executives':
           return <Executives />;
         case 'customers':
