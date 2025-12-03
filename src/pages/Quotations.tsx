@@ -70,84 +70,20 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [services, setServices] = useState<Service[]>([
-    {
-      id: 1,
-      service: 'Marítimo LCL',
-      operation: 'Exportación',
-      incoterm: 'DDP',
-      origin: 'Veracruz (MXVER)',
-      destination: 'BARCELONA(ESP)',
-      destinationZip: '08003',
-      expectedDeparture: '',
-      custody: true,
-      insurance: false,
-      inspection: true,
-      customsClearance: false,
-      comments: '',
-      shippingType: 'Door to Door',
-      programFrequency: false,
-      frequency: 'Semanal',
-      quantity: '19',
-      unit: 'Toneladas',
-      merchandise: [
-        {
-          id: 1,
-          name: 'Tenis de futbol',
-          description: '',
-          dangerous: false,
-          refrigerated: false,
-          oversized: false,
-          imoClass: '',
-          un: '',
-          temperature: 80,
-          tempUnit: '°C',
-          grain: false,
-          stackable: false,
-          unitType: 'kg',
-          totalVolume: 80,
-          totalWeight: 100,
-          packages: []
-        },
-        {
-          id: 2,
-          name: 'Mochilas Deportivas',
-          description: '',
-          dangerous: false,
-          refrigerated: true,
-          oversized: false,
-          imoClass: '',
-          un: '',
-          temperature: 80,
-          tempUnit: '°C',
-          grain: false,
-          stackable: false,
-          unitType: 'kg',
-          totalVolume: 40,
-          totalWeight: 140,
-          packages: []
-        }
-      ],
-    },
-  ]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [executives, setExecutives] = useState<Executive[]>([]);
 
-  const [executives, setExecutives] = useState<Executive[]>([
-    { id: 1, name: 'Fabiola Abigail Sanchez Paisfor' },
-    { id: 2, name: 'Denisse Alvarez Guerra' }
-  ]);
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [requestTypes, setRequestTypes] = useState<any[]>([]);
+  const [availableServices, setAvailableServices] = useState<any[]>([]);
+  const [availableExecutives, setAvailableExecutives] = useState<any[]>([]);
+  const [incoterms, setIncoterms] = useState<any[]>([]);
 
   const [showMerchandiseModal, setShowMerchandiseModal] = useState(false);
   const [editingMerchandise, setEditingMerchandise] = useState<Merchandise | null>(null);
   const [currentServiceId, setCurrentServiceId] = useState<number | null>(null);
 
   const [showExecutiveModal, setShowExecutiveModal] = useState(false);
-  const [availableExecutives] = useState<Executive[]>([
-    { id: 1, name: 'Fabiola Abigail Sanchez Paisfor' },
-    { id: 2, name: 'Denisse Alvarez Guerra' },
-    { id: 3, name: 'Carlos Martinez Rodriguez' },
-    { id: 4, name: 'Ana Sofia Lopez Gutierrez' },
-    { id: 5, name: 'Roberto Fernandez Diaz' },
-  ]);
 
   const [merchandiseForm, setMerchandiseForm] = useState({
     name: '',
@@ -168,13 +104,94 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const [useMetricSystem, setUseMetricSystem] = useState(true);
 
   const [formData, setFormData] = useState({
-    client: 'Nike Mexico SA DE CV',
-    isPriority: true,
+    referenceRequest: '',
+    customerId: '',
+    client: '',
+    isPriority: false,
     isQuote: false,
-    requestType: 'Corresponsal',
-    created: '01/01/2022',
+    customerCategory: 1,
+    requestTypeId: '',
+    requestType: '',
+    created: new Date().toISOString().split('T')[0],
     responseDeadline: '',
   });
+
+  useEffect(() => {
+    loadCatalogs();
+  }, []);
+
+  useEffect(() => {
+    if (mode === 'edit' && quotationId) {
+      loadQuotation(quotationId);
+    }
+  }, [mode, quotationId]);
+
+  const loadCatalogs = async () => {
+    try {
+      setLoading(true);
+      const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+      const [customersRes, requestTypesRes, servicesRes, executivesRes, incotermsRes] = await Promise.all([
+        fetch(`${BASE_URL}/functions/v1/customers`, {
+          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
+        }),
+        fetch(`${BASE_URL}/functions/v1/catalog-request-types`, {
+          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
+        }),
+        fetch(`${BASE_URL}/functions/v1/catalog-services`, {
+          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
+        }),
+        fetch(`${BASE_URL}/functions/v1/executives`, {
+          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
+        }),
+        fetch(`${BASE_URL}/functions/v1/catalog-incoterms`, {
+          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
+        }),
+      ]);
+
+      const customersData = await customersRes.json();
+      const requestTypesData = await requestTypesRes.json();
+      const servicesData = await servicesRes.json();
+      const executivesData = await executivesRes.json();
+      const incotermsData = await incotermsRes.json();
+
+      setCustomers(customersData.filter((c: any) => c.status === 1));
+      setRequestTypes(requestTypesData.filter((r: any) => r.status === 1));
+      setAvailableServices(servicesData.filter((s: any) => s.status === 1 && s.category === 1));
+      setAvailableExecutives(executivesData.filter((e: any) => e.status === 1));
+      setIncoterms(incotermsData.filter((i: any) => i.status === 1));
+    } catch (error) {
+      console.error('Error loading catalogs:', error);
+      alert('Error al cargar los catálogos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadQuotation = async (id: string) => {
+    try {
+      setLoading(true);
+      const data = await quotationService.getById(id);
+      setFormData({
+        referenceRequest: data.reference_request || '',
+        customerId: data._id_customer || '',
+        client: data.customer_business_name || '',
+        isPriority: data.priority > 0,
+        isQuote: data.licitation || false,
+        customerCategory: data.customer_category || 1,
+        requestTypeId: data._id_request_type || '',
+        requestType: data.request_type_name || '',
+        created: data.request_date ? new Date(data.request_date).toISOString().split('T')[0] : '',
+        responseDeadline: data.deadline_date ? new Date(data.deadline_date).toISOString().split('T')[0] : '',
+      });
+    } catch (error) {
+      console.error('Error loading quotation:', error);
+      alert('Error al cargar la cotización');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addService = () => {
     const newService: Service = {
@@ -319,7 +336,90 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const handleSaveQuotation = async () => {
-    alert('Función de guardado en desarrollo. El formulario ya está conectado a MongoDB.');
+    try {
+      setSaving(true);
+
+      if (!formData.referenceRequest || !formData.customerId || !formData.requestTypeId) {
+        alert('Por favor completa los campos requeridos: Referencia, Cliente y Tipo de solicitud');
+        return;
+      }
+
+      const selectedCustomer = customers.find(c => c._id === formData.customerId);
+      const selectedRequestType = requestTypes.find(r => r._id === formData.requestTypeId);
+      const selectedExecutive = availableExecutives.length > 0 ? availableExecutives[0] : null;
+
+      const quotationData = {
+        reference_request: formData.referenceRequest,
+        priority: formData.isPriority ? 1 : 0,
+        customer_category: formData.customerCategory,
+        _id_status_request: 1,
+        status_request_name: 'Nueva',
+        request_date: new Date(formData.created),
+        deadline_date: formData.responseDeadline ? new Date(formData.responseDeadline) : null,
+        _id_request_type: selectedRequestType._id,
+        request_type_name: selectedRequestType.request_type_name,
+        _id_customer: formData.customerId,
+        customer_business_name: selectedCustomer?.fiscal_data?.business_name || formData.client,
+        licitation: formData.isQuote,
+        requesting_data: selectedExecutive ? {
+          _id_executive: selectedExecutive._id,
+          complete_name: `${selectedExecutive.first_name} ${selectedExecutive.last_name}`,
+        } : {},
+        assigned_to: executives.map(exec => ({
+          _id_executive: exec.id.toString(),
+          complete_name: exec.name,
+          control_number: 'SN',
+        })),
+        services: services.map((service, idx) => ({
+          id_service_item: idx + 1,
+          id_service: 1,
+          service_name: service.service,
+          shipments: [{
+            id_shipment_item: 1,
+            origin: {
+              location: service.origin,
+            },
+            destination: {
+              location: service.destination,
+            },
+            _id_shipment_type: service.shippingType === 'Door to Door' ? 1 : 2,
+            shippment_type_name: service.shippingType,
+            _id_operation_type: service.operation === 'Exportación' ? 1 : service.operation === 'Importación' ? 2 : 3,
+            operation_type_name: service.operation,
+            _id_incoterm: incoterms.find(i => i.incoterm === service.incoterm)?._id || null,
+            incoterm: service.incoterm,
+            departure_date_approximate: service.expectedDeparture ? new Date(service.expectedDeparture) : null,
+            comments: service.comments,
+            cargo: service.merchandise.map(merch => ({
+              merchandise_name: merch.name,
+              merchandise_description: merch.description,
+              merchandise_classification: [],
+              stowable: merch.stackable,
+              volume_total: merch.totalVolume,
+              weigth_total: merch.totalWeight,
+              unit: merch.packages,
+            })),
+          }],
+        })),
+      };
+
+      if (mode === 'edit' && quotationId) {
+        await quotationService.update(quotationId, quotationData);
+        alert('Cotización actualizada exitosamente');
+      } else {
+        await quotationService.create(quotationData);
+        alert('Cotización creada exitosamente');
+      }
+
+      if (onBack) {
+        onBack();
+      }
+    } catch (error) {
+      console.error('Error saving quotation:', error);
+      alert('Error al guardar la cotización');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -366,14 +466,42 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         <div className={styles.generalDataGrid}>
           <div className={styles.formGroup}>
             <label className={styles.label}>
-              <span className={styles.required}>*</span>Cliente
+              <span className={styles.required}>*</span>Referencia
             </label>
             <input
               type="text"
-              value={formData.client}
-              onChange={(e) => setFormData({ ...formData, client: e.target.value })}
+              value={formData.referenceRequest}
+              onChange={(e) => setFormData({ ...formData, referenceRequest: e.target.value })}
               className={styles.input}
+              placeholder="QR250901-00001"
+              disabled={mode === 'view'}
             />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>Cliente
+            </label>
+            <select
+              value={formData.customerId}
+              onChange={(e) => {
+                const customer = customers.find(c => c._id === e.target.value);
+                setFormData({
+                  ...formData,
+                  customerId: e.target.value,
+                  client: customer?.fiscal_data?.business_name || ''
+                });
+              }}
+              className={styles.select}
+              disabled={loading || mode === 'view'}
+            >
+              <option value="">Seleccione un cliente...</option>
+              {customers.map((customer) => (
+                <option key={customer._id} value={customer._id}>
+                  {customer.fiscal_data?.business_name || customer.commercial_name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className={styles.formGroup}>
@@ -381,13 +509,38 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <span className={styles.required}>*</span>Tipo de solicitud
             </label>
             <select
-              value={formData.requestType}
-              onChange={(e) => setFormData({ ...formData, requestType: e.target.value })}
+              value={formData.requestTypeId}
+              onChange={(e) => {
+                const requestType = requestTypes.find(r => r._id === parseInt(e.target.value));
+                setFormData({
+                  ...formData,
+                  requestTypeId: e.target.value,
+                  requestType: requestType?.request_type_name || ''
+                });
+              }}
               className={styles.select}
+              disabled={loading || mode === 'view'}
             >
-              <option>Corresponsal</option>
-              <option>Directo</option>
-              <option>Agente</option>
+              <option value="">Seleccione un tipo...</option>
+              {requestTypes.map((type) => (
+                <option key={type._id} value={type._id}>
+                  {type.request_type_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Categoría Cliente</label>
+            <select
+              value={formData.customerCategory}
+              onChange={(e) => setFormData({ ...formData, customerCategory: parseInt(e.target.value) })}
+              className={styles.select}
+              disabled={mode === 'view'}
+            >
+              <option value={1}>Golden</option>
+              <option value={2}>Silver</option>
+              <option value={3}>Bronze</option>
             </select>
           </div>
 
@@ -406,11 +559,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <span className={styles.required}>*</span>Fecha solicitud
             </label>
             <input
-              type="text"
+              type="date"
               value={formData.created}
               onChange={(e) => setFormData({ ...formData, created: e.target.value })}
               className={styles.input}
-              placeholder="01/01/2022"
+              disabled={mode === 'view'}
             />
           </div>
 
@@ -478,12 +631,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   value={service.service}
                   onChange={(e) => updateService(service.id, 'service', e.target.value)}
                   className={styles.select}
+                  disabled={loading || mode === 'view'}
                 >
                   <option value="">Seleccionar...</option>
-                  <option>Marítimo LCL</option>
-                  <option>Marítimo FCL</option>
-                  <option>Aéreo</option>
-                  <option>Terrestre</option>
+                  {availableServices.map((srv) => (
+                    <option key={srv._id} value={srv.service_name}>
+                      {srv.service_name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -512,12 +667,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   value={service.incoterm}
                   onChange={(e) => updateService(service.id, 'incoterm', e.target.value)}
                   className={styles.select}
+                  disabled={loading || mode === 'view'}
                 >
                   <option value="">Seleccionar...</option>
-                  <option>DDP</option>
-                  <option>FOB</option>
-                  <option>CIF</option>
-                  <option>EXW</option>
+                  {incoterms.map((inc) => (
+                    <option key={inc._id} value={inc.incoterm}>
+                      {inc.incoterm}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -1049,18 +1206,18 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <div className={styles.modalBody}>
               <div className={styles.executiveSelectionList}>
                 {availableExecutives
-                  .filter(exec => !executives.some(e => e.id === exec.id))
+                  .filter(exec => !executives.some(e => e.id === exec._id))
                   .map((executive) => (
                     <div
-                      key={executive.id}
+                      key={executive._id}
                       className={styles.executiveSelectionItem}
-                      onClick={() => addExecutive(executive)}
+                      onClick={() => addExecutive({ id: executive._id, name: `${executive.first_name} ${executive.last_name}` })}
                     >
-                      <span>{executive.name}</span>
+                      <span>{executive.first_name} {executive.last_name}</span>
                       <Plus size={18} className={styles.addIcon} />
                     </div>
                   ))}
-                {availableExecutives.filter(exec => !executives.some(e => e.id === exec.id)).length === 0 && (
+                {availableExecutives.filter(exec => !executives.some(e => e.id === exec._id)).length === 0 && (
                   <div className={styles.noExecutivesMessage}>
                     Todos los ejecutivos disponibles ya han sido agregados
                   </div>
