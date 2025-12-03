@@ -31,6 +31,7 @@ interface Merchandise {
   totalVolume: number;
   totalWeight: number;
   packages: MerchandisePackage[];
+  merchandise_classification?: any[];
 }
 
 interface Executive {
@@ -79,6 +80,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const [availableExecutives, setAvailableExecutives] = useState<any[]>([]);
   const [incoterms, setIncoterms] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
+  const [imoList, setImoList] = useState<any[]>([]);
 
   const [showMerchandiseModal, setShowMerchandiseModal] = useState(false);
   const [editingMerchandise, setEditingMerchandise] = useState<Merchandise | null>(null);
@@ -95,6 +97,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     grain: false,
     stackable: false,
     imoClass: '',
+    imoId: 0,
     un: '',
     temperature: '',
     tempUnit: '°C',
@@ -133,7 +136,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
       const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-      const [customersRes, requestTypesRes, servicesRes, executivesRes, incotermsRes, countriesRes] = await Promise.all([
+      const [customersRes, requestTypesRes, servicesRes, executivesRes, incotermsRes, countriesRes, imoRes] = await Promise.all([
         fetch(`${BASE_URL}/functions/v1/customers`, {
           headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
         }),
@@ -152,6 +155,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         fetch(`${BASE_URL}/functions/v1/catalog-countries`, {
           headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
         }),
+        fetch(`${BASE_URL}/functions/v1/catalog-imo`, {
+          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
+        }),
       ]);
 
       const customersData = await customersRes.json();
@@ -160,6 +166,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const executivesData = await executivesRes.json();
       const incotermsData = await incotermsRes.json();
       const countriesData = await countriesRes.json();
+      const imoData = await imoRes.json();
 
       console.log('Customers loaded:', customersData);
       console.log('Request types loaded:', requestTypesData);
@@ -170,6 +177,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       setAvailableExecutives(executivesData.filter((e: any) => e.status === 1));
       setIncoterms(incotermsData.filter((i: any) => i.status === 1));
       setCountries(countriesData.filter((co: any) => co.status === 1));
+      setImoList(imoData.filter((imo: any) => imo.status === 1));
     } catch (error) {
       console.error('Error loading catalogs:', error);
       alert('Error al cargar los catálogos');
@@ -316,6 +324,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         grain: merchandise.grain,
         stackable: merchandise.stackable,
         imoClass: merchandise.imoClass || '',
+        imoId: 0,
         un: merchandise.un || '',
         temperature: merchandise.temperature?.toString() || '',
         tempUnit: merchandise.tempUnit || '°C',
@@ -331,6 +340,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         grain: false,
         stackable: false,
         imoClass: '',
+        imoId: 0,
         un: '',
         temperature: '',
         tempUnit: '°C',
@@ -391,6 +401,51 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
     const { totalVolume, totalWeight } = calculateTotals();
 
+    const merchandiseClassifications: any[] = [];
+
+    if (merchandiseForm.dangerous) {
+      const selectedImo = imoList.find(imo => imo._id === merchandiseForm.imoId);
+      merchandiseClassifications.push({
+        _id_merchandise_classification: 5,
+        merchandise_name_classification: "Peligrosa",
+        _id_imo: merchandiseForm.imoId,
+        imo: selectedImo?.imo || '',
+        description_imo: selectedImo?.description || '',
+        UN: parseInt(merchandiseForm.un) || 0
+      });
+    }
+
+    if (merchandiseForm.refrigerated) {
+      merchandiseClassifications.push({
+        _id_merchandise_classification: 3,
+        merchandise_name_classification: "Refrigerado",
+        _idunit_temperature: merchandiseForm.tempUnit === '°C' ? 1 : 2,
+        unit_temperature: merchandiseForm.tempUnit,
+        temperature: parseFloat(merchandiseForm.temperature) || 0
+      });
+    }
+
+    if (merchandiseForm.grain) {
+      merchandiseClassifications.push({
+        _id_merchandise_classification: 2,
+        merchandise_name_classification: "A granel"
+      });
+    }
+
+    if (merchandiseForm.oversized) {
+      merchandiseClassifications.push({
+        _id_merchandise_classification: 4,
+        merchandise_name_classification: "Sobredimensionado"
+      });
+    }
+
+    if (merchandiseClassifications.length === 0) {
+      merchandiseClassifications.push({
+        _id_merchandise_classification: 1,
+        merchandise_name_classification: "General"
+      });
+    }
+
     const newMerchandise: Merchandise = {
       id: editingMerchandise?.id || Date.now(),
       name: merchandiseForm.name,
@@ -410,7 +465,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       packages: currentPackages.map(pkg => ({
         ...pkg,
         unit: useMetricSystem ? 'metric' : 'imperial'
-      }))
+      })),
+      merchandise_classification: merchandiseClassifications
     };
 
     setServices(services.map(service => {
@@ -432,7 +488,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       return service;
     }));
 
-    console.log('Merchandise saved:', newMerchandise);
+    console.log('Merchandise saved with classifications:', newMerchandise);
     closeMerchandiseModal();
   };
 
@@ -554,7 +610,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             cargo: service.merchandise.map(merch => ({
               merchandise_name: merch.name,
               merchandise_description: merch.description,
-              merchandise_classification: [],
+              merchandise_classification: merch.merchandise_classification || [],
               stowable: merch.stackable,
               volume_total: merch.totalVolume,
               weigth_total: merch.totalWeight,
@@ -1241,19 +1297,23 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         <label className={styles.label}>IMO</label>
                         <select
                           className={styles.select}
-                          value={merchandiseForm.imoClass}
-                          onChange={(e) => setMerchandiseForm({ ...merchandiseForm, imoClass: e.target.value })}
+                          value={merchandiseForm.imoId}
+                          onChange={(e) => {
+                            const selectedId = parseInt(e.target.value);
+                            const selectedImo = imoList.find(imo => imo._id === selectedId);
+                            setMerchandiseForm({
+                              ...merchandiseForm,
+                              imoId: selectedId,
+                              imoClass: selectedImo ? `${selectedImo.imo} ${selectedImo.description}` : ''
+                            });
+                          }}
                         >
-                          <option value="">Seleccionar</option>
-                          <option>1.1 Materia y explosivos</option>
-                          <option>2.1 Gases inflamables</option>
-                          <option>3 Líquidos inflamables</option>
-                          <option>4.1 Sólidos inflamables</option>
-                          <option>5.1 Sustancias comburentes</option>
-                          <option>6.1 Sustancias tóxicas</option>
-                          <option>7 Material radioactivo</option>
-                          <option>8 Sustancias corrosivas</option>
-                          <option>9 Sustancias peligrosas varias</option>
+                          <option value="0">Seleccionar</option>
+                          {imoList.map((imo) => (
+                            <option key={imo._id} value={imo._id}>
+                              {imo.imo} - {imo.description}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     )}
