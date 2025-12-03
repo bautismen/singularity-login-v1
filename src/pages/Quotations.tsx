@@ -147,7 +147,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         fetch(`${BASE_URL}/functions/v1/catalog-services`, {
           headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
         }),
-        fetch(`${BASE_URL}/functions/v1/executives`, {
+        fetch(`${BASE_URL}/functions/v1/executives?departamento=Tráfico`, {
           headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
         }),
         fetch(`${BASE_URL}/functions/v1/catalog-incoterms`, {
@@ -175,7 +175,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       setCustomers(customersData.filter((c: any) => c.status === 'activo' || c.datastate === 1));
       setRequestTypes(requestTypesData.filter((r: any) => r.status === 1));
       setAvailableServices(servicesData.filter((s: any) => s.status === 1 && s.category === 1));
-      setAvailableExecutives(executivesData.filter((e: any) => e.status === 1));
+      setAvailableExecutives(executivesData.filter((e: any) => e.estado === 1));
       setIncoterms(incotermsData.filter((i: any) => i.status === 1));
       setCountries(countriesData.filter((co: any) => co.status === 1));
       setImoList(imoData.filter((imo: any) => imo.status === 1));
@@ -281,7 +281,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
       if (data.assigned_to && data.assigned_to.length > 0) {
         const loadedExecutives = data.assigned_to.map((exec: any, idx: number) => ({
-          id: exec._id_executive || idx + 1,
+          id: typeof exec._id_executive === 'object' && exec._id_executive.$oid
+            ? exec._id_executive.$oid
+            : exec._id_executive || idx + 1,
           name: exec.complete_name || ''
         }));
         setExecutives(loadedExecutives);
@@ -607,10 +609,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         licitation: formData.isQuote,
         requesting_data: selectedExecutive ? {
           _id_executive: selectedExecutive._id,
-          complete_name: `${selectedExecutive.first_name} ${selectedExecutive.last_name}`,
+          complete_name: `${selectedExecutive.nombre} ${selectedExecutive.apellido_paterno} ${selectedExecutive.apellido_materno}`,
         } : {},
         assigned_to: executives.map(exec => ({
-          _id_executive: exec.id.toString(),
+          _id_executive: exec.id,
           complete_name: exec.name,
           control_number: 'SN',
         })),
@@ -1527,9 +1529,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <div
                       key={executive._id}
                       className={styles.executiveSelectionItem}
-                      onClick={() => addExecutive({ id: executive._id, name: `${executive.first_name} ${executive.last_name}` })}
+                      onClick={() => addExecutive({ id: executive._id, name: `${executive.nombre} ${executive.apellido_paterno} ${executive.apellido_materno}` })}
                     >
-                      <span>{executive.first_name} {executive.last_name}</span>
+                      <span>{executive.nombre} {executive.apellido_paterno} {executive.apellido_materno}</span>
                       <Plus size={18} className={styles.addIcon} />
                     </div>
                   ))}

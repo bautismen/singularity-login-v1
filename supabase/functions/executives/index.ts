@@ -60,7 +60,13 @@ Deno.serve(async (req: Request) => {
 
     if (method === "GET" && path.endsWith("/executives")) {
       const includeArchived = url.searchParams.get("includeArchived") === "true";
-      const filter = includeArchived ? {} : { estado: 1 };
+      const department = url.searchParams.get("departamento");
+
+      const filter: any = includeArchived ? {} : { estado: 1 };
+
+      if (department) {
+        filter.departamento = department;
+      }
 
       const executives = await collection
         .find(filter)

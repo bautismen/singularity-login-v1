@@ -111,6 +111,16 @@ Deno.serve(async (req: Request) => {
       const body = await req.json();
       console.log("Creating Quotation Request:", body);
 
+      const requestingData = body.requesting_data || {};
+      if (requestingData._id_executive) {
+        requestingData._id_executive = new ObjectId(requestingData._id_executive);
+      }
+
+      const assignedTo = (body.assigned_to || []).map((exec: any) => ({
+        ...exec,
+        _id_executive: exec._id_executive ? new ObjectId(exec._id_executive) : exec._id_executive,
+      }));
+
       const newItem = {
         reference_request: body.reference_request,
         priority: body.priority || 0,
@@ -124,8 +134,8 @@ Deno.serve(async (req: Request) => {
         _id_customer: body._id_customer ? new ObjectId(body._id_customer) : null,
         customer_business_name: body.customer_business_name,
         licitation: body.licitation || false,
-        requesting_data: body.requesting_data || {},
-        assigned_to: body.assigned_to || [],
+        requesting_data: requestingData,
+        assigned_to: assignedTo,
         services: body.services || [],
         archived: false,
         created_at: new Date(),
@@ -174,6 +184,20 @@ Deno.serve(async (req: Request) => {
       }
       if (body._id_customer) {
         updateData._id_customer = new ObjectId(body._id_customer);
+      }
+
+      if (body.requesting_data && body.requesting_data._id_executive) {
+        updateData.requesting_data = {
+          ...body.requesting_data,
+          _id_executive: new ObjectId(body.requesting_data._id_executive),
+        };
+      }
+
+      if (body.assigned_to) {
+        updateData.assigned_to = body.assigned_to.map((exec: any) => ({
+          ...exec,
+          _id_executive: exec._id_executive ? new ObjectId(exec._id_executive) : exec._id_executive,
+        }));
       }
 
       delete updateData._id;
