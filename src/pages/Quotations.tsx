@@ -48,8 +48,9 @@ interface Service {
   destination: string;
   destinationZip: string;
   expectedDeparture: string;
-  custody: boolean;
   insurance: boolean;
+  maneuver: boolean;
+  custody: boolean;
   inspection: boolean;
   customsClearance: boolean;
   comments: string;
@@ -211,6 +212,19 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           const shipment = svc.shipments?.[0] || {};
           const cargo = shipment.cargo?.[0] || {};
 
+          const servicesAssociated = shipment.services_asociated || [];
+          const hasInsurance = servicesAssociated.some((s: any) => s.service_associated_name === 'Seguro');
+          const hasManeuver = servicesAssociated.some((s: any) => s.service_associated_name === 'Maniobra');
+          const hasCustody = servicesAssociated.some((s: any) => s.service_associated_name === 'Custodia');
+          const hasInspection = servicesAssociated.some((s: any) => s.service_associated_name === 'Inspección');
+          const hasCustomsClearance = servicesAssociated.some((s: any) => s.service_associated_name === 'Despacho aduanal');
+
+          const projection = shipment.projection_shipment || {};
+          const hasProjection = !!projection.num;
+
+          const frequencyMap: { [key: number]: string } = { 1: 'semanal', 2: 'mensual', 3: 'anual' };
+          const unitMap: { [key: number]: string } = { 1: 'Kilos', 2: 'Toneladas', 3: 'Contenedores' };
+
           return {
             id: idx + 1,
             service: svc.service_name || '',
@@ -220,16 +234,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             destination: shipment.destination?.location || '',
             destinationZip: '',
             expectedDeparture: shipment.departure_date_approximate ? new Date(shipment.departure_date_approximate).toISOString().split('T')[0] : '',
-            custody: false,
-            insurance: false,
-            inspection: false,
-            customsClearance: false,
+            insurance: hasInsurance,
+            maneuver: hasManeuver,
+            custody: hasCustody,
+            inspection: hasInspection,
+            customsClearance: hasCustomsClearance,
             comments: shipment.comments || '',
             shippingType: shipment.shippment_type_name || 'Door to Door',
-            programFrequency: false,
-            frequency: '',
-            quantity: '',
-            unit: '',
+            programFrequency: hasProjection,
+            frequency: projection._id_frecuency ? frequencyMap[projection._id_frecuency] || '' : '',
+            quantity: projection.num ? String(projection.num) : '',
+            unit: projection._id_measurement_frecuency ? unitMap[projection._id_measurement_frecuency] || '' : '',
             merchandise: shipment.cargo?.map((c: any, cIdx: number) => {
               const classifications = c.merchandise_classification || [];
 
@@ -290,8 +305,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       destination: '',
       destinationZip: '',
       expectedDeparture: '',
-      custody: false,
       insurance: false,
+      maneuver: false,
+      custody: false,
       inspection: false,
       customsClearance: false,
       comments: '',
@@ -600,6 +616,25 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         })),
         services: services.map((service, idx) => {
           const selectedService = availableServices.find(s => s.service_name === service.service);
+
+          const servicesAssociated: any[] = [];
+          if (service.insurance) servicesAssociated.push({ service_associated_name: 'Seguro' });
+          if (service.maneuver) servicesAssociated.push({ service_associated_name: 'Maniobra' });
+          if (service.custody) servicesAssociated.push({ service_associated_name: 'Custodia' });
+          if (service.inspection) servicesAssociated.push({ service_associated_name: 'Inspección' });
+          if (service.customsClearance) servicesAssociated.push({ service_associated_name: 'Despacho aduanal' });
+
+          const frequencyMap: { [key: string]: number } = { 'semanal': 1, 'mensual': 2, 'anual': 3 };
+          const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
+
+          const projectionShipment = service.programFrequency && service.quantity && service.frequency && service.unit ? {
+            num: parseInt(service.quantity),
+            _id_measurement_frecuency: unitMap[service.unit] || 0,
+            measurement_frecuency: service.unit,
+            _id_frecuency: frequencyMap[service.frequency] || 0,
+            frecuency: service.frequency,
+          } : undefined;
+
           return {
             id_service_item: idx + 1,
             _id_service: selectedService?._id || null,
@@ -620,6 +655,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             incoterm: service.incoterm,
             departure_date_approximate: service.expectedDeparture ? new Date(service.expectedDeparture) : null,
             comments: service.comments,
+            ...(servicesAssociated.length > 0 && { services_asociated: servicesAssociated }),
+            ...(projectionShipment && { projection_shipment: projectionShipment }),
             cargo: service.merchandise.map(merch => ({
               merchandise_name: merch.name,
               merchandise_description: merch.description,
@@ -1028,16 +1065,22 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <label className={styles.label}>Servicios Asociados</label>
               <div className={styles.associatedServices}>
                 <div
-                  className={`${styles.serviceChip} ${service.custody ? styles.selected : ''}`}
-                  onClick={() => updateService(service.id, 'custody', !service.custody)}
-                >
-                  <span>Custodia</span>
-                </div>
-                <div
                   className={`${styles.serviceChip} ${service.insurance ? styles.selected : ''}`}
                   onClick={() => updateService(service.id, 'insurance', !service.insurance)}
                 >
                   <span>Seguro</span>
+                </div>
+                <div
+                  className={`${styles.serviceChip} ${service.maneuver ? styles.selected : ''}`}
+                  onClick={() => updateService(service.id, 'maneuver', !service.maneuver)}
+                >
+                  <span>Maniobra</span>
+                </div>
+                <div
+                  className={`${styles.serviceChip} ${service.custody ? styles.selected : ''}`}
+                  onClick={() => updateService(service.id, 'custody', !service.custody)}
+                >
+                  <span>Custodia</span>
                 </div>
                 <div
                   className={`${styles.serviceChip} ${service.inspection ? styles.selected : ''}`}
@@ -1087,19 +1130,20 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       onChange={(e) => updateService(service.id, 'frequency', e.target.value)}
                       className={styles.select}
                     >
-                      <option>Semanal</option>
-                      <option>Mensual</option>
-                      <option>Trimestral</option>
-                      <option>Anual</option>
+                      <option value="">Seleccionar...</option>
+                      <option value="semanal">Semanal</option>
+                      <option value="mensual">Mensual</option>
+                      <option value="anual">Anual</option>
                     </select>
                   </div>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Cantidad</label>
                     <input
-                      type="text"
+                      type="number"
                       value={service.quantity}
                       onChange={(e) => updateService(service.id, 'quantity', e.target.value)}
                       className={styles.input}
+                      placeholder="0"
                     />
                   </div>
                   <div className={styles.formGroup}>
@@ -1109,10 +1153,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       onChange={(e) => updateService(service.id, 'unit', e.target.value)}
                       className={styles.select}
                     >
-                      <option>Toneladas</option>
-                      <option>Kilogramos</option>
-                      <option>Metros cúbicos</option>
-                      <option>Contenedores</option>
+                      <option value="">Seleccionar...</option>
+                      <option value="Kilos">Kilos</option>
+                      <option value="Toneladas">Toneladas</option>
+                      <option value="Contenedores">Contenedores</option>
                     </select>
                   </div>
                 </div>
