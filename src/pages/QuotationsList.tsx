@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Eye, Search, Filter } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, RefreshCw, ChevronDown, FileText, Calendar, Clock } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import styles from './Customers.module.css';
+import styles from './QuotationsList.module.css';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -91,45 +91,29 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
     setFilteredQuotations(filtered);
   };
 
-  const getPriorityBadge = (priority: number) => {
-    switch (priority) {
-      case 1:
-        return <span className={`${styles.badge} ${styles.badgeWarning}`}>Alta</span>;
-      case 2:
-        return <span className={`${styles.badge} ${styles.badgeDanger}`}>Urgente</span>;
-      default:
-        return <span className={`${styles.badge} ${styles.badgeSecondary}`}>Normal</span>;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusColors: Record<string, string> = {
-      'Nueva': styles.badgeInfo,
-      'Enviada': styles.badgePrimary,
-      'En proceso': styles.badgeWarning,
-      'Cotizada': styles.badgeSuccess,
-      'Rechazada': styles.badgeDanger,
-      'Cancelada': styles.badgeSecondary,
-    };
-
-    return (
-      <span className={`${styles.badge} ${statusColors[status] || styles.badgeSecondary}`}>
-        {status}
-      </span>
-    );
-  };
-
-  const getCategoryBadge = (category: number) => {
+  const getCategoryMedal = (category: number) => {
     switch (category) {
       case 1:
-        return <span className={`${styles.badge} ${styles.badgeGold}`}>Golden</span>;
+        return '/gold.png';
       case 2:
-        return <span className={`${styles.badge} ${styles.badgeSilver}`}>Silver</span>;
+        return '/silver.png';
       case 3:
-        return <span className={`${styles.badge} ${styles.badgeBronze}`}>Bronze</span>;
+        return '/bronze.png';
       default:
-        return <span className={`${styles.badge} ${styles.badgeSecondary}`}>-</span>;
+        return '';
     }
+  };
+
+  const getStatusClass = (status: string) => {
+    const statusClasses: Record<string, string> = {
+      'Cotizada': styles.statusCotizada,
+      'Nueva': styles.statusNueva,
+      'Enviada': styles.statusEnviada,
+      'En proceso': styles.statusEnProceso,
+      'Rechazada': styles.statusRechazada,
+      'Cancelada': styles.statusCancelada,
+    };
+    return statusClasses[status] || styles.statusNueva;
   };
 
   const formatDate = (dateString: string) => {
@@ -142,27 +126,29 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
     });
   };
 
+  const getDaysRemaining = (deadline: string) => {
+    if (!deadline) return null;
+    const now = new Date();
+    const deadlineDate = new Date(deadline);
+    const diffTime = deadlineDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>Solicitudes de Cotización</h1>
-          <p className={styles.subtitle}>
-            Gestiona las solicitudes de cotización de tus clientes
-          </p>
+          <h1 className={styles.title}>Cotizaciones</h1>
         </div>
-        <button className={styles.addButton} onClick={onCreateNew} disabled={loading}>
-          <Plus size={20} />
-          Nueva Solicitud
-        </button>
       </div>
 
-      <div className={styles.filters}>
+      <div className={styles.actionBar}>
         <div className={styles.searchBox}>
           <Search size={20} className={styles.searchIcon} />
           <input
             type="text"
-            placeholder="Buscar por referencia, cliente o tipo..."
+            placeholder="Buscar Cliente"
             className={styles.searchInput}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -170,119 +156,132 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           />
         </div>
 
-        <div className={styles.filterGroup}>
-          <Filter size={18} />
-          <select
-            className={styles.select}
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+        <div className={styles.actionButtons}>
+          <button
+            className={styles.greenButton}
+            onClick={onCreateNew}
             disabled={loading}
           >
-            <option value="all">Todos los estados</option>
-            <option value="Nueva">Nueva</option>
-            <option value="Enviada">Enviada</option>
-            <option value="En proceso">En proceso</option>
-            <option value="Cotizada">Cotizada</option>
-            <option value="Rechazada">Rechazada</option>
-            <option value="Cancelada">Cancelada</option>
-          </select>
+            <Plus size={20} />
+          </button>
+          <button
+            className={styles.greenButton}
+            onClick={loadQuotations}
+            disabled={loading}
+          >
+            <RefreshCw size={20} />
+          </button>
+          <div className={styles.dropdown}>
+            <button className={styles.dropdownButton} disabled>
+              Acciones
+              <ChevronDown size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem' }}>
-          <div style={{
-            display: 'inline-block',
-            width: '3rem',
-            height: '3rem',
-            border: '4px solid #e5e7eb',
-            borderTopColor: '#14b8a6',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
+        <div className={styles.loading}>
+          <div className={styles.spinner}></div>
+        </div>
+      ) : filteredQuotations.length > 0 ? (
+        <div className={styles.cardsGrid}>
+          {filteredQuotations.map((quotation) => {
+            const daysRemaining = getDaysRemaining(quotation.deadline_date);
+            const medalSrc = getCategoryMedal(quotation.customer_category);
+
+            return (
+              <div key={quotation._id} className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <div className={styles.medalContainer}>
+                    {medalSrc && (
+                      <img
+                        src={medalSrc}
+                        alt="Medal"
+                        className={styles.medalImage}
+                      />
+                    )}
+                    <button className={`${styles.statusButton} ${getStatusClass(quotation.status_request_name)}`}>
+                      {quotation.status_request_name}
+                    </button>
+                  </div>
+
+                  <div className={styles.cardContent}>
+                    <h3 className={styles.clientName}>
+                      {quotation.customer_business_name}
+                      {quotation.priority === 1 && (
+                        <img
+                          src="/prioridad.png"
+                          alt="Prioridad"
+                          className={styles.priorityIcon}
+                        />
+                      )}
+                    </h3>
+
+                    <div className={styles.referenceRow}>
+                      <FileText size={16} />
+                      <span>{quotation.reference_request}</span>
+                      <span style={{ marginLeft: 'auto' }}>
+                        {quotation.request_type_name}
+                      </span>
+                    </div>
+
+                    {quotation.licitation && (
+                      <div className={styles.typeRow}>
+                        Clientes - Licitación
+                      </div>
+                    )}
+
+                    <div className={styles.dateRow}>
+                      <Clock size={16} />
+                      {daysRemaining !== null && (
+                        <span>{daysRemaining}d</span>
+                      )}
+                    </div>
+
+                    {quotation.services && quotation.services.length > 0 && (
+                      <div className={styles.locationRow}>
+                        {quotation.services[0].origin?.country || 'Canadá'} - {quotation.services[0].destination?.country || 'México'}
+                      </div>
+                    )}
+
+                    <div className={styles.cardActions}>
+                      <button
+                        className={`${styles.actionButton} ${styles.editButton}`}
+                        onClick={() => onEdit(quotation._id)}
+                        title="Editar"
+                      >
+                        <Edit2 size={18} />
+                      </button>
+                      <button
+                        className={`${styles.actionButton} ${styles.deleteButton}`}
+                        onClick={() => {
+                          if (confirm('¿Estás seguro de eliminar esta cotización?')) {
+                          }
+                        }}
+                        title="Eliminar"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       ) : (
-        <div className={styles.tableContainer}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Referencia</th>
-                <th>Cliente</th>
-                <th>Tipo</th>
-                <th>Solicitante</th>
-                <th>Fecha</th>
-                <th>Fecha Límite</th>
-                <th>Prioridad</th>
-                <th>Categoría</th>
-                <th>Estado</th>
-                <th>Servicios</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredQuotations.length > 0 ? (
-                filteredQuotations.map((quotation) => (
-                  <tr key={quotation._id}>
-                    <td>
-                      <span className={styles.reference}>
-                        {quotation.reference_request}
-                      </span>
-                    </td>
-                    <td>
-                      <div className={styles.customerInfo}>
-                        <span className={styles.customerName}>
-                          {quotation.customer_business_name}
-                        </span>
-                        {quotation.licitation && (
-                          <span className={`${styles.badge} ${styles.badgeInfo}`} style={{ fontSize: '0.7rem', marginLeft: '0.5rem' }}>
-                            Licitación
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td>{quotation.request_type_name}</td>
-                    <td>{quotation.requesting_data?.complete_name || '-'}</td>
-                    <td>{formatDate(quotation.request_date)}</td>
-                    <td>{formatDate(quotation.deadline_date)}</td>
-                    <td>{getPriorityBadge(quotation.priority)}</td>
-                    <td>{getCategoryBadge(quotation.customer_category)}</td>
-                    <td>{getStatusBadge(quotation.status_request_name)}</td>
-                    <td>
-                      <span className={styles.servicesCount}>
-                        {quotation.services?.length || 0}
-                      </span>
-                    </td>
-                    <td>
-                      <div className={styles.actions}>
-                        <button
-                          className={`${styles.iconButton} ${styles.view}`}
-                          onClick={() => onView(quotation._id)}
-                          title="Ver detalles"
-                        >
-                          <Eye size={16} />
-                        </button>
-                        <button
-                          className={`${styles.iconButton} ${styles.edit}`}
-                          onClick={() => onEdit(quotation._id)}
-                          title="Editar"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={11} style={{ textAlign: 'center', padding: '2rem' }}>
-                    {searchQuery || statusFilter !== 'all'
-                      ? 'No se encontraron resultados con los filtros aplicados'
-                      : 'No hay solicitudes de cotización registradas'}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className={styles.emptyState}>
+          <h3>No hay solicitudes de cotización</h3>
+          <p>
+            {searchQuery
+              ? 'No se encontraron resultados con los filtros aplicados'
+              : 'Comienza creando una nueva solicitud de cotización'}
+          </p>
+          <button className={styles.greenButton} onClick={onCreateNew}>
+            <Plus size={20} />
+            Nueva Solicitud
+          </button>
         </div>
       )}
     </div>
