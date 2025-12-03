@@ -5,6 +5,10 @@ import { Quotations } from './pages/Quotations';
 import { Executives } from './pages/Executives';
 import Customers from './pages/Customers';
 import { CatalogIMO } from './pages/CatalogIMO';
+import { CatalogIncoterms } from './pages/CatalogIncoterms';
+import { CatalogServices } from './pages/CatalogServices';
+import { CatalogStatus } from './pages/CatalogStatus';
+import { CatalogRequestTypes } from './pages/CatalogRequestTypes';
 import { Layout } from './components/Layout';
 
 type Route = 'dashboard' | 'quotations' | 'executives' | 'shipments' | 'customers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types';
@@ -41,6 +45,14 @@ function App() {
           return <Customers />;
         case 'catalogs/imo':
           return <CatalogIMO />;
+        case 'catalogs/incoterms':
+          return <CatalogIncoterms />;
+        case 'catalogs/services':
+          return <CatalogServices />;
+        case 'catalogs/status':
+          return <CatalogStatus />;
+        case 'catalogs/request-types':
+          return <CatalogRequestTypes />;
         case 'dashboard':
           return (
             <div className="p-8">
