@@ -355,12 +355,85 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const addPackage = (pkg: any) => {
-    setCurrentPackages([...currentPackages, { ...pkg, id: Date.now() }]);
+    setCurrentPackages([...currentPackages, {
+      ...pkg,
+      id: Date.now(),
+      unit: useMetricSystem ? 'metric' : 'imperial'
+    }]);
     closePackagingModal();
   };
 
   const removePackage = (packageId: number) => {
     setCurrentPackages(currentPackages.filter(p => p.id !== packageId));
+  };
+
+  const calculateTotals = () => {
+    let totalVolume = 0;
+    let totalWeight = 0;
+
+    currentPackages.forEach(pkg => {
+      const volume = (pkg.length * pkg.height * pkg.width) * pkg.quantity;
+      const weight = pkg.weight * pkg.quantity;
+      totalVolume += volume;
+      totalWeight += weight;
+    });
+
+    return { totalVolume, totalWeight };
+  };
+
+  const saveMerchandise = () => {
+    if (!currentServiceId) return;
+
+    if (!merchandiseForm.name.trim()) {
+      alert('Por favor ingresa el nombre de la mercancía');
+      return;
+    }
+
+    const { totalVolume, totalWeight } = calculateTotals();
+
+    const newMerchandise: Merchandise = {
+      id: editingMerchandise?.id || Date.now(),
+      name: merchandiseForm.name,
+      description: merchandiseForm.description,
+      dangerous: merchandiseForm.dangerous,
+      refrigerated: merchandiseForm.refrigerated,
+      oversized: merchandiseForm.oversized,
+      grain: merchandiseForm.grain,
+      stackable: merchandiseForm.stackable,
+      imoClass: merchandiseForm.dangerous ? merchandiseForm.imoClass : '',
+      un: merchandiseForm.dangerous ? merchandiseForm.un : '',
+      temperature: merchandiseForm.refrigerated ? parseFloat(merchandiseForm.temperature) || 0 : 0,
+      tempUnit: merchandiseForm.refrigerated ? merchandiseForm.tempUnit : '°C',
+      unitType: useMetricSystem ? 'kg' : 'lbs',
+      totalVolume,
+      totalWeight,
+      packages: currentPackages.map(pkg => ({
+        ...pkg,
+        unit: useMetricSystem ? 'metric' : 'imperial'
+      }))
+    };
+
+    setServices(services.map(service => {
+      if (service.id === currentServiceId) {
+        if (editingMerchandise) {
+          return {
+            ...service,
+            merchandise: service.merchandise.map(m =>
+              m.id === editingMerchandise.id ? newMerchandise : m
+            )
+          };
+        } else {
+          return {
+            ...service,
+            merchandise: [...service.merchandise, newMerchandise]
+          };
+        }
+      }
+      return service;
+    }));
+
+    console.log('Merchandise saved:', newMerchandise);
+    closeMerchandiseModal();
   };
 
   const copyMerchandise = (serviceId: number, merchandiseId: number) => {
@@ -1250,10 +1323,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         <tr>
                           <th>EMBALAJE</th>
                           <th>CANTIDAD</th>
-                          <th>LARGO</th>
-                          <th>ALTO</th>
-                          <th>ANCHO</th>
-                          <th>PESO</th>
+                          <th>LARGO ({useMetricSystem ? 'cm' : 'plg'})</th>
+                          <th>ALTO ({useMetricSystem ? 'cm' : 'plg'})</th>
+                          <th>ANCHO ({useMetricSystem ? 'cm' : 'plg'})</th>
+                          <th>PESO ({useMetricSystem ? 'kg' : 'lbs'})</th>
                           <th></th>
                         </tr>
                       </thead>
@@ -1282,31 +1355,37 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 )}
               </div>
 
-              <div className={styles.modalFooterInfo}>
-                <div className={styles.unitTypeToggle}>
-                  <span className={!useMetricSystem ? styles.activeUnitLabel : ''}>Lbs/Pulgadas</span>
-                  <div
-                    className={`${styles.toggleSwitch} ${useMetricSystem ? styles.active : ''}`}
-                    onClick={() => setUseMetricSystem(!useMetricSystem)}
-                  >
-                    <div className={styles.toggleThumb}></div>
+              {currentPackages.length > 0 && (
+                <div className={styles.modalFooterInfo}>
+                  <div className={styles.unitTypeToggle}>
+                    <span className={!useMetricSystem ? styles.activeUnitLabel : ''}>Lbs/Pulgadas</span>
+                    <div
+                      className={`${styles.toggleSwitch} ${useMetricSystem ? styles.active : ''}`}
+                      onClick={() => setUseMetricSystem(!useMetricSystem)}
+                    >
+                      <div className={styles.toggleThumb}></div>
+                    </div>
+                    <span className={useMetricSystem ? styles.activeUnitLabel : ''}>Kgm/Cm</span>
                   </div>
-                  <span className={useMetricSystem ? styles.activeUnitLabel : ''}>Kgm/Cm</span>
+                  <div className={styles.totalsDisplay}>
+                    <div>
+                      <div className={styles.totalLabel}>Volumen total</div>
+                      <div className={styles.totalValue}>
+                        {calculateTotals().totalVolume.toFixed(2)} {useMetricSystem ? 'cm³' : 'plg³'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className={styles.totalLabel}>Peso total</div>
+                      <div className={styles.totalValue}>
+                        {calculateTotals().totalWeight.toFixed(2)} {useMetricSystem ? 'kg' : 'lbs'}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className={styles.totalsDisplay}>
-                  <div>
-                    <div className={styles.totalLabel}>Volumen total</div>
-                    <div className={styles.totalValue}>90 KG</div>
-                  </div>
-                  <div>
-                    <div className={styles.totalLabel}>Peso total</div>
-                    <div className={styles.totalValue}>90 KG</div>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
             <div className={styles.modalFooter}>
-              <button className={styles.saveModalButton} onClick={closeMerchandiseModal}>
+              <button className={styles.saveModalButton} onClick={saveMerchandise}>
                 Guardar
               </button>
             </div>
