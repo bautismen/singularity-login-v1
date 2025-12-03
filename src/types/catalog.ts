@@ -34,4 +34,10 @@ export interface Status extends BaseCatalog {
   description?: string;
 }
 
-export type CatalogType = 'imo' | 'incoterms' | 'services' | 'request_types' | 'status';
+export interface Country extends BaseCatalog {
+  id_country: number;
+  country_code: string;
+  name_country: string;
+}
+
+export type CatalogType = 'imo' | 'incoterms' | 'services' | 'request_types' | 'status' | 'countries';
