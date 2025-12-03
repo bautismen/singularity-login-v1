@@ -159,6 +159,7 @@ const translations = {
     'nav.catalogs.services': 'Servicios',
     'nav.catalogs.status': 'Estatus',
     'nav.catalogs.requestTypes': 'Tipos de Solicitud',
+    'nav.catalogs.countries': 'Países',
     'catalog.title': 'Catálogo de {name}',
     'catalog.new': 'Nuevo {name}',
     'catalog.edit': 'Editar {name}',
@@ -192,6 +193,8 @@ const translations = {
     'catalog.filterAll': 'Todos',
     'catalog.filterActive': 'Activos',
     'catalog.filterInactive': 'Inactivos',
+    'catalog.country.code': 'Código País',
+    'catalog.country.name': 'Nombre del País',
   },
   en: {
     'app.title': 'Singularity',
@@ -341,6 +344,7 @@ const translations = {
     'nav.catalogs.services': 'Services',
     'nav.catalogs.status': 'Status',
     'nav.catalogs.requestTypes': 'Request Types',
+    'nav.catalogs.countries': 'Countries',
     'catalog.title': '{name} Catalog',
     'catalog.new': 'New {name}',
     'catalog.edit': 'Edit {name}',
@@ -374,6 +378,8 @@ const translations = {
     'catalog.filterAll': 'All',
     'catalog.filterActive': 'Active',
     'catalog.filterInactive': 'Inactive',
+    'catalog.country.code': 'Country Code',
+    'catalog.country.name': 'Country Name',
   },
 };
 

@@ -115,6 +115,12 @@ export function Sidebar({ onCollapsedChange, currentRoute = 'dashboard', onNavig
               >
                 <span>{t('nav.catalogs.requestTypes')}</span>
               </button>
+              <button
+                onClick={() => onNavigate?.('catalogs/countries')}
+                className={`${styles.submenuButton} ${currentRoute === 'catalogs/countries' ? styles.active : ''}`}
+              >
+                <span>{t('nav.catalogs.countries')}</span>
+              </button>
             </div>
           )}
         </div>

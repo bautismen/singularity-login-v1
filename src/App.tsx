@@ -9,9 +9,10 @@ import { CatalogIncoterms } from './pages/CatalogIncoterms';
 import { CatalogServices } from './pages/CatalogServices';
 import { CatalogStatus } from './pages/CatalogStatus';
 import { CatalogRequestTypes } from './pages/CatalogRequestTypes';
+import { CatalogCountries } from './pages/CatalogCountries';
 import { Layout } from './components/Layout';
 
-type Route = 'dashboard' | 'quotations' | 'executives' | 'shipments' | 'customers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types';
+type Route = 'dashboard' | 'quotations' | 'executives' | 'shipments' | 'customers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState<Route>('dashboard');
@@ -53,6 +54,8 @@ function App() {
           return <CatalogStatus />;
         case 'catalogs/request-types':
           return <CatalogRequestTypes />;
+        case 'catalogs/countries':
+          return <CatalogCountries />;
         case 'dashboard':
           return (
             <div className="p-8">
