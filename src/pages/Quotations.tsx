@@ -78,6 +78,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const [availableServices, setAvailableServices] = useState<any[]>([]);
   const [availableExecutives, setAvailableExecutives] = useState<any[]>([]);
   const [incoterms, setIncoterms] = useState<any[]>([]);
+  const [countries, setCountries] = useState<any[]>([]);
 
   const [showMerchandiseModal, setShowMerchandiseModal] = useState(false);
   const [editingMerchandise, setEditingMerchandise] = useState<Merchandise | null>(null);
@@ -132,7 +133,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
       const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-      const [customersRes, requestTypesRes, servicesRes, executivesRes, incotermsRes] = await Promise.all([
+      const [customersRes, requestTypesRes, servicesRes, executivesRes, incotermsRes, countriesRes] = await Promise.all([
         fetch(`${BASE_URL}/functions/v1/customers`, {
           headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
         }),
@@ -148,6 +149,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         fetch(`${BASE_URL}/functions/v1/catalog-incoterms`, {
           headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
         }),
+        fetch(`${BASE_URL}/functions/v1/catalog-countries`, {
+          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
+        }),
       ]);
 
       const customersData = await customersRes.json();
@@ -155,12 +159,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const servicesData = await servicesRes.json();
       const executivesData = await executivesRes.json();
       const incotermsData = await incotermsRes.json();
+      const countriesData = await countriesRes.json();
 
-      setCustomers(customersData.filter((c: any) => c.status === 1));
+      console.log('Customers loaded:', customersData);
+      console.log('Request types loaded:', requestTypesData);
+
+      setCustomers(customersData.filter((c: any) => c.status === 'activo' || c.datastate === 1));
       setRequestTypes(requestTypesData.filter((r: any) => r.status === 1));
       setAvailableServices(servicesData.filter((s: any) => s.status === 1 && s.category === 1));
       setAvailableExecutives(executivesData.filter((e: any) => e.status === 1));
       setIncoterms(incotermsData.filter((i: any) => i.status === 1));
+      setCountries(countriesData.filter((co: any) => co.status === 1));
     } catch (error) {
       console.error('Error loading catalogs:', error);
       alert('Error al cargar los catálogos');
@@ -339,14 +348,29 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     try {
       setSaving(true);
 
+      console.log('Form data:', formData);
+      console.log('Reference:', formData.referenceRequest);
+      console.log('Customer ID:', formData.customerId);
+      console.log('Request Type ID:', formData.requestTypeId);
+
       if (!formData.referenceRequest || !formData.customerId || !formData.requestTypeId) {
-        alert('Por favor completa los campos requeridos: Referencia, Cliente y Tipo de solicitud');
+        alert(`Por favor completa los campos requeridos:\nReferencia: ${formData.referenceRequest || 'FALTA'}\nCliente: ${formData.customerId || 'FALTA'}\nTipo de solicitud: ${formData.requestTypeId || 'FALTA'}`);
+        setSaving(false);
         return;
       }
 
       const selectedCustomer = customers.find(c => c._id === formData.customerId);
-      const selectedRequestType = requestTypes.find(r => r._id === formData.requestTypeId);
+      const selectedRequestType = requestTypes.find(r => r._id === parseInt(formData.requestTypeId) || r._id === formData.requestTypeId);
       const selectedExecutive = availableExecutives.length > 0 ? availableExecutives[0] : null;
+
+      console.log('Selected customer:', selectedCustomer);
+      console.log('Selected request type:', selectedRequestType);
+
+      if (!selectedRequestType) {
+        alert('Error: No se pudo encontrar el tipo de solicitud seleccionado');
+        setSaving(false);
+        return;
+      }
 
       const quotationData = {
         reference_request: formData.referenceRequest,
@@ -695,15 +719,19 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <span className={styles.required}>*</span>
                   {t('quote.origin')}
                 </label>
-                <div className={styles.inputWithIcon}>
-                  <MapPin className={styles.inputIcon} size={16} />
-                  <input
-                    type="text"
-                    value={service.origin}
-                    onChange={(e) => updateService(service.id, 'origin', e.target.value)}
-                    className={`${styles.input} ${styles.inputWithIconField}`}
-                  />
-                </div>
+                <select
+                  value={service.origin}
+                  onChange={(e) => updateService(service.id, 'origin', e.target.value)}
+                  className={styles.select}
+                  disabled={loading || mode === 'view'}
+                >
+                  <option value="">Seleccionar país...</option>
+                  {countries.map((country) => (
+                    <option key={country._id} value={`${country.country_name} (${country.country_code})`}>
+                      {country.country_name} ({country.country_code})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className={styles.formGroup}>
@@ -711,15 +739,19 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <span className={styles.required}>*</span>
                   {t('quote.destination')}
                 </label>
-                <div className={styles.inputWithIcon}>
-                  <MapPin className={styles.inputIcon} size={16} />
-                  <input
-                    type="text"
-                    value={service.destination}
-                    onChange={(e) => updateService(service.id, 'destination', e.target.value)}
-                    className={`${styles.input} ${styles.inputWithIconField}`}
-                  />
-                </div>
+                <select
+                  value={service.destination}
+                  onChange={(e) => updateService(service.id, 'destination', e.target.value)}
+                  className={styles.select}
+                  disabled={loading || mode === 'view'}
+                >
+                  <option value="">Seleccionar país...</option>
+                  {countries.map((country) => (
+                    <option key={country._id} value={`${country.country_name} (${country.country_code})`}>
+                      {country.country_name} ({country.country_code})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className={styles.formGroup}>
