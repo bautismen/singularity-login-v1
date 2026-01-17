@@ -838,14 +838,15 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </select>
           </div>
 
-          <div className={styles.formGroupWithToggle}>
-            <label className={styles.label}>Es prioritaria</label>
-            <div
-              className={`${styles.toggleSwitch} ${formData.isPriority ? styles.active : ''}`}
-              onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
-            >
-              <div className={styles.toggleThumb}></div>
-            </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Límite de respuesta</label>
+            <input
+              type="date"
+              value={formData.responseDeadline}
+              onChange={(e) => setFormData({ ...formData, responseDeadline: e.target.value })}
+              className={styles.input}
+              placeholder="dd/mm/aaaa"
+            />
           </div>
 
           <div className={styles.formGroup}>
@@ -861,15 +862,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             />
           </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Límite de respuesta</label>
-            <input
-              type="date"
-              value={formData.responseDeadline}
-              onChange={(e) => setFormData({ ...formData, responseDeadline: e.target.value })}
-              className={styles.input}
-              placeholder="dd/mm/aaaa"
-            />
+          <div className={styles.formGroupWithToggle}>
+            <label className={styles.label}>Es prioritaria</label>
+            <div
+              className={`${styles.toggleSwitch} ${formData.isPriority ? styles.active : ''}`}
+              onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
+            >
+              <div className={styles.toggleThumb}></div>
+            </div>
           </div>
 
           <div className={styles.formGroupWithToggle}>
@@ -971,16 +971,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   ))}
                 </select>
               </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>{t('quote.expectedDeparture')}</label>
-                <input
-                  type="date"
-                  value={service.expectedDeparture}
-                  onChange={(e) => updateService(service.id, 'expectedDeparture', e.target.value)}
-                  className={styles.input}
-                />
-              </div>
             </div>
 
             <div className={styles.formGrid} style={{ marginTop: '1.25rem' }}>
@@ -1033,6 +1023,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   type="text"
                   value={service.destinationZip}
                   onChange={(e) => updateService(service.id, 'destinationZip', e.target.value)}
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>{t('quote.expectedDeparture')}</label>
+                <input
+                  type="date"
+                  value={service.expectedDeparture}
+                  onChange={(e) => updateService(service.id, 'expectedDeparture', e.target.value)}
                   className={styles.input}
                 />
               </div>
