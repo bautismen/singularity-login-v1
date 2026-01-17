@@ -232,7 +232,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             incoterm: shipment.incoterm || '',
             origin: shipment.origin?.location || '',
             destination: shipment.destination?.location || '',
-            destinationZip: '',
+            destinationZip: shipment.destiny_zipcode || '',
             expectedDeparture: shipment.departure_date_approximate ? new Date(shipment.departure_date_approximate).toISOString().split('T')[0] : '',
             insurance: hasInsurance,
             maneuver: hasManeuver,
@@ -649,6 +649,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             destination: {
               location: service.destination,
             },
+            destiny_zipcode: service.destinationZip,
             _id_shipment_type: service.shippingType === 'Door to Door' ? 1 : 2,
             shippment_type_name: service.shippingType,
             _id_operation_type: service.operation === 'Exportación' ? 1 : service.operation === 'Importación' ? 2 : 3,
@@ -729,7 +730,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </button>
           )}
           <h1 className={styles.title}>
-            {mode === 'view' ? 'Ver Cotización' : mode === 'edit' ? 'Editar Cotización' : t('quote.title')}
+            {mode === 'view' ? 'Ver Cotización' : mode === 'edit' ? 'Editar solicitud' : t('quote.title')}
           </h1>
         </div>
         <div className={styles.actionBar}>
@@ -1051,16 +1052,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <option>Port to Door</option>
                 </select>
               </div>
-            </div>
-
-            <div style={{ marginTop: '1.25rem' }}>
-              <label className={styles.label}>Salida esperada</label>
-              <input
-                type="date"
-                value={service.expectedDeparture}
-                onChange={(e) => updateService(service.id, 'expectedDeparture', e.target.value)}
-                className={styles.input}
-              />
             </div>
 
             <div style={{ marginTop: '1.25rem' }}>
