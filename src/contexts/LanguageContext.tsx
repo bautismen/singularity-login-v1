@@ -14,7 +14,7 @@ const translations = {
   es: {
     'app.title': 'Singularity',
     'nav.dashboard': 'Panel',
-    'nav.quotations': 'Cotizaciones',
+    'nav.quotations': 'Solicitud de cotizaciones',
     'nav.executives': 'Ejecutivos',
     'nav.shipments': 'Envíos',
     'nav.customers': 'Clientes',
@@ -199,7 +199,7 @@ const translations = {
   en: {
     'app.title': 'Singularity',
     'nav.dashboard': 'Dashboard',
-    'nav.quotations': 'Quotations',
+    'nav.quotations': 'Quotation Request',
     'nav.executives': 'Executives',
     'nav.shipments': 'Shipments',
     'nav.customers': 'Customers',

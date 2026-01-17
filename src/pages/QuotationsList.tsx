@@ -139,7 +139,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
     <div className={styles.container}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>Cotizaciones</h1>
+          <h1 className={styles.title}>Solicitud de cotizaciones</h1>
         </div>
       </div>
 
