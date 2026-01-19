@@ -8,7 +8,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .title {
@@ -27,7 +27,7 @@
   display: flex;
   gap: 1rem;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .searchBox {
@@ -56,8 +56,8 @@
 
 .searchInput:focus {
   outline: none;
-  border-color: #14b8a6;
-  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+  border-color: #1B96A8;
+  box-shadow: 0 0 0 3px rgba(27, 150, 168, 0.1);
   background: white;
 }
 
@@ -69,7 +69,6 @@
 
 .buttonGroup {
   display: flex;
-  margin-left: auto;
   border-radius: 0.5rem;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -80,7 +79,7 @@
   align-items: center;
   justify-content: center;
   padding: 0.75rem 1rem;
-  background: #14b8a6;
+  background: #1B96A8;
   color: white;
   border: none;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
@@ -92,7 +91,7 @@
 }
 
 .buttonGroupItem:hover:not(:disabled) {
-  background: #0d9488;
+  background: #157a8a;
 }
 
 .buttonGroupItem:disabled {
@@ -105,7 +104,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
-  background: #14b8a6;
+  background: #1B96A8;
   color: white;
   border: none;
   font-weight: 500;
@@ -115,7 +114,7 @@
 }
 
 .buttonGroupItemLast:hover:not(:disabled) {
-  background: #0d9488;
+  background: #157a8a;
 }
 
 .buttonGroupItemLast:disabled {
@@ -128,7 +127,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
-  background: #14b8a6;
+  background: #1B96A8;
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -139,9 +138,9 @@
 }
 
 .greenButton:hover:not(:disabled) {
-  background: #0d9488;
+  background: #157a8a;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+  box-shadow: 0 4px 12px rgba(27, 150, 168, 0.3);
 }
 
 .greenButton:disabled {
@@ -151,12 +150,12 @@
 
 .greenButtonSecondary {
   background: transparent;
-  color: #14b8a6;
-  border: 2px solid #14b8a6;
+  color: #1B96A8;
+  border: 2px solid #1B96A8;
 }
 
 .greenButtonSecondary:hover:not(:disabled) {
-  background: #14b8a6;
+  background: #1B96A8;
   color: white;
 }
 
@@ -169,7 +168,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
-  background: #14b8a6;
+  background: #1B96A8;
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -179,7 +178,7 @@
 }
 
 .dropdownButton:hover {
-  background: #0d9488;
+  background: #157a8a;
 }
 
 .cardsGrid {
