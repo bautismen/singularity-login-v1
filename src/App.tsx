@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import { Login } from './pages/Login';
 import { QuotationsManager } from './pages/QuotationsManager';
+import { ControlsPricing } from './pages/ControlsPricing';
 import { Executives } from './pages/Executives';
 import Customers from './pages/Customers';
 import { CatalogIMO } from './pages/CatalogIMO';
@@ -13,7 +14,7 @@ import { CatalogCountries } from './pages/CatalogCountries';
 import { CatalogUsers } from './pages/CatalogUsers';
 import { Layout } from './components/Layout';
 
-type Route = 'dashboard' | 'quotations' | 'executives' | 'shipments' | 'customers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users';
+type Route = 'dashboard' | 'quotations' | 'controls-pricing' | 'executives' | 'shipments' | 'customers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState<Route>('dashboard');
@@ -41,6 +42,8 @@ function App() {
       switch (currentRoute) {
         case 'quotations':
           return <QuotationsManager />;
+        case 'controls-pricing':
+          return <ControlsPricing />;
         case 'executives':
           return <Executives />;
         case 'customers':

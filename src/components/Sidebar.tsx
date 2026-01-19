@@ -14,6 +14,7 @@ import {
   FolderOpen,
   ChevronDown,
   ChevronRight,
+  DollarSign,
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import styles from './Sidebar.module.css';
@@ -21,6 +22,7 @@ import styles from './Sidebar.module.css';
 const menuItems = [
   { key: 'nav.dashboard', icon: Layout, route: 'dashboard' },
   { key: 'nav.quotations', icon: FileCheck, route: 'quotations' },
+  { key: 'nav.controlsPricing', icon: DollarSign, route: 'controls-pricing' },
   { key: 'nav.executives', icon: UserCheck, route: 'executives' },
   { key: 'nav.shipments', icon: Truck, route: 'shipments' },
   { key: 'nav.customers', icon: Users, route: 'customers' },
