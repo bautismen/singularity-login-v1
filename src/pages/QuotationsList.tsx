@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, RefreshCw, ChevronDown, FileText, Calendar, Clock } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, RefreshCw, ChevronDown, FileText, Calendar, Clock, Filter } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import styles from './QuotationsList.module.css';
 
@@ -156,27 +156,38 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           />
         </div>
 
-        <div className={styles.actionButtons}>
+        <div className={styles.buttonGroup}>
           <button
-            className={styles.greenButton}
+            className={styles.buttonGroupItem}
             onClick={onCreateNew}
             disabled={loading}
+            title="Nueva solicitud"
           >
             <Plus size={20} />
           </button>
           <button
-            className={styles.greenButton}
+            className={styles.buttonGroupItem}
             onClick={loadQuotations}
             disabled={loading}
+            title="Actualizar"
           >
             <RefreshCw size={20} />
           </button>
-          <div className={styles.dropdown}>
-            <button className={styles.dropdownButton} disabled>
-              Acciones
-              <ChevronDown size={18} />
-            </button>
-          </div>
+          <button
+            className={styles.buttonGroupItem}
+            disabled={loading}
+            title="Filtros avanzados"
+          >
+            <Filter size={20} />
+          </button>
+          <button
+            className={styles.buttonGroupItemLast}
+            disabled
+            title="Acciones"
+          >
+            Acciones
+            <ChevronDown size={18} />
+          </button>
         </div>
       </div>
 

@@ -33,7 +33,7 @@
 .searchBox {
   flex: 1;
   position: relative;
-  max-width: 500px;
+  max-width: none;
 }
 
 .searchIcon {
@@ -47,16 +47,18 @@
 .searchInput {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 3rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
   font-size: 0.95rem;
   transition: all 0.2s;
+  background: #f9fafb;
 }
 
 .searchInput:focus {
   outline: none;
   border-color: #14b8a6;
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+  background: white;
 }
 
 .actionButtons {
@@ -65,12 +67,68 @@
   margin-left: auto;
 }
 
+.buttonGroup {
+  display: flex;
+  margin-left: auto;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.buttonGroupItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  background: #14b8a6;
+  color: white;
+  border: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+  min-width: 48px;
+}
+
+.buttonGroupItem:hover:not(:disabled) {
+  background: #0d9488;
+}
+
+.buttonGroupItem:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.buttonGroupItemLast {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: #14b8a6;
+  color: white;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+}
+
+.buttonGroupItemLast:hover:not(:disabled) {
+  background: #0d9488;
+}
+
+.buttonGroupItemLast:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .greenButton {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
-  background: #10b981;
+  background: #14b8a6;
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -81,9 +139,9 @@
 }
 
 .greenButton:hover:not(:disabled) {
-  background: #059669;
+  background: #0d9488;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
 }
 
 .greenButton:disabled {
@@ -93,12 +151,12 @@
 
 .greenButtonSecondary {
   background: transparent;
-  color: #10b981;
-  border: 2px solid #10b981;
+  color: #14b8a6;
+  border: 2px solid #14b8a6;
 }
 
 .greenButtonSecondary:hover:not(:disabled) {
-  background: #10b981;
+  background: #14b8a6;
   color: white;
 }
 
@@ -111,7 +169,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
-  background: #10b981;
+  background: #14b8a6;
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -121,7 +179,7 @@
 }
 
 .dropdownButton:hover {
-  background: #059669;
+  background: #0d9488;
 }
 
 .cardsGrid {
