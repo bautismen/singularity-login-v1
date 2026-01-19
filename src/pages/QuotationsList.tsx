@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Search, RefreshCw, ChevronDown, FileText, Calendar, Clock, Filter } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import styles from './QuotationsList.module.css';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
@@ -36,6 +37,7 @@ interface QuotationsListProps {
 
 export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListProps) {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [quotations, setQuotations] = useState<QuotationRequest[]>([]);
   const [filteredQuotations, setFilteredQuotations] = useState<QuotationRequest[]>([]);
   const [loading, setLoading] = useState(false);
@@ -150,6 +152,10 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
         const opType = operationType === 'importacion' ? 1 : 2;
         return q.services.some(s => s._id_operation_type === opType);
       });
+    }
+
+    if (executiveFilter === 'solo_yo' && user) {
+      filtered = filtered.filter(q => q.requesting_data?._id_executive === user._id);
     }
 
     if (executiveFilter === 'seleccionar' && selectedExecutive) {

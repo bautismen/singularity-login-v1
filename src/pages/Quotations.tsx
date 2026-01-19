@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trash2, ChevronDown, Plus, Copy, X, MapPin, Search, RotateCcw, Save, Eye, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import { quotationService } from '../services/quotationService';
 import styles from './Quotations.module.css';
 
@@ -70,6 +71,7 @@ interface QuotationsProps {
 
 export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsProps) {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [services, setServices] = useState<Service[]>([]);
@@ -607,9 +609,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         _id_customer: formData.customerId,
         customer_business_name: selectedCustomer?.fiscal_data?.business_name || formData.client,
         licitation: formData.isQuote,
-        requesting_data: selectedExecutive ? {
-          _id_executive: selectedExecutive._id,
-          complete_name: `${selectedExecutive.nombre} ${selectedExecutive.apellido_paterno} ${selectedExecutive.apellido_materno}`,
+        requesting_data: user ? {
+          _id_executive: user._id,
+          complete_name: user.name || user.email,
         } : {},
         assigned_to: executives.map(exec => ({
           _id_executive: exec.id,
