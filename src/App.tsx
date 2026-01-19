@@ -10,9 +10,10 @@ import { CatalogServices } from './pages/CatalogServices';
 import { CatalogStatus } from './pages/CatalogStatus';
 import { CatalogRequestTypes } from './pages/CatalogRequestTypes';
 import { CatalogCountries } from './pages/CatalogCountries';
+import { CatalogUsers } from './pages/CatalogUsers';
 import { Layout } from './components/Layout';
 
-type Route = 'dashboard' | 'quotations' | 'executives' | 'shipments' | 'customers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries';
+type Route = 'dashboard' | 'quotations' | 'executives' | 'shipments' | 'customers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState<Route>('dashboard');
@@ -56,6 +57,8 @@ function App() {
           return <CatalogRequestTypes />;
         case 'catalogs/countries':
           return <CatalogCountries />;
+        case 'catalogs/users':
+          return <CatalogUsers />;
         case 'dashboard':
           return (
             <div className="p-8">
