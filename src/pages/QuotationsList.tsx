@@ -279,7 +279,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           </div>
 
           <div className={styles.filterSection}>
-            <h4 className={styles.filterTitle}>Ejecutivo asignado</h4>
+            <h4 className={styles.filterTitle}>Ejecutivo solicitante</h4>
             <label className={styles.radioLabel}>
               <input
                 type="radio"
@@ -476,6 +476,9 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
             const daysRemaining = getDaysRemaining(quotation.deadline_date);
             const medalSrc = getCategoryMedal(quotation.customer_category);
 
+            const totalServices = quotation.services?.length || 0;
+            const attendedServices = quotation.services?.filter(s => s.used === true).length || 0;
+
             return (
               <div key={quotation._id} className={styles.card}>
                 <div className={styles.cardTop}>
@@ -533,6 +536,31 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                           </div>
                         )}
                       </div>
+                    </div>
+
+                    <div className={styles.bottomRow}>
+                      <div className={styles.executiveInfo}>
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span>{quotation.requesting_data?.complete_name || 'Sin asignar'}</span>
+                      </div>
+
+                      {totalServices > 0 && (
+                        <div className={styles.servicesCounter}>
+                          {attendedServices}/{totalServices} Servicios atendidos
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

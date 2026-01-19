@@ -364,6 +364,38 @@
   gap: 1rem;
 }
 
+.bottomRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.executiveInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.executiveInfo svg {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.servicesCounter {
+  padding: 0.35rem 0.75rem;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .referenceContainer {
   display: flex;
   flex-direction: column;
