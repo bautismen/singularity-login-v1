@@ -3,6 +3,7 @@
   flex-direction: column;
   height: 100%;
   background: #f9fafb;
+  overflow-y: auto;
 }
 
 .dark .container {
@@ -13,9 +14,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2rem;
+  padding: 1.5rem 2rem;
   background: white;
   border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .dark .header {
@@ -24,8 +28,8 @@
 }
 
 .title {
-  font-size: 1.875rem;
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 600;
   color: #111827;
   margin: 0;
 }
@@ -34,10 +38,460 @@
   color: #f9fafb;
 }
 
-.content {
-  flex: 1;
+.buttonGroup {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.buttonGroupItem,
+.buttonGroupItemLast {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: #14b8a6;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.buttonGroupItem {
+  padding: 0.625rem;
+}
+
+.buttonGroupItem:hover:not(:disabled),
+.buttonGroupItemLast:hover:not(:disabled) {
+  background: #0d9488;
+}
+
+.buttonGroupItem:disabled,
+.buttonGroupItemLast:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.searchBar {
+  position: relative;
+  padding: 1.5rem 2rem;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dark .searchBar {
+  background: #1f2937;
+  border-bottom-color: #374151;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 2.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background: #f9fafb;
+  color: #111827;
+  transition: all 0.2s;
+}
+
+.dark .searchInput {
+  background: #111827;
+  border-color: #374151;
+  color: #f9fafb;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #14b8a6;
+  background: white;
+}
+
+.dark .searchInput:focus {
+  background: #1f2937;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem;
+}
+
+.spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid #e5e7eb;
+  border-top-color: #14b8a6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  gap: 1.5rem;
   padding: 2rem;
-  overflow-y: auto;
+}
+
+.card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: all 0.2s;
+}
+
+.dark .card {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cardHeaderLeft {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+}
+
+.medalImage {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.companyInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.companyNameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.companyIcon {
+  color: #14b8a6;
+  flex-shrink: 0;
+}
+
+.companyName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dark .companyName {
+  color: #f9fafb;
+}
+
+.priorityIcon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.referenceRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.referenceNumber {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #14b8a6;
+}
+
+.statusBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.statusAsignada {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #93c5fd;
+}
+
+.statusCotizada {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+
+.statusExpirada {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+.statusNueva {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.statusEnviada {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+}
+
+.statusEnProceso {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-color: #a5b4fc;
+}
+
+.operationRow {
+  display: flex;
+  align-items: center;
+}
+
+.operationType {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: lowercase;
+}
+
+.dark .operationType {
+  color: #9ca3af;
+}
+
+.cardHeaderRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  text-align: right;
+}
+
+.countries {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.dark .countries {
+  color: #f9fafb;
+}
+
+.category {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #14b8a6;
+  background: #f0fdfa;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+}
+
+.dark .category {
+  background: rgba(20, 184, 166, 0.1);
+}
+
+.dateInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.dark .dateInfo {
+  color: #9ca3af;
+}
+
+.executiveRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.dark .executiveRow {
+  border-top-color: #374151;
+}
+
+.executiveInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.dark .executiveInfo {
+  color: #9ca3af;
+}
+
+.servicesCounter {
+  font-size: 0.875rem;
+  color: #14b8a6;
+  font-weight: 500;
+}
+
+.controlNumbers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 0.5rem;
+}
+
+.dark .controlNumbers {
+  background: #111827;
+}
+
+.controlNumberItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.controlNumberLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.controlNumberLeft svg {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.assignedName {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.dark .assignedName {
+  color: #9ca3af;
+}
+
+.controlCode {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #14b8a6;
+  background: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid #d1d5db;
+}
+
+.dark .controlCode {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+.controlNumberActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.controlDays {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.dark .controlDays {
+  color: #9ca3af;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem;
+  background: transparent;
+  color: #6b7280;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actionButton:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.dark .actionButton:hover {
+  background: #374151;
+  color: #f9fafb;
+}
+
+.addControlButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: transparent;
+  color: #14b8a6;
+  border: 2px dashed #14b8a6;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.addControlButton:hover {
+  background: #f0fdfa;
+}
+
+.dark .addControlButton:hover {
+  background: rgba(20, 184, 166, 0.1);
 }
 
 .emptyState {
@@ -54,7 +508,18 @@
   color: #9ca3af;
 }
 
+.emptyState h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: #111827;
+}
+
+.dark .emptyState h3 {
+  color: #f9fafb;
+}
+
 .emptyState p {
-  font-size: 1.125rem;
-  margin: 0.5rem 0;
+  font-size: 1rem;
+  margin: 0;
 }
