@@ -726,7 +726,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           {onBack && (
             <button
               onClick={onBack}
-              className={styles.actionBarResetButton}
+              className={styles.backButton}
               title="Volver a lista"
             >
               <ArrowLeft size={18} />
