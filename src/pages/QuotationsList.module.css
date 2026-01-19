@@ -194,6 +194,9 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
   border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .card:hover {
@@ -201,23 +204,61 @@
   transform: translateY(-2px);
 }
 
-.cardHeader {
+.cardTop {
   display: flex;
   gap: 1rem;
-  margin-bottom: 1rem;
+  flex: 1;
 }
 
-.medalContainer {
+.cardLeft {
+  display: flex;
+  align-items: flex-start;
+}
+
+.cardMain {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 0.75rem;
 }
 
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.middleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.referenceContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .medalImage {
-  width: 50px;
-  height: 50px;
+  width: 45px;
+  height: 45px;
   object-fit: contain;
+}
+
+.statusBadge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid;
+  background: white;
+  cursor: default;
+  white-space: nowrap;
+  transition: all 0.2s;
+  width: fit-content;
 }
 
 .statusButton {
@@ -232,33 +273,64 @@
 }
 
 .statusCotizada {
-  background: #d1fae5;
+  background: white;
   color: #065f46;
+  border-color: #065f46;
 }
 
 .statusNueva {
-  background: #dbeafe;
+  background: white;
   color: #1e40af;
+  border-color: #1e40af;
 }
 
 .statusEnviada {
-  background: #e0e7ff;
+  background: white;
   color: #4338ca;
+  border-color: #4338ca;
 }
 
 .statusEnProceso {
-  background: #fef3c7;
+  background: white;
   color: #92400e;
+  border-color: #92400e;
 }
 
 .statusRechazada {
-  background: #fee2e2;
+  background: white;
   color: #991b1b;
+  border-color: #991b1b;
 }
 
 .statusCancelada {
-  background: #f3f4f6;
+  background: white;
   color: #374151;
+  border-color: #374151;
+}
+
+.rightInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.location {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.requestType {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.dateInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #6b7280;
+  font-size: 0.875rem;
 }
 
 .cardContent {
@@ -266,18 +338,18 @@
 }
 
 .clientName {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #1f2937;
-  margin: 0 0 0.5rem 0;
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .priorityIcon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   object-fit: contain;
 }
 
@@ -285,14 +357,13 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  color: #059669;
+  color: #1B96A8;
   font-weight: 600;
   font-size: 0.9rem;
 }
 
 .referenceRow svg {
-  color: #059669;
+  color: #1B96A8;
 }
 
 .typeRow {
@@ -323,8 +394,8 @@
 .cardActions {
   display: flex;
   gap: 0.5rem;
-  margin-top: 1rem;
   justify-content: flex-end;
+  align-self: flex-end;
 }
 
 .actionButton {

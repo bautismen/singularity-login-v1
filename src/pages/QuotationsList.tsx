@@ -202,8 +202,8 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
 
             return (
               <div key={quotation._id} className={styles.card}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.medalContainer}>
+                <div className={styles.cardTop}>
+                  <div className={styles.cardLeft}>
                     {medalSrc && (
                       <img
                         src={medalSrc}
@@ -211,70 +211,74 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                         className={styles.medalImage}
                       />
                     )}
-                    <button className={`${styles.statusButton} ${getStatusClass(quotation.status_request_name)}`}>
-                      {quotation.status_request_name}
-                    </button>
                   </div>
 
-                  <div className={styles.cardContent}>
-                    <h3 className={styles.clientName}>
-                      {quotation.customer_business_name}
-                      {quotation.priority === 1 && (
-                        <img
-                          src="/prioridad.png"
-                          alt="Prioridad"
-                          className={styles.priorityIcon}
-                        />
-                      )}
-                    </h3>
+                  <div className={styles.cardMain}>
+                    <div className={styles.topRow}>
+                      <h3 className={styles.clientName}>
+                        {quotation.customer_business_name}
+                        {quotation.priority === 1 && (
+                          <img
+                            src="/prioridad.png"
+                            alt="Prioridad"
+                            className={styles.priorityIcon}
+                          />
+                        )}
+                      </h3>
 
-                    <div className={styles.referenceRow}>
-                      <FileText size={16} />
-                      <span>{quotation.reference_request}</span>
-                      <span style={{ marginLeft: 'auto' }}>
-                        {quotation.request_type_name}
-                      </span>
+                      <div className={styles.rightInfo}>
+                        {quotation.services && quotation.services.length > 0 && (
+                          <div className={styles.location}>
+                            {quotation.services[0].origin?.country || 'Canadá'} - {quotation.services[0].destination?.country || 'México'}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    {quotation.licitation && (
-                      <div className={styles.typeRow}>
-                        Clientes - Licitación
+                    <div className={styles.middleRow}>
+                      <div className={styles.referenceContainer}>
+                        <div className={styles.referenceRow}>
+                          <FileText size={16} />
+                          <span>{quotation.reference_request}</span>
+                        </div>
+                        <button className={`${styles.statusBadge} ${getStatusClass(quotation.status_request_name)}`}>
+                          {quotation.status_request_name}
+                        </button>
                       </div>
-                    )}
 
-                    <div className={styles.dateRow}>
-                      <Clock size={16} />
-                      {daysRemaining !== null && (
-                        <span>{daysRemaining}d</span>
-                      )}
-                    </div>
-
-                    {quotation.services && quotation.services.length > 0 && (
-                      <div className={styles.locationRow}>
-                        {quotation.services[0].origin?.country || 'Canadá'} - {quotation.services[0].destination?.country || 'México'}
+                      <div className={styles.rightInfo}>
+                        <div className={styles.requestType}>
+                          {quotation.request_type_name}
+                        </div>
+                        {daysRemaining !== null && (
+                          <div className={styles.dateInfo}>
+                            <Clock size={16} />
+                            <span>{daysRemaining}d</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-
-                    <div className={styles.cardActions}>
-                      <button
-                        className={`${styles.actionButton} ${styles.editButton}`}
-                        onClick={() => onEdit(quotation._id)}
-                        title="Editar"
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      <button
-                        className={`${styles.actionButton} ${styles.deleteButton}`}
-                        onClick={() => {
-                          if (confirm('¿Estás seguro de eliminar esta cotización?')) {
-                          }
-                        }}
-                        title="Eliminar"
-                      >
-                        <Trash2 size={18} />
-                      </button>
                     </div>
                   </div>
+                </div>
+
+                <div className={styles.cardActions}>
+                  <button
+                    className={`${styles.actionButton} ${styles.editButton}`}
+                    onClick={() => onEdit(quotation._id)}
+                    title="Editar"
+                  >
+                    <Edit2 size={18} />
+                  </button>
+                  <button
+                    className={`${styles.actionButton} ${styles.deleteButton}`}
+                    onClick={() => {
+                      if (confirm('¿Estás seguro de eliminar esta cotización?')) {
+                      }
+                    }}
+                    title="Eliminar"
+                  >
+                    <Trash2 size={18} />
+                  </button>
                 </div>
               </div>
             );
