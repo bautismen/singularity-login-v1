@@ -141,21 +141,6 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
         <div>
           <h1 className={styles.title}>Solicitud de cotizaciones</h1>
         </div>
-      </div>
-
-      <div className={styles.actionBar}>
-        <div className={styles.searchBox}>
-          <Search size={20} className={styles.searchIcon} />
-          <input
-            type="text"
-            placeholder="Buscar Cliente"
-            className={styles.searchInput}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            disabled={loading}
-          />
-        </div>
-
         <div className={styles.buttonGroup}>
           <button
             className={styles.buttonGroupItem}
@@ -188,6 +173,20 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
             Acciones
             <ChevronDown size={18} />
           </button>
+        </div>
+      </div>
+
+      <div className={styles.actionBar}>
+        <div className={styles.searchBox}>
+          <Search size={20} className={styles.searchIcon} />
+          <input
+            type="text"
+            placeholder="Buscar Cliente"
+            className={styles.searchInput}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            disabled={loading}
+          />
         </div>
       </div>
 
