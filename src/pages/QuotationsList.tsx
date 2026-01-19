@@ -4,6 +4,8 @@ import { useLanguage } from '../contexts/LanguageContext';
 import styles from './QuotationsList.module.css';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
+const EXECUTIVES_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/executives`;
+const REQUEST_TYPES_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-request-types`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 interface QuotationRequest {
@@ -39,14 +41,26 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  const [operationType, setOperationType] = useState<string>('all');
+  const [executiveFilter, setExecutiveFilter] = useState<string>('todos');
+  const [selectedExecutive, setSelectedExecutive] = useState<string>('');
+  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [requestTypeFilters, setRequestTypeFilters] = useState<number[]>([]);
+
+  const [executives, setExecutives] = useState<any[]>([]);
+  const [requestTypes, setRequestTypes] = useState<any[]>([]);
 
   useEffect(() => {
     loadQuotations();
+    loadExecutives();
+    loadRequestTypes();
   }, []);
 
   useEffect(() => {
     filterQuotations();
-  }, [quotations, searchQuery, statusFilter]);
+  }, [quotations, searchQuery, statusFilter, operationType, executiveFilter, selectedExecutive, dateFilter, requestTypeFilters]);
 
   const loadQuotations = async () => {
     try {
@@ -73,6 +87,48 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
     }
   };
 
+  const loadExecutives = async () => {
+    try {
+      const response = await fetch(EXECUTIVES_API_URL, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al cargar ejecutivos');
+      }
+
+      const data = await response.json();
+      setExecutives(data);
+    } catch (error) {
+      console.error('Error loading executives:', error);
+    }
+  };
+
+  const loadRequestTypes = async () => {
+    try {
+      const response = await fetch(REQUEST_TYPES_API_URL, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al cargar tipos de solicitud');
+      }
+
+      const data = await response.json();
+      setRequestTypes(data);
+    } catch (error) {
+      console.error('Error loading request types:', error);
+    }
+  };
+
   const filterQuotations = () => {
     let filtered = [...quotations];
 
@@ -88,7 +144,62 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       );
     }
 
+    if (operationType !== 'all') {
+      filtered = filtered.filter(q => {
+        if (!q.services || q.services.length === 0) return false;
+        const opType = operationType === 'importacion' ? 1 : 2;
+        return q.services.some(s => s._id_operation_type === opType);
+      });
+    }
+
+    if (executiveFilter === 'seleccionar' && selectedExecutive) {
+      filtered = filtered.filter(q => q.requesting_data?._id_executive === selectedExecutive);
+    }
+
+    if (dateFilter !== 'all') {
+      const now = new Date();
+      filtered = filtered.filter(q => {
+        const requestDate = new Date(q.request_date);
+        const diffDays = Math.ceil((now.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        switch (dateFilter) {
+          case 'hoy':
+            return diffDays === 0;
+          case 'ayer':
+            return diffDays === 1;
+          case 'menos5':
+            return diffDays <= 5;
+          case 'menos30':
+            return diffDays <= 30;
+          case 'menos365':
+            return diffDays <= 365;
+          default:
+            return true;
+        }
+      });
+    }
+
+    if (requestTypeFilters.length > 0) {
+      filtered = filtered.filter(q => requestTypeFilters.includes(q._id_request_type));
+    }
+
     setFilteredQuotations(filtered);
+  };
+
+  const handleResetFilters = () => {
+    setOperationType('all');
+    setExecutiveFilter('todos');
+    setSelectedExecutive('');
+    setDateFilter('all');
+    setRequestTypeFilters([]);
+  };
+
+  const handleRequestTypeToggle = (typeId: number) => {
+    setRequestTypeFilters(prev =>
+      prev.includes(typeId)
+        ? prev.filter(id => id !== typeId)
+        : [...prev, typeId]
+    );
   };
 
   const getCategoryMedal = (category: number) => {
@@ -136,8 +247,172 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
+    <div className={styles.containerWithSidebar}>
+      {showAdvancedFilters && (
+        <div className={styles.filtersPanel}>
+          <div className={styles.filtersPanelHeader}>
+            <h3>Refina tu búsqueda</h3>
+          </div>
+
+          <div className={styles.filterSection}>
+            <h4 className={styles.filterTitle}>Tipo operación</h4>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="operationType"
+                value="importacion"
+                checked={operationType === 'importacion'}
+                onChange={(e) => setOperationType(e.target.value)}
+              />
+              <span>IMPORTACIÓN</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="operationType"
+                value="exportacion"
+                checked={operationType === 'exportacion'}
+                onChange={(e) => setOperationType(e.target.value)}
+              />
+              <span>EXPORTACIÓN</span>
+            </label>
+          </div>
+
+          <div className={styles.filterSection}>
+            <h4 className={styles.filterTitle}>Ejecutivo asignado</h4>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="executiveFilter"
+                value="todos"
+                checked={executiveFilter === 'todos'}
+                onChange={(e) => setExecutiveFilter(e.target.value)}
+              />
+              <span>TODOS</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="executiveFilter"
+                value="solo_yo"
+                checked={executiveFilter === 'solo_yo'}
+                onChange={(e) => setExecutiveFilter(e.target.value)}
+              />
+              <span>SOLO YO</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="executiveFilter"
+                value="seleccionar"
+                checked={executiveFilter === 'seleccionar'}
+                onChange={(e) => setExecutiveFilter(e.target.value)}
+              />
+              <span>SELECCIONAR</span>
+            </label>
+            {executiveFilter === 'seleccionar' && (
+              <select
+                className={styles.executiveSelect}
+                value={selectedExecutive}
+                onChange={(e) => setSelectedExecutive(e.target.value)}
+              >
+                <option value="">Seleccionar ejecutivo...</option>
+                {executives.map((exec) => (
+                  <option key={exec._id} value={exec._id}>
+                    {exec.complete_name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          <div className={styles.filterSection}>
+            <h4 className={styles.filterTitle}>Fecha de asignación</h4>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="dateFilter"
+                value="hoy"
+                checked={dateFilter === 'hoy'}
+                onChange={(e) => setDateFilter(e.target.value)}
+              />
+              <span>HOY</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="dateFilter"
+                value="ayer"
+                checked={dateFilter === 'ayer'}
+                onChange={(e) => setDateFilter(e.target.value)}
+              />
+              <span>AYER</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="dateFilter"
+                value="menos5"
+                checked={dateFilter === 'menos5'}
+                onChange={(e) => setDateFilter(e.target.value)}
+              />
+              <span>MENOS DE 5 DÍAS</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="dateFilter"
+                value="menos30"
+                checked={dateFilter === 'menos30'}
+                onChange={(e) => setDateFilter(e.target.value)}
+              />
+              <span>MENOS DE 30 DÍAS</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="dateFilter"
+                value="menos365"
+                checked={dateFilter === 'menos365'}
+                onChange={(e) => setDateFilter(e.target.value)}
+              />
+              <span>MENOS DE 365 DÍAS</span>
+            </label>
+          </div>
+
+          <div className={styles.filterSection}>
+            <h4 className={styles.filterTitle}>Tipo solicitud</h4>
+            {requestTypes.map((type) => (
+              <label key={type._id} className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={requestTypeFilters.includes(type._id)}
+                  onChange={() => handleRequestTypeToggle(type._id)}
+                />
+                <span>{type.request_type_name.toUpperCase()}</span>
+              </label>
+            ))}
+          </div>
+
+          <div className={styles.filterActions}>
+            <button
+              className={styles.resetButton}
+              onClick={handleResetFilters}
+            >
+              Restaurar
+            </button>
+            <button
+              className={styles.applyButton}
+              onClick={() => setShowAdvancedFilters(false)}
+            >
+              Hecho
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className={styles.container}>
+        <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Solicitud de cotizaciones</h1>
         </div>
@@ -160,6 +435,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           </button>
           <button
             className={styles.buttonGroupItem}
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
             disabled={loading}
             title="Filtros avanzados"
           >
@@ -298,6 +574,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 }
