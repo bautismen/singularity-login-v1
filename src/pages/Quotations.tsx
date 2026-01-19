@@ -566,6 +566,145 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     setServices(services.map(s => s.id === id ? { ...s, [field]: value } : s));
   };
 
+  const handleStatusUpdate = async (statusId: number, statusName: string) => {
+    try {
+      setSaving(true);
+
+      if (!formData.referenceRequest || !formData.customerId || !formData.requestTypeId) {
+        alert(`Por favor completa los campos requeridos:\nReferencia: ${formData.referenceRequest || 'FALTA'}\nCliente: ${formData.customerId || 'FALTA'}\nTipo de solicitud: ${formData.requestTypeId || 'FALTA'}`);
+        setSaving(false);
+        return;
+      }
+
+      const selectedCustomer = customers.find(c => c._id === formData.customerId);
+      const selectedRequestType = requestTypes.find(r => r._id === parseInt(formData.requestTypeId) || r._id === formData.requestTypeId);
+
+      if (!selectedRequestType) {
+        alert('Error: No se pudo encontrar el tipo de solicitud seleccionado');
+        setSaving(false);
+        return;
+      }
+
+      const quotationData = {
+        reference_request: formData.referenceRequest,
+        priority: formData.isPriority ? 1 : 0,
+        customer_category: formData.customerCategory,
+        _id_status_request: statusId,
+        status_request_name: statusName,
+        request_date: new Date(formData.created),
+        deadline_date: formData.responseDeadline ? new Date(formData.responseDeadline) : null,
+        _id_request_type: selectedRequestType._id,
+        request_type_name: selectedRequestType.request_type_name,
+        _id_customer: formData.customerId,
+        customer_business_name: selectedCustomer?.fiscal_data?.business_name || formData.client,
+        licitation: formData.isQuote,
+        requesting_data: user ? {
+          _id_executive: user._id,
+          complete_name: user.name || user.email,
+        } : {},
+        assigned_to: executives.map(exec => ({
+          _id_executive: exec.id,
+          complete_name: exec.name,
+          control_number: 'SN',
+        })),
+        services: services.map((service, idx) => {
+          const selectedService = availableServices.find(s => s.service_name === service.service);
+
+          const servicesAssociated: any[] = [];
+          if (service.insurance) servicesAssociated.push({ service_associated_name: 'Seguro' });
+          if (service.maneuver) servicesAssociated.push({ service_associated_name: 'Maniobra' });
+          if (service.custody) servicesAssociated.push({ service_associated_name: 'Custodia' });
+          if (service.inspection) servicesAssociated.push({ service_associated_name: 'Inspección' });
+          if (service.customsClearance) servicesAssociated.push({ service_associated_name: 'Despacho aduanal' });
+
+          const frequencyMap: { [key: string]: number } = { 'semanal': 1, 'mensual': 2, 'anual': 3 };
+          const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
+
+          const projectionShipment = service.programFrequency && service.quantity && service.frequency && service.unit ? {
+            num: parseInt(service.quantity),
+            _id_measurement_frecuency: unitMap[service.unit] || 0,
+            measurement_frecuency: service.unit,
+            _id_frecuency: frequencyMap[service.frequency] || 0,
+            frecuency: service.frequency,
+          } : undefined;
+
+          return {
+            id_service_item: idx + 1,
+            _id_service: selectedService?._id || null,
+            service_name: service.service,
+            ...(mode === 'create' && { used: false }),
+            shipments: [{
+            id_shipment_item: 1,
+            operation: service.operation,
+            _id_incoterm: incoterms.find(i => i.incoterm_name === service.incoterm)?._id || 0,
+            incoterm_name: service.incoterm,
+            _id_country_origin: countries.find(c => c.country_name === service.origin)?._id || 0,
+            origin_country_name: service.origin,
+            _id_country_destination: countries.find(c => c.country_name === service.destination)?._id || 0,
+            destination_country_name: service.destination,
+            zip_code: service.destinationZip,
+            expected_departure: service.expectedDeparture ? new Date(service.expectedDeparture) : null,
+            services_associated: servicesAssociated,
+            comment: service.comments || '',
+            shipment_type: service.shippingType,
+            ...(projectionShipment && { projection_shipment: projectionShipment }),
+            merchandise: service.merchandise.map((merch: Merchandise, merchIdx: number) => ({
+              id_merchandise_item: merchIdx + 1,
+              name: merch.name,
+              description: merch.description,
+              merchandise_classification: merch.merchandise_classification || [],
+              dangerous: merch.dangerous,
+              _id_imo: merch.merchandise_classification?.[0]?._id_imo || 0,
+              imo_class: merch.merchandise_classification?.[0]?.imo_class || '',
+              un: merch.merchandise_classification?.[0]?.un || '',
+              refrigerated: merch.refrigerated,
+              temperature: merch.temperature ? parseFloat(merch.temperature.toString()) : 0,
+              temperature_unit: merch.tempUnit,
+              oversize: merch.oversized,
+              grain: merch.grain,
+              stackable: merch.stackable,
+              total_volume: merch.totalVolume,
+              total_weight: merch.totalWeight,
+              packaging: merch.packages?.map((pkg: any, pkgIdx: number) => ({
+                id_package_item: pkgIdx + 1,
+                packaging_type_name: pkg.type,
+                qty: pkg.quantity,
+                length: pkg.length,
+                width: pkg.width,
+                height: pkg.height,
+                weight: pkg.weight,
+                unit_weight: merch.unitType,
+              })) || []
+            }))
+          }]
+        };
+        }),
+      };
+
+      if (mode === 'edit' && quotationId) {
+        await quotationService.update(quotationId, quotationData);
+        alert(`Cotización ${statusName} exitosamente`);
+      }
+
+      if (onBack) {
+        onBack();
+      }
+    } catch (error) {
+      console.error('Error updating quotation status:', error);
+      alert('Error al actualizar el estado de la cotización');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSendQuotation = () => {
+    handleStatusUpdate(2, 'Enviada');
+  };
+
+  const handleCancelQuotation = () => {
+    handleStatusUpdate(3, 'Cancelada');
+  };
+
   const handleSaveQuotation = async () => {
     try {
       setSaving(true);
@@ -884,6 +1023,25 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.toggleThumb}></div>
             </div>
           </div>
+
+          {mode === 'edit' && (
+            <div className={styles.statusButtonsContainer}>
+              <button
+                className={styles.cancelButton}
+                onClick={handleCancelQuotation}
+                disabled={saving}
+              >
+                Cancelar
+              </button>
+              <button
+                className={styles.sendButton}
+                onClick={handleSendQuotation}
+                disabled={saving}
+              >
+                Enviar
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
