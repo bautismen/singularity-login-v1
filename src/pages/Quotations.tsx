@@ -643,6 +643,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             id_service_item: idx + 1,
             _id_service: selectedService?._id || null,
             service_name: service.service,
+            ...(mode === 'create' && { used: false }),
             shipments: [{
             id_shipment_item: 1,
             origin: {
