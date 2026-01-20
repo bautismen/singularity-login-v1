@@ -564,7 +564,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Servicio</label>
                           <input
                             type="text"
-                            value={service.service_name || ''}
+                            value={service.service?.name || service.service_name || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -573,7 +573,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Operación</label>
                           <input
                             type="text"
-                            value={service._id_operation_type === 1 ? 'Importación' : 'Exportación'}
+                            value={service.operation_type?.name || (service._id_operation_type === 1 ? 'Importación' : service._id_operation_type === 2 ? 'Exportación' : '') || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -582,7 +582,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Incoterm</label>
                           <input
                             type="text"
-                            value={service.incoterm_name || ''}
+                            value={service.incoterm?.name || service.incoterm_name || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -600,7 +600,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Origen</label>
                           <input
                             type="text"
-                            value={service.origin?.country || ''}
+                            value={service.origin?.code || service.origin?.country || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -609,7 +609,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Destino</label>
                           <input
                             type="text"
-                            value={service.destination?.country || ''}
+                            value={service.destination?.code || service.destination?.country || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -618,7 +618,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Código postal de destino</label>
                           <input
                             type="text"
-                            value={service.destination_postal_code || ''}
+                            value={service.destination_postal_code || service.destination?.postal_code || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -627,7 +627,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Tipo de envío</label>
                           <input
                             type="text"
-                            value={service.shipping_type || ''}
+                            value={service.shipping_type?.name || service.shipping_type || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -638,9 +638,9 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                         <label>Servicios Asociados</label>
                         <div className={styles.servicesChips}>
                           {service.associated_services && service.associated_services.length > 0 ? (
-                            service.associated_services.map((assocService: any) => (
-                              <span key={assocService._id_service} className={`${styles.serviceChip} ${styles.serviceChipActive}`}>
-                                {assocService.service_name}
+                            service.associated_services.map((assocService: any, idx: number) => (
+                              <span key={assocService._id_service || assocService.idservice || idx} className={`${styles.serviceChip} ${styles.serviceChipActive}`}>
+                                {assocService.service_name || assocService.name || 'Servicio'}
                               </span>
                             ))
                           ) : (
@@ -664,18 +664,18 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                         <label className={styles.checkboxLabel}>
                           <input
                             type="checkbox"
-                            checked={service.scheduled_frequency === 1 || service.scheduled_frequency === true}
+                            checked={service.scheduled_frequency === 1 || service.scheduled_frequency === true || service.schedule_frequency === 1 || service.schedule_frequency === true}
                             disabled
                           />
                           Programar frecuencia
                         </label>
-                        {(service.scheduled_frequency === 1 || service.scheduled_frequency === true) && (
+                        {(service.scheduled_frequency === 1 || service.scheduled_frequency === true || service.schedule_frequency === 1 || service.schedule_frequency === true) && (
                           <div className={styles.frequencyGrid}>
                             <div className={styles.formGroup}>
                               <label>Frecuencia</label>
                               <input
                                 type="text"
-                                value={service.frequency || ''}
+                                value={service.frequency?.name || service.frequency || ''}
                                 className={styles.formInput}
                                 disabled
                               />
@@ -684,7 +684,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               <label>Cantidad</label>
                               <input
                                 type="number"
-                                value={service.quantity || 0}
+                                value={service.frequency_quantity || service.quantity || 0}
                                 className={styles.formInput}
                                 disabled
                               />
@@ -693,7 +693,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               <label>Medida</label>
                               <input
                                 type="text"
-                                value={service.measure || ''}
+                                value={service.frequency_measure?.name || service.measure || ''}
                                 className={styles.formInput}
                                 disabled
                               />
@@ -718,37 +718,37 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               <div key={merchIndex} className={styles.merchandiseRow}>
                                 <input
                                   type="text"
-                                  value={merch.merchandise_name || ''}
+                                  value={merch.merchandise_name || merch.name || ''}
                                   className={styles.merchandiseInput}
                                   disabled
                                 />
                                 <input
                                   type="text"
-                                  value={merch.dangerous ? 'Sí' : 'No'}
+                                  value={merch.dangerous === 1 || merch.dangerous === true ? 'Sí' : 'No'}
                                   className={styles.merchandiseInput}
                                   disabled
                                 />
                                 <input
                                   type="text"
-                                  value={merch.classification || ''}
+                                  value={merch.classification?.name || merch.classification || ''}
                                   className={styles.merchandiseInput}
                                   disabled
                                 />
                                 <input
                                   type="text"
-                                  value={merch.stackable ? 'Sí' : 'No'}
+                                  value={merch.stackable === 1 || merch.stackable === true ? 'Sí' : 'No'}
                                   className={styles.merchandiseInput}
                                   disabled
                                 />
                                 <input
-                                  type="number"
-                                  value={merch.total_volume || 0}
+                                  type="text"
+                                  value={merch.total_volume ? `${merch.total_volume} ${merch.volume_unit || 'KG'}` : ''}
                                   className={styles.merchandiseInput}
                                   disabled
                                 />
                                 <input
-                                  type="number"
-                                  value={merch.total_weight || 0}
+                                  type="text"
+                                  value={merch.total_weight ? `${merch.total_weight} ${merch.weight_unit || 'KG'}` : ''}
                                   className={styles.merchandiseInput}
                                   disabled
                                 />
