@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, Edit2, Trash2, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useNotification } from '../contexts/NotificationContext';
 import { Customer, Person, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES } from '../types/customer';
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer, getPeople, getCompanies, createPerson, createCompany } from '../services/customerService';
 import styles from './Customers.module.css';
 
 export default function Customers() {
   const { t } = useLanguage();
+  const { showSuccess, showError, showWarning } = useNotification();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -153,7 +155,7 @@ export default function Customers() {
       const selectedCompany = companies.find(c => c._id === formData.company_id);
 
       if (!selectedCompany && !formData.person_id) {
-        alert('Debe seleccionar una empresa o persona');
+        showWarning('Debe seleccionar una empresa o persona');
         setLoading(false);
         return;
       }
@@ -180,22 +182,21 @@ export default function Customers() {
     } catch (error) {
       console.error('Error saving customer:', error);
       const errorMessage = error instanceof Error ? error.message : t('cust.errorSave');
-      alert(errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }
   }
 
   async function handleDeleteCustomer(id: string) {
-    if (!confirm(t('cust.delete') + '?')) return;
-
     try {
       setLoading(true);
       await deleteCustomer(id);
       await loadCustomers();
+      showSuccess('Cliente eliminado exitosamente');
     } catch (error) {
       console.error('Error deleting customer:', error);
-      alert(t('cust.errorDelete'));
+      showError(t('cust.errorDelete'));
     } finally {
       setLoading(false);
     }
@@ -220,7 +221,7 @@ export default function Customers() {
       });
     } catch (error) {
       console.error('Error creating person:', error);
-      alert('Error al crear la persona: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+      showError('Error al crear la persona: ' + (error instanceof Error ? error.message : 'Error desconocido'));
     }
   }
 
@@ -243,7 +244,7 @@ export default function Customers() {
       });
     } catch (error) {
       console.error('Error creating company:', error);
-      alert('Error al crear la empresa: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+      showError('Error al crear la empresa: ' + (error instanceof Error ? error.message : 'Error desconocido'));
     }
   }
 
