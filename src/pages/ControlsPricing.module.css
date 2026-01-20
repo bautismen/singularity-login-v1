@@ -811,6 +811,8 @@
 .clientToggles {
   display: flex;
   gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
 }
 
 .toggleLabel {

@@ -329,6 +329,32 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                       {requestData.requesting_data?.complete_name}
                     </span>
                   </div>
+                  <div className={styles.clientToggles}>
+                    <div className={styles.switchContainer}>
+                      <label className={styles.switch}>
+                        <input
+                          type="checkbox"
+                          checked={priority}
+                          onChange={(e) => setPriority(e.target.checked)}
+                          disabled
+                        />
+                        <span className={styles.switchSlider}></span>
+                      </label>
+                      <span className={styles.switchLabel}>Prioridad</span>
+                    </div>
+                    <div className={styles.switchContainer}>
+                      <label className={styles.switch}>
+                        <input
+                          type="checkbox"
+                          checked={bidding}
+                          onChange={(e) => setBidding(e.target.checked)}
+                          disabled
+                        />
+                        <span className={styles.switchSlider}></span>
+                      </label>
+                      <span className={styles.switchLabel}>Licitación</span>
+                    </div>
+                  </div>
                   {controlData && (
                     <div className={styles.clientControl}>
                       <span className={styles.controlLabel}>Control</span>
@@ -339,32 +365,6 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               </div>
               <div className={styles.clientMeta}>
                 <div className={styles.clientType}>{requestData.request_type_name}</div>
-                <div className={styles.clientToggles}>
-                  <div className={styles.switchContainer}>
-                    <label className={styles.switch}>
-                      <input
-                        type="checkbox"
-                        checked={priority}
-                        onChange={(e) => setPriority(e.target.checked)}
-                        disabled
-                      />
-                      <span className={styles.switchSlider}></span>
-                    </label>
-                    <span className={styles.switchLabel}>Prioridad</span>
-                  </div>
-                  <div className={styles.switchContainer}>
-                    <label className={styles.switch}>
-                      <input
-                        type="checkbox"
-                        checked={bidding}
-                        onChange={(e) => setBidding(e.target.checked)}
-                        disabled
-                      />
-                      <span className={styles.switchSlider}></span>
-                    </label>
-                    <span className={styles.switchLabel}>Licitación</span>
-                  </div>
-                </div>
               </div>
             </div>
             <div className={styles.clientActions}>
