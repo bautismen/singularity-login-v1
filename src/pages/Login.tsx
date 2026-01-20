@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useNotification } from '../contexts/NotificationContext';
 import { Moon, Sun, Globe } from 'lucide-react';
 
 export function Login() {
@@ -13,6 +14,7 @@ export function Login() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const { signIn, signUp } = useAuth();
+  const { showSuccess } = useNotification();
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
 
@@ -30,7 +32,7 @@ export function Login() {
           throw new Error('La contraseña debe tener al menos 6 caracteres / Password must be at least 6 characters');
         }
         await signUp(email, password);
-        alert('Cuenta creada exitosamente. Ya puedes iniciar sesión. / Account created successfully. You can now sign in.');
+        showSuccess('Cuenta creada exitosamente. Ya puedes iniciar sesión. / Account created successfully. You can now sign in.');
         setIsSignUp(false);
         setPassword('');
         setConfirmPassword('');

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Trash2, ChevronDown, Plus, Copy, X, MapPin, Search, RotateCcw, Save, Eye, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
+import { Modal } from '../components/Modal';
 import { quotationService } from '../services/quotationService';
 import styles from './Quotations.module.css';
 
@@ -72,10 +74,25 @@ interface QuotationsProps {
 export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsProps) {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const { showSuccess, showError, showWarning } = useNotification();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [services, setServices] = useState<Service[]>([]);
   const [executives, setExecutives] = useState<Executive[]>([]);
+
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+    showCancel?: boolean;
+  }>({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: ''
+  });
 
   const [customers, setCustomers] = useState<any[]>([]);
   const [requestTypes, setRequestTypes] = useState<any[]>([]);
@@ -183,7 +200,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       setImoList(imoData.filter((imo: any) => imo.status === 1));
     } catch (error) {
       console.error('Error loading catalogs:', error);
-      alert('Error al cargar los catálogos');
+      showError('Error al cargar los catálogos');
     } finally {
       setLoading(false);
     }
@@ -293,7 +310,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }
     } catch (error) {
       console.error('Error loading quotation:', error);
-      alert('Error al cargar la cotización');
+      showError('Error al cargar la cotización');
     } finally {
       setLoading(false);
     }
@@ -428,7 +445,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     if (!currentServiceId) return;
 
     if (!merchandiseForm.name.trim()) {
-      alert('Por favor ingresa el nombre de la mercancía');
+      showWarning('Por favor ingresa el nombre de la mercancía');
       return;
     }
 
@@ -571,7 +588,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       setSaving(true);
 
       if (!formData.referenceRequest || !formData.customerId || !formData.requestTypeId) {
-        alert(`Por favor completa los campos requeridos:\nReferencia: ${formData.referenceRequest || 'FALTA'}\nCliente: ${formData.customerId || 'FALTA'}\nTipo de solicitud: ${formData.requestTypeId || 'FALTA'}`);
+        showWarning(`Por favor completa los campos requeridos:\nReferencia: ${formData.referenceRequest || 'FALTA'}\nCliente: ${formData.customerId || 'FALTA'}\nTipo de solicitud: ${formData.requestTypeId || 'FALTA'}`);
         setSaving(false);
         return;
       }
@@ -580,7 +597,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const selectedRequestType = requestTypes.find(r => r._id === parseInt(formData.requestTypeId) || r._id === formData.requestTypeId);
 
       if (!selectedRequestType) {
-        alert('Error: No se pudo encontrar el tipo de solicitud seleccionado');
+        showError('Error: No se pudo encontrar el tipo de solicitud seleccionado');
         setSaving(false);
         return;
       }
@@ -683,7 +700,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
       if (mode === 'edit' && quotationId) {
         await quotationService.update(quotationId, quotationData);
-        alert(`Cotización ${statusName} exitosamente`);
+        showSuccess(`Cotización ${statusName} exitosamente`);
       }
 
       if (onBack) {
@@ -691,7 +708,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }
     } catch (error) {
       console.error('Error updating quotation status:', error);
-      alert('Error al actualizar el estado de la cotización');
+      showError('Error al actualizar el estado de la cotización');
     } finally {
       setSaving(false);
     }
@@ -715,7 +732,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       console.log('Request Type ID:', formData.requestTypeId);
 
       if (!formData.referenceRequest || !formData.customerId || !formData.requestTypeId) {
-        alert(`Por favor completa los campos requeridos:\nReferencia: ${formData.referenceRequest || 'FALTA'}\nCliente: ${formData.customerId || 'FALTA'}\nTipo de solicitud: ${formData.requestTypeId || 'FALTA'}`);
+        showWarning(`Por favor completa los campos requeridos:\nReferencia: ${formData.referenceRequest || 'FALTA'}\nCliente: ${formData.customerId || 'FALTA'}\nTipo de solicitud: ${formData.requestTypeId || 'FALTA'}`);
         setSaving(false);
         return;
       }
@@ -730,7 +747,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       console.log('Executives to save:', executives);
 
       if (!selectedRequestType) {
-        alert('Error: No se pudo encontrar el tipo de solicitud seleccionado');
+        showError('Error: No se pudo encontrar el tipo de solicitud seleccionado');
         setSaving(false);
         return;
       }
@@ -823,37 +840,76 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       console.log('Executives count:', quotationData.assigned_to.length);
 
       if (quotationData.services.length === 0) {
-        const confirmNoServices = confirm('No has agregado ningún servicio. ¿Deseas continuar de todos modos?');
-        if (!confirmNoServices) {
-          setSaving(false);
-          return;
-        }
+        setModalState({
+          isOpen: true,
+          type: 'warning',
+          title: 'Sin servicios',
+          message: 'No has agregado ningún servicio. ¿Deseas continuar de todos modos?',
+          showCancel: true,
+          onConfirm: async () => {
+            if (quotationData.assigned_to.length === 0) {
+              setModalState({
+                isOpen: true,
+                type: 'warning',
+                title: 'Sin ejecutivos asignados',
+                message: 'No has asignado ejecutivos. ¿Deseas continuar de todos modos?',
+                showCancel: true,
+                onConfirm: async () => {
+                  await performSave(quotationData);
+                }
+              });
+            } else {
+              await performSave(quotationData);
+            }
+          }
+        });
+        setSaving(false);
+        return;
       }
 
       if (quotationData.assigned_to.length === 0) {
-        const confirmNoExecs = confirm('No has asignado ejecutivos. ¿Deseas continuar de todos modos?');
-        if (!confirmNoExecs) {
-          setSaving(false);
-          return;
-        }
+        setModalState({
+          isOpen: true,
+          type: 'warning',
+          title: 'Sin ejecutivos asignados',
+          message: 'No has asignado ejecutivos. ¿Deseas continuar de todos modos?',
+          showCancel: true,
+          onConfirm: async () => {
+            await performSave(quotationData);
+          }
+        });
+        setSaving(false);
+        return;
       }
 
+      await performSave(quotationData);
+    } catch (error) {
+      console.error('Error saving quotation:', error);
+      showError('Error al guardar la cotización');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const performSave = async (quotationData: any) => {
+    try {
+      setSaving(true);
       if (mode === 'edit' && quotationId) {
         const result = await quotationService.update(quotationId, quotationData);
         console.log('Update result:', result);
-        alert('Cotización actualizada exitosamente');
+        showSuccess('Cotización actualizada exitosamente');
       } else {
         const result = await quotationService.create(quotationData);
         console.log('Create result:', result);
-        alert('Cotización creada exitosamente');
+        showSuccess('Cotización creada exitosamente');
       }
 
       if (onBack) {
         onBack();
       }
     } catch (error) {
-      console.error('Error saving quotation:', error);
-      alert('Error al guardar la cotización');
+      console.error('Error in performSave:', error);
+      showError('Error al guardar la cotización');
     } finally {
       setSaving(false);
     }
@@ -1816,6 +1872,18 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           </div>
         </div>
       )}
+
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        showCancel={modalState.showCancel}
+        confirmText="Continuar"
+        cancelText="Cancelar"
+      />
     </div>
   );
 }

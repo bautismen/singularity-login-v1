@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Search, RefreshCw, ChevronDown, FileText, Calendar, Clock, Filter } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
 import styles from './QuotationsList.module.css';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
@@ -38,6 +39,7 @@ interface QuotationsListProps {
 export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListProps) {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const { showError } = useNotification();
   const [quotations, setQuotations] = useState<QuotationRequest[]>([]);
   const [filteredQuotations, setFilteredQuotations] = useState<QuotationRequest[]>([]);
   const [loading, setLoading] = useState(false);
@@ -83,7 +85,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       setQuotations(data);
     } catch (error) {
       console.error('Error loading quotations:', error);
-      alert('Error al cargar las cotizaciones');
+      showError('Error al cargar las cotizaciones');
     } finally {
       setLoading(false);
     }
