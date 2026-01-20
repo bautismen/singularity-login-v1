@@ -74,12 +74,20 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         setRequestData(request);
         setPriority(request.priority === 1);
         setBidding(request.bidding === 1);
+
+        const expandedIds = new Set(control.services?.map((s: any) => s.idservice) || []);
+        setExpandedServices(expandedIds);
       } else {
         const request = await quotationService.getById(requestId);
         setRequestData(request);
         setPriority(request.priority === 1);
         setBidding(request.bidding === 1);
-        setSelectedServices(request.services?.filter((s: any) => !s.used) || []);
+
+        const availableServices = request.services?.filter((s: any) => !s.used) || [];
+        setSelectedServices(availableServices);
+
+        const expandedIds = new Set(request.services?.map((s: any) => s.idservice) || []);
+        setExpandedServices(expandedIds);
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -135,19 +143,32 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const handleSave = async () => {
     if (!requestId) return;
 
+    if (selectedServices.length === 0) {
+      showError('Debe seleccionar al menos un servicio');
+      return;
+    }
+
     try {
       setLoading(true);
 
-      const servicesWithoutMerchandise = selectedServices.map(s => {
-        const { merchandise, ...serviceData } = s;
-        return serviceData;
+      const servicesData = selectedServices.map(s => {
+        const serviceCopy = { ...s };
+        if (serviceCopy.merchandise) {
+          delete serviceCopy.merchandise;
+        }
+        return serviceCopy;
       });
 
       const dataToSave = {
         suppliers,
-        services: servicesWithoutMerchandise,
+        services: servicesData,
         status_control: statusControl,
-        ...generalData
+        network: generalData.network,
+        complexity: generalData.complexity,
+        currency: generalData.currency,
+        unit_profit: generalData.unit_profit,
+        general_profit: generalData.general_profit,
+        comments_general: generalData.comments_general
       };
 
       if (controlId) {
