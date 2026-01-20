@@ -44,21 +44,41 @@ class PricingControlService {
   }
 
   async create(data: CreatePricingControlRequest): Promise<PricingControl> {
-    const response = await fetch(
-      `${API_URL}/functions/v1/pricing-controls`,
-      {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(data),
+    try {
+      console.log('Creating pricing control with data:', data);
+      console.log('API URL:', `${API_URL}/functions/v1/pricing-controls`);
+
+      const response = await fetch(
+        `${API_URL}/functions/v1/pricing-controls`,
+        {
+          method: 'POST',
+          headers: this.getHeaders(),
+          body: JSON.stringify(data),
+        }
+      );
+
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+
+        try {
+          const error = JSON.parse(errorText);
+          throw new Error(error.message || error.error || 'Error al crear control de pricing');
+        } catch (e) {
+          throw new Error(errorText || 'Error al crear control de pricing');
+        }
       }
-    );
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al crear control de pricing');
+      const result = await response.json();
+      console.log('Created control:', result);
+      return result;
+    } catch (error: any) {
+      console.error('Fetch error:', error);
+      throw new Error(error.message || 'Error de conexión al crear control de pricing');
     }
-
-    return response.json();
   }
 
   async update(data: UpdatePricingControlRequest): Promise<PricingControl> {

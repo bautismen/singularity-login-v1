@@ -115,29 +115,47 @@ Deno.serve(async (req: Request) => {
 
     // POST: Crear nuevo control
     if (method === "POST") {
-      const body = await req.json();
-      const { _idrequest, suppliers, services, status_control, network, complexity, currency, unit_profit, general_profit, comments_general } = body;
+      try {
+        const body = await req.json();
+        console.log('POST body received:', JSON.stringify(body, null, 2));
 
-      if (!_idrequest) {
+        const { _idrequest, suppliers, services, status_control, network, complexity, currency, unit_profit, general_profit, comments_general } = body;
+
+        if (!_idrequest) {
+          return new Response(
+            JSON.stringify({ error: "Se requiere _idrequest" }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            }
+          );
+        }
+
+        console.log('Looking for request with ID:', _idrequest);
+
+        // Obtener la solicitud original
+        const request = await requestsCollection.findOne({
+          _id: new ObjectId(_idrequest),
+        });
+
+        if (!request) {
+          console.error('Request not found:', _idrequest);
+          return new Response(
+            JSON.stringify({ error: "Solicitud no encontrada" }),
+            {
+              status: 404,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            }
+          );
+        }
+
+        console.log('Request found:', request._id);
+      } catch (postError) {
+        console.error('Error in POST processing:', postError);
         return new Response(
-          JSON.stringify({ error: "Se requiere _idrequest" }),
+          JSON.stringify({ error: postError.message || "Error procesando la solicitud" }),
           {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-
-      // Obtener la solicitud original
-      const request = await requestsCollection.findOne({
-        _id: new ObjectId(_idrequest),
-      });
-
-      if (!request) {
-        return new Response(
-          JSON.stringify({ error: "Solicitud no encontrada" }),
-          {
-            status: 404,
+            status: 500,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );
