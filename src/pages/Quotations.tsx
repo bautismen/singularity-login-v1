@@ -295,10 +295,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             service: svc.service_name || '',
             operation: shipment.operation_type_name || '',
             incoterm: shipment.incoterm || '',
-            origin: shipment.origin?.location || '',
-            destination: shipment.destination?.location || '',
-            destinationZip: shipment.destiny_zipcode || '',
-            expectedDeparture: shipment.departure_date_approximate ? new Date(shipment.departure_date_approximate).toISOString().split('T')[0] : '',
+            origin: shipment.origin?.country_code || '',
+            destination: shipment.destination?.country_code || '',
+            destinationZip: shipment.destination?.zipcode || '',
+            expectedDeparture: shipment.departure_date_approximate?.$date ? new Date(shipment.departure_date_approximate.$date).toISOString().split('T')[0] : (shipment.departure_date_approximate ? new Date(shipment.departure_date_approximate).toISOString().split('T')[0] : ''),
             insurance: hasInsurance,
             maneuver: hasManeuver,
             custody: hasCustody,
@@ -331,7 +331,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 tempUnit: refrigeratedClass ? (refrigeratedClass.unit_temperature || '°C') : '°C',
                 grain: !!grainClass,
                 stackable: c.stowable || false,
-                unitType: 'kg' as const,
+                unitType: (c.unit_weight === 'KG' || c._id_unit_weigh === 1) ? 'kg' as const : 'lbs' as const,
                 totalVolume: c.volume_total || 0,
                 totalWeight: c.weigth_total || 0,
                 packages: c.unit || [],
@@ -674,14 +674,46 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           const selectedService = availableServices.find(s => s.service_name === service.service);
 
           const servicesAssociated: any[] = [];
-          if (service.insurance) servicesAssociated.push({ service_associated_name: 'Seguro' });
-          if (service.maneuver) servicesAssociated.push({ service_associated_name: 'Maniobra' });
-          if (service.custody) servicesAssociated.push({ service_associated_name: 'Custodia' });
-          if (service.inspection) servicesAssociated.push({ service_associated_name: 'Inspección' });
-          if (service.customsClearance) servicesAssociated.push({ service_associated_name: 'Despacho aduanal' });
+          if (service.insurance) {
+            const insuranceService = availableServices.find(s => s.service_name === 'Seguro');
+            servicesAssociated.push({
+              _id_service_associated: insuranceService?._id || null,
+              service_associated_name: 'Seguro'
+            });
+          }
+          if (service.maneuver) {
+            const maneuverService = availableServices.find(s => s.service_name === 'Maniobra');
+            servicesAssociated.push({
+              _id_service_associated: maneuverService?._id || null,
+              service_associated_name: 'Maniobra'
+            });
+          }
+          if (service.custody) {
+            const custodyService = availableServices.find(s => s.service_name === 'Custodia');
+            servicesAssociated.push({
+              _id_service_associated: custodyService?._id || null,
+              service_associated_name: 'Custodia'
+            });
+          }
+          if (service.inspection) {
+            const inspectionService = availableServices.find(s => s.service_name === 'Inspección');
+            servicesAssociated.push({
+              _id_service_associated: inspectionService?._id || null,
+              service_associated_name: 'Inspección'
+            });
+          }
+          if (service.customsClearance) {
+            const customsClearanceService = availableServices.find(s => s.service_name === 'Despacho aduanal');
+            servicesAssociated.push({
+              _id_service_associated: customsClearanceService?._id || null,
+              service_associated_name: 'Despacho aduanal'
+            });
+          }
 
           const frequencyMap: { [key: string]: number } = { 'semanal': 1, 'mensual': 2, 'anual': 3 };
           const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
+          const operationTypeMap: { [key: string]: number } = { 'Exportación': 1, 'Importación': 2, 'Nacional': 3, 'Local USA': 4, 'Triangulación': 5 };
+          const shipmentTypeMap: { [key: string]: number } = { 'Door to Door': 1, 'Port to Port': 2, 'Door to Port': 3, 'Port to Door': 4 };
 
           const projectionShipment = service.programFrequency && service.quantity && service.frequency && service.unit ? {
             num: parseInt(service.quantity),
@@ -691,52 +723,64 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             frecuency: service.frequency,
           } : undefined;
 
+          const originCountry = countries.find(c => c.country_code === service.origin);
+          const destinationCountry = countries.find(c => c.country_code === service.destination);
+          const selectedIncoterm = incoterms.find(i => i.incoterm_name === service.incoterm);
+
           return {
             id_service_item: idx + 1,
-            _id_service: selectedService?._id || null,
+            id_service: selectedService?.id_service || null,
             service_name: service.service,
             ...(mode === 'create' && { used: false }),
             shipments: [{
             id_shipment_item: 1,
-            operation: service.operation,
-            _id_incoterm: incoterms.find(i => i.incoterm_name === service.incoterm)?._id || 0,
-            incoterm_name: service.incoterm,
-            _id_country_origin: countries.find(c => c.country_code === service.origin)?._id || 0,
-            origin_country_name: service.origin,
-            _id_country_destination: countries.find(c => c.country_code === service.destination)?._id || 0,
-            destination_country_name: service.destination,
-            zip_code: service.destinationZip,
-            expected_departure: service.expectedDeparture ? new Date(service.expectedDeparture) : null,
-            services_associated: servicesAssociated,
-            comment: service.comments || '',
-            shipment_type: service.shippingType,
+            origin: {
+              _id_country: originCountry?._id || null,
+              id_country: originCountry?.id_country || 0,
+              country_code: service.origin,
+              location: ""
+            },
+            destination: {
+              _id_country: destinationCountry?._id || null,
+              id_country: destinationCountry?.id_country || 0,
+              country_code: service.destination,
+              location: "",
+              zipcode: service.destinationZip
+            },
+            _id_shipment_type: shipmentTypeMap[service.shippingType] || 1,
+            shippment_type_name: service.shippingType,
+            _id_operation_type: operationTypeMap[service.operation] || 1,
+            operation_type_name: service.operation,
+            _id_incoterm: selectedIncoterm?._id || 0,
+            incoterm: service.incoterm,
+            ...(service.expectedDeparture && { departure_date_approximate: { $date: new Date(service.expectedDeparture).toISOString() } }),
             ...(projectionShipment && { projection_shipment: projectionShipment }),
-            merchandise: service.merchandise.map((merch: Merchandise, merchIdx: number) => ({
+            _id_status_shipment: 101,
+            last_status_shipment: "Pendiente",
+            comments: service.comments || '',
+            services_asociated: servicesAssociated,
+            cargo: service.merchandise.map((merch: Merchandise, merchIdx: number) => ({
               id_merchandise_item: merchIdx + 1,
-              name: merch.name,
-              description: merch.description,
+              merchandise_name: merch.name,
+              merchandise_description: merch.description,
               merchandise_classification: merch.merchandise_classification || [],
-              dangerous: merch.dangerous,
-              _id_imo: merch.merchandise_classification?.[0]?._id_imo || 0,
-              imo_class: merch.merchandise_classification?.[0]?.imo_class || '',
-              un: merch.merchandise_classification?.[0]?.un || '',
-              refrigerated: merch.refrigerated,
-              temperature: merch.temperature ? parseFloat(merch.temperature.toString()) : 0,
-              temperature_unit: merch.tempUnit,
-              oversize: merch.oversized,
-              grain: merch.grain,
-              stackable: merch.stackable,
-              total_volume: merch.totalVolume,
-              total_weight: merch.totalWeight,
-              packaging: merch.packages?.map((pkg: any, pkgIdx: number) => ({
-                id_package_item: pkgIdx + 1,
-                packaging_type_name: pkg.type,
-                qty: pkg.quantity,
+              stowable: merch.stackable,
+              _id_shipment_type: 1,
+              shipment_type: "Suelta",
+              _id_unit_cargo: 1,
+              unit_cargo: "Caja",
+              _id_unit_measurement: 1,
+              unit_measurement: "CM",
+              _id_unit_weigh: merch.unitType === 'kg' ? 1 : 2,
+              unit_weight: merch.unitType === 'kg' ? 'KG' : 'Libras',
+              volume_total: merch.totalVolume,
+              weigth_total: merch.totalWeight,
+              unit: merch.packages?.map((pkg: any, pkgIdx: number) => ({
+                quantity: pkg.quantity,
                 length: pkg.length,
-                width: pkg.width,
                 height: pkg.height,
-                weight: pkg.weight,
-                unit_weight: merch.unitType,
+                width: pkg.width,
+                weigth: pkg.weight
               })) || []
             }))
           }]
@@ -825,11 +869,41 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           const selectedService = availableServices.find(s => s.service_name === service.service);
 
           const servicesAssociated: any[] = [];
-          if (service.insurance) servicesAssociated.push({ service_associated_name: 'Seguro' });
-          if (service.maneuver) servicesAssociated.push({ service_associated_name: 'Maniobra' });
-          if (service.custody) servicesAssociated.push({ service_associated_name: 'Custodia' });
-          if (service.inspection) servicesAssociated.push({ service_associated_name: 'Inspección' });
-          if (service.customsClearance) servicesAssociated.push({ service_associated_name: 'Despacho aduanal' });
+          if (service.insurance) {
+            const insuranceService = availableServices.find(s => s.service_name === 'Seguro');
+            servicesAssociated.push({
+              _id_service_associated: insuranceService?._id || null,
+              service_associated_name: 'Seguro'
+            });
+          }
+          if (service.maneuver) {
+            const maneuverService = availableServices.find(s => s.service_name === 'Maniobra');
+            servicesAssociated.push({
+              _id_service_associated: maneuverService?._id || null,
+              service_associated_name: 'Maniobra'
+            });
+          }
+          if (service.custody) {
+            const custodyService = availableServices.find(s => s.service_name === 'Custodia');
+            servicesAssociated.push({
+              _id_service_associated: custodyService?._id || null,
+              service_associated_name: 'Custodia'
+            });
+          }
+          if (service.inspection) {
+            const inspectionService = availableServices.find(s => s.service_name === 'Inspección');
+            servicesAssociated.push({
+              _id_service_associated: inspectionService?._id || null,
+              service_associated_name: 'Inspección'
+            });
+          }
+          if (service.customsClearance) {
+            const customsClearanceService = availableServices.find(s => s.service_name === 'Despacho aduanal');
+            servicesAssociated.push({
+              _id_service_associated: customsClearanceService?._id || null,
+              service_associated_name: 'Despacho aduanal'
+            });
+          }
 
           const frequencyMap: { [key: string]: number } = { 'semanal': 1, 'mensual': 2, 'anual': 3 };
           const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
