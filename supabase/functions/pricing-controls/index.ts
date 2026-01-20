@@ -115,51 +115,40 @@ Deno.serve(async (req: Request) => {
 
     // POST: Crear nuevo control
     if (method === "POST") {
-      try {
-        const body = await req.json();
-        console.log('POST body received:', JSON.stringify(body, null, 2));
+      const body = await req.json();
+      console.log('POST body received:', JSON.stringify(body, null, 2));
 
-        const { _idrequest, suppliers, services, status_control, network, complexity, currency, unit_profit, general_profit, comments_general } = body;
+      const { _idrequest, suppliers, services, status_control, network, complexity, currency, unit_profit, general_profit, comments_general } = body;
 
-        if (!_idrequest) {
-          return new Response(
-            JSON.stringify({ error: "Se requiere _idrequest" }),
-            {
-              status: 400,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            }
-          );
-        }
-
-        console.log('Looking for request with ID:', _idrequest);
-
-        // Obtener la solicitud original
-        const request = await requestsCollection.findOne({
-          _id: new ObjectId(_idrequest),
-        });
-
-        if (!request) {
-          console.error('Request not found:', _idrequest);
-          return new Response(
-            JSON.stringify({ error: "Solicitud no encontrada" }),
-            {
-              status: 404,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            }
-          );
-        }
-
-        console.log('Request found:', request._id);
-      } catch (postError) {
-        console.error('Error in POST processing:', postError);
+      if (!_idrequest) {
         return new Response(
-          JSON.stringify({ error: postError.message || "Error procesando la solicitud" }),
+          JSON.stringify({ error: "Se requiere _idrequest" }),
           {
-            status: 500,
+            status: 400,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );
       }
+
+      console.log('Looking for request with ID:', _idrequest);
+
+      // Obtener la solicitud original
+      const request = await requestsCollection.findOne({
+        _id: new ObjectId(_idrequest),
+      });
+
+      if (!request) {
+        console.error('Request not found:', _idrequest);
+        return new Response(
+          JSON.stringify({ error: "Solicitud no encontrada" }),
+          {
+            status: 404,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      console.log('Request found:', request._id);
 
       // Generar número de control consecutivo
       const lastControl = await controlsCollection
