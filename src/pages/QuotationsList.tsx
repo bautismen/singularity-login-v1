@@ -577,17 +577,17 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                   <button
                     className={`${styles.actionButton} ${styles.editButton}`}
                     onClick={() => onEdit(quotation._id)}
-                    title="Editar"
+                    title={t('quote.edit')}
                   >
                     <Edit2 size={18} />
                   </button>
                   <button
                     className={`${styles.actionButton} ${styles.deleteButton}`}
                     onClick={() => {
-                      if (confirm('¿Estás seguro de eliminar esta cotización?')) {
+                      if (confirm(t('quote.confirmDelete'))) {
                       }
                     }}
-                    title="Eliminar"
+                    title={t('quote.delete')}
                   >
                     <Trash2 size={18} />
                   </button>
@@ -598,15 +598,15 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
         </div>
       ) : (
         <div className={styles.emptyState}>
-          <h3>No hay solicitudes de cotización</h3>
+          <h3>{t('quote.noQuotations')}</h3>
           <p>
             {searchQuery
-              ? 'No se encontraron resultados con los filtros aplicados'
-              : 'Comienza creando una nueva solicitud de cotización'}
+              ? t('quote.noResultsFilters')
+              : t('quote.startNewQuotation')}
           </p>
           <button className={styles.greenButton} onClick={onCreateNew}>
             <Plus size={20} />
-            Nueva Solicitud
+            {t('quote.newRequest')}
           </button>
         </div>
       )}

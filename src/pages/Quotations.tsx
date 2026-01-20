@@ -588,7 +588,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       setSaving(true);
 
       if (!formData.referenceRequest || !formData.customerId || !formData.requestTypeId) {
-        showWarning(`Por favor completa los campos requeridos:\nReferencia: ${formData.referenceRequest || 'FALTA'}\nCliente: ${formData.customerId || 'FALTA'}\nTipo de solicitud: ${formData.requestTypeId || 'FALTA'}`);
+        showWarning(t('quote.warnings.requiredFields'));
         setSaving(false);
         return;
       }
@@ -597,7 +597,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const selectedRequestType = requestTypes.find(r => r._id === parseInt(formData.requestTypeId) || r._id === formData.requestTypeId);
 
       if (!selectedRequestType) {
-        showError('Error: No se pudo encontrar el tipo de solicitud seleccionado');
+        showError(t('quote.errors.requestTypeNotFound'));
         setSaving(false);
         return;
       }
@@ -700,7 +700,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
       if (mode === 'edit' && quotationId) {
         await quotationService.update(quotationId, quotationData);
-        showSuccess(`Cotización ${statusName} exitosamente`);
+        showSuccess(t('quote.success.statusUpdated').replace('{status}', statusName));
       }
 
       if (onBack) {
@@ -1881,8 +1881,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         message={modalState.message}
         type={modalState.type}
         showCancel={modalState.showCancel}
-        confirmText="Continuar"
-        cancelText="Cancelar"
+        confirmText={t('quote.continue')}
+        cancelText={t('quote.cancel')}
       />
     </div>
   );
