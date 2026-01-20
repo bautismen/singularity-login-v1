@@ -959,7 +959,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         <div className={styles.generalDataGrid}>
           <div className={styles.formGroup}>
             <label className={styles.label}>
-              <span className={styles.required}>*</span>Referencia
+              <span className={styles.required}>*</span>{t('quote.reference')}
             </label>
             <input
               type="text"
@@ -973,7 +973,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
           <div className={styles.formGroup}>
             <label className={styles.label}>
-              <span className={styles.required}>*</span>Cliente
+              <span className={styles.required}>*</span>{t('quote.client')}
             </label>
             <select
               value={formData.customerId}
@@ -988,7 +988,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               className={styles.select}
               disabled={loading || mode === 'view'}
             >
-              <option value="">Seleccione un cliente...</option>
+              <option value="">{t('quote.selectClient')}</option>
               {customers.map((customer) => (
                 <option key={customer._id} value={customer._id}>
                   {customer.fiscal_data?.business_name || customer.commercial_name}
@@ -999,7 +999,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
           <div className={styles.formGroup}>
             <label className={styles.label}>
-              <span className={styles.required}>*</span>Tipo de solicitud
+              <span className={styles.required}>*</span>{t('quote.requestType')}
             </label>
             <select
               value={formData.requestTypeId}
@@ -1014,7 +1014,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               className={styles.select}
               disabled={loading || mode === 'view'}
             >
-              <option value="">Seleccione un tipo...</option>
+              <option value="">{t('quote.selectType')}</option>
               {requestTypes.map((type) => (
                 <option key={type._id} value={type._id}>
                   {type.request_type_name}
@@ -1050,7 +1050,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
           <div className={styles.formGroup}>
             <label className={styles.label}>
-              <span className={styles.required}>*</span>Fecha solicitud
+              <span className={styles.required}>*</span>{t('quote.requestDate')}
             </label>
             <input
               type="date"
@@ -1062,7 +1062,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           </div>
 
           <div className={styles.formGroupWithToggle}>
-            <label className={styles.label}>Es prioritaria</label>
+            <label className={styles.label}>{t('quote.isPriority')}</label>
             <div
               className={`${styles.toggleSwitch} ${formData.isPriority ? styles.active : ''}`}
               onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
@@ -1072,7 +1072,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           </div>
 
           <div className={styles.formGroupWithToggle}>
-            <label className={styles.label}>Es licitación</label>
+            <label className={styles.label}>{t('quote.isBid')}</label>
             <div
               className={`${styles.toggleSwitch} ${formData.isQuote ? styles.active : ''}`}
               onClick={() => setFormData({ ...formData, isQuote: !formData.isQuote })}
@@ -1088,14 +1088,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 onClick={handleCancelQuotation}
                 disabled={saving}
               >
-                Cancelar
+                {t('quote.cancel')}
               </button>
               <button
                 className={styles.sendButton}
                 onClick={handleSendQuotation}
                 disabled={saving}
               >
-                Enviar
+                {t('quote.send')}
               </button>
             </div>
           )}
