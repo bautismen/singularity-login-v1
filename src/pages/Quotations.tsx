@@ -457,7 +457,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const selectedImo = imoList.find(imo => imo._id === merchandiseForm.imoId);
       merchandiseClassifications.push({
         _id_merchandise_classification: 5,
-        merchandise_name_classification: "Peligrosa",
+        merchandise_name_classification: t('quote.dangerousClass'),
         _id_imo: merchandiseForm.imoId,
         imo: selectedImo?.imo || '',
         description_imo: selectedImo?.description || '',
@@ -468,7 +468,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     if (merchandiseForm.refrigerated) {
       merchandiseClassifications.push({
         _id_merchandise_classification: 3,
-        merchandise_name_classification: "Refrigerado",
+        merchandise_name_classification: t('quote.refrigeratedClass'),
         _idunit_temperature: merchandiseForm.tempUnit === '°C' ? 1 : 2,
         unit_temperature: merchandiseForm.tempUnit,
         temperature: parseFloat(merchandiseForm.temperature) || 0
@@ -485,14 +485,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     if (merchandiseForm.oversized) {
       merchandiseClassifications.push({
         _id_merchandise_classification: 4,
-        merchandise_name_classification: "Sobredimensionado"
+        merchandise_name_classification: t('quote.oversizedClass')
       });
     }
 
     if (merchandiseClassifications.length === 0) {
       merchandiseClassifications.push({
         _id_merchandise_classification: 1,
-        merchandise_name_classification: "General"
+        merchandise_name_classification: t('quote.generalClass')
       });
     }
 
@@ -843,16 +843,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         setModalState({
           isOpen: true,
           type: 'warning',
-          title: 'Sin servicios',
-          message: 'No has agregado ningún servicio. ¿Deseas continuar de todos modos?',
+          title: t('quote.noServicesTitle'),
+          message: t('quote.noServicesMessage'),
           showCancel: true,
           onConfirm: async () => {
             if (quotationData.assigned_to.length === 0) {
               setModalState({
                 isOpen: true,
                 type: 'warning',
-                title: 'Sin ejecutivos asignados',
-                message: 'No has asignado ejecutivos. ¿Deseas continuar de todos modos?',
+                title: t('quote.noExecutivesTitle'),
+                message: t('quote.noExecutivesMessage'),
                 showCancel: true,
                 onConfirm: async () => {
                   await performSave(quotationData);
@@ -871,8 +871,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         setModalState({
           isOpen: true,
           type: 'warning',
-          title: 'Sin ejecutivos asignados',
-          message: 'No has asignado ejecutivos. ¿Deseas continuar de todos modos?',
+          title: t('quote.noExecutivesTitle'),
+          message: t('quote.noExecutivesMessage'),
           showCancel: true,
           onConfirm: async () => {
             await performSave(quotationData);
@@ -955,7 +955,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       </div>
 
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Datos Generales</h2>
+        <h2 className={styles.sectionTitle}>{t('quote.generalData')}</h2>
         <div className={styles.generalDataGrid}>
           <div className={styles.formGroup}>
             <label className={styles.label}>
@@ -1024,7 +1024,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Categoría Cliente</label>
+            <label className={styles.label}>{t('quote.customerCategory')}</label>
             <select
               value={formData.customerCategory}
               onChange={(e) => setFormData({ ...formData, customerCategory: parseInt(e.target.value) })}
@@ -1038,7 +1038,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Límite de respuesta</label>
+            <label className={styles.label}>{t('quote.responseDeadline')}</label>
             <input
               type="date"
               value={formData.responseDeadline}
@@ -1145,7 +1145,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   className={styles.select}
                   disabled={loading || mode === 'view'}
                 >
-                  <option value="">Seleccionar...</option>
+                  <option value="">{t('quote.select')}</option>
                   {availableServices.map((srv) => (
                     <option key={srv._id} value={srv.service_name}>
                       {srv.service_name}
@@ -1164,9 +1164,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   onChange={(e) => updateService(service.id, 'operation', e.target.value)}
                   className={styles.select}
                 >
-                  <option value="">Seleccionar...</option>
-                  <option>Exportación</option>
-                  <option>Importación</option>
+                  <option value="">{t('quote.select')}</option>
+                  <option>{t('quote.export')}</option>
+                  <option>{t('quote.import')}</option>
                 </select>
               </div>
 
@@ -1181,7 +1181,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   className={styles.select}
                   disabled={loading || mode === 'view'}
                 >
-                  <option value="">Seleccionar...</option>
+                  <option value="">{t('quote.select')}</option>
                   {incoterms.map((inc) => (
                     <option key={inc._id} value={inc.incoterm}>
                       {inc.incoterm}
@@ -1264,16 +1264,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   onChange={(e) => updateService(service.id, 'shippingType', e.target.value)}
                   className={styles.select}
                 >
-                  <option>Door to Door</option>
-                  <option>Port to Port</option>
-                  <option>Door to Port</option>
-                  <option>Port to Door</option>
+                  <option>{t('quote.doorToDoor')}</option>
+                  <option>{t('quote.portToPort')}</option>
+                  <option>{t('quote.doorToPort')}</option>
+                  <option>{t('quote.portToDoor')}</option>
                 </select>
               </div>
             </div>
 
             <div style={{ marginTop: '1.25rem' }}>
-              <label className={styles.label}>Servicios Asociados</label>
+              <label className={styles.label}>{t('quote.associatedServices')}</label>
               <div className={styles.associatedServices}>
                 <div
                   className={`${styles.serviceChip} ${service.insurance ? styles.selected : ''}`}
@@ -1309,7 +1309,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </div>
 
             <div className={styles.formGroup} style={{ marginTop: '1.25rem' }}>
-              <label className={styles.label}>Comentarios</label>
+              <label className={styles.label}>{t('quote.comments')}</label>
               <textarea
                 value={service.comments}
                 onChange={(e) => updateService(service.id, 'comments', e.target.value)}
@@ -1335,20 +1335,20 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               {service.programFrequency && (
                 <div className={styles.frequencyGrid}>
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>Frecuencia</label>
+                    <label className={styles.label}>{t('quote.frequencyPeriod')}</label>
                     <select
                       value={service.frequency}
                       onChange={(e) => updateService(service.id, 'frequency', e.target.value)}
                       className={styles.select}
                     >
-                      <option value="">Seleccionar...</option>
-                      <option value="semanal">Semanal</option>
-                      <option value="mensual">Mensual</option>
-                      <option value="anual">Anual</option>
+                      <option value="">{t('quote.select')}</option>
+                      <option value="semanal">{t('quote.weekly')}</option>
+                      <option value="mensual">{t('quote.monthly')}</option>
+                      <option value="anual">{t('quote.yearly')}</option>
                     </select>
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>Cantidad</label>
+                    <label className={styles.label}>{t('quote.quantity')}</label>
                     <input
                       type="number"
                       value={service.quantity}
@@ -1358,16 +1358,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     />
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>Medida</label>
+                    <label className={styles.label}>{t('quote.unit')}</label>
                     <select
                       value={service.unit}
                       onChange={(e) => updateService(service.id, 'unit', e.target.value)}
                       className={styles.select}
                     >
                       <option value="">Seleccionar...</option>
-                      <option value="Kilos">Kilos</option>
-                      <option value="Toneladas">Toneladas</option>
-                      <option value="Contenedores">Contenedores</option>
+                      <option value="Kilos">{t('quote.kilos')}</option>
+                      <option value="Toneladas">{t('quote.tons')}</option>
+                      <option value="Contenedores">{t('quote.containers')}</option>
                     </select>
                   </div>
                 </div>
@@ -1403,21 +1403,21 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             <button
                               className={styles.iconButtonSmall}
                               onClick={() => copyMerchandise(service.id, merch.id)}
-                              title="Copiar"
+                              title={t('quote.copy')}
                             >
                               <Copy size={14} />
                             </button>
                             <button
                               className={styles.iconButtonSmall}
                               onClick={() => removeMerchandise(service.id, merch.id)}
-                              title="Eliminar"
+                              title={t('quote.delete')}
                             >
                               <Trash2 size={14} />
                             </button>
                             <button
                               className={styles.viewButtonGreen}
                               onClick={() => openMerchandiseModal(service.id, merch)}
-                              title="Ver"
+                              title={t('quote.view')}
                             >
                               <Eye size={14} />
                             </button>
@@ -1433,7 +1433,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 onClick={() => openMerchandiseModal(service.id)}
               >
                 <Plus size={16} />
-                Agregar mercancía
+                {t('quote.addMerchandise')}
               </button>
             </div>
           </div>
@@ -1441,12 +1441,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
         <button className={styles.addServiceButton} onClick={addService}>
           <Plus size={20} />
-          <span>Agregar Servicio</span>
+          <span>{t('quote.addService')}</span>
         </button>
       </div>
 
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Asignación de Ejecutivos</h2>
+        <h2 className={styles.sectionTitle}>{t('quote.executiveAssignment')}</h2>
         <div className={styles.executivesCard}>
           <div className={styles.executivesList}>
             {executives.map((executive) => (
@@ -1456,7 +1456,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <button
                   className={styles.removeIconButton}
                   onClick={() => removeExecutive(executive.id)}
-                  title="Eliminar"
+                  title={t('quote.delete')}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -1465,7 +1465,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           </div>
           <button className={styles.addExecutiveButton} onClick={openExecutiveModal}>
             <Plus size={16} />
-            Agregar ejecutivo
+            {t('quote.addExecutive')}
           </button>
         </div>
       </div>
@@ -1474,7 +1474,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         <div className={styles.modalOverlay} onClick={closeMerchandiseModal}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Mercancía</h2>
+              <h2 className={styles.modalTitle}>{t('quote.merchandiseModal')}</h2>
               <button className={styles.closeButton} onClick={closeMerchandiseModal}>
                 <X size={24} />
               </button>
@@ -1483,7 +1483,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.modalRow}>
                 <div className={styles.modalFieldLarge}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>Mercancía
+                    <span className={styles.required}>*</span>{t('quote.merchandise')}
                   </label>
                   <input
                     type="text"
@@ -1494,7 +1494,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   />
                 </div>
                 <div className={styles.modalFieldSmall}>
-                  <label className={styles.label}>Es estibable</label>
+                  <label className={styles.label}>{t('quote.isStackable')}</label>
                   <div className={styles.toggleContainer}>
                     <div
                       className={`${styles.toggleSwitch} ${merchandiseForm.stackable ? styles.active : ''}`}
@@ -1507,7 +1507,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.label}>Descripción de mercancía</label>
+                <label className={styles.label}>{t('quote.merchandiseDescription')}</label>
                 <textarea
                   className={styles.textarea}
                   rows={3}
@@ -1518,7 +1518,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
               <div className={styles.formGroup}>
                 <label className={styles.label}>
-                  <span className={styles.required}>*</span>Clasificación de la mercancía
+                  <span className={styles.required}>*</span>{t('quote.merchandiseClassification')}
                 </label>
                 <div className={styles.classificationGrid}>
                   <div className={styles.classificationColumn}>
@@ -1531,7 +1531,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         onChange={(e) => setMerchandiseForm({ ...merchandiseForm, dangerous: e.target.checked })}
                       />
                       <label htmlFor="peligrosa" className={styles.classificationLabel}>
-                        Peligrosa
+                        {t('quote.dangerousClass')}
                       </label>
                     </div>
                     <div className={styles.classificationCheckbox}>
@@ -1543,7 +1543,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         onChange={(e) => setMerchandiseForm({ ...merchandiseForm, refrigerated: e.target.checked })}
                       />
                       <label htmlFor="refrigerada" className={styles.classificationLabel}>
-                        Refrigerada
+                        {t('quote.refrigeratedClass')}
                       </label>
                     </div>
                     <div className={styles.classificationCheckbox}>
@@ -1555,14 +1555,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         onChange={(e) => setMerchandiseForm({ ...merchandiseForm, oversized: e.target.checked })}
                       />
                       <label htmlFor="sobredimensionada" className={styles.classificationLabel}>
-                        Sobredimensionada
+                        {t('quote.oversizedClass')}
                       </label>
                     </div>
                   </div>
                   <div className={styles.classificationColumn}>
                     {merchandiseForm.dangerous && (
                       <div className={styles.formGroup}>
-                        <label className={styles.label}>IMO</label>
+                        <label className={styles.label}>{t('quote.imo')}</label>
                         <select
                           className={styles.select}
                           value={merchandiseForm.imoId}
@@ -1576,7 +1576,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             });
                           }}
                         >
-                          <option value="0">Seleccionar</option>
+                          <option value="0">{t('quote.selectOption')}</option>
                           {imoList.map((imo) => (
                             <option key={imo._id} value={imo._id}>
                               {imo.imo} - {imo.description}
@@ -1587,7 +1587,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     )}
                     {merchandiseForm.refrigerated && (
                       <div className={styles.formGroup}>
-                        <label className={styles.label}>Temperatura</label>
+                        <label className={styles.label}>{t('quote.temperature')}</label>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <input
                             type="text"
@@ -1618,14 +1618,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         onChange={(e) => setMerchandiseForm({ ...merchandiseForm, grain: e.target.checked })}
                       />
                       <label htmlFor="granel" className={styles.classificationLabel}>
-                        Granel
+                        {t('quote.bulkClass')}
                       </label>
                     </div>
                   </div>
                   <div className={styles.classificationColumn}>
                     {merchandiseForm.dangerous && (
                       <div className={styles.formGroup}>
-                        <label className={styles.label}>UN</label>
+                        <label className={styles.label}>{t('quote.un')}</label>
                         <input
                           type="text"
                           placeholder="19"
@@ -1642,19 +1642,19 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div style={{ marginTop: '1.5rem' }}>
                 <button className={styles.addPackageButtonIcon} onClick={openPackagingModal}>
                   <Plus size={18} />
-                  Agregar embalaje
+                  {t('quote.addPackaging')}
                 </button>
                 {currentPackages.length > 0 && (
                   <div className={styles.packagesTable} style={{ marginTop: '1rem' }}>
                     <table className={styles.simpleTable}>
                       <thead>
                         <tr>
-                          <th>EMBALAJE</th>
-                          <th>CANTIDAD</th>
-                          <th>LARGO ({useMetricSystem ? 'cm' : 'plg'})</th>
-                          <th>ALTO ({useMetricSystem ? 'cm' : 'plg'})</th>
-                          <th>ANCHO ({useMetricSystem ? 'cm' : 'plg'})</th>
-                          <th>PESO ({useMetricSystem ? 'kg' : 'lbs'})</th>
+                          <th>{t('quote.packagingTable.packaging')}</th>
+                          <th>{t('quote.packagingTable.quantity')}</th>
+                          <th>{t('quote.packagingTable.length')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})</th>
+                          <th>{t('quote.packagingTable.height')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})</th>
+                          <th>{t('quote.packagingTable.width')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})</th>
+                          <th>{t('quote.packagingTable.weight')} ({useMetricSystem ? t('quote.kg') : t('quote.lbs')})</th>
                           <th></th>
                         </tr>
                       </thead>
@@ -1686,24 +1686,24 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               {currentPackages.length > 0 && (
                 <div className={styles.modalFooterInfo}>
                   <div className={styles.unitTypeToggle}>
-                    <span className={!useMetricSystem ? styles.activeUnitLabel : ''}>Lbs/Pulgadas</span>
+                    <span className={!useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.lbsInches')}</span>
                     <div
                       className={`${styles.toggleSwitch} ${useMetricSystem ? styles.active : ''}`}
                       onClick={() => setUseMetricSystem(!useMetricSystem)}
                     >
                       <div className={styles.toggleThumb}></div>
                     </div>
-                    <span className={useMetricSystem ? styles.activeUnitLabel : ''}>Kgm/Cm</span>
+                    <span className={useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.kgCm')}</span>
                   </div>
                   <div className={styles.totalsDisplay}>
                     <div>
-                      <div className={styles.totalLabel}>Volumen total</div>
+                      <div className={styles.totalLabel}>{t('quote.totalVolume')}</div>
                       <div className={styles.totalValue}>
                         {calculateTotals().totalVolume.toFixed(2)} {useMetricSystem ? 'cm³' : 'plg³'}
                       </div>
                     </div>
                     <div>
-                      <div className={styles.totalLabel}>Peso total</div>
+                      <div className={styles.totalLabel}>{t('quote.totalWeight')}</div>
                       <div className={styles.totalValue}>
                         {calculateTotals().totalWeight.toFixed(2)} {useMetricSystem ? 'kg' : 'lbs'}
                       </div>
@@ -1714,7 +1714,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </div>
             <div className={styles.modalFooter}>
               <button className={styles.saveModalButton} onClick={saveMerchandise}>
-                Guardar
+                {t('quote.save')}
               </button>
             </div>
           </div>
@@ -1725,7 +1725,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         <div className={styles.modalOverlay} onClick={closeExecutiveModal}>
           <div className={styles.modalContentSmall} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Seleccionar Ejecutivo</h2>
+              <h2 className={styles.modalTitle}>{t('quote.selectExecutive')}</h2>
               <button className={styles.closeButton} onClick={closeExecutiveModal}>
                 <X size={24} />
               </button>
@@ -1746,7 +1746,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   ))}
                 {availableExecutives.filter(exec => !executives.some(e => e.id === exec._id)).length === 0 && (
                   <div className={styles.noExecutivesMessage}>
-                    Todos los ejecutivos disponibles ya han sido agregados
+                    {t('quote.allExecutivesAdded')}
                   </div>
                 )}
               </div>
@@ -1759,7 +1759,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         <div className={styles.modalOverlay} onClick={closePackagingModal}>
           <div className={styles.modalContentSmall} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Agregar Embalaje</h2>
+              <h2 className={styles.modalTitle}>{t('quote.addPackagingModal')}</h2>
               <button className={styles.closeButton} onClick={closePackagingModal}>
                 <X size={24} />
               </button>
@@ -1767,25 +1767,25 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <div className={styles.modalBody}>
               <div className={styles.formGroup}>
                 <label className={styles.label}>
-                  <span className={styles.required}>*</span>Tipo de embalaje
+                  <span className={styles.required}>*</span>{t('quote.packagingType')}
                 </label>
                 <select
                   className={styles.select}
                   id="package-type"
                   defaultValue=""
                 >
-                  <option value="">Seleccionar</option>
-                  <option>Caja</option>
-                  <option>Bulto</option>
-                  <option>Palet</option>
-                  <option>Contenedor</option>
-                  <option>Tambor</option>
-                  <option>Saco</option>
+                  <option value="">{t('quote.selectOption')}</option>
+                  <option>{t('quote.box')}</option>
+                  <option>{t('quote.bundle')}</option>
+                  <option>{t('quote.pallet')}</option>
+                  <option>{t('quote.container')}</option>
+                  <option>{t('quote.drum')}</option>
+                  <option>{t('quote.sack')}</option>
                 </select>
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.label}>
-                  <span className={styles.required}>*</span>Cantidad
+                  <span className={styles.required}>*</span>{t('quote.quantity')}
                 </label>
                 <input
                   type="number"
@@ -1797,7 +1797,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.formGrid}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>Largo ({useMetricSystem ? 'cm' : 'plg'})
+                    <span className={styles.required}>*</span>{t('quote.length')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})
                   </label>
                   <input
                     type="number"
@@ -1808,7 +1808,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>Alto ({useMetricSystem ? 'cm' : 'plg'})
+                    <span className={styles.required}>*</span>{t('quote.height')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})
                   </label>
                   <input
                     type="number"
@@ -1821,7 +1821,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.formGrid}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>Ancho ({useMetricSystem ? 'cm' : 'plg'})
+                    <span className={styles.required}>*</span>{t('quote.width')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})
                   </label>
                   <input
                     type="number"
@@ -1832,7 +1832,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>Peso ({useMetricSystem ? 'kg' : 'lbs'})
+                    <span className={styles.required}>*</span>{t('quote.weight')} ({useMetricSystem ? t('quote.kg') : t('quote.lbs')})
                   </label>
                   <input
                     type="number"
@@ -1866,7 +1866,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   }
                 }}
               >
-                Agregar
+                {t('quote.add')}
               </button>
             </div>
           </div>
