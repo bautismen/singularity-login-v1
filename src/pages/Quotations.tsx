@@ -747,6 +747,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               location: "",
               zipcode: service.destinationZip
             },
+            destiny_zipcode: service.destinationZip,
             _id_shipment_type: shipmentTypeMap[service.shippingType] || 1,
             shippment_type_name: service.shippingType,
             _id_operation_type: operationTypeMap[service.operation] || 1,
