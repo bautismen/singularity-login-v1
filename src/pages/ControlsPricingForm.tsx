@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Save, RefreshCw, Trash2, Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -44,10 +44,23 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const [priority, setPriority] = useState(false);
   const [bidding, setBidding] = useState(false);
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
+  const actionsMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadData();
   }, [requestId, controlId]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (actionsMenuRef.current && !actionsMenuRef.current.contains(event.target as Node)) {
+        setShowActionsMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const loadData = async () => {
     if (!requestId) return;
@@ -291,18 +304,39 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           </div>
         </div>
         <div className={styles.formHeaderRight}>
-          <button className={styles.btnSave} onClick={handleSave} disabled={loading}>
-            <Save size={18} />
-            Guardar
-          </button>
-          <button className={styles.btnIconOnly} onClick={loadData} disabled={loading}>
-            <RefreshCw size={18} />
-          </button>
-          {controlId && (
-            <button className={styles.btnIconOnly} onClick={handleDelete} disabled={loading}>
+          <div className={styles.actionButtons}>
+            <button className={styles.btnSave} onClick={handleSave} disabled={loading}>
+              <Save size={18} />
+              Guardar
+            </button>
+            <button className={styles.btnIconOnly} onClick={loadData} disabled={loading}>
+              <RefreshCw size={18} />
+            </button>
+            <button
+              className={styles.btnIconOnly}
+              onClick={handleDelete}
+              disabled={loading || !controlId}
+            >
               <Trash2 size={18} />
             </button>
-          )}
+            <div className={styles.actionsMenuContainer} ref={actionsMenuRef}>
+              <button
+                className={styles.btnActions}
+                onClick={() => setShowActionsMenu(!showActionsMenu)}
+                disabled={loading}
+              >
+                Acciones
+                <ChevronDown size={16} />
+              </button>
+              {showActionsMenu && (
+                <div className={styles.actionsDropdown}>
+                  <button className={styles.dropdownItem}>Exportar</button>
+                  <button className={styles.dropdownItem}>Duplicar</button>
+                  <button className={styles.dropdownItem}>Historial</button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
