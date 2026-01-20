@@ -672,6 +672,19 @@
   width: 100%;
 }
 
+.topCardsContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+  .topCardsContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
 .clientSection {
   background: white;
   border: 1px solid #e5e7eb;

@@ -307,111 +307,113 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       </div>
 
       <div className={styles.formContent}>
-        <div className={styles.clientSection}>
-          <div className={styles.clientHeader}>
-            <div className={styles.clientInfo}>
-              {medalSrc && (
-                <img src={medalSrc} alt="Medal" className={styles.clientMedal} />
-              )}
-              <div>
-                <h2 className={styles.clientName}>
-                  {requestData.customer_business_name}
-                  {priority && (
-                    <img src="/prioridad.png" alt="Prioridad" className={styles.priorityIcon} style={{width: '20px', height: '20px', marginLeft: '8px'}} />
-                  )}
-                </h2>
-                <div className={styles.clientDetails}>
-                  <span className={styles.clientId}>
-                    Ref: {requestData.reference_request}
-                  </span>
-                  <span className={styles.clientExecutive}>
-                    {requestData.requesting_data?.complete_name}
-                  </span>
-                </div>
-                {controlData && (
-                  <div className={styles.clientControl}>
-                    <span className={styles.controlLabel}>Control</span>
-                    <span className={styles.controlBadge}>{controlData.control}</span>
-                  </div>
+        <div className={styles.topCardsContainer}>
+          <div className={styles.clientSection}>
+            <div className={styles.clientHeader}>
+              <div className={styles.clientInfo}>
+                {medalSrc && (
+                  <img src={medalSrc} alt="Medal" className={styles.clientMedal} />
                 )}
-              </div>
-            </div>
-            <div className={styles.clientMeta}>
-              <div className={styles.clientType}>{requestData.request_type_name}</div>
-              <div className={styles.clientToggles}>
-                <div className={styles.switchContainer}>
-                  <label className={styles.switch}>
-                    <input
-                      type="checkbox"
-                      checked={priority}
-                      onChange={(e) => setPriority(e.target.checked)}
-                      disabled
-                    />
-                    <span className={styles.switchSlider}></span>
-                  </label>
-                  <span className={styles.switchLabel}>Prioridad</span>
-                </div>
-                <div className={styles.switchContainer}>
-                  <label className={styles.switch}>
-                    <input
-                      type="checkbox"
-                      checked={bidding}
-                      onChange={(e) => setBidding(e.target.checked)}
-                      disabled
-                    />
-                    <span className={styles.switchSlider}></span>
-                  </label>
-                  <span className={styles.switchLabel}>Licitación</span>
+                <div>
+                  <h2 className={styles.clientName}>
+                    {requestData.customer_business_name}
+                    {priority && (
+                      <img src="/prioridad.png" alt="Prioridad" className={styles.priorityIcon} style={{width: '20px', height: '20px', marginLeft: '8px'}} />
+                    )}
+                  </h2>
+                  <div className={styles.clientDetails}>
+                    <span className={styles.clientId}>
+                      Ref: {requestData.reference_request}
+                    </span>
+                    <span className={styles.clientExecutive}>
+                      {requestData.requesting_data?.complete_name}
+                    </span>
+                  </div>
+                  {controlData && (
+                    <div className={styles.clientControl}>
+                      <span className={styles.controlLabel}>Control</span>
+                      <span className={styles.controlBadge}>{controlData.control}</span>
+                    </div>
+                  )}
                 </div>
               </div>
+              <div className={styles.clientMeta}>
+                <div className={styles.clientType}>{requestData.request_type_name}</div>
+                <div className={styles.clientToggles}>
+                  <div className={styles.switchContainer}>
+                    <label className={styles.switch}>
+                      <input
+                        type="checkbox"
+                        checked={priority}
+                        onChange={(e) => setPriority(e.target.checked)}
+                        disabled
+                      />
+                      <span className={styles.switchSlider}></span>
+                    </label>
+                    <span className={styles.switchLabel}>Prioridad</span>
+                  </div>
+                  <div className={styles.switchContainer}>
+                    <label className={styles.switch}>
+                      <input
+                        type="checkbox"
+                        checked={bidding}
+                        onChange={(e) => setBidding(e.target.checked)}
+                        disabled
+                      />
+                      <span className={styles.switchSlider}></span>
+                    </label>
+                    <span className={styles.switchLabel}>Licitación</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className={styles.clientActions}>
+              <button className={styles.btnDecline} disabled={loading}>
+                Declinar
+              </button>
+              <button
+                className={styles.btnQuote}
+                onClick={handleMarkAsQuoted}
+                disabled={loading || !controlId || statusControl._id_status_control === 5}
+              >
+                Cotizada
+              </button>
             </div>
           </div>
-          <div className={styles.clientActions}>
-            <button className={styles.btnDecline} disabled={loading}>
-              Declinar
-            </button>
-            <button
-              className={styles.btnQuote}
-              onClick={handleMarkAsQuoted}
-              disabled={loading || !controlId || statusControl._id_status_control === 5}
-            >
-              Cotizada
-            </button>
-          </div>
-        </div>
 
-        <div className={styles.suppliersSection}>
-          <h3 className={styles.sectionTitle}>Asignación de proveedores</h3>
-          <div className={styles.suppliersList}>
-            {suppliers.map((supplier) => (
-              <div key={supplier.idsuplier} className={styles.supplierItem}>
-                <span className={styles.supplierLabel}>Proveedor</span>
-                <input
-                  type="text"
-                  value={supplier.supplier_associated_name}
-                  onChange={(e) => updateSupplier(supplier.idsuplier, e.target.value)}
-                  className={styles.supplierInput}
-                  placeholder="Nombre del proveedor"
-                  disabled={loading}
-                />
-                <button
-                  className={styles.btnRemoveSupplier}
-                  onClick={() => removeSupplier(supplier.idsuplier)}
-                  disabled={loading}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            ))}
+          <div className={styles.suppliersSection}>
+            <h3 className={styles.sectionTitle}>Asignación de proveedores</h3>
+            <div className={styles.suppliersList}>
+              {suppliers.map((supplier) => (
+                <div key={supplier.idsuplier} className={styles.supplierItem}>
+                  <span className={styles.supplierLabel}>Proveedor</span>
+                  <input
+                    type="text"
+                    value={supplier.supplier_associated_name}
+                    onChange={(e) => updateSupplier(supplier.idsuplier, e.target.value)}
+                    className={styles.supplierInput}
+                    placeholder="Nombre del proveedor"
+                    disabled={loading}
+                  />
+                  <button
+                    className={styles.btnRemoveSupplier}
+                    onClick={() => removeSupplier(supplier.idsuplier)}
+                    disabled={loading}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              className={styles.btnAddSupplier}
+              onClick={addSupplier}
+              disabled={loading}
+            >
+              <Plus size={16} />
+              Agregar proveedor
+            </button>
           </div>
-          <button
-            className={styles.btnAddSupplier}
-            onClick={addSupplier}
-            disabled={loading}
-          >
-            <Plus size={16} />
-            Agregar proveedor
-          </button>
         </div>
 
         <div className={styles.generalSection}>
