@@ -478,6 +478,19 @@ Deno.serve(async (req: Request) => {
         );
       }
 
+      // Eliminar el control del array pricing_control_numbers en assigned_to
+      await requestsCollection.updateOne(
+        { _id: control._idrequest },
+        {
+          $pull: {
+            "assigned_to.$[].pricing_control_numbers": {
+              _id_pricing_controls: new ObjectId(id),
+            },
+          },
+        }
+      );
+
+      // Eliminar el control de la colección
       await controlsCollection.deleteOne({ _id: new ObjectId(id) });
 
       return new Response(
