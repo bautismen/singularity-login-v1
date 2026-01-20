@@ -84,10 +84,15 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         setBidding(request.bidding === 1);
 
         const availableServices = request.services?.filter((s: any) => !s.used) || [];
-        setSelectedServices(availableServices);
+        setSelectedServices(availableServices.map((s: any) => ({
+          ...s,
+          idservice: s.idservice || s._id
+        })));
 
-        const expandedIds = new Set(request.services?.map((s: any) => s.idservice) || []);
-        setExpandedServices(expandedIds);
+        if (availableServices.length > 0) {
+          const expandedIds = new Set(availableServices.map((s: any) => s.idservice || s._id));
+          setExpandedServices(expandedIds);
+        }
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -156,7 +161,20 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         if (serviceCopy.merchandise) {
           delete serviceCopy.merchandise;
         }
+        if (!serviceCopy.idservice) {
+          serviceCopy.idservice = serviceCopy._id;
+        }
         return serviceCopy;
+      });
+
+      console.log('Saving control with data:', {
+        _idrequest: requestId,
+        suppliers,
+        servicesCount: servicesData.length,
+        status_control: statusControl,
+        network: generalData.network,
+        complexity: generalData.complexity,
+        currency: generalData.currency
       });
 
       const dataToSave = {

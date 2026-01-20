@@ -190,19 +190,25 @@ Deno.serve(async (req: Request) => {
 
       // Marcar servicios como usados en la solicitud original
       if (services && services.length > 0) {
-        const serviceIds = services.map((s: any) => s._id || s.idservice);
+        const serviceIds = services.map((s: any) => {
+          if (s.idservice !== undefined) return s.idservice;
+          if (s._id !== undefined) return s._id;
+          return null;
+        }).filter((id: any) => id !== null);
 
-        await requestsCollection.updateOne(
-          { _id: new ObjectId(_idrequest) },
-          {
-            $set: {
-              "services.$[elem].used": true,
+        if (serviceIds.length > 0) {
+          await requestsCollection.updateOne(
+            { _id: new ObjectId(_idrequest) },
+            {
+              $set: {
+                "services.$[elem].used": true,
+              },
             },
-          },
-          {
-            arrayFilters: [{ "elem.idservice": { $in: serviceIds } }],
-          }
-        );
+            {
+              arrayFilters: [{ "elem.idservice": { $in: serviceIds } }],
+            }
+          );
+        }
       }
 
       const createdControl = await controlsCollection.findOne({
