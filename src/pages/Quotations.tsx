@@ -297,7 +297,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             incoterm: shipment.incoterm || '',
             origin: shipment.origin?.country_code || '',
             destination: shipment.destination?.country_code || '',
-            destinationZip: shipment.destination?.zipcode || '',
+            destinationZip: shipment.destiny_zipcode || shipment.destination?.zipcode || '',
             expectedDeparture: shipment.departure_date_approximate?.$date ? new Date(shipment.departure_date_approximate.$date).toISOString().split('T')[0] : (shipment.departure_date_approximate ? new Date(shipment.departure_date_approximate).toISOString().split('T')[0] : ''),
             insurance: hasInsurance,
             maneuver: hasManeuver,
