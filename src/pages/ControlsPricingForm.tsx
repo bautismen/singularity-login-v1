@@ -84,15 +84,18 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         setBidding(request.bidding === 1);
 
         const availableServices = request.services?.filter((s: any) => !s.used) || [];
-        setSelectedServices(availableServices.map((s: any) => ({
-          ...s,
-          idservice: s.idservice || s._id
-        })));
+        const servicesWithId = availableServices.map((s: any) => {
+          const serviceId = s.idservice || s._id;
+          return {
+            ...s,
+            idservice: serviceId
+          };
+        });
 
-        if (availableServices.length > 0) {
-          const expandedIds = new Set(availableServices.map((s: any) => s.idservice || s._id));
-          setExpandedServices(expandedIds);
-        }
+        setSelectedServices(servicesWithId);
+
+        const allServiceIds = new Set(request.services?.map((s: any) => s.idservice || s._id) || []);
+        setExpandedServices(allServiceIds);
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -631,41 +634,42 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                         </div>
                       </div>
 
-                      {service.associated_services && service.associated_services.length > 0 && (
-                        <div className={styles.associatedServices}>
-                          <label>Servicios Asociados</label>
-                          <div className={styles.servicesChips}>
-                            {service.associated_services.map((assocService: any) => (
+                      <div className={styles.associatedServices}>
+                        <label>Servicios Asociados</label>
+                        <div className={styles.servicesChips}>
+                          {service.associated_services && service.associated_services.length > 0 ? (
+                            service.associated_services.map((assocService: any) => (
                               <span key={assocService._id_service} className={`${styles.serviceChip} ${styles.serviceChipActive}`}>
                                 {assocService.service_name}
                               </span>
-                            ))}
-                          </div>
+                            ))
+                          ) : (
+                            <span style={{color: '#9ca3af', fontSize: '14px'}}>Sin servicios asociados</span>
+                          )}
                         </div>
-                      )}
+                      </div>
 
-                      {service.comments && (
-                        <div className={styles.formGroup}>
-                          <label>Comentarios</label>
-                          <textarea
-                            value={service.comments}
-                            className={styles.formTextarea}
-                            rows={2}
+                      <div className={styles.formGroup}>
+                        <label>Comentarios</label>
+                        <textarea
+                          value={service.comments || ''}
+                          className={styles.formTextarea}
+                          rows={2}
+                          disabled
+                          placeholder="Sin comentarios"
+                        />
+                      </div>
+
+                      <div className={styles.frequencySection}>
+                        <label className={styles.checkboxLabel}>
+                          <input
+                            type="checkbox"
+                            checked={service.scheduled_frequency === 1 || service.scheduled_frequency === true}
                             disabled
                           />
-                        </div>
-                      )}
-
-                      {service.scheduled_frequency && (
-                        <div className={styles.frequencySection}>
-                          <label className={styles.checkboxLabel}>
-                            <input
-                              type="checkbox"
-                              checked={true}
-                              disabled
-                            />
-                            Programar frecuencia
-                          </label>
+                          Programar frecuencia
+                        </label>
+                        {(service.scheduled_frequency === 1 || service.scheduled_frequency === true) && (
                           <div className={styles.frequencyGrid}>
                             <div className={styles.formGroup}>
                               <label>Frecuencia</label>
@@ -695,12 +699,12 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               />
                             </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
 
-                      {service.merchandise && service.merchandise.length > 0 && (
-                        <div className={styles.merchandiseSection}>
-                          <h4 className={styles.merchandiseTitle}>MERCANCÍA</h4>
+                      <div className={styles.merchandiseSection}>
+                        <h4 className={styles.merchandiseTitle}>MERCANCÍA</h4>
+                        {service.merchandise && service.merchandise.length > 0 ? (
                           <div className={styles.merchandiseTable}>
                             <div className={styles.merchandiseHeader}>
                               <div>MERCANCÍA</div>
@@ -751,8 +755,10 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               </div>
                             ))}
                           </div>
-                        </div>
-                      )}
+                        ) : (
+                          <p style={{color: '#9ca3af', fontSize: '14px', marginTop: '8px'}}>Sin mercancía registrada</p>
+                        )}
+                      </div>
                     </>
                   )}
                 </div>
