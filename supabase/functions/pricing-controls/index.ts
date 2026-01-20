@@ -228,6 +228,50 @@ Deno.serve(async (req: Request) => {
         _id: result.insertedId,
       });
 
+      // Actualizar assigned_to en la solicitud
+      const executiveId = new ObjectId(request.requesting_data._id_executive);
+      const pricingControlEntry = {
+        _id_pricing_controls: result.insertedId,
+        _id_status_control: newControl.status_control._id_status_control,
+        control: controlCode,
+        updated_date: now,
+      };
+
+      // Verificar si el ejecutivo ya existe en assigned_to
+      const requestWithAssignedTo = await requestsCollection.findOne({
+        _id: new ObjectId(_idrequest),
+        "assigned_to._id_executive": executiveId,
+      });
+
+      if (requestWithAssignedTo) {
+        // El ejecutivo ya existe, agregar el control a su array pricing_control_numbers
+        await requestsCollection.updateOne(
+          {
+            _id: new ObjectId(_idrequest),
+            "assigned_to._id_executive": executiveId,
+          },
+          {
+            $push: {
+              "assigned_to.$.pricing_control_numbers": pricingControlEntry,
+            },
+          }
+        );
+      } else {
+        // El ejecutivo no existe en assigned_to, agregarlo con el control
+        await requestsCollection.updateOne(
+          { _id: new ObjectId(_idrequest) },
+          {
+            $push: {
+              assigned_to: {
+                _id_executive: executiveId,
+                complete_name: request.requesting_data.complete_name,
+                pricing_control_numbers: [pricingControlEntry],
+              },
+            },
+          }
+        );
+      }
+
       return new Response(JSON.stringify(createdControl), {
         status: 201,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -360,6 +404,28 @@ Deno.serve(async (req: Request) => {
       const updatedControl = await controlsCollection.findOne({
         _id: new ObjectId(_id),
       });
+
+      // Actualizar el pricing_control_numbers en assigned_to de la solicitud
+      if (updatedControl) {
+        await requestsCollection.updateOne(
+          {
+            _id: currentControl._idrequest,
+            "assigned_to.pricing_control_numbers._id_pricing_controls": new ObjectId(_id),
+          },
+          {
+            $set: {
+              "assigned_to.$[executive].pricing_control_numbers.$[control]._id_status_control": updatedControl.status_control._id_status_control,
+              "assigned_to.$[executive].pricing_control_numbers.$[control].updated_date": updatedControl.updated_date,
+            },
+          },
+          {
+            arrayFilters: [
+              { "executive._id_executive": currentControl._id_executive },
+              { "control._id_pricing_controls": new ObjectId(_id) },
+            ],
+          }
+        );
+      }
 
       return new Response(JSON.stringify(updatedControl), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
