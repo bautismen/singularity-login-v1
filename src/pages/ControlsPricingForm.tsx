@@ -83,16 +83,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         setPriority(request.priority === 1);
         setBidding(request.bidding === 1);
 
-        const availableServices = request.services?.filter((s: any) => !s.used) || [];
-        const servicesWithId = availableServices.map((s: any) => {
-          const serviceId = s.id_service_item || s.idservice || s._id;
-          return {
-            ...s,
-            idservice: serviceId
-          };
-        });
-
-        setSelectedServices(servicesWithId);
+        setSelectedServices([]);
 
         const allServiceIds = new Set(request.services?.map((s: any) => s.id_service_item || s.idservice || s._id) || []);
         setExpandedServices(allServiceIds);
@@ -348,24 +339,30 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             <div className={styles.clientMeta}>
               <div className={styles.clientType}>{requestData.request_type_name}</div>
               <div className={styles.clientToggles}>
-                <label className={styles.toggleLabel}>
-                  <input
-                    type="checkbox"
-                    checked={priority}
-                    onChange={(e) => setPriority(e.target.checked)}
-                    disabled
-                  />
-                  <span>prioridad</span>
-                </label>
-                <label className={styles.toggleLabel}>
-                  <input
-                    type="checkbox"
-                    checked={bidding}
-                    onChange={(e) => setBidding(e.target.checked)}
-                    disabled
-                  />
-                  <span>licitación</span>
-                </label>
+                <div className={styles.switchContainer}>
+                  <label className={styles.switch}>
+                    <input
+                      type="checkbox"
+                      checked={priority}
+                      onChange={(e) => setPriority(e.target.checked)}
+                      disabled
+                    />
+                    <span className={styles.switchSlider}></span>
+                  </label>
+                  <span className={styles.switchLabel}>Prioridad</span>
+                </div>
+                <div className={styles.switchContainer}>
+                  <label className={styles.switch}>
+                    <input
+                      type="checkbox"
+                      checked={bidding}
+                      onChange={(e) => setBidding(e.target.checked)}
+                      disabled
+                    />
+                    <span className={styles.switchSlider}></span>
+                  </label>
+                  <span className={styles.switchLabel}>Licitación</span>
+                </div>
               </div>
             </div>
           </div>
@@ -534,17 +531,20 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   <div className={styles.serviceHeader}>
                     <div className={styles.serviceNumber}>{index + 1}</div>
                     <div style={{flex: 1}}>
-                      <label className={styles.checkboxLabel} style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleService(serviceId)}
-                          disabled={isUsed || loading}
-                        />
-                        <span style={{fontWeight: 600}}>
+                      <div className={styles.switchContainer}>
+                        <label className={styles.switch}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleService(serviceId)}
+                            disabled={isUsed || loading}
+                          />
+                          <span className={styles.switchSlider}></span>
+                        </label>
+                        <span className={styles.switchLabel} style={{fontWeight: 600}}>
                           {isSelected ? 'Servicio incluido' : isUsed ? 'Ya usado en otro control' : 'Incluir servicio'}
                         </span>
-                      </label>
+                      </div>
                     </div>
                     <button
                       className={styles.btnServiceAction}
