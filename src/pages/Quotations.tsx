@@ -149,7 +149,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         fetch(`${BASE_URL}/functions/v1/catalog-services`, {
           headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
         }),
-        fetch(`${BASE_URL}/functions/v1/executives?departamento=Tráfico`, {
+        fetch(`${BASE_URL}/functions/v1/executives?departamento=Pricing`, {
           headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
         }),
         fetch(`${BASE_URL}/functions/v1/catalog-incoterms`, {
@@ -177,7 +177,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       setCustomers(customersData.filter((c: any) => c.status === 'activo' || c.datastate === 1));
       setRequestTypes(requestTypesData.filter((r: any) => r.status === 1));
       setAvailableServices(servicesData.filter((s: any) => s.status === 1 && s.category === 1));
-      setAvailableExecutives(executivesData.filter((e: any) => e.estado === 1));
+      setAvailableExecutives(executivesData.filter((e: any) => e.estado === 1 && e.activo === true));
       setIncoterms(incotermsData.filter((i: any) => i.status === 1));
       setCountries(countriesData.filter((co: any) => co.status === 1));
       setImoList(imoData.filter((imo: any) => imo.status === 1));
@@ -735,12 +735,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         return;
       }
 
+      const hasAssignedExecutives = executives.length > 0;
       const quotationData = {
         reference_request: formData.referenceRequest,
         priority: formData.isPriority ? 1 : 0,
         customer_category: formData.customerCategory,
-        _id_status_request: 1,
-        status_request_name: 'Nueva',
+        _id_status_request: hasAssignedExecutives ? 4 : 1,
+        status_request_name: hasAssignedExecutives ? 'Asignada' : 'Nueva',
         request_date: new Date(formData.created),
         deadline_date: formData.responseDeadline ? new Date(formData.responseDeadline) : null,
         _id_request_type: selectedRequestType._id,
