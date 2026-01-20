@@ -140,8 +140,54 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     responseDeadline: '',
   });
 
+  const generateReferenceNumber = async () => {
+    try {
+      const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+      const response = await fetch(`${BASE_URL}/functions/v1/quotation-requests`, {
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const quotations = await response.json();
+
+      const currentYear = new Date().getFullYear().toString().slice(-2);
+
+      const yearPrefix = `SC${currentYear}-`;
+      const currentYearQuotations = quotations.filter((q: any) =>
+        q.reference_request?.startsWith(yearPrefix)
+      );
+
+      let nextSequence = 1;
+      if (currentYearQuotations.length > 0) {
+        const sequences = currentYearQuotations
+          .map((q: any) => {
+            const parts = q.reference_request?.split('-');
+            return parts && parts.length > 1 ? parseInt(parts[1]) : 0;
+          })
+          .filter((n: number) => !isNaN(n));
+
+        if (sequences.length > 0) {
+          nextSequence = Math.max(...sequences) + 1;
+        }
+      }
+
+      const referenceNumber = `${yearPrefix}${nextSequence.toString().padStart(4, '0')}`;
+
+      setFormData(prev => ({ ...prev, referenceRequest: referenceNumber }));
+    } catch (error) {
+      console.error('Error generating reference number:', error);
+    }
+  };
+
   useEffect(() => {
     loadCatalogs();
+    if (mode === 'create') {
+      generateReferenceNumber();
+    }
   }, []);
 
   useEffect(() => {
@@ -655,9 +701,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             operation: service.operation,
             _id_incoterm: incoterms.find(i => i.incoterm_name === service.incoterm)?._id || 0,
             incoterm_name: service.incoterm,
-            _id_country_origin: countries.find(c => c.country_name === service.origin)?._id || 0,
+            _id_country_origin: countries.find(c => c.country_code === service.origin)?._id || 0,
             origin_country_name: service.origin,
-            _id_country_destination: countries.find(c => c.country_name === service.destination)?._id || 0,
+            _id_country_destination: countries.find(c => c.country_code === service.destination)?._id || 0,
             destination_country_name: service.destination,
             zip_code: service.destinationZip,
             expected_departure: service.expectedDeparture ? new Date(service.expectedDeparture) : null,
@@ -1205,8 +1251,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 >
                   <option value="">Seleccionar país...</option>
                   {countries.map((country) => (
-                    <option key={country._id} value={`${country.country_name} (${country.country_code})`}>
-                      {country.country_name} ({country.country_code})
+                    <option key={country._id} value={country.country_code}>
+                      {country.name_country}
                     </option>
                   ))}
                 </select>
@@ -1225,8 +1271,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 >
                   <option value="">Seleccionar país...</option>
                   {countries.map((country) => (
-                    <option key={country._id} value={`${country.country_name} (${country.country_code})`}>
-                      {country.country_name} ({country.country_code})
+                    <option key={country._id} value={country.country_code}>
+                      {country.name_country}
                     </option>
                   ))}
                 </select>
