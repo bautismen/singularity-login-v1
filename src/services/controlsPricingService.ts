@@ -21,7 +21,13 @@ export interface ControlsPricingRequest {
   assigned_to: Array<{
     _id_executive: string;
     complete_name: string;
-    control_number: string;
+    control_number?: string;
+    pricing_control_numbers?: Array<{
+      _id_pricing_controls: string;
+      _id_status_control: number;
+      control: string;
+      updated_date: string;
+    }>;
   }>;
   services: Array<{
     _id_operation_type: number;

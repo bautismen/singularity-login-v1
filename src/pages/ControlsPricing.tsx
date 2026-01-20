@@ -15,6 +15,7 @@ export function ControlsPricing() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [selectedControlId, setSelectedControlId] = useState<string | null>(null);
 
   useEffect(() => {
     loadRequests();
@@ -39,17 +40,25 @@ export function ControlsPricing() {
 
   const handleAddControl = (requestId: string) => {
     setSelectedRequestId(requestId);
+    setSelectedControlId(null);
+    setShowForm(true);
+  };
+
+  const handleEditControl = (requestId: string, controlId: string) => {
+    setSelectedRequestId(requestId);
+    setSelectedControlId(controlId);
     setShowForm(true);
   };
 
   const handleBackToList = () => {
     setShowForm(false);
     setSelectedRequestId(null);
+    setSelectedControlId(null);
     loadRequests();
   };
 
   if (showForm) {
-    return <ControlsPricingForm requestId={selectedRequestId} onBack={handleBackToList} />;
+    return <ControlsPricingForm requestId={selectedRequestId} controlId={selectedControlId} onBack={handleBackToList} />;
   }
 
   const filterRequests = () => {
@@ -280,7 +289,28 @@ export function ControlsPricing() {
                             <circle cx="12" cy="12" r="3"></circle>
                           </svg>
                           <span className={styles.assignedName}>{assigned.complete_name}</span>
-                          <span className={styles.controlCode}>{assigned.control_number}</span>
+
+                          {assigned.pricing_control_numbers && assigned.pricing_control_numbers.length > 0 ? (
+                            <div className={styles.controlButtonsContainer}>
+                              {assigned.pricing_control_numbers.map((control, controlIndex) => (
+                                <button
+                                  key={controlIndex}
+                                  className={styles.controlButton}
+                                  onClick={() => handleEditControl(request._id, control._id_pricing_controls)}
+                                >
+                                  {control.control}
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <button
+                              className={styles.addControlSmallButton}
+                              onClick={() => handleAddControl(request._id)}
+                            >
+                              <Plus size={14} />
+                              Agregar control
+                            </button>
+                          )}
                         </div>
                         <div className={styles.controlNumberActions}>
                           {daysElapsed !== null && (

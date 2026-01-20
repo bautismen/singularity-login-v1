@@ -429,6 +429,55 @@
   border-color: #374151;
 }
 
+.controlButtonsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.controlButton {
+  padding: 0.375rem 0.875rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.controlButton:hover {
+  background: #2563eb;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.addControlSmallButton {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  background: transparent;
+  color: #14b8a6;
+  border: 1px dashed #14b8a6;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.813rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.addControlSmallButton:hover {
+  background: #f0fdfa;
+  border-color: #0d9488;
+  color: #0d9488;
+}
+
+.dark .addControlSmallButton:hover {
+  background: rgba(20, 184, 166, 0.1);
+}
+
 .controlNumberActions {
   display: flex;
   align-items: center;
