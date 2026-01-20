@@ -85,7 +85,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
         const availableServices = request.services?.filter((s: any) => !s.used) || [];
         const servicesWithId = availableServices.map((s: any) => {
-          const serviceId = s.idservice || s._id;
+          const serviceId = s.id_service_item || s.idservice || s._id;
           return {
             ...s,
             idservice: serviceId
@@ -94,7 +94,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
         setSelectedServices(servicesWithId);
 
-        const allServiceIds = new Set(request.services?.map((s: any) => s.idservice || s._id) || []);
+        const allServiceIds = new Set(request.services?.map((s: any) => s.id_service_item || s.idservice || s._id) || []);
         setExpandedServices(allServiceIds);
       }
     } catch (error) {
@@ -126,7 +126,9 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   };
 
   const toggleService = (serviceId: number) => {
-    const service = requestData.services.find((s: any) => s.idservice === serviceId);
+    const service = requestData.services.find((s: any) =>
+      (s.id_service_item || s.idservice || s._id) === serviceId
+    );
     if (!service) return;
 
     const isSelected = selectedServices.some(s => s.idservice === serviceId);
@@ -134,7 +136,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     if (isSelected) {
       setSelectedServices(selectedServices.filter(s => s.idservice !== serviceId));
     } else {
-      setSelectedServices([...selectedServices, service]);
+      setSelectedServices([...selectedServices, { ...service, idservice: serviceId }]);
     }
   };
 
@@ -513,13 +515,16 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           <h3 className={styles.sectionTitle}>Servicios</h3>
           {requestData.services && requestData.services.length > 0 ? (
             requestData.services.map((service: any, index: number) => {
-              const isSelected = selectedServices.some(s => s.idservice === service.idservice);
+              const serviceId = service.id_service_item || service.idservice || service._id;
+              const isSelected = selectedServices.some(s => s.idservice === serviceId);
               const isUsed = service.used && !isSelected;
-              const isExpanded = expandedServices.has(service.idservice);
+              const isExpanded = expandedServices.has(serviceId);
+
+              const shipment = service.shipments && service.shipments.length > 0 ? service.shipments[0] : {};
 
               return (
                 <div
-                  key={service.idservice}
+                  key={serviceId}
                   className={styles.serviceCard}
                   style={{
                     opacity: isUsed ? 0.5 : 1,
@@ -533,7 +538,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                         <input
                           type="checkbox"
                           checked={isSelected}
-                          onChange={() => toggleService(service.idservice)}
+                          onChange={() => toggleService(serviceId)}
                           disabled={isUsed || loading}
                         />
                         <span style={{fontWeight: 600}}>
@@ -543,14 +548,14 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                     </div>
                     <button
                       className={styles.btnServiceAction}
-                      onClick={() => toggleServiceExpanded(service.idservice)}
+                      onClick={() => toggleServiceExpanded(serviceId)}
                       disabled={loading}
                     >
                       {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </button>
                     <button
                       className={styles.btnServiceAction}
-                      onClick={() => toggleService(service.idservice)}
+                      onClick={() => toggleService(serviceId)}
                       disabled={isUsed || loading}
                     >
                       <X size={16} />
@@ -564,7 +569,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Servicio</label>
                           <input
                             type="text"
-                            value={service.service?.name || service.service_name || ''}
+                            value={service.service_name || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -573,7 +578,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Operación</label>
                           <input
                             type="text"
-                            value={service.operation_type?.name || (service._id_operation_type === 1 ? 'Importación' : service._id_operation_type === 2 ? 'Exportación' : '') || ''}
+                            value={shipment.operation_type_name || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -582,7 +587,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Incoterm</label>
                           <input
                             type="text"
-                            value={service.incoterm?.name || service.incoterm_name || ''}
+                            value={shipment.incoterm || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -591,7 +596,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>Salida esperada</label>
                           <input
                             type="date"
-                            value={service.expected_departure ? new Date(service.expected_departure).toISOString().split('T')[0] : ''}
+                            value={shipment.departure_date_approximate ? new Date(shipment.departure_date_approximate.$date || shipment.departure_date_approximate).toISOString().split('T')[0] : ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -600,7 +605,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Origen</label>
                           <input
                             type="text"
-                            value={service.origin?.code || service.origin?.country || ''}
+                            value={shipment.origin?.country_code ? `(${shipment.origin.country_code}) ${shipment.origin.location || ''}` : shipment.origin?.location || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -609,7 +614,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Destino</label>
                           <input
                             type="text"
-                            value={service.destination?.code || service.destination?.country || ''}
+                            value={shipment.destination?.country_code ? `(${shipment.destination.country_code}) ${shipment.destination.location || ''}` : shipment.destination?.location || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -618,7 +623,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Código postal de destino</label>
                           <input
                             type="text"
-                            value={service.destination_postal_code || service.destination?.postal_code || ''}
+                            value={shipment.destination?.zipcode || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -627,7 +632,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Tipo de envío</label>
                           <input
                             type="text"
-                            value={service.shipping_type?.name || service.shipping_type || ''}
+                            value={shipment.shippment_type_name || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -637,10 +642,10 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                       <div className={styles.associatedServices}>
                         <label>Servicios Asociados</label>
                         <div className={styles.servicesChips}>
-                          {service.associated_services && service.associated_services.length > 0 ? (
-                            service.associated_services.map((assocService: any, idx: number) => (
-                              <span key={assocService._id_service || assocService.idservice || idx} className={`${styles.serviceChip} ${styles.serviceChipActive}`}>
-                                {assocService.service_name || assocService.name || 'Servicio'}
+                          {shipment.services_asociated && shipment.services_asociated.length > 0 ? (
+                            shipment.services_asociated.map((assocService: any, idx: number) => (
+                              <span key={assocService._id_service_associated?.$oid || idx} className={`${styles.serviceChip} ${styles.serviceChipActive}`}>
+                                {assocService.service_associated_name || 'Servicio'}
                               </span>
                             ))
                           ) : (
@@ -652,7 +657,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                       <div className={styles.formGroup}>
                         <label>Comentarios</label>
                         <textarea
-                          value={service.comments || ''}
+                          value={shipment.comments || ''}
                           className={styles.formTextarea}
                           rows={2}
                           disabled
@@ -664,18 +669,18 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                         <label className={styles.checkboxLabel}>
                           <input
                             type="checkbox"
-                            checked={service.scheduled_frequency === 1 || service.scheduled_frequency === true || service.schedule_frequency === 1 || service.schedule_frequency === true}
+                            checked={!!shipment.projection_shipment}
                             disabled
                           />
                           Programar frecuencia
                         </label>
-                        {(service.scheduled_frequency === 1 || service.scheduled_frequency === true || service.schedule_frequency === 1 || service.schedule_frequency === true) && (
+                        {shipment.projection_shipment && (
                           <div className={styles.frequencyGrid}>
                             <div className={styles.formGroup}>
                               <label>Frecuencia</label>
                               <input
                                 type="text"
-                                value={service.frequency?.name || service.frequency || ''}
+                                value={shipment.projection_shipment.frecuency || ''}
                                 className={styles.formInput}
                                 disabled
                               />
@@ -684,7 +689,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               <label>Cantidad</label>
                               <input
                                 type="number"
-                                value={service.frequency_quantity || service.quantity || 0}
+                                value={shipment.projection_shipment.num || 0}
                                 className={styles.formInput}
                                 disabled
                               />
@@ -693,7 +698,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               <label>Medida</label>
                               <input
                                 type="text"
-                                value={service.frequency_measure?.name || service.measure || ''}
+                                value={shipment.projection_shipment.measurement_frecuency || ''}
                                 className={styles.formInput}
                                 disabled
                               />
@@ -704,7 +709,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
                       <div className={styles.merchandiseSection}>
                         <h4 className={styles.merchandiseTitle}>MERCANCÍA</h4>
-                        {service.merchandise && service.merchandise.length > 0 ? (
+                        {shipment.cargo && shipment.cargo.length > 0 ? (
                           <div className={styles.merchandiseTable}>
                             <div className={styles.merchandiseHeader}>
                               <div>MERCANCÍA</div>
@@ -714,46 +719,51 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               <div>VOL. TOTAL</div>
                               <div>PESO TOTAL</div>
                             </div>
-                            {service.merchandise.map((merch: any, merchIndex: number) => (
-                              <div key={merchIndex} className={styles.merchandiseRow}>
-                                <input
-                                  type="text"
-                                  value={merch.merchandise_name || merch.name || ''}
-                                  className={styles.merchandiseInput}
-                                  disabled
-                                />
-                                <input
-                                  type="text"
-                                  value={merch.dangerous === 1 || merch.dangerous === true ? 'Sí' : 'No'}
-                                  className={styles.merchandiseInput}
-                                  disabled
-                                />
-                                <input
-                                  type="text"
-                                  value={merch.classification?.name || merch.classification || ''}
-                                  className={styles.merchandiseInput}
-                                  disabled
-                                />
-                                <input
-                                  type="text"
-                                  value={merch.stackable === 1 || merch.stackable === true ? 'Sí' : 'No'}
-                                  className={styles.merchandiseInput}
-                                  disabled
-                                />
-                                <input
-                                  type="text"
-                                  value={merch.total_volume ? `${merch.total_volume} ${merch.volume_unit || 'KG'}` : ''}
-                                  className={styles.merchandiseInput}
-                                  disabled
-                                />
-                                <input
-                                  type="text"
-                                  value={merch.total_weight ? `${merch.total_weight} ${merch.weight_unit || 'KG'}` : ''}
-                                  className={styles.merchandiseInput}
-                                  disabled
-                                />
-                              </div>
-                            ))}
+                            {shipment.cargo.map((cargo: any, cargoIndex: number) => {
+                              const isPeligrosa = cargo.merchandise_classification?.some((mc: any) => mc._id_merchandise_classification === 5);
+                              const classifications = cargo.merchandise_classification?.map((mc: any) => mc.merchandise_name_classification).join(', ') || 'General';
+
+                              return (
+                                <div key={cargoIndex} className={styles.merchandiseRow}>
+                                  <input
+                                    type="text"
+                                    value={cargo.merchandise_name || ''}
+                                    className={styles.merchandiseInput}
+                                    disabled
+                                  />
+                                  <input
+                                    type="text"
+                                    value={isPeligrosa ? 'Sí' : 'No'}
+                                    className={styles.merchandiseInput}
+                                    disabled
+                                  />
+                                  <input
+                                    type="text"
+                                    value={classifications}
+                                    className={styles.merchandiseInput}
+                                    disabled
+                                  />
+                                  <input
+                                    type="text"
+                                    value={cargo.stowable ? 'Sí' : 'No'}
+                                    className={styles.merchandiseInput}
+                                    disabled
+                                  />
+                                  <input
+                                    type="text"
+                                    value={cargo.volume_total ? `${cargo.volume_total} ${cargo.unit_measurement || ''}` : ''}
+                                    className={styles.merchandiseInput}
+                                    disabled
+                                  />
+                                  <input
+                                    type="text"
+                                    value={cargo.weigth_total ? `${cargo.weigth_total} ${cargo.unit_weight || ''}` : ''}
+                                    className={styles.merchandiseInput}
+                                    disabled
+                                  />
+                                </div>
+                              );
+                            })}
                           </div>
                         ) : (
                           <p style={{color: '#9ca3af', fontSize: '14px', marginTop: '8px'}}>Sin mercancía registrada</p>
