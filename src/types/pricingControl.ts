@@ -25,6 +25,12 @@ export interface PricingControl {
   status_control: PricingControlStatusControl;
   suppliers: PricingControlSupplier[];
   services: any[];
+  network?: string;
+  complexity?: string;
+  currency?: string;
+  unit_profit?: string;
+  general_profit?: string;
+  comments_general?: string;
 }
 
 export interface CreatePricingControlRequest {
@@ -32,6 +38,12 @@ export interface CreatePricingControlRequest {
   suppliers: PricingControlSupplier[];
   services: any[];
   status_control: PricingControlStatusControl;
+  network?: string;
+  complexity?: string;
+  currency?: string;
+  unit_profit?: string;
+  general_profit?: string;
+  comments_general?: string;
 }
 
 export interface UpdatePricingControlRequest {
@@ -39,4 +51,10 @@ export interface UpdatePricingControlRequest {
   suppliers?: PricingControlSupplier[];
   services?: any[];
   status_control?: PricingControlStatusControl;
+  network?: string;
+  complexity?: string;
+  currency?: string;
+  unit_profit?: string;
+  general_profit?: string;
+  comments_general?: string;
 }

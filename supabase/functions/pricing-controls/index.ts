@@ -33,6 +33,12 @@ interface PricingControl {
   status_control: PricingControlStatusControl;
   suppliers: PricingControlSupplier[];
   services: any[];
+  network?: string;
+  complexity?: string;
+  currency?: string;
+  unit_profit?: string;
+  general_profit?: string;
+  comments_general?: string;
 }
 
 Deno.serve(async (req: Request) => {
@@ -110,7 +116,7 @@ Deno.serve(async (req: Request) => {
     // POST: Crear nuevo control
     if (method === "POST") {
       const body = await req.json();
-      const { _idrequest, suppliers, services, status_control } = body;
+      const { _idrequest, suppliers, services, status_control, network, complexity, currency, unit_profit, general_profit, comments_general } = body;
 
       if (!_idrequest) {
         return new Response(
@@ -172,6 +178,12 @@ Deno.serve(async (req: Request) => {
         },
         suppliers: suppliers || [],
         services: services || [],
+        network: network || "",
+        complexity: complexity || "",
+        currency: currency || "USD",
+        unit_profit: unit_profit || "",
+        general_profit: general_profit || "",
+        comments_general: comments_general || "",
       };
 
       const result = await controlsCollection.insertOne(newControl);
@@ -206,7 +218,7 @@ Deno.serve(async (req: Request) => {
     // PUT: Actualizar control existente
     if (method === "PUT") {
       const body = await req.json();
-      const { _id, suppliers, services, status_control } = body;
+      const { _id, suppliers, services, status_control, network, complexity, currency, unit_profit, general_profit, comments_general } = body;
 
       if (!_id) {
         return new Response(
@@ -240,6 +252,30 @@ Deno.serve(async (req: Request) => {
 
       if (suppliers !== undefined) {
         updateData.suppliers = suppliers;
+      }
+
+      if (network !== undefined) {
+        updateData.network = network;
+      }
+
+      if (complexity !== undefined) {
+        updateData.complexity = complexity;
+      }
+
+      if (currency !== undefined) {
+        updateData.currency = currency;
+      }
+
+      if (unit_profit !== undefined) {
+        updateData.unit_profit = unit_profit;
+      }
+
+      if (general_profit !== undefined) {
+        updateData.general_profit = general_profit;
+      }
+
+      if (comments_general !== undefined) {
+        updateData.comments_general = comments_general;
       }
 
       if (services !== undefined) {
