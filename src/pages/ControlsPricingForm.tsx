@@ -20,6 +20,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const [loading, setLoading] = useState(false);
   const [requestData, setRequestData] = useState<any>(null);
   const [controlData, setControlData] = useState<any>(null);
+  const [countries, setCountries] = useState<any[]>([]);
 
   const [suppliers, setSuppliers] = useState<PricingControlSupplier[]>([
     { idsuplier: 1, supplier_associated_name: 'Proveedor 1' }
@@ -49,7 +50,27 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   useEffect(() => {
     loadData();
+    loadCountries();
   }, [requestId, controlId]);
+
+  const loadCountries = async () => {
+    try {
+      const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+      const response = await fetch(`${BASE_URL}/functions/v1/catalog-countries`, {
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const countriesData = await response.json();
+      setCountries(countriesData.filter((c: any) => c.status === 1));
+    } catch (error) {
+      console.error('Error loading countries:', error);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -623,7 +644,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Incoterm</label>
                           <input
                             type="text"
-                            value={shipment.incoterm || ''}
+                            value={shipment.incoterm_name || shipment.incoterm || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -641,7 +662,11 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Origen</label>
                           <input
                             type="text"
-                            value={shipment.origin?.country_code ? `(${shipment.origin.country_code}) ${shipment.origin.location || ''}` : shipment.origin?.location || ''}
+                            value={(() => {
+                              const countryCode = shipment.origin_country_name || shipment.origin?.country_code || shipment.origin?.location || '';
+                              const country = countries.find(c => c.country_code === countryCode);
+                              return country ? `(${country.country_code}) ${country.name_country}` : countryCode;
+                            })()}
                             className={styles.formInput}
                             disabled
                           />
@@ -650,7 +675,11 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Destino</label>
                           <input
                             type="text"
-                            value={shipment.destination?.country_code ? `(${shipment.destination.country_code}) ${shipment.destination.location || ''}` : shipment.destination?.location || ''}
+                            value={(() => {
+                              const countryCode = shipment.destination_country_name || shipment.destination?.country_code || shipment.destination?.location || '';
+                              const country = countries.find(c => c.country_code === countryCode);
+                              return country ? `(${country.country_code}) ${country.name_country}` : countryCode;
+                            })()}
                             className={styles.formInput}
                             disabled
                           />
@@ -659,7 +688,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>*Código postal de destino</label>
                           <input
                             type="text"
-                            value={shipment.destination?.zipcode || ''}
+                            value={shipment.zip_code || shipment.destination?.zipcode || shipment.destiny_zipcode || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -678,8 +707,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                       <div className={styles.associatedServices}>
                         <label>Servicios Asociados</label>
                         <div className={styles.servicesChips}>
-                          {shipment.services_asociated && shipment.services_asociated.length > 0 ? (
-                            shipment.services_asociated.map((assocService: any, idx: number) => (
+                          {(shipment.services_associated || shipment.services_asociated) && (shipment.services_associated || shipment.services_asociated).length > 0 ? (
+                            (shipment.services_associated || shipment.services_asociated).map((assocService: any, idx: number) => (
                               <span key={assocService._id_service_associated?.$oid || idx} className={`${styles.serviceChip} ${styles.serviceChipActive}`}>
                                 {assocService.service_associated_name || 'Servicio'}
                               </span>
@@ -693,7 +722,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                       <div className={styles.formGroup}>
                         <label>Comentarios</label>
                         <textarea
-                          value={shipment.comments || ''}
+                          value={shipment.comment || shipment.comments || ''}
                           className={styles.formTextarea}
                           rows={2}
                           disabled
