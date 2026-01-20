@@ -1,15 +1,20 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, Filter, ChevronDown, Search, Building2, Clock, Edit2, Trash2, Plus } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useNotification } from '../contexts/NotificationContext';
 import { controlsPricingService, ControlsPricingRequest } from '../services/controlsPricingService';
+import { ControlsPricingForm } from './ControlsPricingForm';
 import styles from './ControlsPricing.module.css';
 
 export function ControlsPricing() {
   const { t } = useLanguage();
+  const { showError } = useNotification();
   const [requests, setRequests] = useState<ControlsPricingRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<ControlsPricingRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
 
   useEffect(() => {
     loadRequests();
@@ -26,11 +31,26 @@ export function ControlsPricing() {
       setRequests(data);
     } catch (error) {
       console.error('Error loading requests:', error);
-      alert('Error al cargar las solicitudes');
+      showError('Error al cargar las solicitudes');
     } finally {
       setLoading(false);
     }
   };
+
+  const handleAddControl = (requestId: string) => {
+    setSelectedRequestId(requestId);
+    setShowForm(true);
+  };
+
+  const handleBackToList = () => {
+    setShowForm(false);
+    setSelectedRequestId(null);
+    loadRequests();
+  };
+
+  if (showForm) {
+    return <ControlsPricingForm requestId={selectedRequestId} onBack={handleBackToList} />;
+  }
 
   const filterRequests = () => {
     let filtered = [...requests];
@@ -288,7 +308,10 @@ export function ControlsPricing() {
                   </div>
                 )}
 
-                <button className={styles.addControlButton}>
+                <button
+                  className={styles.addControlButton}
+                  onClick={() => handleAddControl(request._id)}
+                >
                   <Plus size={16} />
                   Agregar número de control
                 </button>
