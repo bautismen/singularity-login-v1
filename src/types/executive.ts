@@ -35,4 +35,5 @@ export const DEPARTMENTS = [
   'Logística',
   'Comercial',
   'Servicio al Cliente',
+  'Pricing',
 ] as const;
