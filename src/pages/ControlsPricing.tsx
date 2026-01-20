@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, Filter, ChevronDown, Search, Building2, Clock, Edit2, Trash2, Plus } from 'lucide-react';
+import { RefreshCw, Filter, ChevronDown, Search, Clock, Edit2, Trash2, Plus } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { controlsPricingService, ControlsPricingRequest } from '../services/controlsPricingService';
@@ -205,7 +205,6 @@ export function ControlsPricing() {
                     )}
                     <div className={styles.companyInfo}>
                       <div className={styles.companyNameRow}>
-                        <Building2 size={18} className={styles.companyIcon} />
                         <h3 className={styles.companyName}>
                           {request.customer_business_name}
                         </h3>
