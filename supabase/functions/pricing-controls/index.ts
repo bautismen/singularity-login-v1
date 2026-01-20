@@ -6,6 +6,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+const MONGODB_URI = 'mongodb+srv://fox1:modelotx30@arcobitscluster0.w6meunj.mongodb.net/?retryWrites=true&w=majority&appName=ArcobitsCluster0';
+const MONGODB_DATABASE = 'singulatiry_sandbox';
+
+
 interface PricingControlSupplier {
   idsuplier: number;
   supplier_associated_name: string;
@@ -49,7 +53,9 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  const mongoUrl = Deno.env.get("MONGODB_URI");
+  const mongoUrl = MONGODB_URI //Deno.env.get("MONGODB_URI");
+
+  
   if (!mongoUrl) {
     return new Response(
       JSON.stringify({ error: "MongoDB URI not configured" }),
@@ -64,7 +70,7 @@ Deno.serve(async (req: Request) => {
 
   try {
     await client.connect();
-    const db = client.db("RFQ");
+    const db = client.db(MONGODB_DATABASE);
     const controlsCollection = db.collection<PricingControl>("Reg018PricingControls");
     const requestsCollection = db.collection("Reg018QuotationRequests");
 
