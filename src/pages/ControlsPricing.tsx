@@ -3,14 +3,12 @@ import { RefreshCw, Filter, ChevronDown, Search, Clock, Edit2, Trash2, Plus } fr
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { controlsPricingService, ControlsPricingRequest } from '../services/controlsPricingService';
-import { pricingControlService } from '../services/pricingControlService';
 import { ControlsPricingForm } from './ControlsPricingForm';
-import { Modal } from '../components/Modal';
 import styles from './ControlsPricing.module.css';
 
 export function ControlsPricing() {
   const { t } = useLanguage();
-  const { showError, showSuccess } = useNotification();
+  const { showError } = useNotification();
   const [requests, setRequests] = useState<ControlsPricingRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<ControlsPricingRequest[]>([]);
   const [loading, setLoading] = useState(false);
@@ -18,9 +16,6 @@ export function ControlsPricing() {
   const [showForm, setShowForm] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [selectedControlId, setSelectedControlId] = useState<string | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [controlToDelete, setControlToDelete] = useState<{ id: string; control: string } | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadRequests();
@@ -60,34 +55,6 @@ export function ControlsPricing() {
     setSelectedRequestId(null);
     setSelectedControlId(null);
     loadRequests();
-  };
-
-  const handleDeleteControl = (controlId: string, controlNumber: string) => {
-    setControlToDelete({ id: controlId, control: controlNumber });
-    setShowDeleteModal(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!controlToDelete) return;
-
-    try {
-      setDeleting(true);
-      await pricingControlService.delete(controlToDelete.id);
-      showSuccess(`Número de control ${controlToDelete.control} eliminado correctamente`);
-      setShowDeleteModal(false);
-      setControlToDelete(null);
-      loadRequests();
-    } catch (error) {
-      console.error('Error al eliminar control:', error);
-      showError('Error al eliminar el número de control');
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  const cancelDelete = () => {
-    setShowDeleteModal(false);
-    setControlToDelete(null);
   };
 
   if (showForm) {
@@ -324,28 +291,17 @@ export function ControlsPricing() {
                           <span className={styles.assignedName}>{assigned.complete_name}</span>
 
                           {assigned.pricing_control_numbers && assigned.pricing_control_numbers.length > 0 ? (
-                            <div className={styles.controlButtonsContainer}>
+                            <>
                               {assigned.pricing_control_numbers.map((control, controlIndex) => (
-                                <div key={controlIndex} className={styles.controlButtonWrapper}>
-                                  <button
-                                    className={styles.controlButton}
-                                    onClick={() => handleEditControl(request._id, control._id_pricing_controls)}
-                                  >
-                                    {control.control}
-                                  </button>
-                                  <button
-                                    className={styles.deleteControlButton}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteControl(control._id_pricing_controls, control.control);
-                                    }}
-                                    title="Eliminar número de control"
-                                  >
-                                    <Trash2 size={12} />
-                                  </button>
-                                </div>
+                                <button
+                                  key={controlIndex}
+                                  className={styles.controlButton}
+                                  onClick={() => handleEditControl(request._id, control._id_pricing_controls)}
+                                >
+                                  {control.control}
+                                </button>
                               ))}
-                            </div>
+                            </>
                           ) : (
                             <button
                               className={styles.addControlSmallButton}
@@ -401,60 +357,6 @@ export function ControlsPricing() {
               : 'No hay solicitudes con estado mayor o igual a 3'}
           </p>
         </div>
-      )}
-
-      {showDeleteModal && (
-        <Modal
-          isOpen={showDeleteModal}
-          onClose={cancelDelete}
-          title="Confirmar eliminación"
-        >
-          <div style={{ padding: '1rem' }}>
-            <p style={{ marginBottom: '1.5rem', color: '#6b7280' }}>
-              ¿Estás seguro que deseas eliminar el número de control{' '}
-              <strong style={{ color: '#111827' }}>{controlToDelete?.control}</strong>?
-            </p>
-            <p style={{ marginBottom: '1.5rem', color: '#ef4444', fontSize: '0.875rem' }}>
-              Esta acción liberará los servicios asociados y no se puede deshacer.
-            </p>
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-              <button
-                onClick={cancelDelete}
-                disabled={deleting}
-                style={{
-                  padding: '0.625rem 1.25rem',
-                  background: 'white',
-                  color: '#6b7280',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '0.375rem',
-                  cursor: deleting ? 'not-allowed' : 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  opacity: deleting ? 0.6 : 1,
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmDelete}
-                disabled={deleting}
-                style={{
-                  padding: '0.625rem 1.25rem',
-                  background: '#ef4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.375rem',
-                  cursor: deleting ? 'not-allowed' : 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  opacity: deleting ? 0.6 : 1,
-                }}
-              >
-                {deleting ? 'Eliminando...' : 'Eliminar'}
-              </button>
-            </div>
-          </div>
-        </Modal>
       )}
     </div>
   );
