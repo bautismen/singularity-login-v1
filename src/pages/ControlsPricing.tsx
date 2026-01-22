@@ -139,9 +139,15 @@ export function ControlsPricing() {
     return services?.length || 0;
   };
 
-  const getAttendedServicesCount = (assignedTo: any[]) => {
-    return assignedTo?.length || 0;
-  };
+  const getAttendedServicesCount = (services: any[]) => {
+    let count: number = 0;    
+    services.map((service: any) => {    
+      if (service.used) {
+        count=count + 1;
+      }
+    });
+    return count;
+  };<q></q>
 
   return (
     <div className={styles.container}>
@@ -199,7 +205,7 @@ export function ControlsPricing() {
             const operationType = getOperationType(request.services);
             const countries = getCountries(request.services);
             const totalServices = getTotalServicesCount(request.services);
-            const attendedServices = getAttendedServicesCount(request.assigned_to);
+            const attendedServices = getAttendedServicesCount(request.services);
 
             return (
               <div key={request._id} className={styles.card}>
