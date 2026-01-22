@@ -117,7 +117,9 @@ export function ControlsPricing() {
   const getDaysElapsed = (date: string) => {
     if (!date) return null;
     const now = new Date();
-    const requestDate = new Date(date);
+    const requestDate = new Date(date.substring(0, 10)+ "T00:00:00");
+    now.setHours(0, 0, 0, 0);
+    requestDate.setHours(0, 0, 0, 0);
     const diffTime = now.getTime() - requestDate.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
@@ -125,7 +127,7 @@ export function ControlsPricing() {
 
   const getOperationType = (services: any[]) => {
     if (!services || services.length === 0) return '';
-    return services[0]._id_operation_type === 1 ? 'importación' : 'exportación';
+    return services[0].operation_type_name;
   };
 
   const getCountries = (services: any[]) => {
@@ -206,6 +208,7 @@ export function ControlsPricing() {
             const countries = getCountries(request.services);
             const totalServices = getTotalServicesCount(request.services);
             const attendedServices = getAttendedServicesCount(request.services);
+            const isDisabled = attendedServices != totalServices ? false : true;
 
             return (
               <div key={request._id} className={styles.card}>
@@ -309,7 +312,7 @@ export function ControlsPricing() {
                               ))}
                             </>
                           ) : (
-                            <button
+                            <button hidden={isDisabled}
                               className={styles.addControlSmallButton}
                               onClick={() => handleAddControl(request._id)}
                             >
@@ -343,7 +346,7 @@ export function ControlsPricing() {
                   </div>
                 )}
 
-                <button
+                <button hidden={isDisabled}
                   className={styles.addControlButton}
                   onClick={() => handleAddControl(request._id)}
                 >
