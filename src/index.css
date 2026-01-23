@@ -10,6 +10,11 @@
   --text-primary: #111827;
   --text-secondary: #6b7280;
   --text-tertiary: #9ca3af;
+  background: linear-gradient(135deg, 
+  rgba(3, 115, 140, 1) 0%, 
+  rgba(3, 127, 140, 1) 40%, 
+  rgba(3, 140, 127, 1) 89%, 
+  rgba(3, 166, 120, 1) 100%);
 }
 
 .dark {
@@ -20,4 +25,12 @@
   --text-primary: #f9fafb;
   --text-secondary: #d1d5db;
   --text-tertiary: #9ca3af;
+}
+
+.input-login-autofill:-webkit-autofill,
+.input-login-autofill:-webkit-autofill:hover,
+.input-login-autofill:-webkit-autofill:focus {
+  -webkit-text-fill-color: white;
+  -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+  transition: background-color 9999s ease-in-out 0s;
 }
