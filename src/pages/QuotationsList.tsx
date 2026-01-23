@@ -106,7 +106,6 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       }
 
       const data = await response.json();
-      console.log(data)
       setExecutives(data);
     } catch (error) {
       console.error('Error loading executives:', error);
@@ -263,7 +262,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
             <h3>Refina tu búsqueda</h3>
           </div>
 
-          {/*<div className={styles.filterSection}>
+          <div className={styles.filterSection}>
             <h4 className={styles.filterTitle}>Tipo operación</h4>
             <label className={styles.radioLabel}>
               <input
@@ -285,7 +284,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
               />
               <span>EXPORTACIÓN</span>
             </label>
-          </div>*/}
+          </div>
 
           <div className={styles.filterSection}>
             <h4 className={styles.filterTitle}>Ejecutivo solicitante</h4>
@@ -309,14 +308,13 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
               />
               <span>SOLO YO</span>
             </label>
-
             <label className={styles.radioLabel}>
               <input
                 type="radio"
                 name="executiveFilter"
                 value="seleccionar"
                 checked={executiveFilter === 'seleccionar'}
-                onChange={(e) => setExecutiveFilter(e.target.value) }
+                onChange={(e) => setExecutiveFilter(e.target.value)}
               />
               <span>SELECCIONAR</span>
             </label>
@@ -324,12 +322,12 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
               <select
                 className={styles.executiveSelect}
                 value={selectedExecutive}
-                onChange={(e) => console.log(e.target.value)}>
-
+                onChange={(e) => setSelectedExecutive(e.target.value)}
+              >
                 <option value="">Seleccionar ejecutivo...</option>
                 {executives.map((exec) => (
                   <option key={exec._id} value={exec._id}>
-                    {exec.nombre} {exec.apellido_paterno} {exec.apellido_materno}
+                    {exec.complete_name}
                   </option>
                 ))}
               </select>
