@@ -18,6 +18,10 @@
   margin: 0;
 }
 
+.dark .title {
+  color: #6b7280;
+}
+
 .buttonGroup {
   display: flex;
   gap: 0;
