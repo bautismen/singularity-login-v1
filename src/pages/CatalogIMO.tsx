@@ -73,7 +73,7 @@ export function CatalogIMO() {
 
     if (searchQuery) {
       filtered = filtered.filter(item =>
-        item.imo.includes(searchQuery) ||
+        item.imo.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
