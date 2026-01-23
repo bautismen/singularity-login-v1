@@ -39,6 +39,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     complexity: 'Media',
     currency: 'USD',
     unit_profit: '',
+    volume: '',
     general_profit: '',
     comments_general: ''
   });
@@ -100,6 +101,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           complexity: control.complexity || 'Media',
           currency: control.currency || 'USD',
           unit_profit: control.unit_profit || '',
+          volume: control.volume || '',
           general_profit: control.general_profit || '',
           comments_general: control.comments_general || ''
         });
@@ -204,7 +206,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         status_control: statusControl,
         network: generalData.network,
         complexity: generalData.complexity,
-        currency: generalData.currency
+        currency: generalData.currency,
+        volume: generalData.volume,
       });
 
       const dataToSave = {
@@ -215,6 +218,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         complexity: generalData.complexity,
         currency: generalData.currency,
         unit_profit: generalData.unit_profit,
+        volume: generalData.volume,
         general_profit: generalData.general_profit,
         comments_general: generalData.comments_general
       };
@@ -286,6 +290,18 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       case 3: return '/bronze.png';
       default: return '';
     }
+  };
+
+  const calculateProfit_general = () => {
+    if (generalData.unit_profit && generalData.volume) {
+      const unitProfit = parseFloat(generalData.unit_profit);
+      const volume = parseFloat(generalData.volume);
+      if (!isNaN(unitProfit) && !isNaN(volume)) {
+        generalData.general_profit = (unitProfit * volume).toString();
+        return (unitProfit * volume).toString();
+      }
+    }
+    return 0;
   };
 
   if (loading && !requestData) {
@@ -502,8 +518,12 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 className={styles.formSelect}
                 disabled={loading}
               >
+                <option>WCA</option>
+                <option>JC TRANS</option>
+                <option>GLA FAMILY</option>
+                <option>N/A</option>
                 <option>WTC Alliance</option>
-                <option>Otra red</option>
+                <option>DF Alliance</option>
               </select>
             </div>
             <div className={styles.formGroup}>
@@ -539,6 +559,16 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 value={generalData.unit_profit}
                 onChange={(e) => setGeneralData({...generalData, unit_profit: e.target.value})}
                 className={styles.formInput}
+                disabled={loading}                
+              />
+            </div>
+             <div className={styles.formGroup}>
+              <label>* Volumen</label>
+              <input
+                type="text"
+                value={generalData.volume}
+                onChange={(e) => setGeneralData({...generalData, volume: e.target.value})}
+                className={styles.formInput}                
                 disabled={loading}
               />
             </div>
@@ -546,10 +576,10 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               <label>* Profit general</label>
               <input
                 type="text"
-                value={generalData.general_profit}
+                value={calculateProfit_general()}
                 onChange={(e) => setGeneralData({...generalData, general_profit: e.target.value})}
                 className={styles.formInput}
-                disabled={loading}
+                disabled={true}
               />
             </div>
           </div>

@@ -29,6 +29,7 @@ export interface PricingControl {
   complexity?: string;
   currency?: string;
   unit_profit?: string;
+  volume?: string;
   general_profit?: string;
   comments_general?: string;
 }
@@ -42,6 +43,7 @@ export interface CreatePricingControlRequest {
   complexity?: string;
   currency?: string;
   unit_profit?: string;
+  volume?: string;
   general_profit?: string;
   comments_general?: string;
 }
@@ -55,6 +57,7 @@ export interface UpdatePricingControlRequest {
   complexity?: string;
   currency?: string;
   unit_profit?: string;
+  volume?: string;
   general_profit?: string;
   comments_general?: string;
 }
