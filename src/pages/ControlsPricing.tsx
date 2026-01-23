@@ -139,8 +139,9 @@ export function ControlsPricing() {
     return services?.length || 0;
   };
 
-  const getAttendedServicesCount = (assignedTo: any[]) => {
-    return assignedTo?.length || 0;
+  const getAttendedServicesCount = (services: any[]) => {
+    if (!services || services.length === 0) return 0;
+    return services.filter(service => service.used === true).length;
   };
 
   return (
@@ -199,7 +200,10 @@ export function ControlsPricing() {
             const operationType = getOperationType(request.services);
             const countries = getCountries(request.services);
             const totalServices = getTotalServicesCount(request.services);
-            const attendedServices = getAttendedServicesCount(request.assigned_to);
+            const attendedServices = getAttendedServicesCount(request.services);
+            const assignedWithControls = request.assigned_to?.filter(
+              assigned => assigned.pricing_control_numbers && assigned.pricing_control_numbers.length > 0
+            ) || [];
 
             return (
               <div key={request._id} className={styles.card}>
@@ -267,9 +271,9 @@ export function ControlsPricing() {
                   </div>
                 </div>
 
-                {request.assigned_to && request.assigned_to.length > 0 && (
+                {assignedWithControls.length > 0 && (
                   <div className={styles.controlNumbers}>
-                    {request.assigned_to.map((assigned, index) => (
+                    {assignedWithControls.map((assigned, index) => (
                       <div key={index} className={styles.controlNumberItem}>
                         <div className={styles.controlNumberLeft}>
                           <svg
@@ -289,20 +293,14 @@ export function ControlsPricing() {
                           <span className={styles.assignedName}>{assigned.complete_name}</span>
                         </div>
                         <div className={styles.controlNumberCenter}>
-                          {assigned.pricing_control_numbers && assigned.pricing_control_numbers.length > 0 ? (
-                            <>
-                              {assigned.pricing_control_numbers.map((control, controlIndex) => (
-                                <span
-                                  key={controlIndex}
-                                  className={styles.controlCode}
-                                >
-                                  {control.control}
-                                </span>
-                              ))}
-                            </>
-                          ) : (
-                            <span className={styles.noControl}>Sin control</span>
-                          )}
+                          {assigned.pricing_control_numbers.map((control, controlIndex) => (
+                            <span
+                              key={controlIndex}
+                              className={styles.controlCode}
+                            >
+                              {control.control}
+                            </span>
+                          ))}
                         </div>
                         <div className={styles.controlNumberActions}>
                           {daysElapsed !== null && (
@@ -314,7 +312,7 @@ export function ControlsPricing() {
                           <button
                             className={styles.actionButton}
                             title="Editar"
-                            onClick={() => assigned.pricing_control_numbers && assigned.pricing_control_numbers.length > 0 && handleEditControl(request._id, assigned.pricing_control_numbers[0]._id_pricing_controls)}
+                            onClick={() => handleEditControl(request._id, assigned.pricing_control_numbers[0]._id_pricing_controls)}
                           >
                             <Edit2 size={16} />
                           </button>
