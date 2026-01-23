@@ -231,9 +231,6 @@ export function ControlsPricing() {
                           {request.status_request_name}
                         </span>
                       </div>
-                      <div className={styles.operationRow}>
-                        <span className={styles.operationType}>{operationType}</span>
-                      </div>
                     </div>
                   </div>
                   <div className={styles.cardHeaderRight}>
@@ -284,32 +281,27 @@ export function ControlsPricing() {
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
+                            className={styles.dottedCircleIcon}
                           >
-                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="10" strokeDasharray="2,2"></circle>
                             <circle cx="12" cy="12" r="3"></circle>
                           </svg>
                           <span className={styles.assignedName}>{assigned.complete_name}</span>
-
+                        </div>
+                        <div className={styles.controlNumberCenter}>
                           {assigned.pricing_control_numbers && assigned.pricing_control_numbers.length > 0 ? (
                             <>
                               {assigned.pricing_control_numbers.map((control, controlIndex) => (
-                                <button
+                                <span
                                   key={controlIndex}
-                                  className={styles.controlButton}
-                                  onClick={() => handleEditControl(request._id, control._id_pricing_controls)}
+                                  className={styles.controlCode}
                                 >
                                   {control.control}
-                                </button>
+                                </span>
                               ))}
                             </>
                           ) : (
-                            <button
-                              className={styles.addControlSmallButton}
-                              onClick={() => handleAddControl(request._id)}
-                            >
-                              <Plus size={14} />
-                              Agregar control
-                            </button>
+                            <span className={styles.noControl}>Sin control</span>
                           )}
                         </div>
                         <div className={styles.controlNumberActions}>
@@ -322,6 +314,7 @@ export function ControlsPricing() {
                           <button
                             className={styles.actionButton}
                             title="Editar"
+                            onClick={() => assigned.pricing_control_numbers && assigned.pricing_control_numbers.length > 0 && handleEditControl(request._id, assigned.pricing_control_numbers[0]._id_pricing_controls)}
                           >
                             <Edit2 size={16} />
                           </button>
