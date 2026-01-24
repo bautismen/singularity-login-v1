@@ -41,6 +41,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     unit_profit: '',
     volume: '',
     general_profit: '',
+    key_td: 'CI',
     comments_general: ''
   });
 
@@ -103,6 +104,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           unit_profit: control.unit_profit || '',
           volume: control.volume || '',
           general_profit: control.general_profit || '',
+          key_td: control.key_td || 'CI',
           comments_general: control.comments_general || ''
         });
 
@@ -220,6 +222,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         unit_profit: generalData.unit_profit,
         volume: generalData.volume,
         general_profit: generalData.general_profit,
+        key_td: generalData.key_td,
         comments_general: generalData.comments_general
       };
 
@@ -581,6 +584,26 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 className={styles.formInput}
                 disabled={true}
               />
+            </div>
+              <div className={styles.formGroup}>
+              <label>* Red / Alianza</label>
+              <select
+                value={generalData.key_td}
+                onChange={(e) => setGeneralData({...generalData, key_td: e.target.value})}
+                className={styles.formSelect}
+                disabled={loading}
+              >
+                <option value={"CI"} >CI Complementar información</option>
+                <option value="RFQ" >RFQ Licitación</option>
+                <option value="FS" >FS Fin de semana</option>
+                <option value="DP" >DP Desarrollo de proveedor</option>
+                <option value="MS" >MS MultiServicios + 10 rutas +3 proveedores</option>
+                <option value="DH" >DH Diferencia de horario</option>
+                <option value="DC" >DC Dependencia corresponsal / Dependencia consolidador</option>
+                <option value="AR" >AR Actualización de rutas</option>
+                <option value="OWOS" >OWOS Proyectos sobredimensionados</option>
+                <option value="IP" >IP Interno pricing</option>
+              </select>
             </div>
           </div>
           <div className={styles.formGroup}>

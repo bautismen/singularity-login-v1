@@ -31,6 +31,7 @@ export interface PricingControl {
   unit_profit?: string;
   volume?: string;
   general_profit?: string;
+  ket_td?: string;
   comments_general?: string;
 }
 
@@ -45,6 +46,7 @@ export interface CreatePricingControlRequest {
   unit_profit?: string;
   volume?: string;
   general_profit?: string;
+  key_td?: string;
   comments_general?: string;
 }
 
@@ -59,5 +61,6 @@ export interface UpdatePricingControlRequest {
   unit_profit?: string;
   volume?: string;
   general_profit?: string;
+  key_td?: string;
   comments_general?: string;
 }

@@ -43,6 +43,7 @@ interface PricingControl {
   unit_profit?: string;
   volume?: string;
   general_profit?: string;
+  key_td?: string;
   comments_general?: string;
 }
 
@@ -125,7 +126,7 @@ Deno.serve(async (req: Request) => {
       const body = await req.json();
       console.log('POST body received:', JSON.stringify(body, null, 2));
 
-      const { _idrequest, suppliers, services, status_control, network, complexity, currency, unit_profit, volume, general_profit, comments_general } = body;
+      const { _idrequest, suppliers, services, status_control, network, complexity, currency, unit_profit, volume, general_profit, key_td, comments_general } = body;
 
       if (!_idrequest) {
         return new Response(
@@ -198,6 +199,7 @@ Deno.serve(async (req: Request) => {
         unit_profit: unit_profit || "",
         volume: volume || "",
         general_profit: general_profit || "",
+        key_td: key_td || "",
         comments_general: comments_general || "",
       };
 
@@ -283,7 +285,7 @@ Deno.serve(async (req: Request) => {
     // PUT: Actualizar control existente
     if (method === "PUT") {
       const body = await req.json();
-      const { _id, suppliers, services, status_control, network, complexity, currency, unit_profit, volume, general_profit, comments_general } = body;
+      const { _id, suppliers, services, status_control, network, complexity, currency, unit_profit, volume, general_profit, key_td, comments_general } = body;
 
       if (!_id) {
         return new Response(
@@ -341,6 +343,10 @@ Deno.serve(async (req: Request) => {
 
       if (general_profit !== undefined) {
         updateData.general_profit = general_profit;
+      }
+
+      if (key_td !== undefined) {
+        updateData.key_td = key_td;
       }
 
       if (comments_general !== undefined) {
