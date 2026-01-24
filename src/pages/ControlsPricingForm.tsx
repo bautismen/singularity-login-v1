@@ -593,7 +593,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 className={styles.formSelect}
                 disabled={loading}
               >
-                <option value={"CI"} >CI Complementar información</option>
+                <option value="CI" >CI Complementar información</option>
                 <option value="RFQ" >RFQ Licitación</option>
                 <option value="FS" >FS Fin de semana</option>
                 <option value="DP" >DP Desarrollo de proveedor</option>

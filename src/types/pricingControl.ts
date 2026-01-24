@@ -31,7 +31,7 @@ export interface PricingControl {
   unit_profit?: string;
   volume?: string;
   general_profit?: string;
-  ket_td?: string;
+  key_td?: string;
   comments_general?: string;
 }
 
