@@ -4,6 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { controlsPricingService, ControlsPricingRequest } from '../services/controlsPricingService';
 import { ControlsPricingForm } from './ControlsPricingForm';
+import { useAuth } from '../contexts/AuthContext';
 import styles from './ControlsPricing.module.css';
 
 export function ControlsPricing() {
@@ -16,7 +17,7 @@ export function ControlsPricing() {
   const [showForm, setShowForm] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [selectedControlId, setSelectedControlId] = useState<string | null>(null);
-
+  const { user } = useAuth();
   useEffect(() => {
     loadRequests();
   }, []);
@@ -29,7 +30,18 @@ export function ControlsPricing() {
     try {
       setLoading(true);
       const data = await controlsPricingService.getAll();
-      setRequests(data);
+      let filtered = [...data];    
+      const excludedEmails = [
+        "maria.cervantes@kromlogistica.com",
+        "estela.guerrero@kromlogistica.com"       
+      ];
+
+      if (!excludedEmails.includes(user.email)) {
+        filtered = filtered.filter(r =>
+          r.assigned_to?.some(a => a.complete_name === user.name)
+        );
+      }
+      setRequests(filtered);
     } catch (error) {
       console.error('Error loading requests:', error);
       showError('Error al cargar las solicitudes');
@@ -147,29 +159,29 @@ export function ControlsPricing() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Control de pricing</h1>
+        <h1 className={styles.title}>{t('ctrlpricing.title')}</h1>
         <div className={styles.buttonGroup}>
           <button
             className={styles.buttonGroupItem}
             onClick={loadRequests}
             disabled={loading}
-            title="Actualizar"
+            title={t('ctrlpricing.refresh')}
           >
             <RefreshCw size={20} />
           </button>
           <button
             className={styles.buttonGroupItem}
             disabled
-            title="Filtros"
+            title={t('ctrlpricing.filtro')}
           >
             <Filter size={20} />
           </button>
           <button
             className={styles.buttonGroupItemLast}
             disabled
-            title="Acciones"
+            title={t('ctrlpricing.actions')}
           >
-            Acciones
+            {t('ctrlpricing.actions')}
             <ChevronDown size={18} />
           </button>
         </div>
@@ -179,7 +191,7 @@ export function ControlsPricing() {
         <Search size={20} className={styles.searchIcon} />
         <input
           type="text"
-          placeholder="Buscar solicitud"
+          placeholder={t('ctrlpricing.search')}
           className={styles.searchInput}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -204,6 +216,7 @@ export function ControlsPricing() {
             const assignedWithControls = request.assigned_to?.filter(
               assigned => assigned.pricing_control_numbers && assigned.pricing_control_numbers.length > 0
             ) || [];
+            const isDisabled = totalServices === attendedServices ? true : false;
 
             return (
               <div key={request._id} className={styles.card}>
@@ -264,10 +277,10 @@ export function ControlsPricing() {
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                       <circle cx="12" cy="7" r="4"></circle>
                     </svg>
-                    <span>{request.requesting_data?.complete_name || 'Sin asignar'}</span>
+                    <span>{request.requesting_data?.complete_name || t('ctrlpricing.unassigned')}</span>
                   </div>
                   <div className={styles.servicesCounter}>
-                    {attendedServices}/{totalServices} Servicios atendidos
+                    {attendedServices}/{totalServices} {t('ctrlpricing.servicesattended')}
                   </div>
                 </div>
 
@@ -311,14 +324,14 @@ export function ControlsPricing() {
                           )}
                           <button
                             className={styles.actionButton}
-                            title="Editar"
+                            title={t('ctrlpricing.edit')}
                             onClick={() => handleEditControl(request._id, assigned.pricing_control_numbers[0]._id_pricing_controls)}
                           >
                             <Edit2 size={16} />
                           </button>
                           <button
                             className={styles.actionButton}
-                            title="Eliminar"
+                            title={t('ctrlpricing.delete')}
                           >
                             <Trash2 size={16} />
                           </button>
@@ -328,12 +341,12 @@ export function ControlsPricing() {
                   </div>
                 )}
 
-                <button
+                <button hidden ={isDisabled}
                   className={styles.addControlButton}
                   onClick={() => handleAddControl(request._id)}
                 >
                   <Plus size={16} />
-                  Agregar número de control
+                  {t('ctrlpricing.addcontrol')}
                 </button>
               </div>
             );
@@ -341,11 +354,11 @@ export function ControlsPricing() {
         </div>
       ) : (
         <div className={styles.emptyState}>
-          <h3>No hay solicitudes disponibles</h3>
+          <h3>{t('ctrlpricing.norequests')}</h3>
           <p>
             {searchQuery
-              ? 'No se encontraron resultados con los filtros aplicados'
-              : 'No hay solicitudes con estado mayor o igual a 3'}
+              ? t('ctrlpricing.noresults')
+              : t('ctrlpricing.noresultsstatus')}
           </p>
         </div>
       )}
