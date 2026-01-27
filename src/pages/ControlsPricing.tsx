@@ -307,35 +307,15 @@ export function ControlsPricing() {
                         </div>
                         <div className={styles.controlNumberCenter}>
                           {assigned.pricing_control_numbers.map((control, controlIndex) => (
-                            <span
+                            <button
                               key={controlIndex}
                               className={styles.controlCode}
+                              onClick={() => handleEditControl(request._id, control._id_pricing_controls)}
                             >
                               {control.control}
-                            </span>
+                            </button>
                           ))}
-                        </div>
-                        <div className={styles.controlNumberActions}>
-                          {daysElapsed !== null && (
-                            <div className={styles.controlDays}>
-                              <Clock size={14} />
-                              <span>{daysElapsed}d</span>
-                            </div>
-                          )}
-                          <button
-                            className={styles.actionButton}
-                            title={t('ctrlpricing.edit')}
-                            onClick={() => handleEditControl(request._id, assigned.pricing_control_numbers[0]._id_pricing_controls)}
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            className={styles.actionButton}
-                            title={t('ctrlpricing.delete')}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
+                        </div>                       
                       </div>
                     ))}
                   </div>
