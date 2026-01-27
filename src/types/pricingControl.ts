@@ -33,6 +33,8 @@ export interface PricingControl {
   general_profit?: string;
   key_td?: string;
   comments_general?: string;
+  _id_executive_pricing: string;
+  complete_name_pricing: string;
 }
 
 export interface CreatePricingControlRequest {
@@ -48,6 +50,8 @@ export interface CreatePricingControlRequest {
   general_profit?: string;
   key_td?: string;
   comments_general?: string;
+  _id_executive_pricing: string;
+  complete_name_pricing: string;
 }
 
 export interface UpdatePricingControlRequest {

@@ -6,6 +6,7 @@ import { quotationService } from '../services/quotationService';
 import { pricingControlService } from '../services/pricingControlService';
 import { PricingControlSupplier } from '../types/pricingControl';
 import styles from './ControlsPricing.module.css';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ControlsPricingFormProps {
   requestId: string | null;
@@ -28,7 +29,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const [selectedServices, setSelectedServices] = useState<any[]>([]);
   const [expandedServices, setExpandedServices] = useState<Set<number>>(new Set());
-
+  const { user } = useAuth();
   const [statusControl, setStatusControl] = useState({
     _id_status_control: 4,
     status_control_name: 'Asignada'
@@ -42,7 +43,9 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     volume: '',
     general_profit: '',
     key_td: 'CI',
-    comments_general: ''
+    comments_general: '',
+    id_executive_pricing: user?._id || '',
+    complete_name_pricing: user?.name || ''
   });
 
   const [priority, setPriority] = useState(false);
@@ -105,7 +108,9 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           volume: control.volume || '',
           general_profit: control.general_profit || '',
           key_td: control.key_td || 'CI',
-          comments_general: control.comments_general || ''
+          comments_general: control.comments_general || '',
+          id_executive_pricing: control._id_executive_pricing || '',
+          complete_name_pricing: control.complete_name_pricing || ''
         });
 
         const request = await quotationService.getById(control._idrequest);
@@ -210,6 +215,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         complexity: generalData.complexity,
         currency: generalData.currency,
         volume: generalData.volume,
+        _id_executive_pricing: generalData.id_executive_pricing,
+        complete_name_pricing: generalData.complete_name_pricing
       });
 
       const dataToSave = {
@@ -223,7 +230,9 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         volume: generalData.volume,
         general_profit: generalData.general_profit,
         key_td: generalData.key_td,
-        comments_general: generalData.comments_general
+        comments_general: generalData.comments_general,
+        _id_executive_pricing: generalData.id_executive_pricing,
+        complete_name_pricing: generalData.complete_name_pricing
       };
 
       if (controlId) {

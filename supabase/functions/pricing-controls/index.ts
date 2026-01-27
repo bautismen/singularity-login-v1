@@ -45,6 +45,8 @@ interface PricingControl {
   general_profit?: string;
   key_td?: string;
   comments_general?: string;
+  _id_executive_pricing: ObjectId;
+  complete_name_pricing: string;
 }
 
 Deno.serve(async (req: Request) => {
@@ -126,7 +128,7 @@ Deno.serve(async (req: Request) => {
       const body = await req.json();
       console.log('POST body received:', JSON.stringify(body, null, 2));
 
-      const { _idrequest, suppliers, services, status_control, network, complexity, currency, unit_profit, volume, general_profit, key_td, comments_general } = body;
+      const { _idrequest, suppliers, services, status_control, network, complexity, currency, unit_profit, volume, general_profit, key_td, comments_general, _id_executive_pricing, complete_name_pricing } = body;
 
       if (!_idrequest) {
         return new Response(
@@ -201,6 +203,8 @@ Deno.serve(async (req: Request) => {
         general_profit: general_profit || "",
         key_td: key_td || "",
         comments_general: comments_general || "",
+        _id_executive_pricing: new ObjectId(_id_executive_pricing),
+        complete_name_pricing: complete_name_pricing,
       };
 
       const result = await controlsCollection.insertOne(newControl);
