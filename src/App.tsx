@@ -5,6 +5,7 @@ import { QuotationsManager } from './pages/QuotationsManager';
 import { ControlsPricing } from './pages/ControlsPricing';
 import { Executives } from './pages/Executives';
 import Customers from './pages/Customers';
+import Suppliers from './pages/Suppliers';
 import { CatalogIMO } from './pages/CatalogIMO';
 import { CatalogIncoterms } from './pages/CatalogIncoterms';
 import { CatalogServices } from './pages/CatalogServices';
@@ -12,9 +13,10 @@ import { CatalogStatus } from './pages/CatalogStatus';
 import { CatalogRequestTypes } from './pages/CatalogRequestTypes';
 import { CatalogCountries } from './pages/CatalogCountries';
 import { CatalogUsers } from './pages/CatalogUsers';
+import { CatalogSectorOfBusiness } from './pages/CatalogSectorOfBusiness';
 import { Layout } from './components/Layout';
 
-type Route = 'dashboard' | 'quotations' | 'controls-pricing' | 'executives' | 'shipments' | 'customers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users';
+type Route = 'dashboard' | 'quotations' | 'controls-pricing' | 'executives' | 'shipments' | 'customers' | 'suppliers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users' | 'catalogs/sector-of-business';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState<Route>('dashboard');
@@ -48,6 +50,8 @@ function App() {
           return <Executives />;
         case 'customers':
           return <Customers />;
+        case 'suppliers':
+          return <Suppliers />;
         case 'catalogs/imo':
           return <CatalogIMO />;
         case 'catalogs/incoterms':
@@ -62,6 +66,8 @@ function App() {
           return <CatalogCountries />;
         case 'catalogs/users':
           return <CatalogUsers />;
+        case 'catalogs/sector-of-business':
+          return <CatalogSectorOfBusiness />;
         case 'dashboard':
           return (
             <div className="p-8">

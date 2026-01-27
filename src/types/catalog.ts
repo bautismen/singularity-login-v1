@@ -40,4 +40,9 @@ export interface Country extends BaseCatalog {
   name_country: string;
 }
 
-export type CatalogType = 'imo' | 'incoterms' | 'services' | 'request_types' | 'status' | 'countries';
+export interface SectorOfBusiness extends BaseCatalog {
+  name: string;
+  description: string;
+}
+
+export type CatalogType = 'imo' | 'incoterms' | 'services' | 'request_types' | 'status' | 'countries' | 'sector_of_business';
