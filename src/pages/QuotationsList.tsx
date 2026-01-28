@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, RefreshCw, ChevronDown, FileText, Calendar, Clock, Filter } from 'lucide-react';
+import { Plus, Edit2, Search, RefreshCw, ChevronDown, FileText, Clock, Filter, FilterXIcon  } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import styles from './QuotationsList.module.css';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
-const EXECUTIVES_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/executives`;
+//const EXECUTIVES_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/executives`;
+const USERS_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/users`;
 const REQUEST_TYPES_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-request-types`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -44,29 +45,28 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
   const [filteredQuotations, setFilteredQuotations] = useState<QuotationRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  const [operationType, setOperationType] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [executiveFilter, setExecutiveFilter] = useState<string>('todos');
   const [selectedExecutive, setSelectedExecutive] = useState<string>('');
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [requestTypeFilters, setRequestTypeFilters] = useState<number[]>([]);
 
-  const [executives, setExecutives] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [requestTypes, setRequestTypes] = useState<any[]>([]);
 
   useEffect(() => {
-    loadQuotations();
-    loadExecutives();
+    loadQuotationsRequests();
+    loadUsers();
     loadRequestTypes();
   }, []);
 
   useEffect(() => {
     filterQuotations();
-  }, [quotations, searchQuery, statusFilter, operationType, executiveFilter, selectedExecutive, dateFilter, requestTypeFilters]);
+  }, [quotations, searchQuery, statusFilter, executiveFilter, selectedExecutive, dateFilter, requestTypeFilters]);
 
-  const loadQuotations = async () => {
+  const loadQuotationsRequests = async () => {
     try {
       setLoading(true);
       const response = await fetch(API_URL, {
@@ -76,24 +76,32 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           'Content-Type': 'application/json',
         },
       });
-
       if (!response.ok) {
         throw new Error('Error al cargar las cotizaciones');
       }
-
       const data = await response.json();
-      setQuotations(data);
+
+      const sortdata = [...data].sort((a, b) => {
+        if(a._id_status_request === 3 && b._id_status_request !== 3) return 1; // a va despues de b
+        if(a._id_status_request !== 3 && b._id_status_request === 3) return -1; // a va antes de b
+        //(a.deadline_date > b.deadline_date) ? 1 : -1
+        const a_deadline = a.deadline_date ? new Date(a.deadline_date).getTime() : Infinity;
+        const b_deadline = b.deadline_date ? new Date(b.deadline_date).getTime() : Infinity;
+        return a_deadline -  b_deadline; //fecha mas antigua va primero 
+      }); 
+
+      setQuotations(sortdata);
     } catch (error) {
       console.error('Error loading quotations:', error);
-      showError('Error al cargar las cotizaciones');
+      showError('Error al cargar las cotizaciones' );
     } finally {
       setLoading(false);
     }
   };
 
-  const loadExecutives = async () => {
+  const loadUsers = async () => {
     try {
-      const response = await fetch(EXECUTIVES_API_URL, {
+      const response = await fetch(USERS_API_URL, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${API_KEY}`,
@@ -106,9 +114,9 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       }
 
       const data = await response.json();
-      setExecutives(data);
+      setUsers(data);
     } catch (error) {
-      console.error('Error loading executives:', error);
+      console.error('Error loading users:', error);
     }
   };
 
@@ -136,10 +144,6 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
   const filterQuotations = () => {
     let filtered = [...quotations];
 
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(q => q.status_request_name === statusFilter);
-    }
-
     if (searchQuery) {
       filtered = filtered.filter(q =>
         q.reference_request.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -148,12 +152,8 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       );
     }
 
-    if (operationType !== 'all') {
-      filtered = filtered.filter(q => {
-        if (!q.services || q.services.length === 0) return false;
-        const opType = operationType === 'importacion' ? 1 : 2;
-        return q.services.some(s => s._id_operation_type === opType);
-      });
+    if (statusFilter.length > 0) {
+      filtered = filtered.filter(q => statusFilter.includes(q._id_status_request.toString()));      
     }
 
     if (executiveFilter === 'solo_yo' && user) {
@@ -169,6 +169,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       filtered = filtered.filter(q => {
         const requestDate = new Date(q.request_date);
         const diffDays = Math.ceil((now.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
+        console.log('Filter days: ' , q.reference_request , q.request_date, diffDays)
 
         switch (dateFilter) {
           case 'hoy':
@@ -190,12 +191,14 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
     if (requestTypeFilters.length > 0) {
       filtered = filtered.filter(q => requestTypeFilters.includes(q._id_request_type));
     }
-
+    
+   //filtered = filtered.filter(q => q._id_status_request !== 3 );
+    
     setFilteredQuotations(filtered);
   };
 
   const handleResetFilters = () => {
-    setOperationType('all');
+    setStatusFilter([]);
     setExecutiveFilter('todos');
     setSelectedExecutive('');
     setDateFilter('all');
@@ -207,6 +210,14 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       prev.includes(typeId)
         ? prev.filter(id => id !== typeId)
         : [...prev, typeId]
+    );
+  };
+
+  const handleRequesStatus = (idStatus: string) => {
+    setStatusFilter(prev =>
+      prev.includes(idStatus)
+        ? prev.filter(id => id !== idStatus)
+        : [...prev, idStatus]
     );
   };
 
@@ -263,26 +274,69 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           </div>
 
           <div className={styles.filterSection}>
-            <h4 className={styles.filterTitle}>Tipo operación</h4>
+            <h4 className={styles.filterTitle}>Estados de Solicitud de Cotización</h4>
             <label className={styles.radioLabel}>
               <input
-                type="radio"
-                name="operationType"
-                value="importacion"
-                checked={operationType === 'importacion'}
-                onChange={(e) => setOperationType(e.target.value)}
+                type="checkbox"
+                value="1"
+                checked={statusFilter.includes('1')}
+                onChange={(e) => handleRequesStatus(e.target.value)}
               />
-              <span>IMPORTACIÓN</span>
+              <span>NUEVA</span>
             </label>
             <label className={styles.radioLabel}>
               <input
-                type="radio"
-                name="operationType"
-                value="exportacion"
-                checked={operationType === 'exportacion'}
-                onChange={(e) => setOperationType(e.target.value)}
+                type="checkbox"
+                value="2"
+                checked={statusFilter.includes('2')}
+                onChange={(e) => handleRequesStatus(e.target.value)}
               />
-              <span>EXPORTACIÓN</span>
+              <span>ENVIADA</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="checkbox"
+                value="4"
+                checked={statusFilter.includes('4')}
+                onChange={(e) => handleRequesStatus(e.target.value)}
+              />
+              <span>ASIGNADA</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="checkbox"
+                value="5"
+                checked={statusFilter.includes('5')}
+                onChange={(e) => handleRequesStatus(e.target.value)}
+              />
+              <span>COTIZADA</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="checkbox"
+                value="6"
+                checked={statusFilter.includes('6')}
+                onChange={(e) => handleRequesStatus(e.target.value)}
+              />
+              <span>DECLINADA</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="checkbox"
+                value="3"
+                checked={statusFilter.includes('3')}
+                onChange={(e) => handleRequesStatus(e.target.value)}
+              />
+              <span>CANCELADA</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="checkbox"
+                value="7"
+                checked={statusFilter.includes('7')}
+                onChange={(e) => handleRequesStatus(e.target.value)}
+              />
+              <span>EXPIRADA</span>
             </label>
           </div>
 
@@ -322,12 +376,11 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
               <select
                 className={styles.executiveSelect}
                 value={selectedExecutive}
-                onChange={(e) => setSelectedExecutive(e.target.value)}
-              >
+                onChange={(e) => setSelectedExecutive(e.target.value)}>
                 <option value="">Seleccionar ejecutivo...</option>
-                {executives.map((exec) => (
-                  <option key={exec._id} value={exec._id}>
-                    {exec.complete_name}
+                {users.map((user) => (
+                  <option key={user._id} value={user._id}>
+                    {user.name}
                   </option>
                 ))}
               </select>
@@ -335,7 +388,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           </div>
 
           <div className={styles.filterSection}>
-            <h4 className={styles.filterTitle}>Fecha de asignación</h4>
+            <h4 className={styles.filterTitle}>Fecha de creación</h4>
             <label className={styles.radioLabel}>
               <input
                 type="radio"
@@ -364,7 +417,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={dateFilter === 'menos5'}
                 onChange={(e) => setDateFilter(e.target.value)}
               />
-              <span>MENOS DE 5 DÍAS</span>
+              <span>HACE AL MENOS 5 DÍAS</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -374,7 +427,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={dateFilter === 'menos30'}
                 onChange={(e) => setDateFilter(e.target.value)}
               />
-              <span>MENOS DE 30 DÍAS</span>
+              <span>HACE AL MENOS DE 30 DÍAS</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -384,7 +437,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={dateFilter === 'menos365'}
                 onChange={(e) => setDateFilter(e.target.value)}
               />
-              <span>MENOS DE 365 DÍAS</span>
+              <span>HACE AL MENOS DE 365 DÍAS</span>
             </label>
           </div>
 
@@ -435,19 +488,18 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           </button>
           <button
             className={styles.buttonGroupItem}
-            onClick={loadQuotations}
+            onClick={loadQuotationsRequests}
             disabled={loading}
             title="Actualizar"
           >
             <RefreshCw size={20} />
           </button>
           <button
-            className={styles.buttonGroupItem}
+            className={!showAdvancedFilters ?  styles.buttonGroupItem : "buttonGroupItem filterDisabled"}
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
             disabled={loading}
-            title="Filtros avanzados"
-          >
-            <Filter size={20} />
+            title="Filtros avanzados">            
+            {!showAdvancedFilters ? <Filter size={20} /> : <FilterXIcon className='text-slate-400' size={20} />}
           </button>
           <button
             className={styles.buttonGroupItemLast}
@@ -465,7 +517,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           <Search size={20} className={styles.searchIcon} />
           <input
             type="text"
-            placeholder="Buscar Cliente"
+            placeholder="Buscar por Referencia, Cliente o Tipo de Solicitud"
             className={styles.searchInput}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -516,7 +568,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                       <div className={styles.rightInfo}>
                         {quotation.services && quotation.services.length > 0 && (
                           <div className={styles.location}>
-                            {quotation.services[0].origin?.country || 'Canadá'} - {quotation.services[0].destination?.country || 'México'}
+                            {quotation.services[0].shipments[0].origin?.country_name || 'NA'} - {quotation.services[0].shipments[0].destination?.country_name || 'NA'}
                           </div>
                         )}
                       </div>
@@ -533,16 +585,16 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                         </button>
                       </div>
 
-                      <div className={styles.rightInfo}>
+                      <div className={styles.rightInfo}>                        
+                        {daysRemaining !== null &&  (                          
+                          <div className={styles.dateInfo}>
+                            <Clock size={16} />
+                            <span >{daysRemaining}d</span>
+                          </div>
+                        )}
                         <div className={styles.requestType}>
                           {quotation.request_type_name}
                         </div>
-                        {daysRemaining !== null && (
-                          <div className={styles.dateInfo}>
-                            <Clock size={16} />
-                            <span>{daysRemaining}d</span>
-                          </div>
-                        )}
                       </div>
                     </div>
 
@@ -576,21 +628,28 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 <div className={styles.cardActions}>
                   <button
                     className={`${styles.actionButton} ${styles.editButton}`}
-                    onClick={() => onEdit(quotation._id)}
+                    onClick={()=> { 
+                      if (quotation._id_status_request === 3) {
+                        onView(quotation._id)
+                      }
+                      else {   
+                        onEdit(quotation._id)
+                      }}}
                     title={t('quote.edit')}
                   >
                     <Edit2 size={18} />
                   </button>
-                  <button
+                  {/*<button
                     className={`${styles.actionButton} ${styles.deleteButton}`}
                     onClick={() => {
                       if (confirm(t('quote.confirmDelete'))) {
+                        console.log('eliminar')
                       }
                     }}
                     title={t('quote.delete')}
                   >
                     <Trash2 size={18} />
-                  </button>
+                  </button>*/}
                 </div>
               </div>
             );

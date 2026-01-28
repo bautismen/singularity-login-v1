@@ -172,7 +172,7 @@ const translations = {
     'quote.noResultsFilters': 'No se encontraron resultados con los filtros aplicados',
     'quote.startNewQuotation': 'Comienza creando una nueva solicitud de cotización',
     'quote.noServicesTitle': 'Sin servicios',
-    'quote.noServicesMessage': 'No has agregado ningún servicio. ¿Deseas continuar de todos modos?',
+    'quote.noServicesMessage': 'Completa los datos de servicios.',
     'quote.noExecutivesTitle': 'Sin ejecutivos asignados',
     'quote.noExecutivesMessage': 'No has asignado ejecutivos. ¿Deseas continuar de todos modos?',
     'quote.doorToDoor': 'Door to Door',
