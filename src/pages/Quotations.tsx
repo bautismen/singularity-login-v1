@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Trash2, ChevronDown, Plus, Copy, X, MapPin, Search, RotateCcw, Save, Eye, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -105,9 +105,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const [showMerchandiseModal, setShowMerchandiseModal] = useState(false);
   const [editingMerchandise, setEditingMerchandise] = useState<Merchandise | null>(null);
   const [currentServiceId, setCurrentServiceId] = useState<number | null>(null);
-
   const [showExecutiveModal, setShowExecutiveModal] = useState(false);
-
+  const [showCancelQuotationRequestModal, setShowCancelQuotationRequestModal] = useState(false);
   const [merchandiseForm, setMerchandiseForm] = useState({
     name: '',
     description: '',
@@ -191,7 +190,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   }, []);
 
   useEffect(() => {
-    if (mode === 'edit' && quotationId) {
+    if (mode !== 'create' && quotationId) {
       loadQuotation(quotationId);
     }
   }, [mode, quotationId]);
@@ -243,6 +242,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       setAvailableExecutives(executivesData.filter((e: any) => e.estado === 1 && e.activo === true));
       setIncoterms(incotermsData.filter((i: any) => i.status === 1));
       setCountries(countriesData.filter((co: any) => co.status === 1));
+      console.log(countries);
       setImoList(imoData.filter((imo: any) => imo.status === 1));
     } catch (error) {
       console.error('Error loading catalogs:', error);
@@ -352,7 +352,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           name: exec.complete_name || ''
         }));
         setExecutives(loadedExecutives);
-        console.log('Loaded executives:', loadedExecutives);
+        ///console.log('Loaded executives:', loadedExecutives);
       }
     } catch (error) {
       console.error('Error loading quotation:', error);
@@ -583,8 +583,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }
       return service;
     }));
-
-    console.log('Merchandise saved with classifications:', newMerchandise);
+    //console.log('Merchandise saved with classifications:', newMerchandise);
     closeMerchandiseModal();
   };
 
@@ -631,7 +630,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
   const handleStatusUpdate = async (statusId: number, statusName: string) => {
     try {
-      setSaving(true);
+      setSaving(true);      
 
       if (!formData.referenceRequest || !formData.customerId || !formData.requestTypeId) {
         showWarning(t('quote.warnings.requiredFields'));
@@ -654,6 +653,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         customer_category: formData.customerCategory,
         _id_status_request: statusId,
         status_request_name: statusName,
+        status_comments: statusId === 3 ? (document.getElementById('comments-cancelation') as HTMLInputElement).value : null,        
         request_date: new Date(formData.created),
         deadline_date: formData.responseDeadline ? new Date(formData.responseDeadline) : null,
         _id_request_type: selectedRequestType._id,
@@ -723,8 +723,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             frecuency: service.frequency,
           } : undefined;
 
-          const originCountry = countries.find(c => c.country_code === service.origin);
-          const destinationCountry = countries.find(c => c.country_code === service.destination);
+          const originCountry = countries.find(c => c.code_country === service.origin);
+          const destinationCountry = countries.find(c => c.code_country === service.destination);
           const selectedIncoterm = incoterms.find(i => i.incoterm_name === service.incoterm);
 
           return {
@@ -735,17 +735,19 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             shipments: [{
             id_shipment_item: 1,
             origin: {
-              _id_country: originCountry?._id || null,
-              id_country: originCountry?.id_country || 0,
-              country_code: service.origin,
+              //_id_country: originCountry?._id || null,
+              id_country: originCountry?._id || null,
+              country_code: originCountry?.code_country,
+              country_name: originCountry?.name_country,
               location: ""
             },
             destination: {
-              _id_country: destinationCountry?._id || null,
-              id_country: destinationCountry?.id_country || 0,
-              country_code: service.destination,
-              location: "",
-              zipcode: service.destinationZip
+              //_id_country: destinationCountry?._id || null,
+              id_country: destinationCountry?._id || null,
+              country_code: destinationCountry?.code_country,
+              country_name: destinationCountry?.name_country,
+              location: service.destinationZip,
+              //zipcode: service.destinationZip
             },
             destiny_zipcode: service.destinationZip,
             _id_shipment_type: shipmentTypeMap[service.shippingType] || 1,
@@ -754,7 +756,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             operation_type_name: service.operation,
             _id_incoterm: selectedIncoterm?._id || 0,
             incoterm: service.incoterm,
-            ...(service.expectedDeparture && { departure_date_approximate: { $date: new Date(service.expectedDeparture).toISOString() } }),
+            ...(service.expectedDeparture && { departure_date_approximate: { $date: new Date(service.expectedDeparture).toISOString()}}),
             ...(projectionShipment && { projection_shipment: projectionShipment }),
             _id_status_shipment: 101,
             last_status_shipment: "Pendiente",
@@ -810,20 +812,26 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const handleCancelQuotation = () => {
-    handleStatusUpdate(3, 'Cancelada');
+    setModalState({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Está a punto de cancelar esta solicitud',
+      message: '¿Desea continuar con la cancelación?',
+      showCancel: true,
+      onConfirm: async () => {
+        setShowCancelQuotationRequestModal(true)       
+      }
+    });
+   
   };
 
   const handleSaveQuotation = async () => {
     try {
       setSaving(true);
 
-      console.log('Form data:', formData);
-      console.log('Reference:', formData.referenceRequest);
-      console.log('Customer ID:', formData.customerId);
-      console.log('Request Type ID:', formData.requestTypeId);
-
-      if (!formData.referenceRequest || !formData.customerId || !formData.requestTypeId) {
-        showWarning(`Por favor completa los campos requeridos:\nReferencia: ${formData.referenceRequest || 'FALTA'}\nCliente: ${formData.customerId || 'FALTA'}\nTipo de solicitud: ${formData.requestTypeId || 'FALTA'}`);
+      if (!formData.referenceRequest || !formData.customerId || !formData.requestTypeId ) {
+        showWarning(`Por favor completa los campos requeridos:\nReferencia:
+           ${formData.referenceRequest || 'FALTA'}\nCliente: ${formData.customerId || 'FALTA'}\nTipo de solicitud: ${formData.requestTypeId || 'FALTA'}`);
         setSaving(false);
         return;
       }
@@ -832,11 +840,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const selectedRequestType = requestTypes.find(r => r._id === parseInt(formData.requestTypeId) || r._id === formData.requestTypeId);
       const selectedExecutive = availableExecutives.length > 0 ? availableExecutives[0] : null;
 
-      console.log('Selected customer:', selectedCustomer);
-      console.log('Selected request type:', selectedRequestType);
-      console.log('Services to save:', services);
-      console.log('Executives to save:', executives);
-
       if (!selectedRequestType) {
         showError('Error: No se pudo encontrar el tipo de solicitud seleccionado');
         setSaving(false);
@@ -844,6 +847,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }
 
       const hasAssignedExecutives = executives.length > 0;
+
       const quotationData = {
         reference_request: formData.referenceRequest,
         priority: formData.isPriority ? 1 : 0,
@@ -867,9 +871,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           control_number: 'SN',
         })),
         services: services.map((service, idx) => {
-          const selectedService = availableServices.find(s => s.service_name === service.service);
-
+          const selectedService = availableServices.find(s => s.service_name === service.service);          
           const servicesAssociated: any[] = [];
+
           if (service.insurance) {
             const insuranceService = availableServices.find(s => s.service_name === 'Seguro');
             servicesAssociated.push({
@@ -917,23 +921,32 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             frecuency: service.frequency,
           } : undefined;
 
+          const originCountry = countries.find(c => c.code_country === service.origin);
+          const destinationCountry = countries.find(c => c.code_country === service.destination);          
+
           return {
             id_service_item: idx + 1,
-            _id_service: selectedService?._id || null,
+            _id_service: selectedService?._id,
             service_name: service.service,
             ...(mode === 'create' && { used: false }),
             shipments: [{
             id_shipment_item: 1,
             origin: {
-              location: service.origin,
+              id_country: originCountry?._id || null,
+              country_code: originCountry?.code_country,
+              country_name: originCountry?.name_country,
+              location: ""
             },
             destination: {
-              location: service.destination,
+              id_country: destinationCountry?._id || null,
+              country_code: destinationCountry?.code_country,
+              country_name: destinationCountry?.name_country,
+              location: service.destinationZip
             },
             destiny_zipcode: service.destinationZip,
             _id_shipment_type: service.shippingType === 'Door to Door' ? 1 : 2,
             shippment_type_name: service.shippingType,
-            _id_operation_type: service.operation === 'Exportación' ? 1 : service.operation === 'Importación' ? 2 : 3,
+            _id_operation_type: service.operation === 'Exportación' ? 1 : service.operation === 'Importación' ? 2 : null,
             operation_type_name: service.operation,
             _id_incoterm: incoterms.find(i => i.incoterm === service.incoterm)?._id || null,
             incoterm: service.incoterm,
@@ -957,33 +970,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
       console.log('=== QUOTATION DATA TO SAVE ===');
       console.log(JSON.stringify(quotationData, null, 2));
-      console.log('Services count:', quotationData.services.length);
-      console.log('Executives count:', quotationData.assigned_to.length);
 
-      if (quotationData.services.length === 0) {
-        setModalState({
-          isOpen: true,
-          type: 'warning',
-          title: t('quote.noServicesTitle'),
-          message: t('quote.noServicesMessage'),
-          showCancel: true,
-          onConfirm: async () => {
-            if (quotationData.assigned_to.length === 0) {
-              setModalState({
-                isOpen: true,
-                type: 'warning',
-                title: t('quote.noExecutivesTitle'),
-                message: t('quote.noExecutivesMessage'),
-                showCancel: true,
-                onConfirm: async () => {
-                  await performSave(quotationData);
-                }
-              });
-            } else {
-              await performSave(quotationData);
-            }
-          }
-        });
+      if (quotationData.services.length === 0 || !quotationData.services[0].service_name || 
+        !quotationData.services[0].shipments[0]._id_operation_type || !quotationData.services[0].shipments[0].incoterm || 
+        !quotationData.services[0].shipments[0].origin.id_country || !quotationData.services[0].shipments[0].destination.id_country
+       ) {
+        showWarning(`${t('quote.noServicesMessage')} : Servicio: ${quotationData.services[0].service_name || 'Falta'} , 
+        Tipo operacion: ${quotationData.services[0].shipments[0].operation_type_name || 'Falta'} , Incoterm: ${quotationData.services[0].shipments[0].incoterm || 'Falta'} ,
+        Origen: ${quotationData.services[0].shipments[0].origin.country_name || 'Falta'} , Destino: ${quotationData.services[0].shipments[0].destination.country_name || 'Falta'}`);        
         setSaving(false);
         return;
       }
@@ -1017,7 +1011,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       setSaving(true);
       if (mode === 'edit' && quotationId) {
         const result = await quotationService.update(quotationId, quotationData);
-        console.log('Update result:', result);
+        //console.log('Update result:', result);
         showSuccess('Cotización actualizada exitosamente');
       } else {
         const result = await quotationService.create(quotationData);
@@ -1057,17 +1051,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           <button
             className={styles.actionBarSaveButton}
             onClick={handleSaveQuotation}
-            disabled={saving || mode === 'view'}
-          >
+            disabled={saving || mode === 'view'}>
             <Save size={18} />
             <span>{saving ? 'Guardando...' : t('quote.save')}</span>
           </button>
           <button className={styles.actionBarResetButton}>
             <RotateCcw size={18} />
           </button>
-          <button className={styles.actionBarDeleteButton}>
+          {/*<button className={styles.actionBarDeleteButton}
+                  onClick={handleCancelQuotation}>
             <Trash2 size={18} />
-          </button>
+          </button>*/}
           <button className={styles.actionBarDropdownButton}>
             <span>{t('quote.actions')}</span>
             <ChevronDown size={16} />
@@ -1088,7 +1082,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               onChange={(e) => setFormData({ ...formData, referenceRequest: e.target.value })}
               className={styles.input}
               placeholder="QR250901-00001"
-              disabled={mode === 'view'}
+              disabled
             />
           </div>
 
@@ -1166,6 +1160,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               onChange={(e) => setFormData({ ...formData, responseDeadline: e.target.value })}
               className={styles.input}
               placeholder="dd/mm/aaaa"
+              disabled={mode === 'view'}
             />
           </div>
 
@@ -1184,22 +1179,22 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
           <div className={styles.formGroupWithToggle}>
             <label className={styles.label}>{t('quote.isPriority')}</label>
-            <div
+            <button
               className={`${styles.toggleSwitch} ${formData.isPriority ? styles.active : ''}`}
               onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
-            >
+              disabled={mode === 'view'}>
               <div className={styles.toggleThumb}></div>
-            </div>
+            </button>
           </div>
 
           <div className={styles.formGroupWithToggle}>
             <label className={styles.label}>{t('quote.isBid')}</label>
-            <div
+            <button
               className={`${styles.toggleSwitch} ${formData.isQuote ? styles.active : ''}`}
               onClick={() => setFormData({ ...formData, isQuote: !formData.isQuote })}
-            >
+              disabled={mode === 'view'}>
               <div className={styles.toggleThumb}></div>
-            </div>
+            </button>
           </div>
 
           {mode === 'edit' && (
@@ -1207,10 +1202,35 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <button
                 className={styles.cancelButton}
                 onClick={handleCancelQuotation}
-                disabled={saving}
-              >
-                {t('quote.cancel')}
+                disabled={saving}>
+                Cancelar solicitud
               </button>
+
+              {showCancelQuotationRequestModal && (
+              <div className={styles.modalOverlay} onClick={() => {setShowCancelQuotationRequestModal(false)}}>
+                <div className={styles.modalContentSmall} onClick={(e) => e.stopPropagation()}>
+                  <div className={styles.modalHeader}>
+                    <h2 className={styles.modalTitle}>Motivos de cancelación</h2>
+                    <button className={styles.closeButton} onClick={() => {setShowCancelQuotationRequestModal(false) }}>
+                      <X size={24} />
+                    </button>
+                  </div>
+                  <div className={styles.modalBody}>
+                  <div className={styles.formGroup} style={{ marginTop: '1.25rem' }}>
+                    <label className={styles.label}>Escriba los motivos de cancelación</label>
+                    <textarea id="comments-cancelation" className={styles.textarea} rows={3} placeholder="" />
+                    <div className={styles.modalFooter}>
+                      <button className={styles.saveModalButton} 
+                      onClick={() => handleStatusUpdate(3, "Cancelada")}>
+                        {t('quote.save')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            )}
+                
               <button
                 className={styles.sendButton}
                 onClick={handleSendQuotation}
@@ -1231,26 +1251,24 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <div className={styles.serviceHeader}>
               <div className={styles.serviceNumber}>{index + 1}</div>
               <div className={styles.serviceActions}>
-                <button className={`${styles.iconButton} ${styles.primary}`}>
-                  <Plus size={18} />
-                </button>
-                <button className={styles.iconButton} onClick={() => duplicateService(service.id)}>
+                {/*<button className={`${styles.iconButton} ${styles.primary}`} disabled={mode === 'view'}>
+                  <Plus size={18}  />
+                </button>*/}
+                <button className={styles.iconButton} onClick={() => duplicateService(service.id)} disabled={mode === 'view'}>
                   <Copy size={18} />
                 </button>
-                <button className={styles.iconButton}>
+                {/*<button className={styles.iconButton}>
                   <Trash2 size={18} />
                 </button>
                 <button className={styles.iconButton}>
                   <ChevronDown size={18} />
-                </button>
-                {services.length > 1 && (
-                  <button
+                </button>*/}
+                <button
                     className={`${styles.iconButton} ${styles.danger}`}
                     onClick={() => removeService(service.id)}
-                  >
+                    disabled={mode === 'view'}>
                     <X size={18} />
-                  </button>
-                )}
+                </button>               
               </div>
             </div>
 
@@ -1284,6 +1302,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   value={service.operation}
                   onChange={(e) => updateService(service.id, 'operation', e.target.value)}
                   className={styles.select}
+                  disabled={mode === 'view'}
                 >
                   <option value="">{t('quote.select')}</option>
                   <option>{t('quote.export')}</option>
@@ -1324,10 +1343,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   className={styles.select}
                   disabled={loading || mode === 'view'}
                 >
-                  <option value="">Seleccionar país...</option>
+                  <option value="">{t('quote.select')}</option>
                   {countries.map((country) => (
-                    <option key={country._id} value={country.country_code}>
-                      {country.name_country}
+                    <option key={country._id} value={country.code_country}>
+                      {country.name_country} ({country.code_country})
                     </option>
                   ))}
                 </select>
@@ -1344,11 +1363,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   className={styles.select}
                   disabled={loading || mode === 'view'}
                 >
-                  <option value="">Seleccionar país...</option>
+                  <option value="">{t('quote.select')}</option>
                   {countries.map((country) => (
-                    <option key={country._id} value={country.country_code}>
-                      {country.name_country}
-                    </option>
+                    <option key={country._id} value={country.code_country}>
+                      {country.name_country} ({country.code_country})
+                    </option>                    
                   ))}
                 </select>
               </div>
@@ -1363,6 +1382,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   value={service.destinationZip}
                   onChange={(e) => updateService(service.id, 'destinationZip', e.target.value)}
                   className={styles.input}
+                  disabled={mode === 'view'}
                 />
               </div>
 
@@ -1373,6 +1393,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   value={service.expectedDeparture}
                   onChange={(e) => updateService(service.id, 'expectedDeparture', e.target.value)}
                   className={styles.input}
+                  disabled={mode === 'view'}
                 />
               </div>
 
@@ -1384,6 +1405,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   value={service.shippingType}
                   onChange={(e) => updateService(service.id, 'shippingType', e.target.value)}
                   className={styles.select}
+                  disabled={mode === 'view'}
                 >
                   <option>{t('quote.doorToDoor')}</option>
                   <option>{t('quote.portToPort')}</option>
@@ -1396,36 +1418,36 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <div style={{ marginTop: '1.25rem' }}>
               <label className={styles.label}>{t('quote.associatedServices')}</label>
               <div className={styles.associatedServices}>
-                <div
+                <button
                   className={`${styles.serviceChip} ${service.insurance ? styles.selected : ''}`}
                   onClick={() => updateService(service.id, 'insurance', !service.insurance)}
-                >
+                  disabled={mode === 'view'}>
                   <span>Seguro</span>
-                </div>
-                <div
+                </button>
+                <button
                   className={`${styles.serviceChip} ${service.maneuver ? styles.selected : ''}`}
                   onClick={() => updateService(service.id, 'maneuver', !service.maneuver)}
-                >
+                  disabled={mode === 'view'}>
                   <span>Maniobra</span>
-                </div>
-                <div
+                </button>
+                <button
                   className={`${styles.serviceChip} ${service.custody ? styles.selected : ''}`}
                   onClick={() => updateService(service.id, 'custody', !service.custody)}
-                >
+                  disabled={mode === 'view'}>
                   <span>Custodia</span>
-                </div>
-                <div
+                </button>
+                <button
                   className={`${styles.serviceChip} ${service.inspection ? styles.selected : ''}`}
                   onClick={() => updateService(service.id, 'inspection', !service.inspection)}
-                >
+                  disabled={mode === 'view'}>
                   <span>Inspección</span>
-                </div>
-                <div
+                </button>
+                <button
                   className={`${styles.serviceChip} ${service.customsClearance ? styles.selected : ''}`}
                   onClick={() => updateService(service.id, 'customsClearance', !service.customsClearance)}
-                >
+                  disabled={mode === 'view'}>
                   <span>Despacho aduanal</span>
-                </div>
+                </button>
               </div>
             </div>
 
@@ -1437,6 +1459,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 className={styles.textarea}
                 rows={3}
                 placeholder=""
+                disabled={mode === 'view'}
               />
             </div>
 
@@ -1448,6 +1471,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   checked={service.programFrequency}
                   onChange={(e) => updateService(service.id, 'programFrequency', e.target.checked)}
                   className={styles.checkbox}
+                  disabled={mode === 'view'}
                 />
                 <label htmlFor={`freq-${service.id}`} className={styles.checkboxLabel}>
                   Programar frecuencia
@@ -1461,6 +1485,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       value={service.frequency}
                       onChange={(e) => updateService(service.id, 'frequency', e.target.value)}
                       className={styles.select}
+                      disabled={mode === 'view'}
                     >
                       <option value="">{t('quote.select')}</option>
                       <option value="semanal">{t('quote.weekly')}</option>
@@ -1476,6 +1501,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       onChange={(e) => updateService(service.id, 'quantity', e.target.value)}
                       className={styles.input}
                       placeholder="0"
+                      disabled={mode === 'view'}
                     />
                   </div>
                   <div className={styles.formGroup}>
@@ -1484,6 +1510,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       value={service.unit}
                       onChange={(e) => updateService(service.id, 'unit', e.target.value)}
                       className={styles.select}
+                      disabled={mode === 'view'}
                     >
                       <option value="">Seleccionar...</option>
                       <option value="Kilos">{t('quote.kilos')}</option>
@@ -1525,6 +1552,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               className={styles.iconButtonSmall}
                               onClick={() => copyMerchandise(service.id, merch.id)}
                               title={t('quote.copy')}
+                              disabled={mode === 'view'}
                             >
                               <Copy size={14} />
                             </button>
@@ -1532,6 +1560,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               className={styles.iconButtonSmall}
                               onClick={() => removeMerchandise(service.id, merch.id)}
                               title={t('quote.delete')}
+                              disabled={mode === 'view'}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -1552,6 +1581,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <button
                 className={styles.addItemButton}
                 onClick={() => openMerchandiseModal(service.id)}
+                disabled={mode === 'view'}
               >
                 <Plus size={16} />
                 {t('quote.addMerchandise')}
@@ -1560,7 +1590,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           </div>
         ))}
 
-        <button className={styles.addServiceButton} onClick={addService}>
+        <button className={styles.addServiceButton} onClick={addService} disabled={mode === 'view'}>
           <Plus size={20} />
           <span>{t('quote.addService')}</span>
         </button>
@@ -1578,13 +1608,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   className={styles.removeIconButton}
                   onClick={() => removeExecutive(executive.id)}
                   title={t('quote.delete')}
+                  disabled={mode === 'view'}
                 >
                   <Trash2 size={16} />
                 </button>
               </div>
             ))}
           </div>
-          <button className={styles.addExecutiveButton} onClick={openExecutiveModal}>
+          <button className={styles.addExecutiveButton} onClick={openExecutiveModal} disabled={mode === 'view'} >
             <Plus size={16} />
             {t('quote.addExecutive')}
           </button>
@@ -1604,7 +1635,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.modalRow}>
                 <div className={styles.modalFieldLarge}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>{t('quote.merchandise')}
+                    <span className={styles.required}>*</span>
+                    {t('quote.merchandise')}
                   </label>
                   <input
                     type="text"
@@ -1612,17 +1644,18 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     className={styles.input}
                     value={merchandiseForm.name}
                     onChange={(e) => setMerchandiseForm({ ...merchandiseForm, name: e.target.value })}
+                    disabled={mode === 'view'}
                   />
                 </div>
                 <div className={styles.modalFieldSmall}>
                   <label className={styles.label}>{t('quote.isStackable')}</label>
                   <div className={styles.toggleContainer}>
-                    <div
+                    <button
                       className={`${styles.toggleSwitch} ${merchandiseForm.stackable ? styles.active : ''}`}
                       onClick={() => setMerchandiseForm({ ...merchandiseForm, stackable: !merchandiseForm.stackable })}
-                    >
+                      disabled={mode === 'view'}>
                       <div className={styles.toggleThumb}></div>
-                    </div>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1633,135 +1666,144 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   className={styles.textarea}
                   rows={3}
                   value={merchandiseForm.description}
+                  disabled={mode === 'view'}
                   onChange={(e) => setMerchandiseForm({ ...merchandiseForm, description: e.target.value })}
                 ></textarea>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <span className={styles.required}>*</span>{t('quote.merchandiseClassification')}
-                </label>
-                <div className={styles.classificationGrid}>
-                  <div className={styles.classificationColumn}>
-                    <div className={styles.classificationCheckbox}>
-                      <input
-                        type="checkbox"
-                        id="peligrosa"
-                        className={styles.checkbox}
-                        checked={merchandiseForm.dangerous}
-                        onChange={(e) => setMerchandiseForm({ ...merchandiseForm, dangerous: e.target.checked })}
-                      />
-                      <label htmlFor="peligrosa" className={styles.classificationLabel}>
-                        {t('quote.dangerousClass')}
-                      </label>
-                    </div>
-                    <div className={styles.classificationCheckbox}>
-                      <input
-                        type="checkbox"
-                        id="refrigerada"
-                        className={styles.checkbox}
-                        checked={merchandiseForm.refrigerated}
-                        onChange={(e) => setMerchandiseForm({ ...merchandiseForm, refrigerated: e.target.checked })}
-                      />
-                      <label htmlFor="refrigerada" className={styles.classificationLabel}>
-                        {t('quote.refrigeratedClass')}
-                      </label>
-                    </div>
-                    <div className={styles.classificationCheckbox}>
-                      <input
-                        type="checkbox"
-                        id="sobredimensionada"
-                        className={styles.checkbox}
-                        checked={merchandiseForm.oversized}
-                        onChange={(e) => setMerchandiseForm({ ...merchandiseForm, oversized: e.target.checked })}
-                      />
-                      <label htmlFor="sobredimensionada" className={styles.classificationLabel}>
-                        {t('quote.oversizedClass')}
-                      </label>
-                    </div>
-                  </div>
-                  <div className={styles.classificationColumn}>
-                    {merchandiseForm.dangerous && (
-                      <div className={styles.formGroup}>
-                        <label className={styles.label}>{t('quote.imo')}</label>
-                        <select
-                          className={styles.select}
-                          value={merchandiseForm.imoId}
-                          onChange={(e) => {
-                            const selectedId = parseInt(e.target.value);
-                            const selectedImo = imoList.find(imo => imo._id === selectedId);
-                            setMerchandiseForm({
-                              ...merchandiseForm,
-                              imoId: selectedId,
-                              imoClass: selectedImo ? `${selectedImo.imo} ${selectedImo.description}` : ''
-                            });
-                          }}
-                        >
-                          <option value="0">{t('quote.selectOption')}</option>
-                          {imoList.map((imo) => (
-                            <option key={imo._id} value={imo._id}>
-                              {imo.imo} - {imo.description}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-                    {merchandiseForm.refrigerated && (
-                      <div className={styles.formGroup}>
-                        <label className={styles.label}>{t('quote.temperature')}</label>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <input
-                            type="text"
-                            placeholder="80"
-                            className={styles.input}
-                            style={{ flex: 1 }}
-                            value={merchandiseForm.temperature}
-                            onChange={(e) => setMerchandiseForm({ ...merchandiseForm, temperature: e.target.value })}
-                          />
-                          <select
-                            className={styles.select}
-                            style={{ width: '80px' }}
-                            value={merchandiseForm.tempUnit}
-                            onChange={(e) => setMerchandiseForm({ ...merchandiseForm, tempUnit: e.target.value })}
-                          >
-                            <option>°C</option>
-                            <option>°F</option>
-                          </select>
-                        </div>
-                      </div>
-                    )}
-                    <div className={styles.classificationCheckbox}>
-                      <input
-                        type="checkbox"
-                        id="granel"
-                        className={styles.checkbox}
-                        checked={merchandiseForm.grain}
-                        onChange={(e) => setMerchandiseForm({ ...merchandiseForm, grain: e.target.checked })}
-                      />
-                      <label htmlFor="granel" className={styles.classificationLabel}>
-                        {t('quote.bulkClass')}
-                      </label>
-                    </div>
-                  </div>
-                  <div className={styles.classificationColumn}>
-                    {merchandiseForm.dangerous && (
-                      <div className={styles.formGroup}>
-                        <label className={styles.label}>{t('quote.un')}</label>
+              <div style={{ marginTop: '1.0rem' }}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>*</span>{t('quote.merchandiseClassification')}
+                  </label>
+                  <div className={styles.classificationGrid}>
+                    <div className={styles.classificationColumn}>
+                      <div className={styles.classificationCheckbox}>
                         <input
-                          type="text"
-                          placeholder="19"
-                          className={styles.input}
-                          value={merchandiseForm.un}
-                          onChange={(e) => setMerchandiseForm({ ...merchandiseForm, un: e.target.value })}
+                          type="checkbox"
+                          id="peligrosa"
+                          className={styles.checkbox}                        
+                          checked={merchandiseForm.dangerous}
+                          onChange={(e) => setMerchandiseForm({ ...merchandiseForm, dangerous: e.target.checked })}
+                          disabled={mode === 'view'}
                         />
+                        <label htmlFor="peligrosa" className={styles.classificationLabel}>
+                          {t('quote.dangerousClass')}
+                        </label>
                       </div>
-                    )}
+                      <div className={styles.classificationCheckbox}>
+                        <input
+                          type="checkbox"
+                          id="refrigerada"
+                          className={styles.checkbox}
+                          checked={merchandiseForm.refrigerated}
+                          onChange={(e) => setMerchandiseForm({ ...merchandiseForm, refrigerated: e.target.checked })}
+                          disabled={mode === 'view'}
+                        />
+                        <label htmlFor="refrigerada" className={styles.classificationLabel}>
+                          {t('quote.refrigeratedClass')}
+                        </label>
+                      </div>
+                      <div className={styles.classificationCheckbox}>
+                        <input
+                          type="checkbox"
+                          id="sobredimensionada"
+                          className={styles.checkbox}
+                          checked={merchandiseForm.oversized}
+                          onChange={(e) => setMerchandiseForm({ ...merchandiseForm, oversized: e.target.checked })}
+                          disabled={mode === 'view'}
+                        />
+                        <label htmlFor="sobredimensionada" className={styles.classificationLabel}>
+                          {t('quote.oversizedClass')}
+                        </label>
+                      </div>
+                      <div className={styles.classificationCheckbox}>
+                        <input
+                          type="checkbox"
+                          id="granel"
+                          className={styles.checkbox}
+                          checked={merchandiseForm.grain}
+                          onChange={(e) => setMerchandiseForm({ ...merchandiseForm, grain: e.target.checked })}
+                          disabled={mode === 'view'}
+                        />
+                        <label htmlFor="granel" className={styles.classificationLabel}>
+                          {t('quote.bulkClass')}
+                        </label>
+                      </div>
+                    </div>
+                    <div className={styles.classificationColumn}>
+                      {merchandiseForm.dangerous && (
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <div className={styles.formGroup}>
+                            <label className={styles.label}>{t('quote.imo')}</label>
+                            <select
+                              className={styles.select}
+                              value={merchandiseForm.imoId}
+                              onChange={(e) => {
+                                const selectedId = parseInt(e.target.value);
+                                const selectedImo = imoList.find(imo => imo._id === selectedId);
+                                setMerchandiseForm({
+                                  ...merchandiseForm,
+                                  imoId: selectedId,
+                                  imoClass: selectedImo ? `${selectedImo.imo} ${selectedImo.description}` : ''
+                                });
+                              }}
+                            >
+                              <option value="0">{t('quote.selectOption')}</option>
+                              {imoList.map((imo) => (
+                                <option key={imo._id} value={imo._id}>
+                                  {imo.imo} - {imo.description}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className={styles.formGroup}>
+                            <label className={styles.label}>{t('quote.un')}</label>
+                            <input
+                              type="text"
+                              placeholder="19"
+                              className={styles.input}
+                              style={{ width: '80px' }}
+                              value={merchandiseForm.un}
+                              onChange={(e) => setMerchandiseForm({ ...merchandiseForm, un: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      {merchandiseForm.refrigerated && (
+                        <div className={styles.formGroup}>
+                          <label className={styles.label}>{t('quote.temperature')}</label>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <input
+                              type="text"
+                              placeholder="80"
+                              className={styles.input}
+                              style={{ width: '100px' }}
+                              value={merchandiseForm.temperature}
+                              onChange={(e) => setMerchandiseForm({ ...merchandiseForm, temperature: e.target.value })}
+                            />
+                            <select
+                              className={styles.select}
+                              style={{ width: '80px' }}
+                              value={merchandiseForm.tempUnit}
+                              onChange={(e) => setMerchandiseForm({ ...merchandiseForm, tempUnit: e.target.value })}
+                            >
+                              <option>°C</option>
+                              <option>°F</option>
+                            </select>
+                          </div>
+                        </div>
+                      )}                     
+                    </div>
+                    
+                    
                   </div>
                 </div>
               </div>
 
               <div style={{ marginTop: '1.5rem' }}>
-                <button className={styles.addPackageButtonIcon} onClick={openPackagingModal}>
+                <button className={styles.addPackageButtonIcon} onClick={openPackagingModal} disabled={mode === 'view'}>
                   <Plus size={18} />
                   {t('quote.addPackaging')}
                 </button>
@@ -1792,6 +1834,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               <button
                                 className={styles.removeRowButton}
                                 onClick={() => removePackage(pkg.id)}
+                                disabled={mode === 'view'}
                               >
                                 <X size={14} />
                               </button>
@@ -1808,12 +1851,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <div className={styles.modalFooterInfo}>
                   <div className={styles.unitTypeToggle}>
                     <span className={!useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.lbsInches')}</span>
-                    <div
+                    <button
                       className={`${styles.toggleSwitch} ${useMetricSystem ? styles.active : ''}`}
                       onClick={() => setUseMetricSystem(!useMetricSystem)}
-                    >
+                      disabled={mode === 'view'}>
                       <div className={styles.toggleThumb}></div>
-                    </div>
+                    </button>
                     <span className={useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.kgCm')}</span>
                   </div>
                   <div className={styles.totalsDisplay}>
@@ -1834,7 +1877,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               )}
             </div>
             <div className={styles.modalFooter}>
-              <button className={styles.saveModalButton} onClick={saveMerchandise}>
+              <button className={styles.saveModalButton} onClick={saveMerchandise} disabled={mode === 'view'}>
                 {t('quote.save')}
               </button>
             </div>
@@ -1922,8 +1965,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   </label>
                   <input
                     type="number"
+                    step="any"
                     className={styles.input}
-                    placeholder="40"
                     id="package-length"
                   />
                 </div>
@@ -1933,8 +1976,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   </label>
                   <input
                     type="number"
+                    step="any"
                     className={styles.input}
-                    placeholder="50"
                     id="package-height"
                   />
                 </div>
@@ -1946,8 +1989,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   </label>
                   <input
                     type="number"
+                    step="any"
                     className={styles.input}
-                    placeholder="30"
                     id="package-width"
                   />
                 </div>
@@ -1957,8 +2000,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   </label>
                   <input
                     type="number"
+                    step="any"
                     className={styles.input}
-                    placeholder="30"
                     id="package-weight"
                   />
                 </div>
@@ -1979,10 +2022,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     addPackage({
                       type,
                       quantity: parseInt(quantity),
-                      length: parseInt(length),
-                      height: parseInt(height),
-                      width: parseInt(width),
-                      weight: parseInt(weight),
+                      length: length,
+                      height: height,
+                      width: width,
+                      weight: weight,
                     });
                   }
                 }}
