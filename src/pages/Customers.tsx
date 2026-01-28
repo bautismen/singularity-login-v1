@@ -133,20 +133,35 @@ export default function Customers() {
   }
 
   function handleEditCustomer(customer: Customer) {
-    setEditingCustomer(customer);
-    setFormData({
-      is_branch: customer.is_branch,
-      branch_name: customer.branch_name || '',
-      type: customer.type,
-      company_id: customer.company_id || '',
-      person_id: customer.person_id || '',
-      nationality: customer.nationality,
-      fiscal_data: customer.fiscal_data,
-      contacts: customer.contacts,
-      addresses: customer.addresses,
-    });
-    setIsFormOpen(true);
-  }
+  setEditingCustomer(customer);
+
+  const selectedCompany = companies.find(c => c._id === customer.company_id);
+
+  setFormData({
+    is_branch: customer.is_branch,
+    branch_name: customer.branch_name || '',
+    is_national: customer.is_national ?? false,
+    is_persona_fisica: customer.is_persona_fisica ?? false,
+    curp: customer.curp || '',
+    type: customer.type,
+    company_id: customer.company_id || '',
+    person_id: customer.person_id || '',
+    nationality: customer.nationality,
+    status: customer.status,
+    fiscal_data: selectedCompany
+      ? {
+          business_name: selectedCompany.business_name || '',
+          taxid: customer.fiscal_data.taxid || selectedCompany.rfc_taxid || '',
+          country: selectedCompany.country || 'MX',
+          state: selectedCompany.state || '',
+        }
+      : customer.fiscal_data,
+    contacts: customer.contacts || [],
+    addresses: customer.addresses || [],
+  });
+
+  setIsFormOpen(true);
+}
 
   async function handleSaveCustomer() {
     try {
@@ -311,35 +326,49 @@ export default function Customers() {
     return (
       <div className={styles.formContainer}>
           <div className={styles.formHeaderRow}>
-            <h2 className={styles.formTitle}>Nuevo cliente</h2>
+            <h2 className={styles.formTitle}>{t('cust.newCustomer')}</h2>
             <div className={styles.headerActions}>
               <button onClick={handleSaveCustomer} className={styles.saveHeaderButton} disabled={loading}>
                 <Plus size={18} />
-                Guardar
+                {t('cust.save')}
               </button>
               <button onClick={() => setIsFormOpen(false)} className={styles.cancelHeaderButton}>
-                Cancelar
-              </button>
-              <button className={styles.actionsHeaderButton}>
-                Acciones
-                <ChevronDown size={18} />
+                {t('cust.cancel')}
               </button>
             </div>
           </div>
 
           <div className={styles.sectionCard}>
-            <div className={styles.sectionTitle}>Datos Generales</div>
+            <div className={styles.sectionTitle}>{t('cust.TitleDataGeneral')}</div>
 
             <div className={styles.twoColumnGrid}>
               <div className={styles.leftColumn}>
                 <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>Seleccionar Empresa</label>
+                  <label className={styles.fieldLabel}>{t('cust.selectCompany')}</label>
                   <select
                     value={formData.company_id}
-                    onChange={(e) => setFormData({ ...formData, company_id: e.target.value })}
+                    disabled={!!editingCustomer}
+                    onChange={(e) => {
+                      const selectedCompanyId = e.target.value;
+                      const selectedCompany = companies.find(c => c._id === selectedCompanyId);
+
+                      if (selectedCompany) {
+                        setFormData({
+                          ...formData,
+                          company_id: selectedCompanyId,
+                          is_national: selectedCompany.nationality === 'nacional',
+                          fiscal_data: {
+                            business_name: selectedCompany.business_name || '',
+                            taxid: selectedCompany.rfc_taxid || '',
+                            country: selectedCompany.country || 'MX',
+                            state: selectedCompany.state || '',
+                          },
+                        });
+                      }
+                    }}
                     className={styles.selectInput}
-                  >
-                    <option value="">Seleccionar Empresa</option>
+                    >
+                    <option value="">{t('cust.selectCompany')}</option>
                     {companies.map((company) => (
                       <option key={company._id} value={company._id}>
                         {company.business_name}
@@ -354,7 +383,7 @@ export default function Customers() {
                   className={styles.fullWidthGreenButton}
                 >
                   <Plus size={16} />
-                  Nueva Empresa
+                  {t('cust.newCompany')}
                 </button>
 
                 <div className={styles.checkboxField}>
@@ -365,7 +394,7 @@ export default function Customers() {
                     onChange={(e) => setFormData({ ...formData, is_branch: e.target.checked })}
                     className={styles.checkbox}
                   />
-                  <label htmlFor="is_branch" className={styles.checkboxText}>Es Sucursal</label>
+                  <label htmlFor="is_branch" className={styles.checkboxText}>{t('cust.isBranch')}</label>
                 </div>
 
                 <div className={styles.checkboxField}>
@@ -381,7 +410,7 @@ export default function Customers() {
                     })}
                     className={styles.checkbox}
                   />
-                  <label htmlFor="is_national" className={styles.checkboxText}>Es nacional</label>
+                  <label htmlFor="is_national" className={styles.checkboxText}>{t('cust.Isnational')}</label>
                 </div>
               </div>
 
@@ -391,17 +420,20 @@ export default function Customers() {
                   <input
                     type="text"
                     value={formData.fiscal_data.taxid}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      fiscal_data: { ...formData.fiscal_data, taxid: e.target.value }
-                    })}
+                    disabled={!!editingCustomer}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        fiscal_data: { ...formData.fiscal_data, taxid: e.target.value }
+                      })
+                    }
                     className={styles.textInput}
                     placeholder="RFC/TAXID"
                   />
                 </div>
 
                 <div className={styles.statusField}>
-                  <span className={styles.statusText}>Activo</span>
+                  <span className={styles.statusText}>{t('cust.checkActive')}</span>
                   <label className={styles.switch}>
                     <input
                       type="checkbox"
@@ -417,13 +449,13 @@ export default function Customers() {
 
                 {formData.is_branch && (
                   <div className={styles.fieldGroup}>
-                    <label className={styles.fieldLabel}>Nombre de sucursal</label>
+                    <label className={styles.fieldLabel}>{t('cust.branchName')}</label>
                     <input
                       type="text"
                       value={formData.branch_name}
                       onChange={(e) => setFormData({ ...formData, branch_name: e.target.value })}
                       className={styles.textInput}
-                      placeholder="Nombre de sucursal"
+                      placeholder={t('cust.branchName')}
                     />
                   </div>
                 )}
@@ -441,7 +473,7 @@ export default function Customers() {
                       })}
                       className={styles.checkbox}
                     />
-                    <label htmlFor="is_persona_fisica" className={styles.checkboxText}>Persona física</label>
+                    <label htmlFor="is_persona_fisica" className={styles.checkboxText}>{t('cust.NaturalPerson')}</label>
                   </div>
                 )}
 
@@ -468,7 +500,7 @@ export default function Customers() {
             >
               <div className={styles.sectionTitleWithDot}>
                 <span className={styles.greenDot}></span>
-                <span>Contacto</span>
+                <span>{t('cust.contacts')}</span>
               </div>
               {collapsedSections.contacts ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
             </div>
@@ -477,19 +509,19 @@ export default function Customers() {
               <div className={styles.sectionContent}>
                 <button onClick={addContact} className={styles.addDashedButton}>
                   <Plus size={20} />
-                  Agregar contacto
+                {t('cust.addContact')}
                 </button>
                 {formData.contacts.map((contact, index) => (
                   <div key={index} className={styles.itemCard}>
                     <div className={styles.itemHeader}>
-                      <h4>Contacto {index + 1}</h4>
+                      <h4>{t('cust.contact')} {index + 1}</h4>
                       <button onClick={() => removeContact(index)} className={styles.removeButton}>
                         <X size={18} />
                       </button>
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Tipo de contacto
+                        {t('cust.TypeContact')}
                         <select
                           value={contact.type}
                           onChange={(e) => updateContact(index, 'type', e.target.value)}
@@ -502,7 +534,7 @@ export default function Customers() {
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Nombre
+                      {t('cust.contactName')}
                         <input
                           type="text"
                           value={contact.name}
@@ -512,7 +544,7 @@ export default function Customers() {
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Email
+                        {t('cust.contactEmail')}
                         <input
                           type="email"
                           value={contact.email}
@@ -522,7 +554,7 @@ export default function Customers() {
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Teléfono
+                        {t('cust.contactPhone')}
                         <input
                           type="text"
                           value={contact.phone}
@@ -543,7 +575,7 @@ export default function Customers() {
             >
               <div className={styles.sectionTitleWithDot}>
                 <span className={styles.greenDot}></span>
-                <span>Domicilio</span>
+                <span> {t('cust.addresses')}</span>
               </div>
               {collapsedSections.address ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
             </div>
@@ -552,19 +584,19 @@ export default function Customers() {
               <div className={styles.sectionContent}>
                 <button onClick={addAddress} className={styles.addDashedButton}>
                   <Plus size={20} />
-                  Agregar Domicilio
+                  {t('cust.addAddress')}
                 </button>
                 {formData.addresses.map((address, index) => (
                   <div key={index} className={styles.itemCard}>
                     <div className={styles.itemHeader}>
-                      <h4>Domicilio {index + 1}</h4>
+                      <h4>{t('cust.addresses')} {index + 1}</h4>
                       <button onClick={() => removeAddress(index)} className={styles.removeButton}>
                         <X size={18} />
                       </button>
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Calle
+                        {t('cust.street')}
                         <input
                           type="text"
                           value={address.street}
@@ -574,7 +606,7 @@ export default function Customers() {
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Ciudad
+                        {t('cust.city')}
                         <input
                           type="text"
                           value={address.city}
@@ -584,7 +616,7 @@ export default function Customers() {
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Estado
+                        {t('cust.state')}
                         <select
                           value={address.state}
                           onChange={(e) => updateAddress(index, 'state', e.target.value)}
@@ -598,7 +630,7 @@ export default function Customers() {
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Código Postal
+                        {t('cust.postalCode')}
                         <input
                           type="text"
                           value={address.postal_code}
@@ -612,11 +644,11 @@ export default function Customers() {
             )}
           </div>
 
-        {showCompanyForm && (
+        {showCompanyForm && ( /* aqui guarda la empresa */
           <div className={styles.modalOverlay}>
             <div className={styles.modalContent}>
               <div className={styles.modalHeader}>
-                <h3>Nueva Empresa</h3>
+                <h3>{t('comp.TitleNew')} </h3>
                 <button onClick={() => setShowCompanyForm(false)} className={styles.closeButton}>
                   <X size={24} />
                 </button>
@@ -624,7 +656,7 @@ export default function Customers() {
               <div className={styles.modalBody}>
                 <div className={styles.formRow}>
                   <label>
-                    Razón Social
+                    {t('cust.CompanyName')}
                     <input
                       type="text"
                       value={newCompany.business_name}
@@ -644,7 +676,7 @@ export default function Customers() {
                 </div>
                 <div className={styles.formRow}>
                   <label>
-                    Estado
+                    {t('cust.state')}
                     <select
                       value={newCompany.state}
                       onChange={(e) => setNewCompany({ ...newCompany, state: e.target.value })}
@@ -659,10 +691,10 @@ export default function Customers() {
               </div>
               <div className={styles.modalActions}>
                 <button onClick={() => setShowCompanyForm(false)} className={styles.cancelButton}>
-                  Cancelar
+                  {t('cust.cancel')}
                 </button>
                 <button onClick={handleCreateCompany} className={styles.saveButton}>
-                  Guardar
+                  {t('cust.save')}
                 </button>
               </div>
             </div>
@@ -675,7 +707,7 @@ export default function Customers() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Clientes</h1>
+        <h1 className={styles.title}>{t('cust.title')}</h1>
         <div className={styles.buttonGroup}>
           <button onClick={handleNewCustomer} className={styles.iconButton}>
             <Plus size={20} />
@@ -685,15 +717,8 @@ export default function Customers() {
               <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
             </svg>
           </button>
-          <button className={styles.actionsButton}>
-            Acciones
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </button>
         </div>
       </div>
-
       <div className={styles.searchBar}>
         <Search size={20} />
         <input
@@ -708,15 +733,26 @@ export default function Customers() {
       <div className={styles.customerList}>
         {filteredCustomers.map((customer) => (
           <div key={customer._idcustomer} className={styles.customerCard}>
-            <div className={styles.customerInfo}>
-              <h3>{customer.fiscal_data.business_name}</h3>
-              <p className={styles.taxId}>{customer.fiscal_data.taxid}</p>
-              <p className={styles.customerType}>
-                {customer.type === 'fisica' ? 'Persona Física' : 'Persona Moral'}
-              </p>
-              <p className={styles.customerLocation}>
-                {customer.fiscal_data.state}, {customer.fiscal_data.country}
-              </p>
+            <div className={styles.customerRow}>
+              <div className={styles.customerInfo}>
+                <h3>{customer.fiscal_data.business_name}</h3>
+              </div>
+              <div className={styles.customerMeta}>
+                <p className={styles.taxId}>
+                  {customer.fiscal_data.taxid}
+                </p>
+                <p className={styles.customerNationality}>
+                  <span className={styles.badge}>
+                    {customer.nationality === 'nacional' ? 'Nacional' : 'Extranjero'}
+                  </span>
+                  </p>
+                  <p className={styles.customerType}>
+                  <span className={styles.badge}>
+                    {customer.type === 'fisica' ? 'Persona física' : 'Persona moral'}
+                  </span>
+                </p>
+              </div>
+
             </div>
             <div className={styles.customerActions}>
               <button

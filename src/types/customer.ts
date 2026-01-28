@@ -76,6 +76,9 @@ export interface Customer {
   company_id?: string;
   person_id?: string;
   nationality: 'nacional' | 'extranjero';
+  is_national?: boolean;        
+  is_persona_fisica?: boolean;  
+  curp?: string;               
   datastate: number;
   fiscal_data: {
     business_name: string;
