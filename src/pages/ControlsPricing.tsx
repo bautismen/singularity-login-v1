@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, Filter, ChevronDown, Search, Clock, Edit2, Trash2, Plus } from 'lucide-react';
+import { RefreshCw, Filter, ChevronDown, Search, Clock, Plus, FilterXIcon } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { controlsPricingService, ControlsPricingRequest } from '../services/controlsPricingService';
@@ -18,13 +18,46 @@ export function ControlsPricing() {
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [selectedControlId, setSelectedControlId] = useState<string | null>(null);
   const { user } = useAuth();
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [executiveFilter, setExecutiveFilter] = useState<string>('todos');
+  const [selectedExecutive, setSelectedExecutive] = useState<string>('');
+  const [users, setUsers] = useState<any[]>([]);
+
   useEffect(() => {
     loadRequests();
+    loadUsers();
   }, []);
 
   useEffect(() => {
     filterRequests();
-  }, [requests, searchQuery]);
+  }, [requests, searchQuery,dateFilter, executiveFilter,selectedExecutive]);
+
+  const loadUsers = async () => {
+    try {
+       setLoading(true);
+       const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      const [ executivesRes] = await Promise.all([       
+        fetch(`${BASE_URL}/functions/v1/executives?departamento=Pricing`, {
+          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
+        }),        
+      ]);
+
+      if (!executivesRes.ok) {
+        throw new Error('Error al cargar ejecutivos');
+      }
+
+      const data = await executivesRes.json();      
+      setUsers(data);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+    finally {
+      setLoading(false);
+    }
+  };
 
   const loadRequests = async () => {
     try {
@@ -34,7 +67,8 @@ export function ControlsPricing() {
       const excludedEmails = [
         "maria.cervantes@kromlogistica.com",
         "estela.guerrero@kromlogistica.com",
-        "magali.tamayo@kromlogistica.com"      
+        "magali.tamayo@kromlogistica.com",
+        "erick.barrientos@kromlogistica.com"
       ];
 
       if (!excludedEmails.includes(user.email)) {
@@ -84,6 +118,41 @@ export function ControlsPricing() {
       );
     }
 
+    if (dateFilter !== 'all') {
+      const now = new Date();
+      filtered = filtered.filter(q => {
+        const requestDate = new Date(q.request_date);
+        const diffDays = Math.ceil((now.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
+        console.log('Filter days: ' , q.reference_request , q.request_date, diffDays)
+
+        switch (dateFilter) {
+          case 'hoy':
+            return diffDays === 0;
+          case 'ayer':
+            return diffDays === 1;
+          case 'menos5':
+            return diffDays <= 5;
+          case 'menos30':
+            return diffDays <= 30;
+          case 'menos365':
+            return diffDays <= 365;
+          default:
+            return true;
+        }
+      });
+    }
+
+    if (executiveFilter === 'solo_yo' && user) {
+      filtered = filtered.filter(q => q.requesting_data?._id_executive === user._id);
+    }
+
+    if (executiveFilter === 'seleccionar' && selectedExecutive) {
+      filtered = filtered.filter(r =>
+          r.assigned_to?.some(a => a._id_executive === selectedExecutive)
+        );      
+    }
+
+
     setFilteredRequests(filtered);
   };
 
@@ -97,19 +166,6 @@ export function ControlsPricing() {
         return '/bronze.png';
       default:
         return '';
-    }
-  };
-
-  const getCategoryLabel = (category: number) => {
-    switch (category) {
-      case 1:
-        return 'Clientes';
-      case 2:
-        return 'Filiales';
-      case 3:
-        return 'Prospectos';
-      default:
-        return 'Clientes';
     }
   };
 
@@ -157,192 +213,324 @@ export function ControlsPricing() {
     return services.filter(service => service.used === true).length;
   };
 
+    const handleResetFilters = () => {      
+    setDateFilter('all');
+    setExecutiveFilter('todos');
+    setSelectedExecutive('');
+  };
+
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>{t('ctrlpricing.title')}</h1>
-        <div className={styles.buttonGroup}>
-          <button
-            className={styles.buttonGroupItem}
-            onClick={loadRequests}
-            disabled={loading}
-            title={t('ctrlpricing.refresh')}
-          >
-            <RefreshCw size={20} />
-          </button>
-          <button
-            className={styles.buttonGroupItem}
-            disabled
-            title={t('ctrlpricing.filtro')}
-          >
-            <Filter size={20} />
-          </button>
-          <button
-            className={styles.buttonGroupItemLast}
-            disabled
-            title={t('ctrlpricing.actions')}
-          >
-            {t('ctrlpricing.actions')}
-            <ChevronDown size={18} />
-          </button>
-        </div>
-      </div>
+    <div className={styles.containerWithSidebar}>
+      {showAdvancedFilters && (
+        <div className={styles.filtersPanel}>
+          <div className={styles.filtersPanelHeader}>
+            <h3>{t('ctrlpricing.refineSearch')}</h3>
+          </div>          
 
-      <div className={styles.searchBar}>
-        <Search size={20} className={styles.searchIcon} />
-        <input
-          type="text"
-          placeholder={t('ctrlpricing.search')}
-          className={styles.searchInput}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          disabled={loading}
-        />
-      </div>
+          <div className={styles.filterSection}>
+            <h4 className={styles.filterTitle}>{t('ctrlpricing.requestdate')}</h4>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="dateFilter"
+                value="hoy"
+                checked={dateFilter === 'hoy'}
+                onChange={(e) => setDateFilter(e.target.value)}
+              />
+              <span>{t('ctrlpricing.today')}</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="dateFilter"
+                value="ayer"
+                checked={dateFilter === 'ayer'}
+                onChange={(e) => setDateFilter(e.target.value)}
+              />
+              <span>{t('ctrlpricing.yesterday')}</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="dateFilter"
+                value="menos5"
+                checked={dateFilter === 'menos5'}
+                onChange={(e) => setDateFilter(e.target.value)}
+              />
+              <span>{t('ctrlpricing.less5days')}</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="dateFilter"
+                value="menos30"
+                checked={dateFilter === 'menos30'}
+                onChange={(e) => setDateFilter(e.target.value)}
+              />
+              <span>{t('ctrlpricing.less30days')}</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="dateFilter"
+                value="menos365"
+                checked={dateFilter === 'menos365'}
+                onChange={(e) => setDateFilter(e.target.value)}
+              />
+              <span>{t('ctrlpricing.less365days')}</span>
+            </label>
+          </div>
 
-      {loading ? (
-        <div className={styles.loading}>
-          <div className={styles.spinner}></div>
-        </div>
-      ) : filteredRequests.length > 0 ? (
-        <div className={styles.cardsGrid}>
-          {filteredRequests.map((request) => {
-            const daysElapsed = getDaysElapsed(request.request_date);
-            const medalSrc = getCategoryMedal(request.customer_category);
-            const categoryLabel = getCategoryLabel(request.customer_category);
-            const operationType = getOperationType(request.services);
-            const countries = getCountries(request.services);
-            const totalServices = getTotalServicesCount(request.services);
-            const attendedServices = getAttendedServicesCount(request.services);
-            const assignedWithControls = request.assigned_to?.filter(
-              assigned => assigned.pricing_control_numbers && assigned.pricing_control_numbers.length > 0
-            ) || [];
-            const isDisabled = totalServices === attendedServices ? true : false;
+              <div className={styles.filterSection}>
+            <h4 className={styles.filterTitle}>{t('ctrlpricing.assignedexecutive')}</h4>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="executiveFilter"
+                value="todos"
+                checked={executiveFilter === 'todos'}
+                onChange={(e) => setExecutiveFilter(e.target.value)}
+              />
+              <span>{t('ctrlpricing.all')}</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="executiveFilter"
+                value="solo_yo"
+                checked={executiveFilter === 'solo_yo'}
+                onChange={(e) => setExecutiveFilter(e.target.value)}
+              />
+              <span>{t('ctrlpricing.onlyme')}</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                name="executiveFilter"
+                value="seleccionar"
+                checked={executiveFilter === 'seleccionar'}
+                onChange={(e) => setExecutiveFilter(e.target.value)}
+              />
+              <span>{t('ctrlpricing.select')}</span>
+            </label>
+            {executiveFilter === 'seleccionar' && (
+              <select
+                className={styles.executiveSelect}
+                value={selectedExecutive}
+                onChange={(e) => setSelectedExecutive(e.target.value)}>
+                <option value="">{t('ctrlpricing.selectexecutive')}</option>
+                {users.map((user) => (
+                  <option key={user._id} value={user._id}>
+                    {user.nombre + '' + user.apellido_paterno + ' ' + user.apellido_materno}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>          
 
-            return (
-              <div key={request._id} className={styles.card}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardHeaderLeft}>
-                    {medalSrc && (
-                      <img
-                        src={medalSrc}
-                        alt="Medal"
-                        className={styles.medalImage}
-                      />
-                    )}
-                    <div className={styles.companyInfo}>
-                      <div className={styles.companyNameRow}>
-                        <h3 className={styles.companyName}>
-                          {request.customer_business_name}
-                        </h3>
-                        {request.priority === 1 && (
-                          <img
-                            src="/prioridad.png"
-                            alt="Prioridad"
-                            className={styles.priorityIcon}
-                          />
-                        )}
-                      </div>
-                      <div className={styles.referenceRow}>
-                        <span className={styles.referenceNumber}>{request.reference_request}</span>
-                        <span className={`${styles.statusBadge} ${getStatusClass(request.status_request_name)}`}>
-                          {request.status_request_name}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={styles.cardHeaderRight}>
-                    <div className={styles.countries}>{countries}</div>
-                    <div className={styles.category}>{categoryLabel}</div>
-                    {daysElapsed !== null && (
-                      <div className={styles.dateInfo}>
-                        <Clock size={16} />
-                        <span>{daysElapsed}d</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.executiveRow}>
-                  <div className={styles.executiveInfo}>
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    <span>{request.requesting_data?.complete_name || t('ctrlpricing.unassigned')}</span>
-                  </div>
-                  <div className={styles.servicesCounter}>
-                    {attendedServices}/{totalServices} {t('ctrlpricing.servicesattended')}
-                  </div>
-                </div>
-
-                {assignedWithControls.length > 0 && (
-                  <div className={styles.controlNumbers}>
-                    {assignedWithControls.map((assigned, index) => (
-                      <div key={index} className={styles.controlNumberItem}>
-                        <div className={styles.controlNumberLeft}>
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className={styles.dottedCircleIcon}
-                          >
-                            <circle cx="12" cy="12" r="10" strokeDasharray="2,2"></circle>
-                            <circle cx="12" cy="12" r="3"></circle>
-                          </svg>
-                          <span className={styles.assignedName}>{assigned.complete_name}</span>
-                        </div>
-                        <div className={styles.controlNumberCenter}>
-                          {assigned.pricing_control_numbers.map((control, controlIndex) => (
-                            <button
-                              key={controlIndex}
-                              className={styles.controlCode}
-                              onClick={() => handleEditControl(request._id, control._id_pricing_controls)}
-                            >
-                              {control.control}
-                            </button>
-                          ))}
-                        </div>                       
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <button hidden ={isDisabled}
-                  className={styles.addControlButton}
-                  onClick={() => handleAddControl(request._id)}
-                >
-                  <Plus size={16} />
-                  {t('ctrlpricing.addcontrol')}
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className={styles.emptyState}>
-          <h3>{t('ctrlpricing.norequests')}</h3>
-          <p>
-            {searchQuery
-              ? t('ctrlpricing.noresults')
-              : t('ctrlpricing.noresultsstatus')}
-          </p>
+          <div className={styles.filterActions}>
+            <button
+              className={styles.resetButton}
+              onClick={handleResetFilters}
+            >
+              Restaurar
+            </button>
+            <button
+              className={styles.applyButton}
+              onClick={() => setShowAdvancedFilters(false)}
+            >
+              Hecho
+            </button>
+          </div>
         </div>
       )}
+
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>{t('ctrlpricing.title')}</h1>
+          <div className={styles.buttonGroup}>
+            <button
+              className={styles.buttonGroupItem}
+              onClick={loadRequests}
+              disabled={loading}
+              title={t('ctrlpricing.refresh')}
+            >
+              <RefreshCw size={20} />
+            </button>
+            <button
+            className={!showAdvancedFilters ?  styles.buttonGroupItem : "buttonGroupItem filterDisabled"}
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            disabled={loading}
+            title={t('ctrlpricing.filtro')}>            
+            {!showAdvancedFilters ? <Filter size={20} /> : <FilterXIcon className='text-slate-400' size={20} />}
+          </button>           
+            <button
+              className={styles.buttonGroupItemLast}
+              disabled
+              title={t('ctrlpricing.actions')}
+            >
+              {t('ctrlpricing.actions')}
+              <ChevronDown size={18} />
+            </button>
+          </div>
+        </div>
+
+        <div className={styles.searchBar}>
+          <Search size={20} className={styles.searchIcon} />
+          <input
+            type="text"
+            placeholder={t('ctrlpricing.search')}
+            className={styles.searchInput}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            disabled={loading}
+          />
+        </div>
+
+        {loading ? (
+          <div className={styles.loading}>
+            <div className={styles.spinner}></div>
+          </div>
+        ) : filteredRequests.length > 0 ? (
+          <div className={styles.cardsGrid}>
+            {filteredRequests.map((request) => {
+              const daysElapsed = getDaysElapsed(request.request_date);
+              const medalSrc = getCategoryMedal(request.customer_category);
+              const categoryLabel = request.request_type_name;
+              const operationType = getOperationType(request.services);
+              const countries = getCountries(request.services);
+              const totalServices = getTotalServicesCount(request.services);
+              const attendedServices = getAttendedServicesCount(request.services);
+              const assignedWithControls = request.assigned_to?.filter(
+                assigned => assigned.pricing_control_numbers && assigned.pricing_control_numbers.length > 0
+              ) || [];
+              const isDisabled = totalServices === attendedServices ? true : false;
+
+              return (
+                <div key={request._id} className={styles.card}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.cardHeaderLeft}>
+                      {medalSrc && (
+                        <img
+                          src={medalSrc}
+                          alt="Medal"
+                          className={styles.medalImage}
+                        />
+                      )}
+                      <div className={styles.companyInfo}>
+                        <div className={styles.companyNameRow}>
+                          <h3 className={styles.companyName}>
+                            {request.customer_business_name}
+                          </h3>
+                          {request.priority === 1 && (
+                            <img
+                              src="/prioridad.png"
+                              alt="Prioridad"
+                              className={styles.priorityIcon}
+                            />
+                          )}
+                        </div>
+                        <div className={styles.referenceRow}>
+                          <span className={styles.referenceNumber}>{request.reference_request}</span>
+                          <span className={`${styles.statusBadge} ${getStatusClass(request.status_request_name)}`}>
+                            {request.status_request_name}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={styles.cardHeaderRight}>
+                      <div className={styles.countries}>{countries}</div>
+                      <div className={styles.category}>{categoryLabel}</div>
+                      {daysElapsed !== null && (
+                        <div className={styles.dateInfo}>
+                          <Clock size={16} />
+                          <span>{daysElapsed}d</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className={styles.executiveRow}>
+                    <div className={styles.executiveInfo}>
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                      <span>{request.requesting_data?.complete_name || t('ctrlpricing.unassigned')}</span>
+                    </div>
+                    <div className={styles.servicesCounter}>
+                      {attendedServices}/{totalServices} {t('ctrlpricing.servicesattended')}
+                    </div>
+                  </div>
+
+                  {assignedWithControls.length > 0 && (
+                    <div className={styles.controlNumbers}>
+                      {assignedWithControls.map((assigned, index) => (
+                        <div key={index} className={styles.controlNumberItem}>
+                          <div className={styles.controlNumberLeft}>
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className={styles.dottedCircleIcon}
+                            >
+                              <circle cx="12" cy="12" r="10" strokeDasharray="2,2"></circle>
+                              <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <span className={styles.assignedName}>{assigned.complete_name}</span>
+                          </div>
+                          <div className={styles.controlNumberCenter}>
+                            {assigned.pricing_control_numbers.map((control, controlIndex) => (
+                              <button
+                                key={controlIndex}
+                                className={styles.controlCode}
+                                onClick={() => handleEditControl(request._id, control._id_pricing_controls)}
+                              >
+                                {control.control}
+                              </button>
+                            ))}
+                          </div>                       
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <button hidden ={isDisabled}
+                    className={styles.addControlButton}
+                    onClick={() => handleAddControl(request._id)}
+                  >
+                    <Plus size={16} />
+                    {t('ctrlpricing.addcontrol')}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className={styles.emptyState}>
+            <h3>{t('ctrlpricing.norequests')}</h3>
+            <p>
+              {searchQuery
+                ? t('ctrlpricing.noresults')
+                : t('ctrlpricing.noresultsstatus')}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
