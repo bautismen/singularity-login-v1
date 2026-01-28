@@ -33,7 +33,8 @@ export function ControlsPricing() {
       let filtered = [...data];    
       const excludedEmails = [
         "maria.cervantes@kromlogistica.com",
-        "estela.guerrero@kromlogistica.com"       
+        "estela.guerrero@kromlogistica.com",
+        "magali.tamayo@kromlogistica.com"      
       ];
 
       if (!excludedEmails.includes(user.email)) {
