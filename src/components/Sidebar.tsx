@@ -15,6 +15,7 @@ import {
   ChevronDown,
   ChevronRight,
   DollarSign,
+  Building,
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import styles from './Sidebar.module.css';
@@ -24,6 +25,7 @@ const menuItems = [
   { key: 'nav.quotations', icon: FileCheck, route: 'quotations' },
   { key: 'nav.controlsPricing', icon: DollarSign, route: 'controls-pricing' },
   { key: 'nav.executives', icon: UserCheck, route: 'executives' },
+  { key: 'nav.companies', icon: Building, route: 'companies' },
   { key: 'nav.customers', icon: Users, route: 'customers' },
   { key: 'nav.suppliers', icon: Users, route: 'suppliers' },
 ];

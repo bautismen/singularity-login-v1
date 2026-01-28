@@ -15,8 +15,9 @@ import { CatalogCountries } from './pages/CatalogCountries';
 import { CatalogUsers } from './pages/CatalogUsers';
 import { CatalogSectorOfBusiness } from './pages/CatalogSectorOfBusiness';
 import { Layout } from './components/Layout';
+import Companies from './pages/Companies';
 
-type Route = 'dashboard' | 'quotations' | 'controls-pricing' | 'executives' | 'shipments' | 'customers' | 'suppliers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users' | 'catalogs/sector-of-business';
+type Route = 'dashboard' | 'quotations' | 'controls-pricing' | 'executives' | 'shipments' | 'customers' | 'suppliers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users' | 'catalogs/sector-of-business'| 'companies';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState<Route>('dashboard');
@@ -48,6 +49,8 @@ function App() {
           return <ControlsPricing />;
         case 'executives':
           return <Executives />;
+        case 'companies':
+          return <Companies />;
         case 'customers':
           return <Customers />;
         case 'suppliers':
