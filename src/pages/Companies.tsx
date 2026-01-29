@@ -84,20 +84,20 @@ useEffect(() => {
     state: company.state ?? '',
     status: company.status === 'activo' ? 'activo' : 'inactivo',
     archivado: company.archivado,
-    datastate: 1,
+    datastate: company.datastate,
   });
   setIsFormOpen(true);
 };
 
- async function handleDeleteCompanies(id: string) {
+async function handleDeleteCompanies(id: string) {
   try {
     setLoading(true);
     await deleteCompany(id);
     await loadCompanies();
-    showSuccess('Empresa eliminada exitosamente');
+    showSuccess(t('comp.DeleteSucess'));
   } catch (error) {
     console.error(error);
-    showError('No se pudo eliminar la empresa');
+    showError(t('comp.errorDelete'));
   } finally {
     setLoading(false);
   }
@@ -108,16 +108,15 @@ useEffect(() => {
   const handleSaveCompany = async () => {
   try {
     setLoading(true);
-
     // Validaciones básicas
     if (!formData.business_name || !formData.rfc_taxid) {
-      showError('Debe ingresar Razón Social y RFC/TAXID');
+      showError(t('comp.errorLoadcompanyRFC'));
       setLoading(false);
       return;
     }
 
     if (formData.nationality === 'extranjero' && !formData.country) {
-      showError('Debe seleccionar un país para empresas extranjeras');
+      showError(t('comp.errorNationality'));
       setLoading(false);
       return;
     }
@@ -136,10 +135,10 @@ useEffect(() => {
     let savedCompany;
     if (editingCompany) {
       savedCompany = await updateCompany(editingCompany._id!, dataToSave);
-      showSuccess('Empresa actualizada correctamente');
+      showSuccess(t('comp.okupdate'));
     } else {
       savedCompany = await createCompany(dataToSave);
-      showSuccess('Empresa creada correctamente');
+      showSuccess(t('comp.oksave'));
     }
 
     console.log('Empresa guardada:', savedCompany);
@@ -234,7 +233,7 @@ if (isFormOpen) {
                   setFormData({ ...formData, business_name: e.target.value })
                 }
                 className={styles.textInput}
-                placeholder="Razón Social"
+                placeholder={t('comp.CompanyName')}
               />
             </div>
 
@@ -288,7 +287,7 @@ if (isFormOpen) {
                   setFormData({ ...formData, state: e.target.value })
                 }
                 className={styles.textInput}
-                placeholder="Estado"
+                placeholder={t('comp.state')}
               />
             </div>
 

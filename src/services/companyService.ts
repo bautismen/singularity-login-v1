@@ -10,7 +10,7 @@ const headers = {
 };
 
 // ===== Obtener todas las companies =====
-
+/*
 export async function getCompanies(status: 'activo' | 'inactivo' = 'activo'): Promise<Company[]> {
   const url = `${SUPABASE_URL}/functions/v1/companies?status=${status}`;
   const response = await fetch(url, { headers });
@@ -18,20 +18,17 @@ export async function getCompanies(status: 'activo' | 'inactivo' = 'activo'): Pr
   return await response.json();
 }
 
+*/
 
-/*
 export async function getCompanies(): Promise<Company[]> {
-  const url = `${SUPABASE_URL}/functions/v1/companies?archivado=false`;
-
+  const url = `${SUPABASE_URL}/functions/v1/companies`;
   const response = await fetch(url, { headers });
 
-  if (!response.ok) {
-    throw new Error('Error al obtener companies');
-  }
-
-  return response.json();
+  if (!response.ok) throw new Error('Error al obtener companies');
+  return await response.json();
 }
-*/
+
+
 // ===== Crear nueva company =====
 
 export async function createCompany(company: Partial<Company>): Promise<Company> {

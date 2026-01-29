@@ -44,17 +44,23 @@ Deno.serve(async (req: Request) => {
     const collection = db.collection("companies");
 
     if (method === "GET" && path.endsWith("/companies")) {
-      const status = url.searchParams.get("status") || "activo";
-      const filter = status === "all" ? {} : { status, datastate: 1 };
+      const includeArchived = url.searchParams.get("includeArchived") === "true";
+      const filter = includeArchived ? {} : { datastate: 1 };
 
       const companies = await collection
         .find(filter)
-        .sort({ created_at: -1 })
+        .sort({ _id: 1 })
         .toArray();
 
-      return new Response(JSON.stringify(companies), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify(companies),
+        {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
 
     if (method === "GET" && path.match(/\/companies\/[^/]+$/)) {
@@ -140,6 +146,43 @@ Deno.serve(async (req: Request) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    
+      if (method === "DELETE" && path.match(/\/companies\/[^/]+$/)) {
+        const id = path.split("/").pop();
+
+        if (!ObjectId.isValid(id!)) {
+          return new Response(
+            JSON.stringify({ error: "Invalid company id" }),
+            { status: 400, headers: corsHeaders }
+          );
+        }
+
+        const result = await collection.updateOne(
+          { _id: new ObjectId(id!), datastate: 1 },
+          {
+            $set: {
+              status: "inactivo",
+              datastate: 0,
+              archivado: true,
+              deleted_at: new Date(),
+            },
+          }
+        );
+
+        if (result.matchedCount === 0) {
+          return new Response(
+            JSON.stringify({ error: "Company not found" }),
+            { status: 404, headers: corsHeaders }
+          );
+        }
+
+        return new Response(
+          JSON.stringify({ success: true }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
 
     return new Response(JSON.stringify({ error: "Not found" }), {
       status: 404,

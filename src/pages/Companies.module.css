@@ -340,7 +340,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 1.5rem;
-  background: #14b8a6;
+  background: #038C7F;
   color: white;
   border: none;
   border-top-left-radius: 0.375rem;
@@ -353,7 +353,7 @@
 }
 
 .saveHeaderButton:hover {
-  background: #0d9488;
+  background: #037F8C;
 }
 
 .saveHeaderButton:disabled {
@@ -363,7 +363,7 @@
 
 .cancelHeaderButton {
   padding: 0.625rem 1.5rem;
-  background: #14b8a6;
+  background: #038C7F;
   color: white;
   border: none;
   border-radius: 0;
@@ -377,7 +377,7 @@
 }
 
 .cancelHeaderButton:hover {
-  background: #0d9488;
+  background: #037F8C;
 }
 
 .actionsHeaderButton {
