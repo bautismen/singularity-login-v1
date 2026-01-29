@@ -817,6 +817,134 @@
   .topCardsContainer {
     grid-template-columns: 1fr;
   }
+
+  .cardsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .cardsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formHeader {
+    padding: 1rem 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .formContent {
+    padding: 1rem;
+  }
+
+  .clientHeader {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .clientMeta {
+    align-items: flex-start;
+  }
+
+  .formGroup label {
+    font-size: 0.8125rem;
+  }
+
+  .merchandiseHeader {
+    display: none;
+  }
+
+  .merchandiseRow {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .merchandiseTable {
+    display: block;
+  }
+
+  .filtersPanel {
+    position: fixed;
+    left: -100%;
+    top: 0;
+    height: 100vh;
+    z-index: 50;
+    transition: left 0.3s ease;
+  }
+
+  .filtersPanel.open {
+    left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.75rem;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .buttonGroupItem,
+  .buttonGroupItemLast {
+    width: 100%;
+  }
+
+  .formHeader {
+    padding: 0.75rem 1rem;
+  }
+
+  .formHeaderLeft {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .formHeaderRight {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .formContent {
+    padding: 0.75rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .clientActions {
+    flex-direction: column;
+  }
+
+  .btnDecline,
+  .btnQuote {
+    width: 100%;
+  }
 }
 
 .clientSection {
