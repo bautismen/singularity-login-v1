@@ -34,11 +34,6 @@ async function getMongoClient(): Promise<MongoClient> {
   }
 }
 
-
-
-
-
-
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -55,7 +50,7 @@ Deno.serve(async (req: Request) => {
 
     if (method === "GET" && path.endsWith("/customers")) {
       const includeArchived = url.searchParams.get("includeArchived") === "true";
-      const filter = includeArchived ? {} : { datastate: 1 };
+      const filter = includeArchived ? {} : { data_state: 1 };
 
       const customers = await collection
         .find(filter)
@@ -172,7 +167,7 @@ Deno.serve(async (req: Request) => {
         {
           $set: {
             datastate: 0,
-            archivado: true,
+        /*    archivado: true,*/
             status: "inactivo",
             updated_at: new Date(),
           },

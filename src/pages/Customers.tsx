@@ -8,7 +8,7 @@ import styles from './Customers.module.css';
 
 export default function Customers() {
   const { t } = useLanguage();
-  const { showSuccess, showError, showWarning } = useNotification();
+  const {  showError, showWarning } = useNotification();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -22,6 +22,7 @@ export default function Customers() {
     contacts: false,
   });
   const [showPersonForm, setShowPersonForm] = useState(false);
+  
   const [showCompanyForm, setShowCompanyForm] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -59,7 +60,7 @@ export default function Customers() {
   const [newCompany, setNewCompany] = useState<Partial<Company>>({
     business_name: '',
     rfc_taxid: '',
-    nationality: 'nacional',
+    nationality: '',
     country: 'MX',
     state: '',
     status: 'activo',
@@ -79,7 +80,7 @@ export default function Customers() {
       const data = await getCustomers();
       setCustomers(data);
     } catch (error) {
-      console.error('Error loading customers:', error);
+      console.error(t('cust.errorLoad'), error);
     } finally {
       setLoading(false);
     }
@@ -90,7 +91,7 @@ export default function Customers() {
       const data = await getPeople();
       setPeople(data);
     } catch (error) {
-      console.error('Error loading people:', error);
+      console.error(t('cust.errorLoadPeople'), error);
     }
   }
 
@@ -146,7 +147,7 @@ export default function Customers() {
     type: customer.type,
     company_id: customer.company_id || '',
     person_id: customer.person_id || '',
-    nationality: customer.nationality,
+    nationality: customer.nationality ?? 'nacional',
     status: customer.status,
     fiscal_data: selectedCompany
       ? {
@@ -170,14 +171,14 @@ export default function Customers() {
       const selectedCompany = companies.find(c => c._id === formData.company_id);
 
       if (!selectedCompany && !formData.person_id) {
-        showWarning('Debe seleccionar una empresa o persona');
+        showWarning(t('cust.errorLoadCompanyPeople'));
         setLoading(false);
         return;
       }
 
       const dataToSave = {
         ...formData,
-        fiscal_data: selectedCompany ? {
+          fiscal_data: selectedCompany ? {
           business_name: selectedCompany.business_name,
           taxid: formData.fiscal_data.taxid || selectedCompany.rfc_taxid,
           country: selectedCompany.country,
@@ -208,7 +209,7 @@ export default function Customers() {
       setLoading(true);
       await deleteCustomer(id);
       await loadCustomers();
-      showSuccess('Cliente eliminado exitosamente');
+      showError(t('cust.successDelete'));
     } catch (error) {
       console.error('Error deleting customer:', error);
       showError(t('cust.errorDelete'));
@@ -356,7 +357,9 @@ export default function Customers() {
                         setFormData({
                           ...formData,
                           company_id: selectedCompanyId,
+                          nationality: selectedCompany.nationality === 'nacional' ? 'nacional' : 'extranjero', 
                           is_national: selectedCompany.nationality === 'nacional',
+                          curp: selectedCompany.rfc_taxid,
                           fiscal_data: {
                             business_name: selectedCompany.business_name || '',
                             taxid: selectedCompany.rfc_taxid || '',
@@ -466,12 +469,17 @@ export default function Customers() {
                       type="checkbox"
                       id="is_persona_fisica"
                       checked={formData.is_persona_fisica}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        is_persona_fisica: e.target.checked,
-                        curp: e.target.checked ? formData.curp : ''
-                      })}
-                      className={styles.checkbox}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+
+                        setFormData({
+                          ...formData,
+                          is_persona_fisica: checked,
+                          type: checked ? 'fisica' : 'moral',
+                          person_id: checked ? formData.person_id : '',
+                          curp: checked ? formData.curp : '',
+                        });
+                      }}
                     />
                     <label htmlFor="is_persona_fisica" className={styles.checkboxText}>{t('cust.NaturalPerson')}</label>
                   </div>
@@ -621,7 +629,7 @@ export default function Customers() {
                           value={address.state}
                           onChange={(e) => updateAddress(index, 'state', e.target.value)}
                         >
-                          <option value="">Seleccionar estado</option>
+                          <option value="">{t('cust.selectstate')}</option>
                           {MEXICAN_STATES.map((state) => (
                             <option key={state} value={state}>{state}</option>
                           ))}
