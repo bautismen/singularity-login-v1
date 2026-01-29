@@ -3,12 +3,14 @@ import { Plus, Edit2, Trash2, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Incoterm } from '../types/catalog';
 import styles from './Catalogs.module.css';
+import { useNotification } from '../contexts/NotificationContext';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-incoterms`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function CatalogIncoterms() {
   const { t } = useLanguage();
+  const { showSuccess, showError } = useNotification();
   const [items, setItems] = useState<Incoterm[]>([]);
   const [filteredItems, setFilteredItems] = useState<Incoterm[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,7 +43,7 @@ export function CatalogIncoterms() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al cargar los datos');
+        showError('Error al cargar los datos');
       }
 
       const data = await response.json();
@@ -54,7 +56,7 @@ export function CatalogIncoterms() {
       })));
     } catch (error) {
       console.error('Error loading Incoterms data:', error);
-      alert(t('catalog.errorLoad'));
+      showError(t('catalog.errorLoad'));
     } finally {
       setLoading(false);
     }
@@ -107,6 +109,10 @@ export function CatalogIncoterms() {
   const handleSave = async () => {
     try {
       setLoading(true);
+      if (formData.incoterm.length === 0) {
+      showError('Debe ingresar un Incoterm');
+      return;
+      }
 
       if (editingItem) {
         const response = await fetch(`${API_URL}/${editingItem.id}`, {
@@ -119,7 +125,7 @@ export function CatalogIncoterms() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al actualizar el registro');
+          showError('Error al actualizar el registro');
         }
       } else {
         const response = await fetch(API_URL, {
@@ -132,16 +138,16 @@ export function CatalogIncoterms() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al crear el registro');
+          showError('Error al crear el registro');
         }
       }
 
       await loadData();
       closeModal();
-      alert(t('catalog.successSave'));
+      showSuccess(t('catalog.successSave'));
     } catch (error) {
       console.error('Error saving Incoterm:', error);
-      alert(t('catalog.errorSave'));
+      showError(t('catalog.errorSave'));
     } finally {
       setLoading(false);
     }
@@ -160,14 +166,14 @@ export function CatalogIncoterms() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al eliminar el registro');
+          showError('Error al eliminar el registro');
         }
 
         await loadData();
-        alert(t('catalog.successDelete'));
+        showSuccess(t('catalog.successDelete'));
       } catch (error) {
         console.error('Error deleting Incoterm:', error);
-        alert(t('catalog.errorDelete'));
+        showError(t('catalog.errorDelete'));
       } finally {
         setLoading(false);
       }
@@ -179,7 +185,7 @@ export function CatalogIncoterms() {
       <div className={styles.header}>
         <h1 className={styles.title}>{t('nav.catalogs.incoterms')}</h1>
         <div className={styles.headerActions}>
-          <button className={styles.addButton} onClick={() => openModal()} disabled={loading}>
+          <button className={styles.buttonGroupItem} onClick={() => openModal()} disabled={loading}>
             <Plus size={18} />
             {t('catalog.new').replace('{name}', 'Incoterm')}
           </button>
