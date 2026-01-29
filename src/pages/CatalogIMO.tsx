@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ImoClass } from '../types/catalog';
 import styles from './Catalogs.module.css';
@@ -196,10 +196,12 @@ export function CatalogIMO() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>{t('nav.catalogs.imo')}</h1>
-        <div className={styles.headerActions}>
+        <div className={styles.buttonGroup}>
           <button className={styles.buttonGroupItem} onClick={() => openModal()} disabled={loading}>
-            <Plus size={18} />
-            {t('catalog.new').replace('{name}', 'IMO')}
+            <Plus size={20} />            
+          </button>
+           <button onClick={loadData} className={styles.buttonGroupItemLast}>
+            <RefreshCw size={20} />
           </button>
         </div>
       </div>
