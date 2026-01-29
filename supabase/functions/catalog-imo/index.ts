@@ -53,7 +53,7 @@ Deno.serve(async (req: Request) => {
 
     if (method === "GET" && path.endsWith("/catalog-imo")) {
       const includeArchived = url.searchParams.get("includeArchived") === "true";
-      const filter = includeArchived ? {} : { archived: false };
+      const filter = includeArchived ? {} : { data_state: 1 };
 
       const items = await collection
         .find(filter)
@@ -200,7 +200,7 @@ Deno.serve(async (req: Request) => {
         {
           $set: {
             status: 0,
-            archived: true,
+            data_state: 0,
           },
         }
       );
