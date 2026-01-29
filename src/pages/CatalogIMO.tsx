@@ -3,12 +3,14 @@ import { Plus, Edit2, Trash2, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ImoClass } from '../types/catalog';
 import styles from './Catalogs.module.css';
+import { useNotification } from '../contexts/NotificationContext';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-imo`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function CatalogIMO() {
   const { t } = useLanguage();
+  const { showSuccess, showError } = useNotification();
   const [items, setItems] = useState<ImoClass[]>([]);
   const [filteredItems, setFilteredItems] = useState<ImoClass[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,7 +58,7 @@ export function CatalogIMO() {
       })));
     } catch (error) {
       console.error('Error loading IMO data:', error);
-      alert(t('catalog.errorLoad'));
+      showError(t('catalog.errorLoad'));
     } finally {
       setLoading(false);
     }
@@ -114,6 +116,16 @@ export function CatalogIMO() {
     try {
       setLoading(true);
 
+      if (formData.imo.length === 0) {
+      showError('Debe ingresar un IMO');
+      return;
+      }
+
+      if (formData.description.length === 0) {
+      showError('Debe ingresar una descripción');
+      return;
+      }
+
       if (editingItem) {
         const response = await fetch(`${API_URL}/${editingItem.id}`, {
           method: 'PUT',
@@ -125,7 +137,7 @@ export function CatalogIMO() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al actualizar el registro');
+          showError('Error al actualizar el registro');
         }
       } else {
         const response = await fetch(API_URL, {
@@ -138,16 +150,16 @@ export function CatalogIMO() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al crear el registro');
+          showError('Error al crear el registro');
         }
       }
 
       await loadData();
       closeModal();
-      alert(t('catalog.successSave'));
+      showSuccess(t('catalog.successSave'));
     } catch (error) {
       console.error('Error saving IMO:', error);
-      alert(t('catalog.errorSave'));
+      showError(t('catalog.errorSave'));
     } finally {
       setLoading(false);
     }
@@ -170,10 +182,10 @@ export function CatalogIMO() {
         }
 
         await loadData();
-        alert(t('catalog.successDelete'));
+        showSuccess(t('catalog.successDelete'));
       } catch (error) {
         console.error('Error deleting IMO:', error);
-        alert(t('catalog.errorDelete'));
+        showError(t('catalog.errorDelete'));
       } finally {
         setLoading(false);
       }
@@ -185,7 +197,7 @@ export function CatalogIMO() {
       <div className={styles.header}>
         <h1 className={styles.title}>{t('nav.catalogs.imo')}</h1>
         <div className={styles.headerActions}>
-          <button className={styles.addButton} onClick={() => openModal()} disabled={loading}>
+          <button className={styles.buttonGroupItem} onClick={() => openModal()} disabled={loading}>
             <Plus size={18} />
             {t('catalog.new').replace('{name}', 'IMO')}
           </button>
@@ -302,7 +314,7 @@ export function CatalogIMO() {
               <div className={styles.formGroup}>
                 <label className={styles.label}>{t('catalog.imo.code')}</label>
                 <input
-                  type="text"
+                  type="number"
                   className={styles.input}
                   value={formData.imo}
                   onChange={(e) => setFormData({ ...formData, imo: e.target.value })}
