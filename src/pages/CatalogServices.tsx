@@ -3,12 +3,14 @@ import { Plus, Edit2, Trash2, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Service } from '../types/catalog';
 import styles from './Catalogs.module.css';
+import { useNotification } from '../contexts/NotificationContext';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-services`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function CatalogServices() {
   const { t } = useLanguage();
+  const { showSuccess, showError } = useNotification();
   const [items, setItems] = useState<Service[]>([]);
   const [filteredItems, setFilteredItems] = useState<Service[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,6 +24,9 @@ export function CatalogServices() {
     email_service_name: '',
     status: 1,
   });
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const isValidEmail = (email: string) => emailRegex.test(email);
 
   useEffect(() => {
     loadData();
@@ -43,7 +48,7 @@ export function CatalogServices() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al cargar los datos');
+        showError('Error al cargar los datos');
       }
 
       const data = await response.json();
@@ -58,7 +63,7 @@ export function CatalogServices() {
       })));
     } catch (error) {
       console.error('Error loading Services data:', error);
-      alert(t('catalog.errorLoad'));
+      showError(t('catalog.errorLoad'));
     } finally {
       setLoading(false);
     }
@@ -118,6 +123,16 @@ export function CatalogServices() {
     try {
       setLoading(true);
 
+      if (formData.service_name.length === 0) {
+      showError('Debe ingresar un nombre de servicio');
+      return;
+      }
+
+      if (formData.email_service_name.length > 0 && !isValidEmail(formData.email_service_name)) {
+        showError('Debe ingresar un correo electrónico válido');
+        return;
+      }
+
       if (editingItem) {
         const response = await fetch(`${API_URL}/${editingItem.id}`, {
           method: 'PUT',
@@ -129,7 +144,7 @@ export function CatalogServices() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al actualizar el registro');
+          showError('Error al actualizar el registro');
         }
       } else {
         const response = await fetch(API_URL, {
@@ -142,16 +157,16 @@ export function CatalogServices() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al crear el registro');
+          showError('Error al crear el registro');
         }
       }
 
       await loadData();
       closeModal();
-      alert(t('catalog.successSave'));
+      showSuccess(t('catalog.successSave'));
     } catch (error) {
       console.error('Error saving Service:', error);
-      alert(t('catalog.errorSave'));
+      showError(t('catalog.errorSave'));
     } finally {
       setLoading(false);
     }
@@ -170,14 +185,14 @@ export function CatalogServices() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al eliminar el registro');
+          showError('Error al eliminar el registro');
         }
 
         await loadData();
-        alert(t('catalog.successDelete'));
+        showSuccess(t('catalog.successDelete'));
       } catch (error) {
         console.error('Error deleting Service:', error);
-        alert(t('catalog.errorDelete'));
+        showError(t('catalog.errorDelete'));
       } finally {
         setLoading(false);
       }

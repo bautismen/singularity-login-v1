@@ -53,7 +53,7 @@ Deno.serve(async (req: Request) => {
 
     if (method === "GET" && path.endsWith("/catalog-incoterms")) {
       const includeArchived = url.searchParams.get("includeArchived") === "true";
-      const filter = includeArchived ? {} : { data_state: 0 };
+      const filter = includeArchived ? {} : { data_state: 1 };
 
       const items = await collection
         .find(filter)
