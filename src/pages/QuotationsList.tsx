@@ -495,11 +495,12 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
             <RefreshCw size={20} />
           </button>
           <button
-            className={!showAdvancedFilters ?  styles.buttonGroupItem : "buttonGroupItem filterDisabled"}
+            className={` ${styles.buttonGroupItem} ${!showAdvancedFilters ?  styles.filterDisabled: ''}`}
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
             disabled={loading}
             title="Filtros avanzados">            
-            {!showAdvancedFilters ? <Filter size={20} /> : <FilterXIcon className='text-slate-400' size={20} />}
+            {!showAdvancedFilters ? 
+            <Filter size={20} /> : <FilterXIcon size={20} />}
           </button>
           <button
             className={styles.buttonGroupItemLast}
@@ -587,7 +588,8 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
 
                       <div className={styles.rightInfo}>                        
                         {daysRemaining !== null &&  (                          
-                          <div className={styles.dateInfo}>
+                          <div 
+                          className={`${styles.dateInfo} ${daysRemaining <= 1 ? styles.dateInfoRed : '' }`}>
                             <Clock size={16} />
                             <span >{daysRemaining}d</span>
                           </div>

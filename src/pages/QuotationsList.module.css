@@ -140,9 +140,9 @@
 }
 
 .title {
-  font-size: 2rem;
+ font-size: 1.5rem;
   font-weight: 600;
-  color: #1f2937;
+  color: #111827;
   margin: 0;
 }
 
@@ -207,7 +207,7 @@
   align-items: center;
   justify-content: center;
   padding: 0.75rem 1rem;
-  background: #1B96A8;
+  background: #03A678;
   color: white;
   border: none;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
@@ -223,7 +223,7 @@
 }
 
 .buttonGroupItem:hover:not(:disabled) {
-  background: #157a8a;
+  background: #03738C;
 }
 
 .buttonGroupItem:disabled {
@@ -246,7 +246,7 @@
 }
 
 .buttonGroupItemLast:hover:not(:disabled) {
-  background: #157a8a;
+  background: #03738C;
 }
 
 .buttonGroupItemLast:disabled {
@@ -501,7 +501,7 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  color: #fb0000;
+  color: #e20202;
   font-size: 1.2rem;
 }
 
