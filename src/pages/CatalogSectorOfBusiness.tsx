@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { SectorOfBusiness } from '../types/catalog';
+import { useNotification } from '../contexts/NotificationContext';
+import { Modal } from '../components/Modal';
 import styles from './Catalogs.module.css';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-sector-of-business`;
@@ -9,7 +11,8 @@ const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function CatalogSectorOfBusiness() {
   const { t } = useLanguage();
-  const catalogName = 'Sector de negocios';
+  const catalogName = t('nav.catalogs.sectorOfBusiness');
+  const { showSuccess, showError, showWarning } = useNotification();
   const [items, setItems] = useState<SectorOfBusiness[]>([]);
   const [filteredItems, setFilteredItems] = useState<SectorOfBusiness[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,6 +26,20 @@ export function CatalogSectorOfBusiness() {
     status: 1,
   });
 
+  const [modalState, setModalState] = useState<{
+      isOpen: boolean;
+      title: string;
+      message: string;
+      type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
+      showCancel?: boolean;
+      onConfirm?: () => void;
+    }>({
+      isOpen: false,
+      title: '',
+      message: '',
+      type: 'info',
+    });
+  
   useEffect(() => {
     loadData();
   }, []);
@@ -43,7 +60,7 @@ export function CatalogSectorOfBusiness() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al cargar los datos');
+        throw showError('Error al cargar los datos');
       }
 
       const data = await response.json();
@@ -57,7 +74,7 @@ export function CatalogSectorOfBusiness() {
       })));
     } catch (error) {
       console.error('Error loading SectorOfBusiness data:', error);
-      alert(t('catalog.errorLoad'));
+      showError(t('catalog.errorLoad'));
     } finally {
       setLoading(false);
     }
@@ -115,6 +132,11 @@ export function CatalogSectorOfBusiness() {
     try {
       setLoading(true);
 
+      if (!formData.name.trim()) {
+        showWarning('Ingrese el nombre del sector');
+        return;
+      }
+
       if (editingItem) {
         const response = await fetch(`${API_URL}/${editingItem.id}`, {
           method: 'PUT',
@@ -126,8 +148,9 @@ export function CatalogSectorOfBusiness() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al actualizar el registro');
+          showError(t('catalog.errorUpdate'));
         }
+
       } else {
         const response = await fetch(API_URL, {
           method: 'POST',
@@ -139,26 +162,35 @@ export function CatalogSectorOfBusiness() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al crear el registro');
+          throw showError(t('catalog.errorSave'));
         }
+
       }
 
       await loadData();
       closeModal();
-      alert(t('catalog.successSave'));
+      showSuccess(t('catalog.successSave'));
     } catch (error) {
       console.error('Error saving Sector Of Business:', error);
-      alert(t('catalog.errorSave'));
+      showError(t('catalog.errorSave'));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (confirm(t('catalog.confirmDelete'))) {
+  const handleDelete = async (id_: number, name_: string) => {
+    
+    setModalState({
+      isOpen: true,
+      title: 'Está a punto de eliminar el registro ' + name_,
+      message: '¿Desea continuar con la eliminación?',
+      type: 'confirm',
+      showCancel: true,
+      onConfirm: async () => {
+        
       try {
         setLoading(true);
-        const response = await fetch(`${API_URL}/${id}`, {
+        const response = await fetch(`${API_URL}/${id_}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${API_KEY}`,
@@ -167,28 +199,31 @@ export function CatalogSectorOfBusiness() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al eliminar el registro');
+          showError(t('catalog.errorDelete'));
         }
 
         await loadData();
-        alert(t('catalog.successDelete'));
+        showSuccess(t('catalog.successDelete'));
       } catch (error) {
         console.error('Error deleting Sector Of Business:', error);
-        alert(t('catalog.errorDelete'));
+        showError(t('catalog.errorDelete'));
       } finally {
         setLoading(false);
       }
     }
+    });
   };
-
+  
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>{t('nav.catalogs.sectorOfBusiness')}</h1>
-        <div className={styles.headerActions}>
-          <button className={styles.addButton} onClick={() => openModal()} disabled={loading}>
-            <Plus size={18} />
-            {t('catalog.new').replace('{name}', t('nav.catalogs.sectorOfBusiness') )}
+        <h1 className={styles.title}>{catalogName}</h1>
+        <div className={styles.buttonGroup}> 
+          <button onClick={() => openModal()} disabled={loading} className={styles.NewHeaderButton} >
+            <Plus size={20} /*{t('catalog.new').replace('{name}', catalogName )}*/ /> 
+          </button>
+          <button onClick={loadData} className={styles.RefreshHeaderButton}>
+            <RefreshCw size={20} />
           </button>
         </div>
       </div>
@@ -204,8 +239,8 @@ export function CatalogSectorOfBusiness() {
         />
         <div className={styles.filterButtons}>
           <button
-            className={`${styles.filterButton} ${filter === 'all' ? styles.active : ''}`}
-            onClick={() => setFilter('all')}
+            className={`${styles.filterButton} ${filter === 'all' ? styles.active : ''}`} 
+            onClick={() => setFilter('all')} //{loadData}/*
             disabled={loading}
           >
             {t('catalog.filterAll')}
@@ -237,7 +272,7 @@ export function CatalogSectorOfBusiness() {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>{t('catalog.sectorOfBusiness.code')}</th>
+              <th>{t('catalog.sectorOfBusiness.name')}</th>
               <th>{t('catalog.sectorOfBusiness.description')}</th>
               <th>{t('catalog.status.active')}</th>
               <th>{t('catalog.actions')}</th>
@@ -259,13 +294,13 @@ export function CatalogSectorOfBusiness() {
                       <button
                         className={`${styles.iconButton} ${styles.edit}`}
                         onClick={() => openModal(item)}
-                        title={t('catalog.edit').replace('{name}', 'SectorOfBusiness')}
+                        title={t('catalog.edit')}
                       >
                         <Edit2 size={16} />
                       </button>
                       <button
                         className={`${styles.iconButton} ${styles.delete}`}
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => handleDelete(item.id, item.name)}
                         title={t('catalog.delete')}
                       >
                         <Trash2 size={16} />
@@ -291,8 +326,8 @@ export function CatalogSectorOfBusiness() {
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>
                 {editingItem
-                  ? t('catalog.edit').replace('{name}', t('nav.catalogs.sectorOfBusiness') )
-                  : t('catalog.new').replace('{name}', t('nav.catalogs.sectorOfBusiness') )}
+                  ? t('catalog.edit').replace('{name}', catalogName )
+                  : t('catalog.new').replace('{name}', catalogName )}
               </h2>
               <button className={styles.closeButton} onClick={closeModal}>
                 <X size={24} />
@@ -301,13 +336,17 @@ export function CatalogSectorOfBusiness() {
 
             <div className={styles.modalBody}>
               <div className={styles.formGroup}>
-                <label className={styles.label}>* {t('catalog.sectorOfBusiness.code')}</label>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {t('catalog.sectorOfBusiness.name')}
+                </label>
                 <input
                   type="text"
                   className={styles.input}
-                  value={formData.name}
+                  value={formData.name} 
+                  required
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  disabled={loading}
+                  disabled = {editingItem ? true : false} 
                 />
               </div>
 
@@ -346,6 +385,19 @@ export function CatalogSectorOfBusiness() {
           </div>
         </div>
       )}
+
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        showCancel={modalState.showCancel}
+        confirmText={t('catalog.continue')}
+        cancelText={t('catalog.cancel')}
+      />
+
     </div>
   );
 }
