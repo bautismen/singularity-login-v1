@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, ChevronDown, ChevronUp, X, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { Supplier, Person, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES, SectorOfBusiness } from '../types/supplier';
+import { getSuppliers, createSupplier, updateSupplier, deleteSupplier, getPeople, getCompanies, getSector, createPerson, createCompany } from '../services/supplierService';
 import { useNotification } from '../contexts/NotificationContext';
-import { Supplier, Person, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES } from '../types/supplier';
-import { getSuppliers, createSupplier, updateSupplier, deleteSupplier, getPeople, getCompanies, createPerson, createCompany } from '../services/supplierService';
 import styles from './Suppliers.module.css';
-import { SectorOfBusiness } from '../types/catalog';
 
 export default function Suppliers() {
   const { t } = useLanguage();
@@ -13,7 +12,7 @@ export default function Suppliers() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [sector, GetSector] = useState<SectorOfBusiness[]>([]);
+  const [sector, setSector] = useState<SectorOfBusiness[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
@@ -30,10 +29,8 @@ export default function Suppliers() {
     is_national: false,
     is_persona_fisica: false,
     curp: '',
-    type: 'moral' as 'fisica' | 'moral',
     company_id: '',
     person_id: '',
-    nationality: 'nacional' as 'nacional' | 'extranjero',
     status: 'activo' as 'activo' | 'inactivo',
     fiscal_data: {
       supplier_name: '',
@@ -73,6 +70,7 @@ export default function Suppliers() {
     loadSuppliers();
     loadPeople();
     loadCompanies();
+    loadSector();
   }, []);
 
   async function loadSuppliers() {
@@ -105,6 +103,15 @@ export default function Suppliers() {
     }
   }
 
+  async function loadSector() {
+    try {
+      const data = await getSector();
+      setSector(data);
+    } catch (error) {
+      console.error('Error loading sector:', error);
+    }
+  }
+
   function toggleSection(section: string) {
     setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }));
   }
@@ -115,10 +122,8 @@ export default function Suppliers() {
       is_national: false,
       is_persona_fisica: false,
       curp: '',
-      type: 'moral',
       company_id: '',
       person_id: '',
-      nationality: 'nacional',
       status: 'activo',
       fiscal_data: {
         supplier_name: '',
@@ -137,10 +142,10 @@ export default function Suppliers() {
   function handleEditSupplier(supplier: Supplier) {
     setEditingSupplier(supplier);
     setFormData({
-      type: supplier.type,
+      is_national: supplier.is_national || false,
+      is_persona_fisica: supplier.is_persona_fisica || false,
       company_id: supplier.company_id || '',
       person_id: supplier.person_id || '',
-      nationality: supplier.nationality,
       fiscal_data: supplier.fiscal_data,
       contacts: supplier.contacts,
       addresses: supplier.addresses,
@@ -320,10 +325,6 @@ export default function Suppliers() {
               <button onClick={() => setIsFormOpen(false)} className={styles.cancelHeaderButton}>
                 Cancelar
               </button>
-              <button className={styles.actionsHeaderButton}>
-                Acciones
-                <ChevronDown size={18} />
-              </button>
             </div>
           </div>
 
@@ -333,7 +334,9 @@ export default function Suppliers() {
             <div className={styles.twoColumnGrid}>
               <div className={styles.leftColumn}>
                 <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>* Seleccionar Empresa</label>
+                  <label className={styles.fieldLabel}>
+                    <span className={styles.required}>*</span>{t('supp.selectCompany')}
+                  </label>
                   <select
                     value={formData.company_id}
                     onChange={(e) => {
@@ -370,7 +373,7 @@ export default function Suppliers() {
                     }}
                     className={styles.selectInput}
                   >
-                    <option value="">Seleccionar Empresa</option>
+                    <option value="">{t('supp.selectCompany')}</option>
                     {companies.map((company) => (
                       <option key={company._id} value={company._id}>
                         {company.business_name}
@@ -385,7 +388,7 @@ export default function Suppliers() {
                   className={styles.fullWidthGreenButton}
                 >
                   <Plus size={16} />
-                  Nueva Empresa
+                  {t('supp.newCompany')}
                 </button>
 
                 <div className={styles.checkboxField}>
@@ -401,19 +404,19 @@ export default function Suppliers() {
                     })}
                     className={styles.checkbox}
                   />
-                  <label htmlFor="is_national" className={styles.checkboxText}>Es nacional</label>
+                  <label htmlFor="is_national" className={styles.checkboxText}>{t('supp.IsNational')}</label>
                 </div>
 
                 <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>Seleccionar sector</label>
+                  <label className={styles.fieldLabel}>{t('supp.selectSector')}</label>
                   <select
                     value={formData.serctor_id}
                     onChange={(e) => setFormData({ ...formData, serctor_id: e.target.value })}
                     className={styles.selectInput}
                   >
-                    <option value="">Seleccionar sector</option>
+                    <option value="">{t('supp.selectSector')}</option>
                     {sector.map((sector) => (
-                      <option key={sector.id} value={sector.id}>
+                      <option key={sector._id} value={sector._id}>
                         {sector.name}
                       </option>
                     ))}
@@ -434,6 +437,7 @@ export default function Suppliers() {
                     })}
                     className={styles.textInput}
                     placeholder="RFC/TAXID"
+                    disabled
                   />
                 </div>
 
@@ -465,7 +469,7 @@ export default function Suppliers() {
                       })}
                       className={styles.checkbox}
                     />
-                    <label htmlFor="is_persona_fisica" className={styles.checkboxText}>Persona física</label>
+                    <label htmlFor="is_persona_fisica" className={styles.checkboxText}>{t('supp.IsPersonFisica')}</label>
                   </div>
                 )}
 
@@ -702,18 +706,10 @@ export default function Suppliers() {
         <h1 className={styles.title}>{t('supp.title')}</h1>
         <div className={styles.buttonGroup}>
           <button onClick={handleNewSupplier} className={styles.iconButton}>
-            <Plus size={20} />
+            <Plus size={22} />
           </button>
           <button onClick={loadSuppliers} className={styles.iconButton}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-            </svg>
-          </button>
-          <button className={styles.actionsButton}>
-            Acciones
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            <RefreshCw size={22} />
           </button>
         </div>
       </div>
@@ -736,7 +732,7 @@ export default function Suppliers() {
               <h3>{supplier.fiscal_data.supplier_name}</h3>
               <p className={styles.taxId}>{supplier.fiscal_data.rfc_taxid}</p>
               <p className={styles.supplierType}>
-                {supplier.type === 'fisica' ? 'Persona Física' : 'Persona Moral'}
+                {supplier.is_persona_fisica === true ? 'Persona Física' : 'Persona Moral'}
               </p>
               <p className={styles.supplierLocation}>
                 {supplier.fiscal_data.state}, {supplier.fiscal_data.country}

@@ -1,4 +1,4 @@
-import { Supplier, Person, Company } from '../types/supplier';
+import { Supplier, Person, Company, SectorOfBusiness } from '../types/supplier';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -195,5 +195,21 @@ export async function createCompany(company: Partial<Company>): Promise<Company>
   } catch (error) {
     console.error('Error creating company:', error);
     throw error;
+  }
+}
+
+export async function getSector(status = 'activo'): Promise<SectorOfBusiness[]> {
+  try {
+    const url = `${SUPABASE_URL}/functions/v1/catalog-sector-of-business?status=${status}`;
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch sector of business');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching sector of business:', error);
+    throw new Error('Failed to fetch sector of business');
   }
 }

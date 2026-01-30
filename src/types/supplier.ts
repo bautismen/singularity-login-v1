@@ -56,6 +56,12 @@ export interface Address {
   valid_to: string | null;
 }
 
+export interface SectorOfBusiness {
+  _id?: string;
+  name: string;
+  description: string;
+}
+
 export interface HistoryEntry {
   date: Date;
   user_id: string;
@@ -70,10 +76,10 @@ export interface HistoryEntry {
 export interface Supplier {
   _idsupplier?: string;
   idsupplier?: number;
-  type: 'fisica' | 'moral';
+  is_persona_fisica?: boolean;
   company_id?: string;
   person_id?: string;
-  nationality: 'nacional' | 'extranjero';
+  is_national?: boolean;
   datastate: number;
   fiscal_data: {
     supplier_name: string;
@@ -94,14 +100,13 @@ export interface Supplier {
 }
 
 export interface SupplierFormData {
-  type: 'fisica' | 'moral';
+  is_persona_fisica: boolean;
+  is_national: boolean;
   company_id: string;
   person_id: string;
-  nationality: 'nacional' | 'extranjero';
   fiscal_data: {
     supplier_name: string;
-    rfc: string;
-    taxid: string;
+    rfc_taxid: string;
     country: string;
     state: string;
   };
