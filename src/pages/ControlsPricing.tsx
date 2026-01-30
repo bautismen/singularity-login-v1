@@ -441,12 +441,12 @@ export function ControlsPricing() {
                     <div className={styles.cardHeaderRight}>
                       <div className={styles.countries}>{countries}</div>
                       <div className={styles.category}>{categoryLabel}</div>
-                      {daysElapsed !== null && (
-                        <div className={styles.dateInfo}>
-                          <Clock size={16} />
-                          <span>{daysElapsed}d</span>
-                        </div>
-                      )}
+                      {daysElapsed !== null &&  (                          
+                          <div className={styles.dateInfo}>
+                            <Clock size={16} />
+                            <span >{daysElapsed}d</span>
+                          </div>
+                        )}
                     </div>
                   </div>
 
