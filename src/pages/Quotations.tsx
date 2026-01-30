@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, ChevronDown, Plus, Copy, X, MapPin, Search, RotateCcw, Save, Eye, ArrowLeft } from 'lucide-react';
+import { Trash2, ChevronDown, Plus, Copy, X, RotateCcw, Save, Eye, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -48,6 +48,7 @@ interface Service {
   operation: string;
   incoterm: string;
   origin: string;
+  originZip: string;
   destination: string;
   destinationZip: string;
   expectedDeparture: string;
@@ -137,6 +138,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     requestType: '',
     created: new Date().toISOString().split('T')[0],
     responseDeadline: '',
+    statuscomments: null
   });
 
   const generateReferenceNumber = async () => {
@@ -256,7 +258,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     try {
       setLoading(true);
       const data = await quotationService.getById(id);
-
       console.log('Loading quotation:', data);
 
       setFormData({
@@ -270,6 +271,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         requestType: data.request_type_name || '',
         created: data.request_date ? new Date(data.request_date).toISOString().split('T')[0] : '',
         responseDeadline: data.deadline_date ? new Date(data.deadline_date).toISOString().split('T')[0] : '',
+        statuscomments: data.status_comments || null
       });
 
       if (data.services && data.services.length > 0) {
@@ -296,8 +298,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             operation: shipment.operation_type_name || '',
             incoterm: shipment.incoterm || '',
             origin: shipment.origin?.country_code || '',
+            originZip: shipment.origin?.location || '',
             destination: shipment.destination?.country_code || '',
-            destinationZip: shipment.destiny_zipcode || shipment.destination?.zipcode || '',
+            destinationZip: shipment.destination?.location || '',
             expectedDeparture: shipment.departure_date_approximate?.$date ? new Date(shipment.departure_date_approximate.$date).toISOString().split('T')[0] : (shipment.departure_date_approximate ? new Date(shipment.departure_date_approximate).toISOString().split('T')[0] : ''),
             insurance: hasInsurance,
             maneuver: hasManeuver,
@@ -312,7 +315,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             unit: projection._id_measurement_frecuency ? unitMap[projection._id_measurement_frecuency] || '' : '',
             merchandise: shipment.cargo?.map((c: any, cIdx: number) => {
               const classifications = c.merchandise_classification || [];
-
               const dangerousClass = classifications.find((cl: any) => cl._id_merchandise_classification === 5);
               const refrigeratedClass = classifications.find((cl: any) => cl._id_merchandise_classification === 3);
               const grainClass = classifications.find((cl: any) => cl._id_merchandise_classification === 2);
@@ -369,6 +371,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       operation: '',
       incoterm: '',
       origin: '',
+      originZip: '',
       destination: '',
       destinationZip: '',
       expectedDeparture: '',
@@ -735,21 +738,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             shipments: [{
             id_shipment_item: 1,
             origin: {
-              //_id_country: originCountry?._id || null,
               id_country: originCountry?._id || null,
               country_code: originCountry?.code_country,
               country_name: originCountry?.name_country,
-              location: ""
+              location: service.originZip 
             },
             destination: {
-              //_id_country: destinationCountry?._id || null,
               id_country: destinationCountry?._id || null,
               country_code: destinationCountry?.code_country,
               country_name: destinationCountry?.name_country,
-              location: service.destinationZip,
-              //zipcode: service.destinationZip
+              location: service.destinationZip
             },
-            destiny_zipcode: service.destinationZip,
             _id_shipment_type: shipmentTypeMap[service.shippingType] || 1,
             shippment_type_name: service.shippingType,
             _id_operation_type: operationTypeMap[service.operation] || 1,
@@ -825,27 +824,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
    
   };
 
-  const handleSaveQuotation = async () => {
+  const handleSaveQuotation = async (e: React.FormEvent) => {
     try {
-      setSaving(true);
+      e.preventDefault();
 
-      if (!formData.referenceRequest || !formData.customerId || !formData.requestTypeId ) {
-        showWarning(`Por favor completa los campos requeridos:\nReferencia:
-           ${formData.referenceRequest || 'FALTA'}\nCliente: ${formData.customerId || 'FALTA'}\nTipo de solicitud: ${formData.requestTypeId || 'FALTA'}`);
-        setSaving(false);
-        return;
-      }
+      setSaving(true);
 
       const selectedCustomer = customers.find(c => c._id === formData.customerId);
       const selectedRequestType = requestTypes.find(r => r._id === parseInt(formData.requestTypeId) || r._id === formData.requestTypeId);
-      const selectedExecutive = availableExecutives.length > 0 ? availableExecutives[0] : null;
-
-      if (!selectedRequestType) {
-        showError('Error: No se pudo encontrar el tipo de solicitud seleccionado');
-        setSaving(false);
-        return;
-      }
-
       const hasAssignedExecutives = executives.length > 0;
 
       const quotationData = {
@@ -935,7 +921,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               id_country: originCountry?._id || null,
               country_code: originCountry?.code_country,
               country_name: originCountry?.name_country,
-              location: ""
+              location: service.originZip 
             },
             destination: {
               id_country: destinationCountry?._id || null,
@@ -943,7 +929,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               country_name: destinationCountry?.name_country,
               location: service.destinationZip
             },
-            destiny_zipcode: service.destinationZip,
             _id_shipment_type: service.shippingType === 'Door to Door' ? 1 : 2,
             shippment_type_name: service.shippingType,
             _id_operation_type: service.operation === 'Exportación' ? 1 : service.operation === 'Importación' ? 2 : null,
@@ -970,14 +955,25 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
       console.log('=== QUOTATION DATA TO SAVE ===');
       console.log(JSON.stringify(quotationData, null, 2));
-
-      if (quotationData.services.length === 0 || !quotationData.services[0].service_name || 
-        !quotationData.services[0].shipments[0]._id_operation_type || !quotationData.services[0].shipments[0].incoterm || 
-        !quotationData.services[0].shipments[0].origin.id_country || !quotationData.services[0].shipments[0].destination.id_country
-       ) {
-        showWarning(`${t('quote.noServicesMessage')} : Servicio: ${quotationData.services[0].service_name || 'Falta'} , 
-        Tipo operacion: ${quotationData.services[0].shipments[0].operation_type_name || 'Falta'} , Incoterm: ${quotationData.services[0].shipments[0].incoterm || 'Falta'} ,
-        Origen: ${quotationData.services[0].shipments[0].origin.country_name || 'Falta'} , Destino: ${quotationData.services[0].shipments[0].destination.country_name || 'Falta'}`);        
+     
+      if(quotationData.services.length == 0 ){
+        setModalState({
+          isOpen : true,
+          type: 'warning',
+          title: 'No tiene servicios añadidos',
+          message: 'Debe agregar al menos un servicio para mandar la solicitud de cotización.',
+          showCancel: false      
+        });
+        setSaving(false);
+        return;
+      }else if(quotationData.services.find(service => service.shipments.find(ship => ship.cargo.length === 0))){
+        setModalState({
+          isOpen : true,
+          type: 'warning',
+          title: 'No tiene mercancia añadida',
+          message: 'Debe agregar al menos una mercancia para mandar la solicitud de cotización.',
+          showCancel: false      
+        });
         setSaving(false);
         return;
       }
@@ -1030,8 +1026,79 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     }
   };
 
+  const renderZipCodesOriginDestination =  (service : any) => {
+    switch(service.shippingType){
+      case 'Door to Door': return (
+        <div className={styles.formGrid}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+                Codigo Postal Origen
+              </label>
+            <input
+              type="text"
+              value={service.originZip}
+              onChange={(e) => updateService(service.id, 'originZip', e.target.value)}
+              className={styles.input}
+              disabled={mode === 'view'}
+              required/>
+          </div>    
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+              {t('quote.destinationZip')}
+            </label>
+            <input
+              type="text"
+              value={service.destinationZip}
+              onChange={(e) => updateService(service.id, 'destinationZip', e.target.value)}
+              className={styles.input}
+              disabled={mode === 'view'}
+              required/>
+          </div>    
+        </div>);
+      case 'Door to Port' : return (
+        <div className={styles.formGrid}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+              Codigo Postal Origen
+            </label>
+            <input
+              type="text"
+              value={service.originZip}
+              onChange={(e) => updateService(service.id, 'originZip', e.target.value)}
+              className={styles.input}
+              disabled={mode === 'view'}
+              required/>
+            </div>                     
+        </div>);
+      
+      case 'Port to Door' : return( 
+        <div className={styles.formGrid}>               
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+              {t('quote.destinationZip')}
+            </label>
+            <input
+              type="text"
+              value={service.destinationZip}
+              onChange={(e) => updateService(service.id, 'destinationZip', e.target.value)}
+              className={styles.input}
+              disabled={mode === 'view'}
+              required/>
+          </div>    
+        </div>
+      )
+
+      default: return null;
+    }
+  }
+
   return (
     <div className={styles.container}>
+      <form onSubmit={handleSaveQuotation}>
       <div className={styles.header}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {onBack && (
@@ -1050,26 +1117,29 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         <div className={styles.actionBar}>
           <button
             className={styles.actionBarSaveButton}
-            onClick={handleSaveQuotation}
+            type="submit"
             disabled={saving || mode === 'view'}>
             <Save size={18} />
             <span>{saving ? 'Guardando...' : t('quote.save')}</span>
           </button>
-          <button className={styles.actionBarResetButton}>
+          <button type="button" className={styles.actionBarResetButton}>
             <RotateCcw size={18} />
           </button>
-          {/*<button className={styles.actionBarDeleteButton}
-                  onClick={handleCancelQuotation}>
-            <Trash2 size={18} />
-          </button>*/}
-          <button className={styles.actionBarDropdownButton}>
+          <button type="button" className={styles.actionBarDropdownButton}>
             <span>{t('quote.actions')}</span>
             <ChevronDown size={16} />
           </button>
         </div>
       </div>
 
-      <div className={styles.section}>
+      {formData?.statuscomments !== null && (
+        <div>
+         <label className={styles.label}>Comentarios por cancelación</label>
+          <label className={styles.labelInfoRed} > {formData.statuscomments}</label>
+        </div>        
+      )}
+
+      <div className={styles.section}>        
         <h2 className={styles.sectionTitle}>{t('quote.generalData')}</h2>
         <div className={styles.generalDataGrid}>
           <div className={styles.formGroup}>
@@ -1102,6 +1172,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               }}
               className={styles.select}
               disabled={loading || mode === 'view'}
+              required
             >
               <option value="">{t('quote.selectClient')}</option>
               {customers.map((customer) => (
@@ -1128,6 +1199,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               }}
               className={styles.select}
               disabled={loading || mode === 'view'}
+              required
             >
               <option value="">{t('quote.selectType')}</option>
               {requestTypes.map((type) => (
@@ -1145,7 +1217,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               onChange={(e) => setFormData({ ...formData, customerCategory: parseInt(e.target.value) })}
               className={styles.select}
               disabled={mode === 'view'}
-            >
+              >
               <option value={1}>Golden</option>
               <option value={2}>Silver</option>
               <option value={3}>Bronze</option>
@@ -1180,6 +1252,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           <div className={styles.formGroupWithToggle}>
             <label className={styles.label}>{t('quote.isPriority')}</label>
             <button
+              type="button" 
               className={`${styles.toggleSwitch} ${formData.isPriority ? styles.active : ''}`}
               onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
               disabled={mode === 'view'}>
@@ -1190,6 +1263,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           <div className={styles.formGroupWithToggle}>
             <label className={styles.label}>{t('quote.isBid')}</label>
             <button
+              type="button" 
               className={`${styles.toggleSwitch} ${formData.isQuote ? styles.active : ''}`}
               onClick={() => setFormData({ ...formData, isQuote: !formData.isQuote })}
               disabled={mode === 'view'}>
@@ -1200,6 +1274,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           {mode === 'edit' && (
             <div className={styles.statusButtonsContainer}>
               <button
+                type="button" 
                 className={styles.cancelButton}
                 onClick={handleCancelQuotation}
                 disabled={saving}>
@@ -1211,7 +1286,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <div className={styles.modalContentSmall} onClick={(e) => e.stopPropagation()}>
                   <div className={styles.modalHeader}>
                     <h2 className={styles.modalTitle}>Motivos de cancelación</h2>
-                    <button className={styles.closeButton} onClick={() => {setShowCancelQuotationRequestModal(false) }}>
+                    <button type="button" className={styles.closeButton} onClick={() => {setShowCancelQuotationRequestModal(false) }}>
                       <X size={24} />
                     </button>
                   </div>
@@ -1220,7 +1295,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <label className={styles.label}>Escriba los motivos de cancelación</label>
                     <textarea id="comments-cancelation" className={styles.textarea} rows={3} placeholder="" />
                     <div className={styles.modalFooter}>
-                      <button className={styles.saveModalButton} 
+                      <button type="button" className={styles.saveModalButton} 
                       onClick={() => handleStatusUpdate(3, "Cancelada")}>
                         {t('quote.save')}
                       </button>
@@ -1232,10 +1307,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             )}
                 
               <button
+                type="button" 
                 className={styles.sendButton}
                 onClick={handleSendQuotation}
-                disabled={saving}
-              >
+                disabled={saving}>
                 {t('quote.send')}
               </button>
             </div>
@@ -1251,19 +1326,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <div className={styles.serviceHeader}>
               <div className={styles.serviceNumber}>{index + 1}</div>
               <div className={styles.serviceActions}>
-                {/*<button className={`${styles.iconButton} ${styles.primary}`} disabled={mode === 'view'}>
-                  <Plus size={18}  />
-                </button>*/}
-                <button className={styles.iconButton} onClick={() => duplicateService(service.id)} disabled={mode === 'view'}>
+                <button type="button" className={styles.iconButton} onClick={() => duplicateService(service.id)} disabled={mode === 'view'}>
                   <Copy size={18} />
                 </button>
-                {/*<button className={styles.iconButton}>
-                  <Trash2 size={18} />
-                </button>
-                <button className={styles.iconButton}>
-                  <ChevronDown size={18} />
-                </button>*/}
                 <button
+                    type="button" 
                     className={`${styles.iconButton} ${styles.danger}`}
                     onClick={() => removeService(service.id)}
                     disabled={mode === 'view'}>
@@ -1283,6 +1350,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   onChange={(e) => updateService(service.id, 'service', e.target.value)}
                   className={styles.select}
                   disabled={loading || mode === 'view'}
+                  required
                 >
                   <option value="">{t('quote.select')}</option>
                   {availableServices.map((srv) => (
@@ -1303,12 +1371,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   onChange={(e) => updateService(service.id, 'operation', e.target.value)}
                   className={styles.select}
                   disabled={mode === 'view'}
+                  required
                 >
                   <option value="">{t('quote.select')}</option>
                   <option>{t('quote.export')}</option>
                   <option>{t('quote.import')}</option>
                 </select>
-              </div>
+              </div>  
 
               <div className={styles.formGroup}>
                 <label className={styles.label}>
@@ -1320,7 +1389,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   onChange={(e) => updateService(service.id, 'incoterm', e.target.value)}
                   className={styles.select}
                   disabled={loading || mode === 'view'}
-                >
+                  required>
                   <option value="">{t('quote.select')}</option>
                   {incoterms.map((inc) => (
                     <option key={inc._id} value={inc.incoterm}>
@@ -1328,73 +1397,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     </option>
                   ))}
                 </select>
-              </div>
-            </div>
-
-            <div className={styles.formGrid} style={{ marginTop: '1.25rem' }}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <span className={styles.required}>*</span>
-                  {t('quote.origin')}
-                </label>
-                <select
-                  value={service.origin}
-                  onChange={(e) => updateService(service.id, 'origin', e.target.value)}
-                  className={styles.select}
-                  disabled={loading || mode === 'view'}
-                >
-                  <option value="">{t('quote.select')}</option>
-                  {countries.map((country) => (
-                    <option key={country._id} value={country.code_country}>
-                      {country.name_country} ({country.code_country})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <span className={styles.required}>*</span>
-                  {t('quote.destination')}
-                </label>
-                <select
-                  value={service.destination}
-                  onChange={(e) => updateService(service.id, 'destination', e.target.value)}
-                  className={styles.select}
-                  disabled={loading || mode === 'view'}
-                >
-                  <option value="">{t('quote.select')}</option>
-                  {countries.map((country) => (
-                    <option key={country._id} value={country.code_country}>
-                      {country.name_country} ({country.code_country})
-                    </option>                    
-                  ))}
-                </select>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <span className={styles.required}>*</span>
-                  {t('quote.destinationZip')}
-                </label>
-                <input
-                  type="text"
-                  value={service.destinationZip}
-                  onChange={(e) => updateService(service.id, 'destinationZip', e.target.value)}
-                  className={styles.input}
-                  disabled={mode === 'view'}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>{t('quote.expectedDeparture')}</label>
-                <input
-                  type="date"
-                  value={service.expectedDeparture}
-                  onChange={(e) => updateService(service.id, 'expectedDeparture', e.target.value)}
-                  className={styles.input}
-                  disabled={mode === 'view'}
-                />
               </div>
 
               <div className={styles.formGroup}>
@@ -1405,44 +1407,104 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   value={service.shippingType}
                   onChange={(e) => updateService(service.id, 'shippingType', e.target.value)}
                   className={styles.select}
-                  disabled={mode === 'view'}
-                >
+                  disabled={mode === 'view'}>
                   <option>{t('quote.doorToDoor')}</option>
                   <option>{t('quote.portToPort')}</option>
                   <option>{t('quote.doorToPort')}</option>
                   <option>{t('quote.portToDoor')}</option>
                 </select>
+              </div>    
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>{t('quote.expectedDeparture')}</label>
+                <input
+                  type="date"
+                  value={service.expectedDeparture}
+                  onChange={(e) => updateService(service.id, 'expectedDeparture', e.target.value)}
+                  className={styles.input}
+                  disabled={mode === 'view'}/>
+              </div>         
+            </div>
+
+            <div className={styles.formGrid} style={{ marginTop: '1.25rem' }}>              
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {t('quote.origin')}
+                </label>
+                <select
+                  value={service.origin}
+                  onChange={(e) => updateService(service.id, 'origin', e.target.value)}
+                  className={styles.select}
+                  disabled={loading || mode === 'view'}
+                  required
+                >
+                  <option value="">{t('quote.select')}</option>
+                  {countries.map((country) => (
+                    <option key={country._id} value={country.code_country}>
+                      {country.name_country} ({country.code_country})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {t('quote.destination')}
+                </label>
+                <select
+                  value={service.destination}
+                  onChange={(e) => updateService(service.id, 'destination', e.target.value)}
+                  className={styles.select}
+                  disabled={loading || mode === 'view'}
+                  required>
+                  <option value="">{t('quote.select')}</option>
+                  {countries.map((country) => (
+                    <option key={country._id} value={country.code_country}>
+                      {country.name_country} ({country.code_country})
+                    </option>                    
+                  ))}
+                </select>
               </div>
             </div>
 
             <div style={{ marginTop: '1.25rem' }}>
+              {renderZipCodesOriginDestination(service)}
+            </div>
+                                                         
+            <div style={{ marginTop: '1.25rem' }}>
               <label className={styles.label}>{t('quote.associatedServices')}</label>
               <div className={styles.associatedServices}>
                 <button
+                  type="button" 
                   className={`${styles.serviceChip} ${service.insurance ? styles.selected : ''}`}
                   onClick={() => updateService(service.id, 'insurance', !service.insurance)}
                   disabled={mode === 'view'}>
                   <span>Seguro</span>
                 </button>
                 <button
+                  type="button" 
                   className={`${styles.serviceChip} ${service.maneuver ? styles.selected : ''}`}
                   onClick={() => updateService(service.id, 'maneuver', !service.maneuver)}
                   disabled={mode === 'view'}>
                   <span>Maniobra</span>
                 </button>
                 <button
+                  type="button" 
                   className={`${styles.serviceChip} ${service.custody ? styles.selected : ''}`}
                   onClick={() => updateService(service.id, 'custody', !service.custody)}
                   disabled={mode === 'view'}>
                   <span>Custodia</span>
                 </button>
                 <button
+                  type="button" 
                   className={`${styles.serviceChip} ${service.inspection ? styles.selected : ''}`}
                   onClick={() => updateService(service.id, 'inspection', !service.inspection)}
                   disabled={mode === 'view'}>
                   <span>Inspección</span>
                 </button>
                 <button
+                  type="button" 
                   className={`${styles.serviceChip} ${service.customsClearance ? styles.selected : ''}`}
                   onClick={() => updateService(service.id, 'customsClearance', !service.customsClearance)}
                   disabled={mode === 'view'}>
@@ -1549,6 +1611,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         <td>
                           <div className={styles.tableActions}>
                             <button
+                              type="button" 
                               className={styles.iconButtonSmall}
                               onClick={() => copyMerchandise(service.id, merch.id)}
                               title={t('quote.copy')}
@@ -1557,6 +1620,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               <Copy size={14} />
                             </button>
                             <button
+                              type="button" 
                               className={styles.iconButtonSmall}
                               onClick={() => removeMerchandise(service.id, merch.id)}
                               title={t('quote.delete')}
@@ -1565,10 +1629,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               <Trash2 size={14} />
                             </button>
                             <button
+                              type="button" 
                               className={styles.viewButtonGreen}
                               onClick={() => openMerchandiseModal(service.id, merch)}
-                              title={t('quote.view')}
-                            >
+                              title={t('quote.view')}>
                               <Eye size={14} />
                             </button>
                           </div>
@@ -1579,6 +1643,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </table>
               </div>
               <button
+                type="button" 
                 className={styles.addItemButton}
                 onClick={() => openMerchandiseModal(service.id)}
                 disabled={mode === 'view'}
@@ -1590,7 +1655,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           </div>
         ))}
 
-        <button className={styles.addServiceButton} onClick={addService} disabled={mode === 'view'}>
+        <button type="button" className={styles.addServiceButton} onClick={addService} disabled={mode === 'view'}>
           <Plus size={20} />
           <span>{t('quote.addService')}</span>
         </button>
@@ -1605,6 +1670,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <span className={styles.executiveLabel}>Ejecutivo</span>
                 <span className={styles.executiveNameSimple}>{executive.name}</span>
                 <button
+                  type="button" 
                   className={styles.removeIconButton}
                   onClick={() => removeExecutive(executive.id)}
                   title={t('quote.delete')}
@@ -1615,12 +1681,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               </div>
             ))}
           </div>
-          <button className={styles.addExecutiveButton} onClick={openExecutiveModal} disabled={mode === 'view'} >
+          <button type="button" className={styles.addExecutiveButton} onClick={openExecutiveModal} disabled={mode === 'view'} >
             <Plus size={16} />
             {t('quote.addExecutive')}
           </button>
         </div>
       </div>
+      </form>
 
       {showMerchandiseModal && (
         <div className={styles.modalOverlay} onClick={closeMerchandiseModal}>
@@ -1834,8 +1901,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               <button
                                 className={styles.removeRowButton}
                                 onClick={() => removePackage(pkg.id)}
-                                disabled={mode === 'view'}
-                              >
+                                disabled={mode === 'view'}>
                                 <X size={14} />
                               </button>
                             </td>
@@ -1851,7 +1917,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <div className={styles.modalFooterInfo}>
                   <div className={styles.unitTypeToggle}>
                     <span className={!useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.lbsInches')}</span>
-                    <button
+                    <button                     
                       className={`${styles.toggleSwitch} ${useMetricSystem ? styles.active : ''}`}
                       onClick={() => setUseMetricSystem(!useMetricSystem)}
                       disabled={mode === 'view'}>

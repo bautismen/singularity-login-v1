@@ -23,7 +23,7 @@
 
 .backButton {
   padding: 0.75rem 1rem;
-  background-color: #1B96A8;
+  background-color: #03A678;
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -36,7 +36,7 @@
 }
 
 .backButton:hover {
-  background-color: #157a89;
+  background-color: #03738C;
 }
 
 .dark .backButton {
@@ -50,7 +50,7 @@
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   gap: 0;
-  background-color: #1B96A8;
+  background-color: #03A678;
 }
 
 .dark .actionBar {
@@ -59,7 +59,7 @@
 
 .actionBarSaveButton {
   padding: 0.75rem 1.25rem;
-  background-color: #1B96A8;
+  background-color: #03A678;
   color: white;
   border: none;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
@@ -75,7 +75,7 @@
 }
 
 .actionBarSaveButton:hover {
-  background-color: #157a89;
+  background-color: #03738C;
 }
 
 .actionBarSaveButton:disabled {
@@ -85,7 +85,7 @@
 
 .actionBarResetButton {
   padding: 0.75rem 1rem;
-  background-color: #1B96A8;
+  background-color: #03A678;
   color: white;
   border: none;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
@@ -98,7 +98,7 @@
 }
 
 .actionBarResetButton:hover {
-  background-color: #157a89;
+  background-color: #03738C;
 }
 
 .actionBarDeleteButton {
@@ -121,7 +121,7 @@
 
 .actionBarDropdownButton {
   padding: 0.75rem 1.25rem;
-  background-color: #1B96A8;
+  background-color: #03A678;
   color: white;
   border: none;
   font-weight: 500;
@@ -136,7 +136,7 @@
 }
 
 .actionBarDropdownButton:hover {
-  background-color: #157a89;
+  background-color: #03738C;
 }
 
 .section {
@@ -185,6 +185,18 @@
 
 .dark .label {
   color: #d1d5db;
+}
+
+.labelInfoRed {
+  display: flex;
+  flex : auto;
+  background-color: rgb(249, 216, 216);
+  border-radius: 0.75rem;
+  border: 1px solid #d84602;
+  padding: 1.0rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
 }
 
 .required {
