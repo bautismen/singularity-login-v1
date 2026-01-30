@@ -280,6 +280,11 @@
   background-color: #0f9d8f;
 }
 
+.actionBarSaveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .actionBarResetButton {
   padding: 0.75rem 1rem;
   background-color: #14b8a6;
