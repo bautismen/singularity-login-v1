@@ -82,12 +82,12 @@ Deno.serve(async (req: Request) => {
     if (method === "POST" && path.endsWith("/suppliers")) {
       const body = await req.json();
 
-      if (!body.fiscal_data || !body.fiscal_data.business_name || !body.fiscal_data.taxid) {
-        return new Response(
-          JSON.stringify({ error: "Faltan datos fiscales requeridos (Razón Social y RFC)" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+      //if (!body.fiscal_data || !body.fiscal_data.business_name || !body.fiscal_data.taxid) {
+      // return new Response(
+      //    JSON.stringify({ error: "Faltan datos fiscales requeridos (Razón Social y RFC)" }),
+      //    { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      //  );
+      //}
 
       const maxIdDoc = await collection
         .find()
@@ -98,7 +98,7 @@ Deno.serve(async (req: Request) => {
       const nextId = maxIdDoc.length > 0 ? (maxIdDoc[0].idsupplier || 0) + 1 : 1;
 
       const newSupplier = {
-        _idsupplier: new ObjectId(),
+        _id: new ObjectId(),
         idsupplier: nextId,
         ...body,
         datastate: 1,

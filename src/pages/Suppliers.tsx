@@ -10,7 +10,7 @@ export default function Suppliers() {
   const { t } = useLanguage();
   const { showSuccess, showError, showWarning } = useNotification();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [people, setPeople] = useState<Person[]>([]);
+  //const [people, setPeople] = useState<Person[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [sector, setSector] = useState<SectorOfBusiness[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,15 +22,15 @@ export default function Suppliers() {
     address: false,
     contacts: false,
   });
-  const [showPersonForm, setShowPersonForm] = useState(false);
+  //const [showPersonForm, setShowPersonForm] = useState(false);
   const [showCompanyForm, setShowCompanyForm] = useState(false);
 
   const [formData, setFormData] = useState({
-    is_national: false,
     is_persona_fisica: false,
     curp: '',
     company_id: '',
-    person_id: '',
+    is_national: false,
+    //person_id: '',
     status: 'activo' as 'activo' | 'inactivo',
     fiscal_data: {
       supplier_name: '',
@@ -44,16 +44,16 @@ export default function Suppliers() {
     addresses: [] as Address[],
   });
 
-  const [newPerson, setNewPerson] = useState<Partial<Person>>({
-    name: '',
-    rfc: '',
-    nationality: 'nacional',
-    country: 'MX',
-    state: '',
-    birth_date: '',
-    status: 'activo',
-    archivado: false,
-  });
+  // const [newPerson, setNewPerson] = useState<Partial<Person>>({
+  //   name: '',
+  //   rfc: '',
+  //   nationality: 'nacional',
+  //   country: 'MX',
+  //   state: '',
+  //   birth_date: '',
+  //   status: 'activo',
+  //   archivado: false,
+  // });
 
   const [newCompany, setNewCompany] = useState<Partial<Company>>({
     business_name: '',
@@ -68,7 +68,7 @@ export default function Suppliers() {
 
   useEffect(() => {
     loadSuppliers();
-    loadPeople();
+    //loadPeople();
     loadCompanies();
     loadSector();
   }, []);
@@ -85,14 +85,14 @@ export default function Suppliers() {
     }
   }
 
-  async function loadPeople() {
-    try {
-      const data = await getPeople();
-      setPeople(data);
-    } catch (error) {
-      console.error('Error loading people:', error);
-    }
-  }
+  // async function loadPeople() {
+  //   try {
+  //     const data = await getPeople();
+  //     setPeople(data);
+  //   } catch (error) {
+  //     console.error('Error loading people:', error);
+  //   }
+  // }
 
   async function loadCompanies() {
     try {
@@ -119,11 +119,11 @@ export default function Suppliers() {
   function handleNewSupplier() {
     setEditingSupplier(null);
     setFormData({
-      is_national: false,
       is_persona_fisica: false,
       curp: '',
       company_id: '',
-      person_id: '',
+      is_national: false,
+      //person_id: '',
       status: 'activo',
       fiscal_data: {
         supplier_name: '',
@@ -145,7 +145,7 @@ export default function Suppliers() {
       is_national: supplier.is_national || false,
       is_persona_fisica: supplier.is_persona_fisica || false,
       company_id: supplier.company_id || '',
-      person_id: supplier.person_id || '',
+      //person_id: supplier.person_id || '',
       fiscal_data: supplier.fiscal_data,
       contacts: supplier.contacts,
       addresses: supplier.addresses,
@@ -159,8 +159,8 @@ export default function Suppliers() {
 
       const selectedCompany = companies.find(c => c._id === formData.company_id);
 
-      if (!selectedCompany && !formData.person_id) {
-        showWarning('Debe seleccionar una empresa o persona');
+      if (!selectedCompany) {
+        showWarning('Debe seleccionar una empresa');
         setLoading(false);
         return;
       }
@@ -176,7 +176,7 @@ export default function Suppliers() {
       };
 
       if (editingSupplier) {
-        await updateSupplier(editingSupplier._idsupplier!, dataToSave);
+        await updateSupplier(editingSupplier._id!, dataToSave);
       } else {
         await createSupplier(dataToSave);
       }
@@ -207,28 +207,28 @@ export default function Suppliers() {
     }
   }
 
-  async function handleCreatePerson() {
-    try {
-      const created = await createPerson(newPerson);
-      console.log('Person created:', created);
-      setPeople([...people, created]);
-      setFormData({ ...formData, person_id: created._id! });
-      setShowPersonForm(false);
-      setNewPerson({
-        name: '',
-        rfc: '',
-        nationality: 'nacional',
-        country: 'MX',
-        state: '',
-        birth_date: '',
-        status: 'activo',
-        archivado: false,
-      });
-    } catch (error) {
-      console.error('Error creating person:', error);
-      showError('Error al crear la persona: ' + (error instanceof Error ? error.message : 'Error desconocido'));
-    }
-  }
+  // async function handleCreatePerson() {
+  //   try {
+  //     const created = await createPerson(newPerson);
+  //     console.log('Person created:', created);
+  //     setPeople([...people, created]);
+  //     setFormData({ ...formData, person_id: created._id! });
+  //     setShowPersonForm(false);
+  //     setNewPerson({
+  //       name: '',
+  //       rfc: '',
+  //       nationality: 'nacional',
+  //       country: 'MX',
+  //       state: '',
+  //       birth_date: '',
+  //       status: 'activo',
+  //       archivado: false,
+  //     });
+  //   } catch (error) {
+  //     console.error('Error creating person:', error);
+  //     showError('Error al crear la persona: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+  //   }
+  // }
 
   async function handleCreateCompany() {
     try {
@@ -320,10 +320,10 @@ export default function Suppliers() {
             <div className={styles.headerActions}>
               <button onClick={handleSaveSupplier} className={styles.saveHeaderButton} disabled={loading}>
                 <Plus size={18} />
-                Guardar
+                {t('supp.save')}
               </button>
               <button onClick={() => setIsFormOpen(false)} className={styles.cancelHeaderButton}>
-                Cancelar
+                {t('supp.cancel')}
               </button>
             </div>
           </div>
@@ -496,7 +496,7 @@ export default function Suppliers() {
             >
               <div className={styles.sectionTitleWithDot}>
                 <span className={styles.greenDot}></span>
-                <span>Contacto</span>
+                <span>{t('supp.contacts')}</span>
               </div>
               {collapsedSections.contacts ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
             </div>
@@ -505,19 +505,19 @@ export default function Suppliers() {
               <div className={styles.sectionContent}>
                 <button onClick={addContact} className={styles.addDashedButton}>
                   <Plus size={20} />
-                  Agregar contacto
+                  {t('supp.addContact')}
                 </button>
                 {formData.contacts.map((contact, index) => (
                   <div key={index} className={styles.itemCard}>
                     <div className={styles.itemHeader}>
-                      <h4>Contacto {index + 1}</h4>
+                      <h4>{t('supp.contact')} {index + 1}</h4>
                       <button onClick={() => removeContact(index)} className={styles.removeButton}>
                         <X size={18} />
                       </button>
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Tipo de contacto
+                        {t('supp.TypeContact')}
                         <select
                           value={contact.type}
                           onChange={(e) => updateContact(index, 'type', e.target.value)}
@@ -530,7 +530,7 @@ export default function Suppliers() {
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Nombre
+                        {t('supp.contactName')}
                         <input
                           type="text"
                           value={contact.name}
@@ -540,7 +540,7 @@ export default function Suppliers() {
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Email
+                        {t('supp.contactEmail')}
                         <input
                           type="email"
                           value={contact.email}
@@ -550,7 +550,7 @@ export default function Suppliers() {
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Teléfono
+                        {t('supp.contactPhone')}
                         <input
                           type="text"
                           value={contact.phone}
@@ -571,7 +571,7 @@ export default function Suppliers() {
             >
               <div className={styles.sectionTitleWithDot}>
                 <span className={styles.greenDot}></span>
-                <span>Domicilio</span>
+                <span>{t('supp.addresses')}</span>
               </div>
               {collapsedSections.address ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
             </div>
@@ -580,19 +580,19 @@ export default function Suppliers() {
               <div className={styles.sectionContent}>
                 <button onClick={addAddress} className={styles.addDashedButton}>
                   <Plus size={20} />
-                  Agregar Domicilio
+                  {t('supp.addAddress')}
                 </button>
                 {formData.addresses.map((address, index) => (
                   <div key={index} className={styles.itemCard}>
                     <div className={styles.itemHeader}>
-                      <h4>Domicilio {index + 1}</h4>
+                      <h4>{t('supp.address')} {index + 1}</h4>
                       <button onClick={() => removeAddress(index)} className={styles.removeButton}>
                         <X size={18} />
                       </button>
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Calle
+                        {t('supp.street')}
                         <input
                           type="text"
                           value={address.street}
@@ -602,7 +602,7 @@ export default function Suppliers() {
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Ciudad
+                        {t('supp.city')}
                         <input
                           type="text"
                           value={address.city}
@@ -612,7 +612,7 @@ export default function Suppliers() {
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Estado
+                        {t('supp.state')}
                         <select
                           value={address.state}
                           onChange={(e) => updateAddress(index, 'state', e.target.value)}
@@ -626,7 +626,7 @@ export default function Suppliers() {
                     </div>
                     <div className={styles.formRow}>
                       <label>
-                        Código Postal
+                        {t('supp.postalCode')}
                         <input
                           type="text"
                           value={address.postal_code}
@@ -746,7 +746,7 @@ export default function Suppliers() {
                 <Edit2 size={18} />
               </button>
               <button
-                onClick={() => handleDeleteSupplier(supplier._idsupplier!)}
+                onClick={() => handleDeleteSupplier(supplier._id!)}
                 className={styles.deleteButton}
               >
                 <Trash2 size={18} />

@@ -74,11 +74,10 @@ export interface HistoryEntry {
 }
 
 export interface Supplier {
-  _idsupplier?: string;
-  idsupplier?: number;
+  _id?: string;
+  _idsupplier?: number;
   is_persona_fisica?: boolean;
   company_id?: string;
-  person_id?: string;
   is_national?: boolean;
   datastate: number;
   fiscal_data: {
@@ -87,6 +86,8 @@ export interface Supplier {
     country: string;
     state: string;
   };
+  serctor_id: number,
+  sector: string,
   contacts: Contact[];
   addresses: Address[];
   status: 'activo' | 'inactivo';
@@ -101,15 +102,16 @@ export interface Supplier {
 
 export interface SupplierFormData {
   is_persona_fisica: boolean;
-  is_national: boolean;
   company_id: string;
-  person_id: string;
+  is_national: boolean;
   fiscal_data: {
     supplier_name: string;
     rfc_taxid: string;
     country: string;
     state: string;
   };
+  serctor_id: number,
+  sector: string,
   contacts: Contact[];
   addresses: Address[];
 }
