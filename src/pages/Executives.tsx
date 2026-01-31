@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, RotateCcw, Trash2, Plus, Edit, Search, X } from 'lucide-react';
+import { Save, RotateCcw, Trash2, Plus, Edit, Search, X, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Executive, ExecutiveFormData, DEPARTMENTS } from '../types/executive';
 import {
@@ -216,13 +216,29 @@ export function Executives() {
         </div>
       )}
 
-      <div className={styles.header}>
-        <h1 className={styles.title}>{t('exec.title')}</h1>
-        {!showForm && (
-          <button className={styles.newButton} onClick={handleNewExecutive}>
+      <div className={styles.header}>                                
+        {!showForm ? (
+          <>
+           <h1 className={styles.title}>{t('exec.title')}</h1>
+           <button className={styles.newButton} onClick={handleNewExecutive}>
             <Plus size={18} />
             <span>{t('exec.newExecutive')}</span>
-          </button>
+            </button>
+          </>          
+        ): (
+          <div style={{ display: 'flex', alignItems: 'left', gap: '1rem' }}>          
+            <div className={styles.actionBar}>
+              <button
+                onClick={handleCancel}
+                className={styles.actionBarResetButton}
+                title="Volver a lista">
+                <ArrowLeft size={18} />
+              </button>              
+            </div>  
+            <h1 className={styles.title}>
+              {editingId ? t('exec.editExecutive') : t('exec.newExecutive')}
+            </h1>      
+        </div>
         )}
       </div>
 
@@ -327,10 +343,8 @@ export function Executives() {
         </>
       ) : (
         <form onSubmit={handleSave} className={styles.section}>
-          <div className={styles.formHeader}>
-            <h2 className={styles.sectionTitle}>
-              {editingId ? t('exec.editExecutive') : t('exec.newExecutive')}
-            </h2>
+          <div className={styles.formHeader}>            
+            
             <div className={styles.actionBar}>
               <button type='submit' className={styles.actionBarSaveButton} disabled={saving}>
                 <Save size={18} />
@@ -345,10 +359,6 @@ export function Executives() {
                   <Trash2 size={18} />
                 </button>
               )}
-              <button type="button" className={styles.actionBarCancelButton} onClick={handleCancel} disabled={saving}> 
-                <X size={18} />
-                <span>{t('exec.cancel')}</span>
-              </button>
             </div>
           </div>
           <div className={styles.formGrid}>
