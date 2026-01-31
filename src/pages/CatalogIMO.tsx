@@ -23,6 +23,7 @@ export function CatalogIMO() {
     description: '',
     status: 1,
   });
+  const disabled = editingItem ? true : false;
 
   useEffect(() => {
     loadData();
@@ -112,19 +113,10 @@ export function CatalogIMO() {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.FormEvent) => {
     try {
+      e.preventDefault();
       setLoading(true);
-
-      if (formData.imo.length === 0) {
-      showError('Debe ingresar un IMO');
-      return;
-      }
-
-      if (formData.description.length === 0) {
-      showError('Debe ingresar una descripción');
-      return;
-      }
 
       if (editingItem) {
         const response = await fetch(`${API_URL}/${editingItem.id}`, {
@@ -193,14 +185,14 @@ export function CatalogIMO() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container}>     
       <div className={styles.header}>
         <h1 className={styles.title}>{t('nav.catalogs.imo')}</h1>
         <div className={styles.buttonGroup}>
-          <button className={styles.buttonGroupItem} onClick={() => openModal()} disabled={loading}>
+          <button className={styles.headerButton} onClick={() => openModal()} disabled={loading}>
             <Plus size={20} />            
           </button>
-           <button onClick={loadData} className={styles.buttonGroupItemLast}>
+           <button onClick={loadData} className={styles.headerButton}>
             <RefreshCw size={20} />
           </button>
         </div>
@@ -299,13 +291,14 @@ export function CatalogIMO() {
       )}
 
       {showModal && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
+         <form onSubmit={handleSave}>          
+        <div className={styles.modalOverlay} onClick={closeModal}>          
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>
                 {editingItem
-                  ? t('catalog.edit').replace('{name}', 'IMO')
-                  : t('catalog.new').replace('{name}', 'IMO')}
+                  ? t('catalog.edit').replace('{name}', 'imo')
+                  : t('catalog.new').replace('{name}', 'imo')}
               </h2>
               <button className={styles.closeButton} onClick={closeModal}>
                 <X size={24} />
@@ -314,23 +307,26 @@ export function CatalogIMO() {
 
             <div className={styles.modalBody}>
               <div className={styles.formGroup}>
-                <label className={styles.label}>{t('catalog.imo.code')}</label>
+                <label className={styles.label}><span className={styles.required}>*</span> {t('catalog.imo.code')}</label>
                 <input
                   type="number"
                   className={styles.input}
                   value={formData.imo}
                   onChange={(e) => setFormData({ ...formData, imo: e.target.value })}
-                  disabled={loading}
+                  disabled={disabled}
+                  required
+                  
                 />
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.label}>{t('catalog.imo.description')}</label>
+                <label className={styles.label}><span className={styles.required}>*</span> {t('catalog.imo.description')}</label>
                 <textarea
                   className={styles.textarea}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   disabled={loading}
+                  required
                 />
               </div>
 
@@ -352,13 +348,14 @@ export function CatalogIMO() {
               <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
                 {t('catalog.cancel')}
               </button>
-              <button className={styles.saveButton} onClick={handleSave} disabled={loading}>
+              <button type="submit" className={styles.saveButton} disabled={loading}>
                 {loading ? 'Guardando...' : t('catalog.save')}
               </button>
             </div>
           </div>
         </div>
-      )}
+        </form>
+      )}      
     </div>
   );
 }

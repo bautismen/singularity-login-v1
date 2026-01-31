@@ -22,6 +22,7 @@ export function CatalogIncoterms() {
     incoterm: '',
     status: 1,
   });
+  const disabled = editingItem ? true : false;
 
   useEffect(() => {
     loadData();
@@ -106,13 +107,10 @@ export function CatalogIncoterms() {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.FormEvent) => {
     try {
-      setLoading(true);
-      if (formData.incoterm.length === 0) {
-      showError('Debe ingresar un Incoterm');
-      return;
-      }
+      e.preventDefault();
+      setLoading(true);     
 
       if (editingItem) {
         const response = await fetch(`${API_URL}/${editingItem.id}`, {
@@ -185,10 +183,10 @@ export function CatalogIncoterms() {
       <div className={styles.header}>
         <h1 className={styles.title}>{t('nav.catalogs.incoterms')}</h1>
         <div className={styles.buttonGroup}>
-          <button className={styles.buttonGroupItem} onClick={() => openModal()} disabled={loading}>
+          <button className={styles.headerButton} onClick={() => openModal()} disabled={loading}>
             <Plus size={20} />            
           </button>
-           <button onClick={loadData} className={styles.buttonGroupItemLast}>
+           <button onClick={loadData} className={styles.headerButton}>
             <RefreshCw size={20} />
           </button>
         </div>
@@ -285,13 +283,14 @@ export function CatalogIncoterms() {
       )}
 
       {showModal && (
+        <form onSubmit={handleSave}>
         <div className={styles.modalOverlay} onClick={closeModal}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>
                 {editingItem
-                  ? t('catalog.edit').replace('{name}', 'Incoterm')
-                  : t('catalog.new').replace('{name}', 'Incoterm')}
+                  ? t('catalog.edit').replace('{name}', 'incoterm')
+                  : t('catalog.new').replace('{name}', 'incoterm')}
               </h2>
               <button className={styles.closeButton} onClick={closeModal}>
                 <X size={24} />
@@ -300,13 +299,14 @@ export function CatalogIncoterms() {
 
             <div className={styles.modalBody}>
               <div className={styles.formGroup}>
-                <label className={styles.label}>{t('catalog.incoterm.code')}</label>
+                <label className={styles.label}><span className={styles.required}>*</span> {t('catalog.incoterm.code')}</label>
                 <input
                   type="text"
                   className={styles.input}
                   value={formData.incoterm}
                   onChange={(e) => setFormData({ ...formData, incoterm: e.target.value })}
-                  disabled={loading}
+                  disabled={disabled}
+                  required
                 />
               </div>
 
@@ -328,12 +328,13 @@ export function CatalogIncoterms() {
               <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
                 {t('catalog.cancel')}
               </button>
-              <button className={styles.saveButton} onClick={handleSave} disabled={loading}>
+              <button type="submit" className={styles.saveButton} disabled={loading}>
                 {loading ? 'Guardando...' : t('catalog.save')}
               </button>
             </div>
           </div>
         </div>
+        </form>
       )}
     </div>
   );

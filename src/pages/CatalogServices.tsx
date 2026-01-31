@@ -25,6 +25,7 @@ export function CatalogServices() {
     status: 1,
   });
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const disabled = editingItem ? true : false;
 
   const isValidEmail = (email: string) => emailRegex.test(email);
 
@@ -119,14 +120,10 @@ export function CatalogServices() {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.FormEvent) => {
     try {
-      setLoading(true);
-
-      if (formData.service_name.length === 0) {
-      showError('Debe ingresar un nombre de servicio');
-      return;
-      }
+      e.preventDefault();
+      setLoading(true);      
 
       if (formData.email_service_name.length > 0 && !isValidEmail(formData.email_service_name)) {
         showError('Debe ingresar un correo electrónico válido');
@@ -204,10 +201,10 @@ export function CatalogServices() {
       <div className={styles.header}>
         <h1 className={styles.title}>{t('nav.catalogs.services')}</h1>
         <div className={styles.buttonGroup}>
-          <button className={styles.buttonGroupItem} onClick={() => openModal()} disabled={loading}>
+          <button className={styles.headerButton} onClick={() => openModal()} disabled={loading}>
             <Plus size={20} />            
           </button>
-           <button onClick={loadData} className={styles.buttonGroupItemLast}>
+           <button onClick={loadData} className={styles.headerButton}>
             <RefreshCw size={20} />
           </button>
         </div>
@@ -310,13 +307,14 @@ export function CatalogServices() {
       )}
 
       {showModal && (
+        <form onSubmit={handleSave}>
         <div className={styles.modalOverlay} onClick={closeModal}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>
                 {editingItem
-                  ? t('catalog.edit').replace('{name}', 'Servicio')
-                  : t('catalog.new').replace('{name}', 'Servicio')}
+                  ? t('catalog.edit').replace('{name}', 'servicio')
+                  : t('catalog.new').replace('{name}', 'servicio')}
               </h2>
               <button className={styles.closeButton} onClick={closeModal}>
                 <X size={24} />
@@ -325,13 +323,14 @@ export function CatalogServices() {
 
             <div className={styles.modalBody}>
               <div className={styles.formGroup}>
-                <label className={styles.label}>{t('catalog.service.name')}</label>
+                <label className={styles.label}><span className={styles.required}>*</span> {t('catalog.service.name')}</label>
                 <input
                   type="text"
                   className={styles.input}
                   value={formData.service_name}
                   onChange={(e) => setFormData({ ...formData, service_name: e.target.value })}
-                  disabled={loading}
+                  disabled={disabled}
+                  required
                 />
               </div>
 
@@ -377,12 +376,13 @@ export function CatalogServices() {
               <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
                 {t('catalog.cancel')}
               </button>
-              <button className={styles.saveButton} onClick={handleSave} disabled={loading}>
+              <button type="submit" className={styles.saveButton} disabled={loading}>
                 {loading ? 'Guardando...' : t('catalog.save')}
               </button>
             </div>
           </div>
         </div>
+        </form>
       )}
     </div>
   );
