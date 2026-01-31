@@ -343,8 +343,7 @@ export function Executives() {
         </>
       ) : (
         <form onSubmit={handleSave} className={styles.section}>
-          <div className={styles.formHeader}>            
-            
+          <div className={styles.formHeader}>                        
             <div className={styles.actionBar}>
               <button type='submit' className={styles.actionBarSaveButton} disabled={saving}>
                 <Save size={18} />
