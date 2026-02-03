@@ -5,7 +5,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { quotationService } from '../services/quotationService';
 import { pricingControlService } from '../services/pricingControlService';
 import { PricingControlSupplier } from '../types/pricingControl';
-import styles from './ControlsPricing.module.css';
+import styles from './ControlsPricingForm.module.css';
 import { useAuth } from '../contexts/AuthContext';
 
 interface ControlsPricingFormProps {
@@ -339,14 +339,14 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const medalSrc = getCategoryMedal(requestData.customer_category);
 
   return (
-    <div className={styles.formContainer}>
-      <div className={styles.formHeader}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <div className={styles.formHeaderLeft}>
           <button onClick={onBack} className={styles.backButton} disabled={loading}>
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className={styles.formTitle}>{t('ctrlpricing.title')}</h1>
+            <h1 className={styles.title}>{t('ctrlpricing.title')}</h1>
             <p className={styles.formSubtitle}>
               {controlId ? t('ctrlpricing.editcontrolnumber') : t('ctrlpricing.newcontrolnumber')}
             </p>
@@ -389,7 +389,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         </div>
       </div>
 
-      <div className={styles.formContent}>
+      <div className={styles.container}>
         <div className={styles.topCardsContainer}>
           <div className={styles.clientSection}>
             <div className={styles.clientHeader}>
@@ -838,59 +838,30 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                         <h4 className={styles.merchandiseTitle}>{t('ctrlpricing.commodity')}</h4>
                         {shipment.cargo && shipment.cargo.length > 0 ? (
                           <div className={styles.merchandiseTable}>
-                            <div className={styles.merchandiseHeader}>
-                              <div>{t('ctrlpricing.commodity')}</div>
-                              <div>{t('ctrlpricing.dangerous')}</div>
-                              <div>{t('ctrlpricing.classification')}</div>
-                              <div>{t('ctrlpricing.stackable')}</div>
-                              <div>{t('ctrlpricing.totalVolume')}</div>
-                              <div>{t('ctrlpricing.totalWeight')}</div>
-                            </div>
-                            {shipment.cargo.map((cargo: any, cargoIndex: number) => {
-                              const isPeligrosa = cargo.merchandise_classification?.some((mc: any) => mc._id_merchandise_classification === 5);
-                              const classifications = cargo.merchandise_classification?.map((mc: any) => mc.merchandise_name_classification).join(', ') || 'General';
-
-                              return (
-                                <div key={cargoIndex} className={styles.merchandiseRow}>
-                                  <input
-                                    type="text"
-                                    value={cargo.merchandise_name || ''}
-                                    className={styles.merchandiseInput}
-                                    disabled
-                                  />
-                                  <input
-                                    type="text"
-                                    value={isPeligrosa ? 'Sí' : 'No'}
-                                    className={styles.merchandiseInput}
-                                    disabled
-                                  />
-                                  <input
-                                    type="text"
-                                    value={classifications}
-                                    className={styles.merchandiseInput}
-                                    disabled
-                                  />
-                                  <input
-                                    type="text"
-                                    value={cargo.stowable ? 'Sí' : 'No'}
-                                    className={styles.merchandiseInput}
-                                    disabled
-                                  />
-                                  <input
-                                    type="text"
-                                    value={cargo.volume_total ? `${cargo.volume_total} ${cargo.unit_measurement || ''}` : ''}
-                                    className={styles.merchandiseInput}
-                                    disabled
-                                  />
-                                  <input
-                                    type="text"
-                                    value={cargo.weigth_total ? `${cargo.weigth_total} ${cargo.unit_weight || ''}` : ''}
-                                    className={styles.merchandiseInput}
-                                    disabled
-                                  />
-                                </div>
-                              );
-                            })}
+                            <table className={styles.simpleTable}>
+                              <thead>
+                                <tr>
+                                  <th>{t('ctrlpricing.commodity')}</th>
+                                  <th>{t('ctrlpricing.dangerous')}</th>
+                                  <th>{t('ctrlpricing.classification')}</th>
+                                  <th>{t('ctrlpricing.stackable')}</th>
+                                  <th>{t('ctrlpricing.totalVolume')}</th>
+                                  <th>{t('ctrlpricing.totalWeight')}</th>                            
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {shipment.cargo.map((carg: any) => (
+                                  <tr key={carg.id}>
+                                    <td>{carg.merchandise_name}</td>
+                                    <td>{carg.dangerous ? 'Sí' : 'No'}</td>
+                                    <td>{carg.refrigerated ? 'Refrigerada' : 'General'}</td>
+                                    <td>{carg.stackable ? 'Sí' : 'No'}</td>
+                                    <td>{carg.volume_total ? `${carg.volume_total} ${carg.unit_measurement || ''}` : ''}</td>
+                                    <td>{carg.weigth_total ? `${carg.weigth_total} ${carg.unit_weight   || ''}` : ''}</td>                        
+                                  </tr>
+                                ))}                                
+                              </tbody>
+                            </table>
                           </div>
                         ) : (
                           <p style={{color: '#9ca3af', fontSize: '14px', marginTop: '8px'}}>Sin mercancía registrada</p>
