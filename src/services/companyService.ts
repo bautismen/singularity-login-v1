@@ -84,19 +84,23 @@ export async function updateCompany(id: string, updates: Partial<Company>): Prom
 }
 
 // ===== Eliminar company =====
-
-export async function deleteCompany(id: string): Promise<void> {
-  const response = await fetch(
-    `${SUPABASE_URL}/functions/v1/companies/${id}`,
-    {
+export async function deleteCompany(id: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/companies/${id}`, {
       method: 'DELETE',
       headers,
-    }
-  );
+    });
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || 'Failed to delete company');
+    if (!response.ok) {
+      throw new Error('Failed to delete company');
+    }
+
+    const result = await response.json();
+    return result.success;
+  } catch (error) {
+    console.error('Error deleting company:', error);
+    throw new Error('Failed to delete company');
   }
 }
+
 

@@ -148,40 +148,37 @@ Deno.serve(async (req: Request) => {
     }
 
     
-      if (method === "DELETE" && path.match(/\/companies\/[^/]+$/)) {
-        const id = path.split("/").pop();
+if (method === "DELETE" && path.match(/\/companies\/[^/]+$/)) {
+  const id = path.split("/").pop();
 
-        if (!ObjectId.isValid(id!)) {
-          return new Response(
-            JSON.stringify({ error: "Invalid company id" }),
-            { status: 400, headers: corsHeaders }
-          );
-        }
+  if (!ObjectId.isValid(id!)) {
+    return new Response(
+      JSON.stringify({ error: "Invalid company id" }),
+      { status: 400, headers: corsHeaders }
+    );
+  }
 
-        const result = await collection.updateOne(
-          { _id: new ObjectId(id!), datastate: 1 },
-          {
-            $set: {
-              status: "inactivo",
-              datastate: 0,
-              archivado: true,
-              deleted_at: new Date(),
-            },
-          }
-        );
+  const result = await collection.updateOne(
+    { _id: new ObjectId(id!) },
+    {
+      $set: {
+        status: "inactivo",
+        datastate: 0,
+      },
+    }
+  );
 
-        if (result.matchedCount === 0) {
-          return new Response(
-            JSON.stringify({ error: "Company not found" }),
-            { status: 404, headers: corsHeaders }
-          );
-        }
-
-        return new Response(
-          JSON.stringify({ success: true }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+  return new Response(
+    JSON.stringify({ success: true }),
+    {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+}
 
 
     return new Response(JSON.stringify({ error: "Not found" }), {

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, Search } from 'lucide-react';
+import { Plus, Edit2, Search } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { Company } from '../types/company';
-import { getCompanies, createCompany, updateCompany, deleteCompany } from '../services/companyService';
+import { getCompanies, createCompany, updateCompany } from '../services/companyService';
 import styles from './Companies.module.css';
+import { ArrowLeft } from 'lucide-react'
 
 export default function Companies() {
   const { t } = useLanguage();
@@ -14,7 +15,6 @@ export default function Companies() {
     try {
       const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
       const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
-
       const response = await fetch(`${BASE_URL}/functions/v1/catalog-countries`, {
         headers: {
           'Authorization': `Bearer ${API_KEY}`,
@@ -88,7 +88,7 @@ useEffect(() => {
   });
   setIsFormOpen(true);
 };
-
+/*
 async function handleDeleteCompanies(id: string) {
   try {
     setLoading(true);
@@ -103,7 +103,7 @@ async function handleDeleteCompanies(id: string) {
   }
 }
 
-
+*/
   
   const handleSaveCompany = async () => {
   try {
@@ -196,9 +196,17 @@ if (isFormOpen) {
   return (
     <div className={styles.formContainer}>
       <div className={styles.formHeaderRow}>
-        <h2 className={styles.formTitle}>
-          {editingCompany ? t('comp.TitleEdit') : t('comp.TitleNew')}
-        </h2>
+        <div className={styles.header}>
+          <button
+            onClick={() => setIsFormOpen(false)}
+            className={styles.backButton}
+            title="Volver a lista"
+          >
+            <ArrowLeft size={18} />
+          </button>
+
+          <h2 className={styles.formTitle}>{editingCompany ? t('comp.TitleEdit') : t('comp.TitleNew')}</h2>
+        </div>
 
         <div className={styles.headerActions}>
           <button
@@ -208,13 +216,15 @@ if (isFormOpen) {
           >
             {t('comp.Save')}
           </button>
-
+          {/*
           <button
             onClick={() => setIsFormOpen(false)}
             className={styles.cancelHeaderButton}
           >
             {t('comp.Cancel')}
           </button>
+          */}
+          
         </div>
       </div>
 
@@ -359,19 +369,17 @@ if (isFormOpen) {
             </svg>
           </button>
         </div>
-        {/* Barra de búsqueda tipo Customers */}
-        <div className={styles.searchBar}>
-          <Search size={20} />
-          <input
-            type="text"
-            placeholder={t('comp.search') || 'Buscar empresa...'}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={styles.searchInput}
-          />
-        </div>
       </div>
-
+      <div className={styles.searchBar}>
+        <Search size={20} />
+        <input
+          type="text"
+          placeholder={t('comp.search') || 'Buscar empresa...'}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className={styles.searchInput}
+        />
+      </div>
       {loading ? (
         <p>{t('comp.LoadCompanies')}</p>
       ) : filteredCompanies.length === 0 ? (
@@ -390,11 +398,13 @@ if (isFormOpen) {
                   className={styles.editButton}>
                     <Edit2 size={16} />
                 </button>
+                {/*
                 <button 
                   onClick={() => handleDeleteCompanies(company._id!)}
                   className={styles.deleteButton}>
                     <Trash2 size={16} />
-                  </button>
+                </button>
+                */}
               </div>
             </div>
           ))}
