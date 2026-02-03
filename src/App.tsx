@@ -52,7 +52,7 @@ function App() {
         case 'companies':
           return <Companies />;
         case 'customers':
-          return <Customers />;
+          return <Customers onNavigate={handleNavigate} />;
         case 'suppliers':
           return <Suppliers />;
         case 'catalogs/imo':

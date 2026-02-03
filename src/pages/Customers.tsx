@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Search, Plus, Edit2, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { Customer, Person, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES } from '../types/customer';
-import { getCustomers, createCustomer, updateCustomer, deleteCustomer, getPeople, getCompanies, createPerson, createCompany } from '../services/customerService';
+import { getCustomers, createCustomer, updateCustomer, getPeople, getCompanies } from '../services/customerService';
 import styles from './Customers.module.css';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react'
 
-export default function Customers() {
+export default function Customers({ onNavigate }: { onNavigate: (route: string) => void }) {
   const { t } = useLanguage();
   const {  showError, showWarning } = useNotification();
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -22,8 +24,9 @@ export default function Customers() {
     contacts: false,
   });
   const [showPersonForm, setShowPersonForm] = useState(false);
+
   
-  const [showCompanyForm, setShowCompanyForm] = useState(false);
+  {/* const [showCompanyForm, setShowCompanyForm] = useState(false);*/}
 
   const [formData, setFormData] = useState({
     is_branch: false,
@@ -57,7 +60,8 @@ export default function Customers() {
     archivado: false,
   });
 
-  const [newCompany, setNewCompany] = useState<Partial<Company>>({
+  {/* 
+      const [newCompany, setNewCompany] = useState<Partial<Company>>({
     business_name: '',
     rfc_taxid: '',
     nationality: '',
@@ -67,6 +71,8 @@ export default function Customers() {
     archivado: false,
     datastate: 1,
   });
+  */}
+
 
   useEffect(() => {
     loadCustomers();
@@ -203,7 +209,7 @@ export default function Customers() {
       setLoading(false);
     }
   }
-
+/*
   async function handleDeleteCustomer(id: string) {
     try {
       setLoading(true);
@@ -240,7 +246,8 @@ export default function Customers() {
       showError('Error al crear la persona: ' + (error instanceof Error ? error.message : 'Error desconocido'));
     }
   }
-
+*/
+/*
   async function handleCreateCompany() {
     try {
       const created = await createCompany(newCompany);
@@ -263,6 +270,7 @@ export default function Customers() {
       showError('Error al crear la empresa: ' + (error instanceof Error ? error.message : 'Error desconocido'));
     }
   }
+    */
 
   function addContact() {
     const newContact: Contact = {
@@ -327,15 +335,28 @@ export default function Customers() {
     return (
       <div className={styles.formContainer}>
           <div className={styles.formHeaderRow}>
-            <h2 className={styles.formTitle}>{t('cust.newCustomer')}</h2>
+            <div className={styles.header}>
+              <button
+                onClick={() => setIsFormOpen(false)}
+                className={styles.backButton}
+                title="Volver a lista"
+              >
+                <ArrowLeft size={18} />
+              </button>
+            <h2 className={styles.formTitle}> {t('cust.newCustomer')}</h2>
+            </div>
+            
             <div className={styles.headerActions}>
               <button onClick={handleSaveCustomer} className={styles.saveHeaderButton} disabled={loading}>
                 <Plus size={18} />
                 {t('cust.save')}
               </button>
+              {/*
               <button onClick={() => setIsFormOpen(false)} className={styles.cancelHeaderButton}>
                 {t('cust.cancel')}
               </button>
+              */}
+              
             </div>
           </div>
 
@@ -382,7 +403,7 @@ export default function Customers() {
 
                 <button
                   type="button"
-                  onClick={() => setShowCompanyForm(true)}
+                  onClick={() => onNavigate('companies')}
                   className={styles.fullWidthGreenButton}
                 >
                   <Plus size={16} />
@@ -405,6 +426,7 @@ export default function Customers() {
                     type="checkbox"
                     id="is_national"
                     checked={formData.is_national}
+                    disabled
                     onChange={(e) => setFormData({
                       ...formData,
                       is_national: e.target.checked,
@@ -480,10 +502,17 @@ export default function Customers() {
                           curp: checked ? formData.curp : '',
                         });
                       }}
+                      className={styles.checkbox}
                     />
-                    <label htmlFor="is_persona_fisica" className={styles.checkboxText}>{t('cust.NaturalPerson')}</label>
+                    <label
+                      htmlFor="is_persona_fisica"
+                      className={styles.checkboxText}
+                    >
+                      {t('cust.NaturalPerson')}
+                    </label>
                   </div>
                 )}
+
 
                 {formData.is_national && formData.is_persona_fisica && (
                   <div className={styles.fieldGroup}>
@@ -652,62 +681,6 @@ export default function Customers() {
             )}
           </div>
 
-        {showCompanyForm && ( /* aqui guarda la empresa */
-          <div className={styles.modalOverlay}>
-            <div className={styles.modalContent}>
-              <div className={styles.modalHeader}>
-                <h3>{t('comp.TitleNew')} </h3>
-                <button onClick={() => setShowCompanyForm(false)} className={styles.closeButton}>
-                  <X size={24} />
-                </button>
-              </div>
-              <div className={styles.modalBody}>
-                <div className={styles.formRow}>
-                  <label>
-                    {t('cust.CompanyName')}
-                    <input
-                      type="text"
-                      value={newCompany.business_name}
-                      onChange={(e) => setNewCompany({ ...newCompany, business_name: e.target.value })}
-                    />
-                  </label>
-                </div>
-                <div className={styles.formRow}>
-                  <label>
-                    RFC
-                    <input
-                      type="text"
-                      value={newCompany.rfc_taxid}
-                      onChange={(e) => setNewCompany({ ...newCompany, rfc_taxid: e.target.value })}
-                    />
-                  </label>
-                </div>
-                <div className={styles.formRow}>
-                  <label>
-                    {t('cust.state')}
-                    <select
-                      value={newCompany.state}
-                      onChange={(e) => setNewCompany({ ...newCompany, state: e.target.value })}
-                    >
-                      <option value="">Seleccionar estado</option>
-                      {MEXICAN_STATES.map((state) => (
-                        <option key={state} value={state}>{state}</option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-              </div>
-              <div className={styles.modalActions}>
-                <button onClick={() => setShowCompanyForm(false)} className={styles.cancelButton}>
-                  {t('cust.cancel')}
-                </button>
-                <button onClick={handleCreateCompany} className={styles.saveButton}>
-                  {t('cust.save')}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
@@ -769,12 +742,14 @@ export default function Customers() {
               >
                 <Edit2 size={18} />
               </button>
+              {/*
               <button
                 onClick={() => handleDeleteCustomer(customer._idcustomer!)}
                 className={styles.deleteButton}
               >
                 <Trash2 size={18} />
               </button>
+              */}
             </div>
           </div>
         ))}
