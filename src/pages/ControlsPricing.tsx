@@ -184,10 +184,10 @@ export function ControlsPricing() {
   };
 
   const getDaysElapsed = (date: string) => {
-    if (!date) return null;
+     if (!date) return null;
     const now = new Date();
-    const requestDate = new Date(date);
-    const diffTime = now.getTime() - requestDate.getTime();
+    const deadlineDate = new Date(date);
+    const diffTime = deadlineDate.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
@@ -199,8 +199,8 @@ export function ControlsPricing() {
 
   const getCountries = (services: any[]) => {
     if (!services || services.length === 0) return '';
-    const origin = services[0].origin?.country || 'Canadá';
-    const destination = services[0].destination?.country || 'México';
+    const origin = services[0].shipments[0].origin?.country_name || 'NA';
+    const destination = services[0].shipments[0]?.destination?.country_name || 'NA';
     return `${origin} - ${destination}`;
   };
 
@@ -394,7 +394,7 @@ export function ControlsPricing() {
         ) : filteredRequests.length > 0 ? (
           <div className={styles.cardsGrid}>
             {filteredRequests.map((request) => {
-              const daysElapsed = getDaysElapsed(request.request_date);
+              const daysElapsed = getDaysElapsed(request.deadline_date);
               const medalSrc = getCategoryMedal(request.customer_category);
               const categoryLabel = request.request_type_name;
               const operationType = getOperationType(request.services);
@@ -442,7 +442,7 @@ export function ControlsPricing() {
                       <div className={styles.countries}>{countries}</div>
                       <div className={styles.category}>{categoryLabel}</div>
                       {daysElapsed !== null &&  (                          
-                          <div className={styles.dateInfo}>
+                          <div className={`${styles.dateInfo} ${daysElapsed <= 1 ? styles.dateInfoRed : '' }`}>
                             <Clock size={16} />
                             <span >{daysElapsed}d</span>
                           </div>

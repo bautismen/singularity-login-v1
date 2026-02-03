@@ -358,6 +358,14 @@
   color: #9ca3af;
 }
 
+.dateInfoRed {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #e20202;
+  font-size: 1.2rem;
+}
+
 .executiveRow {
   display: flex;
   justify-content: space-between;
