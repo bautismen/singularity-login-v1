@@ -212,8 +212,7 @@ Deno.serve(async (req: Request) => {
       // Marcar servicios como usados en la solicitud original
       if (services && services.length > 0) {
         const serviceIds = services.map((s: any) => {
-          if (s.idservice !== undefined) return s.idservice;
-          if (s._id !== undefined) return s._id;
+          if (s.idservice !== undefined) return s.idservice;          
           return null;
         }).filter((id: any) => id !== null);
 
