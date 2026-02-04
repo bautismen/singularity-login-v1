@@ -3,7 +3,10 @@
   max-width: 100%;
   margin: 0;
 }
-
+.required {
+  color: #ef4444;
+  margin-right: 0.25rem;
+}
 .header {
   display: flex;
   justify-content: space-between;

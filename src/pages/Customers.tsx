@@ -83,7 +83,7 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
   async function loadCustomers() {
     try {
       setLoading(true);
-      const data = await getCustomers();
+      const data = await getCustomers(true);
       setCustomers(data);
     } catch (error) {
       console.error(t('cust.errorLoad'), error);
@@ -170,14 +170,15 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
   setIsFormOpen(true);
 }
 
-  async function handleSaveCustomer() {
-    try {
-      setLoading(true);
+async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault();
+  try {
+    setLoading(true);
 
       const selectedCompany = companies.find(c => c._id === formData.company_id);
 
       if (!selectedCompany && !formData.person_id) {
-        showWarning(t('cust.errorLoadCompanyPeople'));
+      showWarning(t('cust.errorLoadCompanyPeople'));
         setLoading(false);
         return;
       }
@@ -331,9 +332,12 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
     customer.fiscal_data.taxid.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (isFormOpen) {
-    return (
-      <div className={styles.formContainer}>
+ if (isFormOpen) {
+  return (
+    <form
+      onSubmit={handleSaveCustomer} // <- aquí
+      className={styles.formContainer}
+    >
           <div className={styles.formHeaderRow}>
             <div className={styles.header}>
               <button
@@ -347,16 +351,24 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
             </div>
             
             <div className={styles.headerActions}>
-              <button onClick={handleSaveCustomer} className={styles.saveHeaderButton} disabled={loading}>
+              <button 
+                type="submit" // <-- importante
+                className={styles.saveHeaderButton} 
+                disabled={loading}
+              >
                 <Plus size={18} />
                 {t('cust.save')}
               </button>
+
               {/*
-              <button onClick={() => setIsFormOpen(false)} className={styles.cancelHeaderButton}>
+              <button 
+                type="button"
+                onClick={() => setIsFormOpen(false)} 
+                className={styles.cancelHeaderButton}
+              >
                 {t('cust.cancel')}
               </button>
               */}
-              
             </div>
           </div>
 
@@ -373,7 +385,6 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
                     onChange={(e) => {
                       const selectedCompanyId = e.target.value;
                       const selectedCompany = companies.find(c => c._id === selectedCompanyId);
-
                       if (selectedCompany) {
                         setFormData({
                           ...formData,
@@ -391,7 +402,8 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
                       }
                     }}
                     className={styles.selectInput}
-                    >
+                    required  // <-- Aquí replicas el "required"
+                  >
                     <option value="">{t('cust.selectCompany')}</option>
                     {companies.map((company) => (
                       <option key={company._id} value={company._id}>
@@ -441,11 +453,13 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
 
               <div className={styles.rightColumn}>
                 <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>RFC/TAXID</label>
+                  <label className={styles.fieldLabel}>
+                    RFC/TAXID <span className={styles.required}>*</span>
+                  </label>
                   <input
                     type="text"
                     value={formData.fiscal_data.taxid}
-                    disabled={!!editingCustomer}
+                    disabled
                     onChange={(e) =>
                       setFormData({
                         ...formData,
@@ -516,15 +530,16 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
 
                 {formData.is_national && formData.is_persona_fisica && (
                   <div className={styles.fieldGroup}>
-                    <label className={styles.fieldLabel}>CURP</label>
-                    <input
-                      type="text"
-                      value={formData.curp}
-                      onChange={(e) => setFormData({ ...formData, curp: e.target.value })}
-                      className={styles.textInput}
-                      placeholder="CURP"
-                    />
-                  </div>
+                  <label className={styles.fieldLabel}>CURP</label>
+                  <input
+                    type="text"
+                    value={formData.curp}
+                    onChange={(e) => setFormData({ ...formData, curp: e.target.value })}
+                    className={styles.textInput}
+                    placeholder="CURP"
+                    disabled
+                  />
+                </div>
                 )}
               </div>
             </div>
@@ -680,9 +695,8 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
               </div>
             )}
           </div>
-
-      </div>
-    );
+    </form>
+  );
   }
 
   return (
