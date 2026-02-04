@@ -459,50 +459,6 @@ buttonGroup {
   overflow: hidden; /* ⬅ asegura bordes limpios */
 }
 
-.NewHeaderButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 43px;
-  height: 43px;
-  padding: 0;
-  background: #03A678;
-  color: white;
-  border: none;
-  border-top-left-radius: 0.375rem;
-  border-bottom-left-radius: 0.375rem;
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.NewHeaderButton:hover {
-  background: #03738C;
-}
-
-.RefreshHeaderButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 43px;
-  height: 43px;
-  padding: 0;
-  background: #03A678;
-  color: white;
-  border: none;
-  border-top-right-radius: 0.375rem;
-  border-bottom-right-radius: 0.375rem;
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.RefreshHeaderButton:hover {
-  background: #03738C;
-}
-
 @media (max-width: 768px) {
   .container {
     padding: 1rem;

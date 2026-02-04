@@ -118,6 +118,7 @@ Deno.serve(async (req: Request) => {
         _id: nextId,
         name: body.name,
         description: body.description,
+        category: 0,
         status: body.status !== undefined ? body.status : 1,
         archived: false,
         data_state: 1,

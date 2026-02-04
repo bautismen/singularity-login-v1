@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X, RefreshCw } from 'lucide-react';
+import { Plus, Edit2, X, RefreshCw } from 'lucide-react'; 
 import { useLanguage } from '../contexts/LanguageContext';
 import { SectorOfBusiness } from '../types/catalog';
-import { useNotification } from '../contexts/NotificationContext';
-import { Modal } from '../components/Modal';
 import styles from './Catalogs.module.css';
+import { useNotification } from '../contexts/NotificationContext';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-sector-of-business`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -12,7 +11,7 @@ const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 export function CatalogSectorOfBusiness() {
   const { t } = useLanguage();
   const catalogName = t('nav.catalogs.sectorOfBusiness');
-  const { showSuccess, showError, showWarning } = useNotification();
+  const { showSuccess, showError } = useNotification();
   const [items, setItems] = useState<SectorOfBusiness[]>([]);
   const [filteredItems, setFilteredItems] = useState<SectorOfBusiness[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,20 +25,6 @@ export function CatalogSectorOfBusiness() {
     status: 1,
   });
 
-  const [modalState, setModalState] = useState<{
-      isOpen: boolean;
-      title: string;
-      message: string;
-      type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
-      showCancel?: boolean;
-      onConfirm?: () => void;
-    }>({
-      isOpen: false,
-      title: '',
-      message: '',
-      type: 'info',
-    });
-  
   useEffect(() => {
     loadData();
   }, []);
@@ -60,7 +45,7 @@ export function CatalogSectorOfBusiness() {
       });
 
       if (!response.ok) {
-        throw showError('Error al cargar los datos');
+        showError(t('catalog.errorLoad'));
       }
 
       const data = await response.json();
@@ -128,14 +113,10 @@ export function CatalogSectorOfBusiness() {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.FormEvent) => {
     try {
+      e.preventDefault();
       setLoading(true);
-
-      if (!formData.name.trim()) {
-        showWarning('Ingrese el nombre del sector');
-        return;
-      }
 
       if (editingItem) {
         const response = await fetch(`${API_URL}/${editingItem.id}`, {
@@ -162,7 +143,7 @@ export function CatalogSectorOfBusiness() {
         });
 
         if (!response.ok) {
-          throw showError(t('catalog.errorSave'));
+          showError(t('catalog.errorSave'));
         }
 
       }
@@ -177,52 +158,16 @@ export function CatalogSectorOfBusiness() {
       setLoading(false);
     }
   };
-
-  const handleDelete = async (id_: number, name_: string) => {
-    
-    setModalState({
-      isOpen: true,
-      title: 'Está a punto de eliminar el registro ' + name_,
-      message: '¿Desea continuar con la eliminación?',
-      type: 'confirm',
-      showCancel: true,
-      onConfirm: async () => {
-        
-      try {
-        setLoading(true);
-        const response = await fetch(`${API_URL}/${id_}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          showError(t('catalog.errorDelete'));
-        }
-
-        await loadData();
-        showSuccess(t('catalog.successDelete'));
-      } catch (error) {
-        console.error('Error deleting Sector Of Business:', error);
-        showError(t('catalog.errorDelete'));
-      } finally {
-        setLoading(false);
-      }
-    }
-    });
-  };
   
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>{catalogName}</h1>
         <div className={styles.buttonGroup}> 
-          <button onClick={() => openModal()} disabled={loading} className={styles.NewHeaderButton} >
-            <Plus size={20} /*{t('catalog.new').replace('{name}', catalogName )}*/ /> 
+          <button className={styles.headerButton} onClick={() => openModal()} disabled={loading}>
+            <Plus size={20} /> 
           </button>
-          <button onClick={loadData} className={styles.RefreshHeaderButton}>
+          <button onClick={loadData} className={styles.headerButton}>
             <RefreshCw size={20} />
           </button>
         </div>
@@ -240,7 +185,7 @@ export function CatalogSectorOfBusiness() {
         <div className={styles.filterButtons}>
           <button
             className={`${styles.filterButton} ${filter === 'all' ? styles.active : ''}`} 
-            onClick={() => setFilter('all')} //{loadData}/*
+            onClick={() => setFilter('all')} 
             disabled={loading}
           >
             {t('catalog.filterAll')}
@@ -298,13 +243,6 @@ export function CatalogSectorOfBusiness() {
                       >
                         <Edit2 size={16} />
                       </button>
-                      <button
-                        className={`${styles.iconButton} ${styles.delete}`}
-                        onClick={() => handleDelete(item.id, item.name)}
-                        title={t('catalog.delete')}
-                      >
-                        <Trash2 size={16} />
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -321,83 +259,72 @@ export function CatalogSectorOfBusiness() {
       )}
 
       {showModal && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>
-                {editingItem
-                  ? t('catalog.edit').replace('{name}', catalogName )
-                  : t('catalog.new').replace('{name}', catalogName )}
-              </h2>
-              <button className={styles.closeButton} onClick={closeModal}>
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className={styles.modalBody}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <span className={styles.required}>*</span>
-                  {t('catalog.sectorOfBusiness.name')}
-                </label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={formData.name} 
-                  required
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  disabled = {editingItem ? true : false} 
-                />
+        <form onSubmit={handleSave}> 
+          <div className={styles.modalOverlay} onClick={closeModal}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h2 className={styles.modalTitle}>
+                  {editingItem
+                    ? t('catalog.edit').replace('{name}', catalogName )
+                    : t('catalog.new').replace('{name}', catalogName )}
+                </h2>
+                <button className={styles.closeButton} onClick={closeModal}>
+                  <X size={24} />
+                </button>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>{t('catalog.sectorOfBusiness.description')}</label>
-                <textarea
-                  className={styles.textarea}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  disabled={loading}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div className={styles.modalBody}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>*</span>
+                    {t('catalog.sectorOfBusiness.name')}
+                  </label>
                   <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={formData.status === 1}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
+                    type="text"
+                    className={styles.input}
+                    value={formData.name} 
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    disabled = {editingItem ? true : false} 
+                    required
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>{t('catalog.sectorOfBusiness.description')}</label>
+                  <textarea
+                    className={styles.textarea}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     disabled={loading}
                   />
-                  {' '}{t('catalog.status.active')}
-                </label>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <input
+                      type="checkbox"
+                      className={styles.checkbox}
+                      checked={formData.status === 1}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
+                      disabled={loading}
+                    />
+                    {' '}{t('catalog.status.active')}
+                  </label>
+                </div>
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
+                  {t('catalog.cancel')}
+                </button>
+                <button className={styles.saveButton} type="submit" disabled={loading}>
+                  {loading ? 'Guardando...' : t('catalog.save')}
+                </button>
               </div>
             </div>
-
-            <div className={styles.modalFooter}>
-              <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
-                {t('catalog.cancel')}
-              </button>
-              <button className={styles.saveButton} onClick={handleSave} disabled={loading}>
-                {loading ? 'Guardando...' : t('catalog.save')}
-              </button>
-            </div>
           </div>
-        </div>
+        </form>
       )}
-
-      <Modal
-        isOpen={modalState.isOpen}
-        onClose={() => setModalState({ ...modalState, isOpen: false })}
-        onConfirm={modalState.onConfirm}
-        title={modalState.title}
-        message={modalState.message}
-        type={modalState.type}
-        showCancel={modalState.showCancel}
-        confirmText={t('catalog.continue')}
-        cancelText={t('catalog.cancel')}
-      />
-
     </div>
   );
 }
