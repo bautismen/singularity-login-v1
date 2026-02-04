@@ -127,14 +127,12 @@
   background-color: #1d4ed8;
 }
 
-
 /* ===== Card Grid ===== */
 .cardGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
 }
-
 .companyCard {
   background: #fff;
   border-radius: 12px;
@@ -143,11 +141,19 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  border: 2px solid transparent; 
 }
 
+/* Hover: flotar y iluminar */
 .companyCard:hover {
-  transform: translateY(-2px);
+  transform: translateY(-5px);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: #3CA64C;    
+  background-color: #eff8f3;   
+  cursor: pointer;              
 }
 
 .companyCard h3 {
@@ -162,6 +168,7 @@
   color: #64748b;
   margin: 2px 0;
 }
+
 
 
 

@@ -20,11 +20,13 @@ export async function getCompanies(status: 'activo' | 'inactivo' = 'activo'): Pr
 
 */
 
-export async function getCompanies(): Promise<Company[]> {
-  const url = `${SUPABASE_URL}/functions/v1/companies`;
-  const response = await fetch(url, { headers });
+export async function getCompanies(includeArchived = false): Promise<Company[]> {
+  const url = `${SUPABASE_URL}/functions/v1/companies?includeArchived=${includeArchived}`;
+  console.log(url);
 
+  const response = await fetch(url, { headers });
   if (!response.ok) throw new Error('Error al obtener companies');
+
   return await response.json();
 }
 

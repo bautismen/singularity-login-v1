@@ -105,12 +105,13 @@ async function handleDeleteCompanies(id: string) {
 
 */
   
-  const handleSaveCompany = async () => {
+  const handleSaveCompany = async (e: React.FormEvent) => {
   try {
+    e.preventDefault();
     setLoading(true);
     // Validaciones básicas
     if (!formData.business_name || !formData.rfc_taxid) {
-      showError(t('comp.errorLoadcompanyRFC'));
+      /*showError(t('comp.errorLoadcompanyRFC'));*/
       setLoading(false);
       return;
     }
@@ -191,13 +192,13 @@ async function handleDeleteCompanies(id: string) {
   setIsFormOpen(true);
 }
 
-
 if (isFormOpen) {
   return (
-    <div className={styles.formContainer}>
+    <form onSubmit={handleSaveCompany} className={styles.formContainer}>
       <div className={styles.formHeaderRow}>
         <div className={styles.header}>
           <button
+            type="button" // botón normal para cerrar
             onClick={() => setIsFormOpen(false)}
             className={styles.backButton}
             title="Volver a lista"
@@ -205,26 +206,19 @@ if (isFormOpen) {
             <ArrowLeft size={18} />
           </button>
 
-          <h2 className={styles.formTitle}>{editingCompany ? t('comp.TitleEdit') : t('comp.TitleNew')}</h2>
+          <h2 className={styles.formTitle}>
+            {editingCompany ? t('comp.TitleEdit') : t('comp.TitleNew')}
+          </h2>
         </div>
 
         <div className={styles.headerActions}>
           <button
-            onClick={handleSaveCompany}
+            type="submit" // <-- clave para que required funcione
             className={styles.saveHeaderButton}
             disabled={loading}
           >
             {t('comp.Save')}
           </button>
-          {/*
-          <button
-            onClick={() => setIsFormOpen(false)}
-            className={styles.cancelHeaderButton}
-          >
-            {t('comp.Cancel')}
-          </button>
-          */}
-          
         </div>
       </div>
 
@@ -244,6 +238,7 @@ if (isFormOpen) {
                 }
                 className={styles.textInput}
                 placeholder={t('comp.CompanyName')}
+                required
               />
             </div>
 
@@ -259,7 +254,7 @@ if (isFormOpen) {
                     setFormData({
                       ...formData,
                       nationality: e.target.checked ? 'nacional' : 'extranjero',
-                      country: e.target.checked ? 'MX' : '', // <-- selecciona México automáticamente
+                      country: e.target.checked ? 'MX' : '', 
                     })
                   }
                   className={styles.checkbox}
@@ -269,8 +264,6 @@ if (isFormOpen) {
                 </label>
               </div>
             </div>
-
-
 
             <div className={styles.fieldGroup}>
               <label className={styles.fieldLabel}>RFC / TAXID</label>
@@ -282,6 +275,7 @@ if (isFormOpen) {
                 }
                 className={styles.textInput}
                 placeholder="RFC o TAXID"
+                required
               />
             </div>
           </div>
@@ -292,6 +286,7 @@ if (isFormOpen) {
               <label className={styles.fieldLabel}>{t('comp.state')}</label>
               <input
                 type="text"
+                required
                 value={formData.state}
                 onChange={(e) =>
                   setFormData({ ...formData, state: e.target.value })
@@ -302,14 +297,15 @@ if (isFormOpen) {
             </div>
 
             <div className={styles.fieldGroup}>
-            <label className={styles.fieldLabel}>{t('comp.Country')}</label>
+              <label className={styles.fieldLabel}>{t('comp.Country')}</label>
               <select
                 value={formData.country}
                 onChange={(e) =>
                   setFormData({ ...formData, country: e.target.value })
                 }
                 className={styles.textInput}
-                disabled={formData.nationality === 'nacional'} // deshabilita si es nacional
+                disabled={formData.nationality === 'nacional'}
+                required={formData.nationality === 'extranjero'} // solo required si es extranjero
               >
                 <option value="">{t('comp.SelectCountry')}</option>
                 {countries.map((c) => {
@@ -321,12 +317,10 @@ if (isFormOpen) {
                   );
                 })}
               </select>
-          </div>
-
+            </div>
 
             <div className={styles.fieldGroup}>
               <label className={styles.fieldLabel}>{t('comp.status')}</label>
-
               <div className={styles.checkboxField}>
                 <input
                   type="checkbox"
@@ -340,7 +334,6 @@ if (isFormOpen) {
                   }
                   className={styles.checkbox}
                 />
-
                 <label htmlFor="is_active" className={styles.checkboxText}>
                   {formData.status === 'activo' ? 'Activo' : 'Inactivo'}
                 </label>
@@ -349,10 +342,10 @@ if (isFormOpen) {
           </div>
         </div>
       </div>
-
-    </div>
+    </form>
   );
 }
+
 
 
   return (
