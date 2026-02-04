@@ -114,7 +114,8 @@ export function ControlsPricing() {
     if (searchQuery) {
       filtered = filtered.filter(r =>
         r.reference_request.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.customer_business_name.toLowerCase().includes(searchQuery.toLowerCase())
+        r.customer_business_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.assigned_to.some(assigned => assigned.pricing_control_numbers?.some(controlNumber => controlNumber.control.toLowerCase().includes(searchQuery.toLowerCase())))
       );
     }
 
