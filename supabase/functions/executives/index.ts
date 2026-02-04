@@ -122,6 +122,7 @@ Deno.serve(async (req: Request) => {
         archivado: false,
         created_at: new Date(),
         updated_at: new Date(),
+      _iduser: new ObjectId(body._iduser),
       };
 
       const result = await collection.insertOne(newExecutive);
@@ -145,6 +146,7 @@ Deno.serve(async (req: Request) => {
     if (method === "PUT" && path.match(/\/executives\/[^/]+$/)) {
       const id = path.split("/").pop();
       const body = await req.json();
+      body._iduser = new ObjectId(body._iduser);
 
       const updateData = {
         ...body,

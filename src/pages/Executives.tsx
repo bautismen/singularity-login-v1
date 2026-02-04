@@ -11,6 +11,9 @@ import {
 } from '../services/executiveService';
 import styles from './Executives.module.css';
 
+const USERS_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/users`;
+const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
 export function Executives() {
   const { t } = useLanguage();
   const [executives, setExecutives] = useState<Executive[]>([]);
@@ -23,6 +26,8 @@ export function Executives() {
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('active');
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
+  const [users, setUsers] = useState<any[]>([]);
+
   const [formData, setFormData] = useState<ExecutiveFormData>({
     nombre: '',
     apellido_paterno: '',
@@ -32,6 +37,7 @@ export function Executives() {
     email: '',
     departamento: '',
     activo: true,
+    _iduser: '',
   });
 
   useEffect(() => {
@@ -39,6 +45,7 @@ export function Executives() {
   }, []);
 
   useEffect(() => {
+    loadUsers();
     filterExecutives();
   }, [executives, searchTerm, filter]);
 
@@ -99,7 +106,8 @@ export function Executives() {
       !formData.numero_nomina ||
       !formData.fecha_ingreso ||
       !formData.email ||
-      !formData.departamento
+      !formData.departamento ||
+      !formData._iduser
     ) {
       showNotification('error', t('exec.requiredFields'));
       return false;
@@ -157,6 +165,7 @@ export function Executives() {
       email: executive.email,
       departamento: executive.departamento,
       activo: executive.activo,
+      _iduser: executive._iduser || '',
     });
     setEditingId(executive._id || null);
     setShowForm(true);
@@ -186,6 +195,7 @@ export function Executives() {
       email: '',
       departamento: '',
       activo: true,
+      _iduser: '',
     });
     setEditingId(null);
   };
@@ -198,6 +208,27 @@ export function Executives() {
   const handleNewExecutive = () => {
     resetForm();
     setShowForm(true);
+  };
+
+  const loadUsers = async () => {
+    try {
+      const response = await fetch(USERS_API_URL, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al cargar ejecutivos');
+      }
+
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
   };
 
   if (loading) {
@@ -453,6 +484,24 @@ export function Executives() {
                 {DEPARTMENTS.map((dept) => (
                   <option key={dept} value={dept}>
                     {dept}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
+                <span className={styles.required}>*</span>
+                {t('exec.user')}
+              </label>
+              <select
+                value={formData._iduser}
+                onChange={(e) => setFormData({ ...formData, _iduser: e.target.value })}
+                className={styles.select}
+                required>
+                <option value="">Seleccionar...</option>
+                {users.map((user) => (
+                  <option key={user._id} value={user._id}>
+                    {user.name}
                   </option>
                 ))}
               </select>
