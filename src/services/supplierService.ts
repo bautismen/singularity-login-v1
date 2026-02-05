@@ -67,7 +67,7 @@ export async function createSupplier(supplier: Partial<Supplier>): Promise<Suppl
 
 export async function updateSupplier(id: string, updates: Partial<Supplier>): Promise<Supplier | null> {
   try {
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/Suppliers/${id}`, {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/suppliers/${id}`, {
       method: 'PUT',
       headers,
       body: JSON.stringify(updates),

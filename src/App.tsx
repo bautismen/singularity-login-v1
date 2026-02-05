@@ -54,7 +54,7 @@ function App() {
         case 'customers':
           return <Customers onNavigate={handleNavigate} />;
         case 'suppliers':
-          return <Suppliers />;
+          return <Suppliers onNavigate={handleNavigate}/>;
         case 'catalogs/imo':
           return <CatalogIMO />;
         case 'catalogs/incoterms':

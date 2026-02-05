@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2, ChevronDown, ChevronUp, X, RefreshCw } from 'lucide-react';
+import { Search, Plus, Edit2, ChevronDown, ChevronUp, X, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Supplier, Person, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES, SectorOfBusiness } from '../types/supplier';
-import { getSuppliers, createSupplier, updateSupplier, deleteSupplier, getPeople, getCompanies, getSector, createPerson, createCompany } from '../services/supplierService';
 import { useNotification } from '../contexts/NotificationContext';
+import { Supplier, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES, SectorOfBusiness } from '../types/supplier';
+import { getSuppliers, createSupplier, updateSupplier, deleteSupplier, getCompanies, getSector, createCompany } from '../services/supplierService';
 import styles from './Suppliers.module.css';
 
-export default function Suppliers() {
+export default function Suppliers({ onNavigate }: { onNavigate: (route: string) => void }) {
   const { t } = useLanguage();
-  const { showSuccess, showError, showWarning } = useNotification();
+  const { showSuccess, showError } = useNotification();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   //const [people, setPeople] = useState<Person[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -23,7 +23,7 @@ export default function Suppliers() {
     contacts: false,
   });
   //const [showPersonForm, setShowPersonForm] = useState(false);
-  const [showCompanyForm, setShowCompanyForm] = useState(false);
+  //const [showCompanyForm, setShowCompanyForm] = useState(false);
 
   const [formData, setFormData] = useState({
     is_persona_fisica: false,
@@ -55,16 +55,16 @@ export default function Suppliers() {
   //   archivado: false,
   // });
 
-  const [newCompany, setNewCompany] = useState<Partial<Company>>({
-    business_name: '',
-    rfc_taxid: '',
-    nationality: 'nacional',
-    country: 'MX',
-    state: '',
-    status: 'activo',
-    archivado: false,
-    datastate: 1,
-  });
+  // const [newCompany, setNewCompany] = useState<Partial<Company>>({
+  //   business_name: '',
+  //   rfc_taxid: '',
+  //   nationality: 'nacional',
+  //   country: 'MX',
+  //   state: '',
+  //   status: 'activo',
+  //   archivado: false,
+  //   datastate: 1,
+  // });
 
   useEffect(() => {
     loadSuppliers();
@@ -105,7 +105,7 @@ export default function Suppliers() {
 
   async function loadSector() {
     try {
-      const data = await getSector();
+      const data = (await getSector());
       setSector(data);
     } catch (error) {
       console.error('Error loading sector:', error);
@@ -153,17 +153,18 @@ export default function Suppliers() {
     setIsFormOpen(true);
   }
 
-  async function handleSaveSupplier() {
+  async function handleSaveSupplier(e: React.FormEvent) {
     try {
+      e.preventDefault();
       setLoading(true);
 
       const selectedCompany = companies.find(c => c._id === formData.company_id);
 
-      if (!selectedCompany) {
-        showWarning('Debe seleccionar una empresa');
-        setLoading(false);
-        return;
-      }
+      // if (!selectedCompany) {
+      //   showWarning('Debe seleccionar una empresa');
+      //   setLoading(false);
+      //   return;
+      // }
 
       const dataToSave = {
         ...formData,
@@ -193,19 +194,19 @@ export default function Suppliers() {
     }
   }
 
-  async function handleDeleteSupplier(id: string) {
-    try {
-      setLoading(true);
-      await deleteSupplier(id);
-      await loadSuppliers();
-      showSuccess('Cliente eliminado exitosamente');
-    } catch (error) {
-      console.error('Error deleting supplier:', error);
-      showError(t('supp.errorDelete'));
-    } finally {
-      setLoading(false);
-    }
-  }
+  // async function handleDeleteSupplier(id: string) {
+  //   try {
+  //     setLoading(true);
+  //     await deleteSupplier(id);
+  //     await loadSuppliers();
+  //     showSuccess('Cliente eliminado exitosamente');
+  //   } catch (error) {
+  //     console.error('Error deleting supplier:', error);
+  //     showError(t('supp.errorDelete'));
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }
 
   // async function handleCreatePerson() {
   //   try {
@@ -230,28 +231,28 @@ export default function Suppliers() {
   //   }
   // }
 
-  async function handleCreateCompany() {
-    try {
-      const created = await createCompany(newCompany);
-      console.log('Company created:', created);
-      setCompanies([...companies, created]);
-      setFormData({ ...formData, company_id: created._id! });
-      setShowCompanyForm(false);
-      setNewCompany({
-        business_name: '',
-        rfc_taxid: '',
-        nationality: 'nacional',
-        country: 'MX',
-        state: '',
-        status: 'activo',
-        archivado: false,
-        datastate: 1,
-      });
-    } catch (error) {
-      console.error('Error creating company:', error);
-      showError('Error al crear la empresa: ' + (error instanceof Error ? error.message : 'Error desconocido'));
-    }
-  }
+  // async function handleCreateCompany() {
+  //   try {
+  //     const created = await createCompany(newCompany);
+  //     console.log('Company created:', created);
+  //     setCompanies([...companies, created]);
+  //     setFormData({ ...formData, company_id: created._id! });
+  //     setShowCompanyForm(false);
+  //     setNewCompany({
+  //       business_name: '',
+  //       rfc_taxid: '',
+  //       nationality: 'nacional',
+  //       country: 'MX',
+  //       state: '',
+  //       status: 'activo',
+  //       archivado: false,
+  //       datastate: 1,
+  //     });
+  //   } catch (error) {
+  //     console.error('Error creating company:', error);
+  //     showError('Error al crear la empresa: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+  //   }
+  // }
 
   function addContact() {
     const newContact: Contact = {
@@ -314,22 +315,28 @@ export default function Suppliers() {
 
   if (isFormOpen) {
     return (
-      <div className={styles.formContainer}>
-          <div className={styles.formHeaderRow}>
+      <form onSubmit={handleSaveSupplier} className={styles.formContainer}>
+            
+        <div className={styles.formHeaderRow}>
+          <div className={styles.header}>
+            <button
+              onClick={() => setIsFormOpen(false)} className={styles.backButton} >
+              <ArrowLeft size={18} />
+            </button>
+            
             <h2 className={styles.formTitle}>{t('supp.newSupplier')}</h2>
-            <div className={styles.headerActions}>
-              <button onClick={handleSaveSupplier} className={styles.saveHeaderButton} disabled={loading}>
-                <Plus size={18} />
-                {t('supp.save')}
-              </button>
-              <button onClick={() => setIsFormOpen(false)} className={styles.cancelHeaderButton}>
-                {t('supp.cancel')}
-              </button>
-            </div>
           </div>
+              
+          <div className={styles.headerActions}>
+            <button type="submit" className={styles.saveHeaderButton} disabled={loading}>
+              <Plus size={18} />
+              {t('supp.save')}
+            </button>
+          </div>
+        </div>
 
-          <div className={styles.sectionCard}>
-            <div className={styles.sectionTitle}>{t('supp.generalData')}</div>
+        <div className={styles.sectionCard}>
+          <div className={styles.sectionTitle}>{t('supp.generalData')}</div>
 
             <div className={styles.twoColumnGrid}>
               <div className={styles.leftColumn}>
@@ -342,7 +349,7 @@ export default function Suppliers() {
                     onChange={(e) => {
                       const selectedCompanyId = e.target.value;
                       const selectedCompany = companies.find(c => c._id === selectedCompanyId);
-                      
+                        
                       if (selectedCompany) {
                         // Cargar automáticamente los datos de la empresa seleccionada
                         setFormData({
@@ -372,7 +379,8 @@ export default function Suppliers() {
                       }
                     }}
                     className={styles.selectInput}
-                  >
+                    required
+                    >
                     <option value="">{t('supp.selectCompany')}</option>
                     {companies.map((company) => (
                       <option key={company._id} value={company._id}>
@@ -384,7 +392,7 @@ export default function Suppliers() {
 
                 <button
                   type="button"
-                  onClick={() => setShowCompanyForm(true)}
+                  onClick={() => onNavigate('companies')}
                   className={styles.fullWidthGreenButton}
                 >
                   <Plus size={16} />
@@ -403,16 +411,20 @@ export default function Suppliers() {
                       curp: ''
                     })}
                     className={styles.checkbox}
+                    disabled
                   />
                   <label htmlFor="is_national" className={styles.checkboxText}>{t('supp.IsNational')}</label>
                 </div>
 
                 <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>{t('supp.selectSector')}</label>
+                  <label className={styles.fieldLabel}>
+                    <span className={styles.required}>*</span>{t('supp.selectSector')}
+                    </label>
                   <select
                     value={formData.serctor_id}
                     onChange={(e) => setFormData({ ...formData, serctor_id: e.target.value })}
                     className={styles.selectInput}
+                    required
                   >
                     <option value="">{t('supp.selectSector')}</option>
                     {sector.map((sector) => (
@@ -427,7 +439,8 @@ export default function Suppliers() {
 
               <div className={styles.rightColumn}>
                 <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>RFC/TAXID</label>
+                  <label className={styles.fieldLabel}>
+                    <span className={styles.required}>*</span>RFC/TAXID</label>
                   <input
                     type="text"
                     value={formData.fiscal_data.rfc_taxid}
@@ -442,7 +455,7 @@ export default function Suppliers() {
                 </div>
 
                 <div className={styles.statusField}>
-                  <span className={styles.statusText}>Activo</span>
+                  <span className={styles.statusText}>{t('supp.activo')}</span>
                   <label className={styles.switch}>
                     <input
                       type="checkbox"
@@ -469,13 +482,16 @@ export default function Suppliers() {
                       })}
                       className={styles.checkbox}
                     />
-                    <label htmlFor="is_persona_fisica" className={styles.checkboxText}>{t('supp.IsPersonFisica')}</label>
+                    <label htmlFor="is_persona_fisica" className={styles.checkboxText}>
+                      {t('supp.IsPersonFisica')}
+                    </label>
                   </div>
                 )}
 
                 {formData.is_national && formData.is_persona_fisica && (
                   <div className={styles.fieldGroup}>
-                    <label className={styles.fieldLabel}>CURP</label>
+                    <label className={styles.fieldLabel}>
+                      <span className={styles.required}></span>CURP</label>
                     <input
                       type="text"
                       value={formData.curp}
@@ -639,64 +655,7 @@ export default function Suppliers() {
               </div>
             )}
           </div>
-
-        {showCompanyForm && (
-          <div className={styles.modalOverlay}>
-            <div className={styles.modalContent}>
-              <div className={styles.modalHeader}>
-                <h3>Nueva Empresa</h3>
-                <button onClick={() => setShowCompanyForm(false)} className={styles.closeButton}>
-                  <X size={24} />
-                </button>
-              </div>
-              <div className={styles.modalBody}>
-                <div className={styles.formRow}>
-                  <label>
-                    Razón Social
-                    <input
-                      type="text"
-                      value={newCompany.business_name}
-                      onChange={(e) => setNewCompany({ ...newCompany, business_name: e.target.value })}
-                    />
-                  </label>
-                </div>
-                <div className={styles.formRow}>
-                  <label>
-                    RFC
-                    <input
-                      type="text"
-                      value={newCompany.rfc_taxid}
-                      onChange={(e) => setNewCompany({ ...newCompany, rfc_taxid: e.target.value })}
-                    />
-                  </label>
-                </div>
-                <div className={styles.formRow}>
-                  <label>
-                    Estado
-                    <select
-                      value={newCompany.state}
-                      onChange={(e) => setNewCompany({ ...newCompany, state: e.target.value })}
-                    >
-                      <option value="">Seleccionar estado</option>
-                      {MEXICAN_STATES.map((state) => (
-                        <option key={state} value={state}>{state}</option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-              </div>
-              <div className={styles.modalActions}>
-                <button onClick={() => setShowCompanyForm(false)} className={styles.cancelButton}>
-                  Cancelar
-                </button>
-                <button onClick={handleCreateCompany} className={styles.saveButton}>
-                  Guardar
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      </form>
     );
   }
 
@@ -709,7 +668,9 @@ export default function Suppliers() {
             <Plus size={22} />
           </button>
           <button onClick={loadSuppliers} className={styles.iconButton}>
-            <RefreshCw size={22} />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
           </button>
         </div>
       </div>
@@ -745,12 +706,7 @@ export default function Suppliers() {
               >
                 <Edit2 size={18} />
               </button>
-              <button
-                onClick={() => handleDeleteSupplier(supplier._id!)}
-                className={styles.deleteButton}
-              >
-                <Trash2 size={18} />
-              </button>
+
             </div>
           </div>
         ))}
