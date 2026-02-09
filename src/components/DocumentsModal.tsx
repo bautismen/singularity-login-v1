@@ -90,7 +90,7 @@ export function DocumentsModal({ isOpen, onClose, requestData }: DocumentsModalP
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             >
-              <Upload size={48} className={styles.uploadIcon} />
+              <Upload size={40} className={styles.uploadIcon} />
               <p className={styles.dropZoneText}>Arrastre sus documentos aquí</p>
               <p className={styles.dropZoneSubtext}>Solo archivos PDF</p>
               <input
@@ -103,26 +103,28 @@ export function DocumentsModal({ isOpen, onClose, requestData }: DocumentsModalP
               />
             </div>
 
-            <div className={styles.documentTypeSection}>
-              <label className={styles.documentTypeLabel}>
-                <span className={styles.required}>*</span> Tipo de documento
-              </label>
-              <select
-                className={styles.documentTypeSelect}
-                value={documentType}
-                onChange={(e) => setDocumentType(e.target.value)}
-              >
-                <option value="tarifa-final">Tarifa final</option>
-                <option value="cotizacion">Cotización</option>
-                <option value="contrato">Contrato</option>
-                <option value="otro">Otro</option>
-              </select>
-            </div>
+            <div className={styles.rightSection}>
+              <div className={styles.documentTypeSection}>
+                <label className={styles.documentTypeLabel}>
+                  <span className={styles.required}>*</span> Tipo de documento
+                </label>
+                <select
+                  className={styles.documentTypeSelect}
+                  value={documentType}
+                  onChange={(e) => setDocumentType(e.target.value)}
+                >
+                  <option value="tarifa-final">Tarifa final</option>
+                  <option value="cotizacion">Cotización</option>
+                  <option value="contrato">Contrato</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
 
-            <button className={styles.addDocumentButton}>
-              <span className={styles.plusIcon}>+</span>
-              Agregar documentos
-            </button>
+              <button className={styles.addDocumentButton}>
+                <span className={styles.plusIcon}>+</span>
+                Agregar documentos
+              </button>
+            </div>
           </div>
 
           <div className={styles.documentsListSection}>
