@@ -44,7 +44,7 @@
 
 .backButton {
   padding: 0.75rem 1rem;
-  background-color: #03A678;
+  background-color: #038C7F;
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -57,11 +57,98 @@
 }
 
 .backButton:hover {
-  background-color: #03738C;
+  background-color: #037F8C;
 }
 
 .dark .backButton {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.headerButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 44px;
+  padding: 0;
+  background: #038C7F;
+  color: white;
+  border: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.25); /* separador */
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.headerButton:last-child {
+  border-right: none; /* ⬅ elimina el borde final */
+}
+
+.headerButton:hover {
+  background: #037F8C;
+}
+
+.headerButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.headerButtonRefresh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: #038C7F;
+  color: white;
+  border: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.25); /* separador */
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.headerButtonRefresh:last-child {
+  border-right: none; /* ⬅ elimina el borde final */
+}
+
+.headerButtonRefresh:hover {
+  background: #037F8C;
+}
+
+.headerButtonRefresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.headerButtonAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90px;
+  height: 44px;
+  padding: 0;
+  background: #038C7F;
+  color: white;
+  border: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.25); /* separador */
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.headerButtonAction:last-child {
+  border-right: none; /* ⬅ elimina el borde final */
+}
+
+.headerButtonAction:hover {
+  background: #037F8C;
+}
+
+.headerButtonAction:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .actionBar {
@@ -71,7 +158,7 @@
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   gap: 0;
-  background-color: #03A678;
+  background-color: #038C7F;
 }
 
 .dark .actionBar {
@@ -80,7 +167,7 @@
 
 .actionBarSaveButton {
   padding: 0.75rem 1.25rem;
-  background-color: #03A678;
+  background-color: #038C7F;
   color: white;
   border: none;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
@@ -96,7 +183,7 @@
 }
 
 .actionBarSaveButton:hover {
-  background-color: #03738C;
+  background-color: #037F8C;
 }
 
 .actionBarSaveButton:disabled {
@@ -106,7 +193,7 @@
 
 .actionBarResetButton {
   padding: 0.75rem 1rem;
-  background-color: #03A678;
+  background-color: #038C7F;
   color: white;
   border: none;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
@@ -119,7 +206,7 @@
 }
 
 .actionBarResetButton:hover {
-  background-color: #03738C;
+  background-color: #037F8C;
 }
 
 .actionBarDeleteButton {
@@ -142,7 +229,7 @@
 
 .actionBarDropdownButton {
   padding: 0.75rem 1.25rem;
-  background-color: #03A678;
+  background-color: #038C7F;
   color: white;
   border: none;
   font-weight: 500;
@@ -157,7 +244,7 @@
 }
 
 .actionBarDropdownButton:hover {
-  background-color: #03738C;
+  background-color: #037F8C;
 }
 
 .section {
@@ -236,7 +323,7 @@
 
 .input:focus {
   outline: none;
-  border-color: #14b8a6;
+  border-color: #037F8C;
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
@@ -247,7 +334,7 @@
 }
 
 .dark .input:focus {
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .select {
@@ -263,7 +350,7 @@
 
 .select:focus {
   outline: none;
-  border-color: #14b8a6;
+  border-color: #037F8C;
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
@@ -340,8 +427,8 @@
 }
 
 .checkbox:checked {
-  background-color: #14b8a6;
-  border-color: #14b8a6;
+  background-color: #037F8C;
+  border-color: #037F8C;
 }
 
 .dark .checkbox {
@@ -350,8 +437,8 @@
 }
 
 .dark .checkbox:checked {
-  background-color: #14b8a6;
-  border-color: #14b8a6;
+  background-color: #037F8C;
+  border-color: #037F8C;
 }
 
 .toggle {
@@ -365,7 +452,7 @@
 }
 
 .toggle.active {
-  background-color: #14b8a6;
+  background-color: #037F8C;
 }
 
 .toggleThumb {
@@ -408,7 +495,7 @@
 .serviceNumber {
   width: 2.5rem;
   height: 2.5rem;
-  background-color: #14b8a6;
+  background-color: #037F8C;
   color: white;
   border-radius: 9999px;
   display: flex;
@@ -465,8 +552,8 @@
 }
 
 .iconButton.primary {
-  background-color: #14b8a6;
-  border-color: #14b8a6;
+  background-color: #037F8C;
+  border-color: #037F8C;
   color: white;
 }
 
@@ -496,13 +583,13 @@
 }
 
 .serviceChip:hover {
-  border-color: #14b8a6;
+  border-color: #037F8C;
   background-color: #f0fdfa;
 }
 
 .serviceChip.selected {
-  background-color: #14b8a6;
-  border-color: #14b8a6;
+  background-color: #037F8C;
+  border-color: #037F8C;
   color: white;
 }
 
@@ -513,25 +600,25 @@
 }
 
 .dark .serviceChip:hover {
-  border-color: #14b8a6;
+  border-color: #037F8C;
   background-color: #0f766e;
 }
 
 .dark .serviceChip.selected {
-  background-color: #14b8a6;
-  border-color: #14b8a6;
+  background-color: #037F8C;
+  border-color: #037F8C;
 }
 
 .serviceChipActive {
-  background: #14b8a6;
+  background: #037F8C;
   color: white;
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .dark .serviceChipActive {
-  background: #14b8a6;
+  background: #037F8C;
   color: white;
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .textarea {
@@ -548,7 +635,7 @@
 
 .textarea:focus {
   outline: none;
-  border-color: #14b8a6;
+  border-color: #037F8C;
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
@@ -633,7 +720,7 @@
 
 .merchandiseInput:focus {
   outline: none;
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .merchandiseSelect {
@@ -682,8 +769,8 @@
   gap: 0.5rem;
   padding: 0.75rem;
   background: transparent;
-  color: #14b8a6;
-  border: 2px dashed #14b8a6;
+  color: #037F8C;
+  border: 2px dashed #037F8C;
   border-radius: 0.5rem;
   cursor: pointer;
   font-size: 0.875rem;
@@ -715,7 +802,7 @@
   background-color: white;
   border: 2px dashed #d1d5db;
   border-radius: 0.75rem;
-  color: #14b8a6;
+  color: #037F8C;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -727,7 +814,7 @@
 
 .addServiceButton:hover {
   background-color: #f0fdfa;
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .dark .addServiceButton {
@@ -737,7 +824,7 @@
 
 .dark .addServiceButton:hover {
   background-color: #1f2937;
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .subsectionTitle {
@@ -782,7 +869,7 @@
 }
 
 .searchInputSmall:focus {
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .dark .searchInputSmall {
@@ -884,8 +971,8 @@
 
 .toolbarButton:hover {
   background: #f9fafb;
-  color: #14b8a6;
-  border-color: #14b8a6;
+  color: #037F8C;
+  border-color: #037F8C;
 }
 
 .dark .toolbarButton {
@@ -896,8 +983,8 @@
 
 .dark .toolbarButton:hover {
   background: #4b5563;
-  color: #14b8a6;
-  border-color: #14b8a6;
+  color: #037F8C;
+  border-color: #037F8C;
 }
 
 .tableActions {
@@ -1084,7 +1171,7 @@
 
 .saveModalButton {
   padding: 0.75rem 2rem;
-  background: #14b8a6;
+  background: #037F8C;
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -1103,7 +1190,7 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 0.375rem;
-  color: #14b8a6;
+  color: #037F8C;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -1113,7 +1200,7 @@
 
 .addPackageButton:hover {
   background: #f0fdfa;
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .dark .addPackageButton {
@@ -1123,7 +1210,7 @@
 
 .dark .addPackageButton:hover {
   background: #4b5563;
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .toggleSwitch {
@@ -1266,9 +1353,9 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background: transparent;
-  border: 2px dashed #14b8a6;
+  border: 2px dashed #037F8C;
   border-radius: 0.5rem;
-  color: #14b8a6;
+  color: #037F8C;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -1285,7 +1372,7 @@
 
 .dark .addItemButton {
   background: transparent;
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .dark .addItemButton:hover {
@@ -1352,9 +1439,9 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background: transparent;
-  border: 2px dashed #14b8a6;
+  border: 2px dashed #037F8C;
   border-radius: 0.5rem;
-  color: #14b8a6;
+  color: #037F8C;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -1371,7 +1458,7 @@
 
 .dark .addExecutiveButton {
   background: transparent;
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .dark .addExecutiveButton:hover {
@@ -1466,7 +1553,7 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 0.375rem;
-  color: #14b8a6;
+  color: #037F8C;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -1475,7 +1562,7 @@
 
 .addPackageButtonIcon:hover {
   background: #f0fdfa;
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .dark .addPackageButtonIcon {
@@ -1485,7 +1572,7 @@
 
 .dark .addPackageButtonIcon:hover {
   background: rgba(20, 184, 166, 0.1);
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .modalFooterInfo {
@@ -1650,7 +1737,7 @@
 
 .executiveSelectionItem:hover {
   background: #f9fafb;
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .dark .executiveSelectionItem {
@@ -1660,7 +1747,7 @@
 
 .dark .executiveSelectionItem:hover {
   background: #4b5563;
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .executiveSelectionItem span {
@@ -1673,7 +1760,7 @@
 }
 
 .addIcon {
-  color: #14b8a6;
+  color: #037F8C;
   flex-shrink: 0;
 }
 
@@ -1690,65 +1777,17 @@
 
 .activeUnitLabel {
   font-weight: 600;
-  color: #14b8a6;
+  color: #037F8C;
 }
 
 .dark .activeUnitLabel {
-  color: #14b8a6;
+  color: #037F8C;
 }
 
 .buttonGroup {
-  display: flex;
-  border-radius: 0.5rem;  
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.buttonGroupItem {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1rem;
-  background: #03A678;
-  color: white;
-  border: none;
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.95rem;
-  min-width: 48px;
-}
-
-.buttonGroupItem:hover:not(:disabled) {
-  background: #03738C;
-}
-
-.buttonGroupItem:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.buttonGroupItemLast {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  background: #03A678;
-  color: white;
-  border: none;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.95rem;
-}
-
-.buttonGroupItemLast:hover:not(:disabled) {
-  background: #03738C;
-}
-
-.buttonGroupItemLast:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  display: inline-flex;
+  border-radius: 0.375rem;
+  overflow: hidden; /* ⬅ asegura bordes limpios */
 }
 
 .actionsMenuContainer {
@@ -1792,7 +1831,7 @@
 
 .dropdownItem:hover {
   background: #f3f4f6;
-  color: #14b8a6;
+  color: #037F8C;
 }
 
 .dark .dropdownItem {
@@ -1802,7 +1841,7 @@
 
 .dark .dropdownItem:hover {
   background: #334155;
-  color: #14b8a6;
+  color: #037F8C;
 }
 
 .topCardsContainer {
@@ -1931,7 +1970,7 @@
 }
 
 .switch input:checked + .switchSlider {
-  background-color: #14b8a6;
+  background-color: #037F8C;
 }
 
 .switch input:checked + .switchSlider:before {
@@ -1948,7 +1987,7 @@
 }
 
 .dark .switch input:checked + .switchSlider {
-  background-color: #14b8a6;
+  background-color: #037F8C;
 }
 
 .switchLabel {
@@ -1986,7 +2025,7 @@
 
 .controlBadge {
   padding: 0.25rem 0.75rem;
-  background: #14b8a6;
+  background: #037F8C;
   color: white;
   border-radius: 0.375rem;
   font-size: 0.875rem;
@@ -2085,7 +2124,7 @@
 
 .btnQuote {
   padding: 0.625rem 1.25rem;
-  background: #14b8a6;
+  background: #038C7F;
   color: white;
   border: none;
   border-radius: 0.375rem;
@@ -2096,7 +2135,7 @@
 }
 
 .btnQuote:hover {
-  background: #0d9488;
+  background: #037F8C;
 }
 
 .suppliersSection {
@@ -2184,8 +2223,8 @@
   gap: 0.5rem;
   padding: 0.75rem;
   background: transparent;
-  color: #14b8a6;
-  border: 2px dashed #14b8a6;
+  color: #038C7F;
+  border: 2px dashed #038C7F;
   border-radius: 0.5rem;
   cursor: pointer;
   font-size: 0.875rem;
@@ -2237,7 +2276,7 @@
 .formInput:focus,
 .formSelect:focus {
   outline: none;
-  border-color: #14b8a6;
+  border-color: #037F8C;
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
@@ -2261,7 +2300,7 @@
 
 .formTextarea:focus {
   outline: none;
-  border-color: #14b8a6;
+  border-color: #037F8C;
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
@@ -2295,7 +2334,7 @@
 .serviceNumber {
   width: 36px;
   height: 36px;
-  background: #14b8a6;
+  background: #037F8C;
   color: white;
   border-radius: 50%;
   display: flex;
@@ -2371,9 +2410,9 @@
 }
 
 .serviceChipActive {
-  background: #14b8a6;
+  background: #037F8C;
   color: white;
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .dark .serviceChip {
@@ -2383,9 +2422,9 @@
 }
 
 .dark .serviceChipActive {
-  background: #14b8a6;
+  background: #037F8C;
   color: white;
-  border-color: #14b8a6;
+  border-color: #037F8C;
 }
 
 .frequencySection {

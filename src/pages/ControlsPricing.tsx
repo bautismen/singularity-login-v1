@@ -70,13 +70,12 @@ export function ControlsPricing() {
       const excludedEmails = [
         "maria.cervantes@kromlogistica.com",
         "estela.guerrero@kromlogistica.com",
-        "magali.tamayo@kromlogistica.com",
-        "erick.barrientos@kromlogistica.com"
+        "magali.tamayo@kromlogistica.com"        
       ];
 
       if (!excludedEmails.includes(user.email)) {
         filtered = filtered.filter(r =>
-          r.assigned_to?.some(a => a.complete_name === user.name)
+          r.assigned_to?.some(a => a._iduser === user._id)
         );
       }
       setRequests(filtered);
@@ -364,7 +363,7 @@ export function ControlsPricing() {
           <h1 className={styles.title}>{t('ctrlpricing.title')}</h1>
           <div className={styles.buttonGroup}>
             <button
-              className={styles.buttonGroupItem}
+              className={styles.headerButton}
               onClick={loadRequests}
               disabled={loading}
               title={t('ctrlpricing.refresh')}
@@ -372,14 +371,14 @@ export function ControlsPricing() {
               <RefreshCw size={20} />
             </button>
             <button
-            className={!showAdvancedFilters ?  styles.buttonGroupItem : "buttonGroupItem filterDisabled"}
+            className={` ${styles.headerButton} ${!showAdvancedFilters ?  styles.filterDisabled: ''}`}
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
             disabled={loading}
             title={t('ctrlpricing.filtro')}>            
             {!showAdvancedFilters ? <Filter size={20} /> : <FilterXIcon className='text-slate-400' size={20} />}
           </button>           
             <button
-              className={styles.buttonGroupItemLast}
+              className={styles.headerButtonAction}
               disabled
               title={t('ctrlpricing.actions')}
             >

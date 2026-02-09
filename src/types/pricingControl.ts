@@ -3,9 +3,19 @@ export interface PricingControlSupplier {
   supplier_associated_name: string;
 }
 
+export interface PricingControlSupplierAPI {
+  Idsuplier: number;
+  Supplier_associated_name: string;
+}
+
 export interface PricingControlStatusControl {
   _id_status_control: number;
   status_control_name: string;
+}
+
+export interface PricingControlStatusControlAPI {
+  Id_status_control: number;
+  Status_control_name: string;
 }
 
 export interface PricingControl {
@@ -39,6 +49,10 @@ export interface PricingControl {
 
 export interface CreatePricingControlRequest {
   _idrequest: string;
+   _id_executive: string;
+  complete_name: string;
+  _id_request_type: number;
+  request_type_name: string;
   suppliers: PricingControlSupplier[];
   services: any[];
   status_control: PricingControlStatusControl;
@@ -67,4 +81,38 @@ export interface UpdatePricingControlRequest {
   general_profit?: string;
   key_td?: string;
   comments_general?: string;
+}
+
+export interface CreatePricingControlAPI {
+  Id?: string;
+  Idcontrol?: string;
+  Control?: string;
+  Idrequest: string;
+  Id_executive: string;
+  Complete_name: string;
+  Creation_date: string;
+  Quotation_date?: string;
+  Updated_date: string;
+  Id_request_type: number;
+  Request_type_name: string;
+  Id_customer: string;
+  Customer_business_name: string;
+  Status_control: PricingControlStatusControlAPI;
+  Suppliers: PricingControlSupplierAPI[];
+  Services: any[];
+  Network?: string;
+  Complexity?: string;
+  Currency?: string;
+  Unit_profit?: string;
+  Volume?: string;
+  General_profit?: string;
+  Key_td?: string;
+  Comments_general?: string;
+  Id_executive_pricing: string;
+  Complete_name_pricing: string;
+}
+
+export interface QuotedControlRequest {
+  idcontrol_: string;
+  idresqued_?: string;  
 }

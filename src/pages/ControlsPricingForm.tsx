@@ -5,6 +5,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { quotationService } from '../services/quotationService';
 import { pricingControlService } from '../services/pricingControlService';
 import { PricingControlSupplier } from '../types/pricingControl';
+import { PricingControlSupplierAPI } from '../types/pricingControl';
 import styles from './ControlsPricingForm.module.css';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -27,11 +28,15 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     { idsuplier: 1, supplier_associated_name: 'Proveedor 1' }
   ]);
 
+   const [suppliersAPI, setSuppliersAPI] = useState<PricingControlSupplierAPI[]>([
+    { Idsuplier: 1, Supplier_associated_name: 'Proveedor 1' }
+  ]);
+
   const [selectedServices, setSelectedServices] = useState<any[]>([]);
   const [expandedServices, setExpandedServices] = useState<Set<number>>(new Set());
   const { user } = useAuth();
   const [statusControl, setStatusControl] = useState({
-    _id_status_control: 4,
+    _id_status_control: 3,
     status_control_name: 'Asignada'
   });
 
@@ -113,7 +118,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           complete_name_pricing: control.complete_name_pricing || ''
         });
 
-        const request = await quotationService.getById(control._idrequest);
+        const request = await quotationService.getById(control.idrequest);
         setRequestData(request);
         setPriority(request.priority === 1);
         setBidding(request.bidding === 1);
@@ -147,15 +152,23 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       idsuplier: nextId,
       supplier_associated_name: `Proveedor ${nextId}`
     }]);
+    setSuppliersAPI([...suppliersAPI, {
+      Idsuplier: nextId,
+      Supplier_associated_name: `Proveedor ${nextId}`
+    }]);
   };
 
   const removeSupplier = (id: number) => {
     setSuppliers(suppliers.filter(s => s.idsuplier !== id));
+    setSuppliersAPI(suppliersAPI.filter(s => s.Idsuplier !== id));
   };
 
   const updateSupplier = (id: number, name: string) => {
     setSuppliers(suppliers.map(s =>
       s.idsuplier === id ? { ...s, supplier_associated_name: name } : s
+    ));
+    setSuppliersAPI(suppliersAPI.map(s =>
+      s.Idsuplier === id ? { ...s, Supplier_associated_name: name } : s
     ));
   };
 
@@ -220,9 +233,21 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       });
 
       const dataToSave = {
-        suppliers,
-        services: servicesData,
-        status_control: statusControl,
+        Id:controlId,
+        Idcontrol: 0,
+        Control: undefined,
+        Idrequest: requestId,
+        Id_executive: requestData.requesting_data?._id_executive || '',
+        Complete_name: requestData.requesting_data?.complete_name || '',
+        Creation_date: new Date().toISOString(),
+        Updated_date: new Date().toISOString(),
+        _id_request_type: requestData._id_request_type,
+        request_type_name: requestData.request_type_name,
+        Id_customer: requestData._id_customer || '',
+        Customer_business_name: requestData.customer_business_name || '',
+        Status_control: {Id_status_control: statusControl._id_status_control, Status_control_name: statusControl.status_control_name},
+        Suppliers: suppliersAPI,       
+        Services: servicesData,       
         network: generalData.network,
         complexity: generalData.complexity,
         currency: generalData.currency,
@@ -231,13 +256,12 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         general_profit: generalData.general_profit,
         key_td: generalData.key_td,
         comments_general: generalData.comments_general,
-        _id_executive_pricing: generalData.id_executive_pricing,
-        complete_name_pricing: generalData.complete_name_pricing
+        Id_executive_pricing: generalData.id_executive_pricing,
+        Complete_name_pricing: generalData.complete_name_pricing
       };
 
       if (controlId) {
-        await pricingControlService.update({
-          _id: controlId,
+        await pricingControlService.updatenew({         
           ...dataToSave
         });
         showSuccess('Control de pricing actualizado exitosamente');
@@ -281,7 +305,10 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
     try {
       setLoading(true);
-      await pricingControlService.markAsQuoted(controlId);
+      await pricingControlService.QuoteControl({
+          idcontrol_: controlId,
+          idresqued_: requestData._id
+        });
       setStatusControl({
         _id_status_control: 5,
         status_control_name: 'Cotizada'
@@ -354,11 +381,11 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         </div>
         <div className={styles.formHeaderRight}>
           <div className={styles.buttonGroup}>
-            <button className={styles.buttonGroupItem} onClick={handleSave} disabled={loading}>
+            <button className={styles.headerButton} onClick={handleSave} disabled={loading}>
               <Save size={18} />
               {t('ctrlpricing.save')}
             </button>
-            <button className={styles.buttonGroupItem} onClick={loadData} disabled={loading}>
+            <button className={styles.headerButtonRefresh} onClick={loadData} disabled={loading}>
               <RefreshCw size={18} />
             </button>
             {/*<button
@@ -370,7 +397,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             </button>*/}
             <div className={styles.actionsMenuContainer} ref={actionsMenuRef}>
               <button
-                className={styles.buttonGroupItemLast}
+                className={styles.headerButtonAction}
                 onClick={() => setShowActionsMenu(!showActionsMenu)}
                 disabled={loading}
               >
@@ -508,8 +535,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 value={statusControl.status_control_name}
                 onChange={(e) => {
                   const statusMap: any = {
-                    'Asignada': { _id_status_control: 4, status_control_name: 'Asignada' },
-                    'En proceso': { _id_status_control: 3, status_control_name: 'En proceso' },
+                    'Asignada': { _id_status_control: 3, status_control_name: 'Asignada' },                    
                     'Cotizada': { _id_status_control: 5, status_control_name: 'Cotizada' }
                   };
                   setStatusControl(statusMap[e.target.value] || statusControl);
@@ -734,6 +760,15 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           />
                         </div>
                         <div className={styles.formGroup}>
+                          <label><span className={styles.required}>*</span> {t('ctrlpricing.cpo')}</label>
+                          <input
+                            type="text"
+                            value={shipment.origin?.location || ''}
+                            className={styles.formInput}
+                            disabled
+                          />
+                        </div>
+                        <div className={styles.formGroup}>
                           <label><span className={styles.required}>*</span> {t('ctrlpricing.destination')}</label>
                           <input
                             type="text"
@@ -747,10 +782,10 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           />
                         </div>
                         <div className={styles.formGroup}>
-                          <label><span className={styles.required}>*</span> {t('ctrlpricing.cp')}</label>
+                          <label><span className={styles.required}>*</span> {t('ctrlpricing.cpd')}</label>
                           <input
                             type="text"
-                            value={shipment.zip_code || shipment.destination?.zipcode || shipment.destiny_zipcode || ''}
+                            value={shipment.destination?.location || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -856,8 +891,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                                     <td>{carg.dangerous ? 'Sí' : 'No'}</td>
                                     <td>{carg.refrigerated ? 'Refrigerada' : 'General'}</td>
                                     <td>{carg.stackable ? 'Sí' : 'No'}</td>
-                                    <td>{carg.volume_total ? `${carg.volume_total} ${carg.unit_measurement || ''}` : ''}</td>
-                                    <td>{carg.weigth_total ? `${carg.weigth_total} ${carg.unit_weight   || ''}` : ''}</td>                        
+                                    <td>{carg.volume_total ? `${carg.volume_total} ${carg.unit_measurement || ''}` : '0'} KG</td>
+                                    <td>{carg.weigth_total ? `${carg.weigth_total} ${carg.unit_weight   || ''}` : '0'} KG</td>                        
                                   </tr>
                                 ))}                                
                               </tbody>
