@@ -116,3 +116,22 @@ export interface QuotedControlRequest {
   idcontrol_: string;
   idresqued_?: string;  
 }
+
+export interface ResquetQuote {
+  _id: string;
+  reference_request: string;
+  _id_status_request: number;
+  status_request_name: string;
+  request_date: Date;
+  deadline_date?: Date;
+  id_request_type: number;
+  request_type_name: string;
+  priority: number;
+  licitation: number;
+  created_at: Date;
+  updated_at: Date;
+  created_by: any;
+  customer: any;
+  assigned_to: any[];
+  services: any[];
+}

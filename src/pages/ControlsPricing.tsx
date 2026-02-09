@@ -75,7 +75,7 @@ export function ControlsPricing() {
 
       if (!excludedEmails.includes(user.email)) {
         filtered = filtered.filter(r =>
-          r.assigned_to?.some(a => a._iduser === user._id)
+          r.assigned_to?.some(a => a._id_user === user._id)
         );
       }
       setRequests(filtered);
@@ -212,8 +212,8 @@ export function ControlsPricing() {
 
   const getCountries = (services: any[]) => {
     if (!services || services.length === 0) return '';
-    const origin = services[0].shipments[0].origin?.country_name || 'NA';
-    const destination = services[0].shipments[0]?.destination?.country_name || 'NA';
+    const origin = services[0].shipments[0].origin?.country_code || 'NA';
+    const destination = services[0].shipments[0]?.destination?.country_code || 'NA';
     return `${origin} - ${destination}`;
   };
 
@@ -408,7 +408,7 @@ export function ControlsPricing() {
           <div className={styles.cardsGrid}>
             {filteredRequests.map((request) => {
               const daysElapsed = getDaysElapsed(request.deadline_date);
-              const medalSrc = getCategoryMedal(request.customer_category);
+              const medalSrc = getCategoryMedal(request.customer.customer_category);
               const categoryLabel = request.request_type_name;
               const operationType = getOperationType(request.services);
               const countries = getCountries(request.services);
@@ -433,7 +433,7 @@ export function ControlsPricing() {
                       <div className={styles.companyInfo}>
                         <div className={styles.companyNameRow}>
                           <h3 className={styles.companyName}>
-                            {request.customer_business_name}
+                            {request.customer?.customer_name}
                           </h3>
                           {request.priority === 1 && (
                             <img
@@ -478,7 +478,7 @@ export function ControlsPricing() {
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
                       </svg>
-                      <span>{request.requesting_data?.complete_name || t('ctrlpricing.unassigned')}</span>
+                      <span>{request.created_by?.full_name || t('ctrlpricing.unassigned')}</span>
                     </div>
                     <div className={styles.servicesCounter}>
                       {(request.status_request_name === 'Parcialmente cotizada' || request.status_request_name === 'Cotizada') && (
@@ -514,7 +514,7 @@ export function ControlsPricing() {
                               <circle cx="12" cy="12" r="10" strokeDasharray="2,2"></circle>
                               <circle cx="12" cy="12" r="3"></circle>
                             </svg>
-                            <span className={styles.assignedName}>{assigned.complete_name}</span>
+                            <span className={styles.assignedName}>{assigned.full_name}</span>
                           </div>
                           <div className={styles.controlNumberCenter}>
                             {assigned.pricing_control_numbers.map((control, controlIndex) => (

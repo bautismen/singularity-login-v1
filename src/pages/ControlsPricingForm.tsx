@@ -118,10 +118,10 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           complete_name_pricing: control.complete_name_pricing || ''
         });
 
-        const request = await quotationService.getById(control.idrequest);
+        const request = await pricingControlService.getResquetById(control._idrequest);
         setRequestData(request);
         setPriority(request.priority === 1);
-        setBidding(request.bidding === 1);
+        setBidding(request.licitation === 1);
 
         const expandedIds = new Set(control.services?.map((s: any) => s.idservice) || []);
         setExpandedServices(expandedIds);
@@ -129,7 +129,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         const request = await quotationService.getById(requestId);
         setRequestData(request);
         setPriority(request.priority === 1);
-        setBidding(request.bidding === 1);
+        setBidding(request.licitation === 1);
 
         setSelectedServices([]);
 
@@ -237,14 +237,14 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         Idcontrol: 0,
         Control: undefined,
         Idrequest: requestId,
-        Id_executive: requestData.requesting_data?._id_executive || '',
-        Complete_name: requestData.requesting_data?.complete_name || '',
+        Id_executive: requestData.created_by?._id_user || '',
+        Complete_name: requestData.created_by?.full_name || '',
         Creation_date: new Date().toISOString(),
         Updated_date: new Date().toISOString(),
-        _id_request_type: requestData._id_request_type,
+        _id_request_type: requestData.id_request_type,
         request_type_name: requestData.request_type_name,
-        Id_customer: requestData._id_customer || '',
-        Customer_business_name: requestData.customer_business_name || '',
+        Id_customer: requestData.customer?._id_customer || '',
+        Customer_business_name: requestData.customer?.customer_name || '',
         Status_control: {Id_status_control: statusControl._id_status_control, Status_control_name: statusControl.status_control_name},
         Suppliers: suppliersAPI,       
         Services: servicesData,       
@@ -363,7 +363,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     );
   }
 
-  const medalSrc = getCategoryMedal(requestData.customer_category);
+  const medalSrc = getCategoryMedal(requestData.customer?.customer_category);
 
   return (
     <div className={styles.container}>
@@ -426,7 +426,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 )}
                 <div>
                   <h2 className={styles.clientName}>
-                    {requestData.customer_business_name}
+                    {requestData.customer?.customer_name}
                     {priority && (
                       <img src="/prioridad.png" alt="Prioridad" className={styles.priorityIcon} style={{width: '20px', height: '20px', marginLeft: '8px'}} />
                     )}
@@ -436,7 +436,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                       Ref: {requestData.reference_request}
                     </span>
                     <span className={styles.clientExecutive}>
-                      {requestData.requesting_data?.complete_name}
+                      {requestData.created_by?.full_name}
                     </span>
                   </div>
                   <div className={styles.clientToggles}>
