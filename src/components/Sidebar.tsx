@@ -16,6 +16,7 @@ import {
   ChevronRight,
   DollarSign,
   Building,
+  MapPin,
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import styles from './Sidebar.module.css';
@@ -24,6 +25,7 @@ const menuItems = [
   { key: 'nav.dashboard', icon: Layout, route: 'dashboard' },
   { key: 'nav.quotations', icon: FileCheck, route: 'quotations' },
   { key: 'nav.controlsPricing', icon: DollarSign, route: 'controls-pricing' },
+  { key: 'nav.trackingMonitor', icon: MapPin, route: 'tracking-monitor' },
   { key: 'nav.executives', icon: UserCheck, route: 'executives' },
   { key: 'nav.customers', icon: Users, route: 'customers' },
   { key: 'nav.suppliers', icon: Users, route: 'suppliers' },

@@ -16,6 +16,7 @@ const translations = {
     'nav.dashboard': 'Panel',
     'nav.quotations': 'Solicitud de cotizaciones',
     'nav.controlsPricing': 'Controles pricing',
+    'nav.trackingMonitor': 'Monitor de rastreo',
     'nav.executives': 'Ejecutivos',
     'nav.shipments': 'Envíos',
     'nav.customers': 'Clientes',
@@ -477,6 +478,8 @@ const translations = {
     'ctrlpricing.onlyme': 'SOLO YO',
     'ctrlpricing.select': 'SELECCIONAR',
     'ctrlpricing.selectexecutive': 'Seleccionar ejecutivo...',
+    'tracking.title': 'Monitor de Rastreo',
+    'tracking.subtitle': 'Rastrea tus contenedores en tiempo real',
 
   },
   en: {
@@ -484,6 +487,7 @@ const translations = {
     'nav.dashboard': 'Dashboard',
     'nav.quotations': 'Quotation Request',
     'nav.controlsPricing': 'Pricing Controls',
+    'nav.trackingMonitor': 'Tracking Monitor',
     'nav.executives': 'Executives',
     'nav.shipments': 'Shipments',
     'nav.customers': 'Customers',
@@ -945,6 +949,8 @@ const translations = {
     'ctrlpricing.onlyme': 'ONLY ME',
     'ctrlpricing.select': 'SELECT',
     'ctrlpricing.selectexecutive': 'Select executive...',
+    'tracking.title': 'Tracking Monitor',
+    'tracking.subtitle': 'Track your containers in real time',
   },
 };
 

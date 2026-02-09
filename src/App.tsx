@@ -3,6 +3,7 @@ import { useAuth } from './contexts/AuthContext';
 import { Login } from './pages/Login';
 import { QuotationsManager } from './pages/QuotationsManager';
 import { ControlsPricing } from './pages/ControlsPricing';
+import { TrackingMonitor } from './pages/TrackingMonitor';
 import { Executives } from './pages/Executives';
 import Customers from './pages/Customers';
 import Suppliers from './pages/Suppliers';
@@ -17,7 +18,7 @@ import { CatalogSectorOfBusiness } from './pages/CatalogSectorOfBusiness';
 import { Layout } from './components/Layout';
 import Companies from './pages/Companies';
 
-type Route = 'dashboard' | 'quotations' | 'controls-pricing' | 'executives' | 'shipments' | 'customers' | 'suppliers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users' | 'catalogs/sector-of-business'| 'catalogs/companies';
+type Route = 'dashboard' | 'quotations' | 'controls-pricing' | 'tracking-monitor' | 'executives' | 'shipments' | 'customers' | 'suppliers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users' | 'catalogs/sector-of-business'| 'catalogs/companies';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState<Route>('dashboard');
@@ -47,6 +48,8 @@ function App() {
           return <QuotationsManager />;
         case 'controls-pricing':
           return <ControlsPricing />;
+        case 'tracking-monitor':
+          return <TrackingMonitor />;
         case 'executives':
           return <Executives />;
         case 'catalogs/companies':
