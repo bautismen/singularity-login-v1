@@ -80,6 +80,7 @@ export interface Customer {
   is_persona_fisica?: boolean;  
   curp?: string;               
   datastate: number;
+  client_level?: 'oro' | 'plata' | 'bronce';
   fiscal_data: {
     business_name: string;
     taxid: string;

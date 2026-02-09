@@ -39,6 +39,7 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
     person_id: '',
     nationality: 'nacional' as 'nacional' | 'extranjero',
     status: 'activo' as 'activo' | 'inactivo',
+    client_level: 'oro' as  'oro' | 'plata' | 'bronce',
     fiscal_data: {
       business_name: '',
       taxid: '',
@@ -49,6 +50,18 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
     addresses: [] as Address[],
   });
 
+  const getClientLevelMedal = (level: 'oro' | 'plata' | 'bronce') => {
+  switch (level) {
+    case 'oro':
+      return '/gold.png';
+    case 'plata':
+      return '/silver.png';
+    case 'bronce':
+      return '/bronze.png';
+    default:
+      return '';
+  }
+};
   const [newPerson, setNewPerson] = useState<Partial<Person>>({
     name: '',
     rfc: '',
@@ -127,6 +140,7 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
       person_id: '',
       nationality: 'nacional',
       status: 'activo',
+      client_level: 'oro',
       fiscal_data: {
         business_name: '',
         taxid: '',
@@ -155,6 +169,7 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
     person_id: customer.person_id || '',
     nationality: customer.nationality ?? 'nacional',
     status: customer.status,
+    client_level: customer.client_level ?? 'oro',
     fiscal_data: selectedCompany
       ? {
           business_name: selectedCompany.business_name || '',
@@ -332,7 +347,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
     customer.fiscal_data.taxid.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
- if (isFormOpen) {
+  if (isFormOpen) {
   return (
     <form
       onSubmit={handleSaveCustomer} // <- aquí
@@ -402,7 +417,13 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                       }
                     }}
                     className={styles.selectInput}
-                    required  // <-- Aquí replicas el "required"
+                    required  // <-- Aqui el "required"
+                    onInvalid={(e) => 
+                      e.currentTarget.setCustomValidity(t('cust.RequiredCompany')) /* si todavia no tiene capturado */
+                    }
+                    onInput={(e) =>
+                      e.currentTarget.setCustomValidity('') /* se limpia msj si ya se capturo */
+                    }
                   >
                     <option value="">{t('cust.selectCompany')}</option>
                     {companies.map((company) => (
@@ -415,7 +436,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
 
                 <button
                   type="button"
-                  onClick={() => onNavigate('companies')}
+                  onClick={() => onNavigate('catalogs/companies')}
                   className={styles.fullWidthGreenButton}
                 >
                   <Plus size={16} />
@@ -485,7 +506,37 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                     <span className={styles.slider}></span>
                   </label>
                 </div>
+                {/* Nivel de cliente */}
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>
+                    {t('cust.clientLevel')}
+                  </label>
 
+                  <select
+                    value={formData.client_level ?? ''}
+                    onChange={(e) => {
+                      e.currentTarget.setCustomValidity(''); // limpia el error
+                      setFormData({
+                        ...formData,
+                        client_level: e.target.value as 'oro' | 'plata' | 'bronce',
+                      });
+                    }}
+                    className={styles.selectInput}
+                    required
+                    onInvalid={(e) =>
+                      e.currentTarget.setCustomValidity(t('cust.RequiredLevel'))
+                    }
+                    disabled={formData.status !== 'activo'}
+                  >
+                    <option value="" disabled>
+                      {t('cust.selectLevel')} {/* Ej: "Selecciona un nivel" */}
+                    </option>
+                    <option value="oro">{t('cust.clientLevelGold')}</option>
+                    <option value="plata">{t('cust.clientLevelSilver')}</option>
+                    <option value="bronce">{t('cust.clientLevelBronze')}</option>
+                  </select>
+
+                </div>         
                 {formData.is_branch && (
                   <div className={styles.fieldGroup}>
                     <label className={styles.fieldLabel}>{t('cust.branchName')}</label>
@@ -726,51 +777,81 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       </div>
 
       <div className={styles.customerList}>
-        {filteredCustomers.map((customer) => (
-          <div key={customer._idcustomer} className={styles.customerCard}>
-            <div className={styles.customerRow}>
-              <div className={styles.customerInfo}>
-                <h3>{customer.fiscal_data.business_name}</h3>
-              </div>
-              <div className={styles.customerMeta}>
-                <p className={styles.taxId}>
-                  {customer.fiscal_data.taxid}
-                </p>
-                <p className={styles.customerNationality}>
-                  <span className={styles.badge}>
-                    {customer.nationality === 'nacional' ? 'Nacional' : 'Extranjero'}
-                  </span>
-                  </p>
-                  <p className={styles.customerType}>
-                  <span className={styles.badge}>
-                    {customer.type === 'fisica' ? 'Persona física' : 'Persona moral'}
-                  </span>
-                </p>
-              </div>
+  {filteredCustomers.map((customer) => {
+    const medalSrc = customer.client_level
+  ? getClientLevelMedal(customer.client_level)
+  : null;
 
-            </div>
-            <div className={styles.customerActions}>
-              <button
-                onClick={() => handleEditCustomer(customer)}
-                className={styles.editButton}
+    return (
+      <div key={customer._idcustomer} className={styles.customerCard}>
+        <div className={styles.customerRow}>
+          <div className={styles.customerInfo}>
+            <div className={styles.customerNameWrapper}>
+
+              {medalSrc && (
+                <div className={styles.medalWrapper}>
+                  <img
+                    src={medalSrc}
+                    alt={customer.client_level}
+                    className={styles.medalImage}
+                  />
+                </div>
+              )}
+
+              <h3 className={styles.customerName}>
+                {customer.fiscal_data.business_name}
+              </h3>
+              <p className={styles.customerType}>
+                <span className={styles.badge}>
+                  {customer.type === 'fisica'
+                    ? 'Persona física'
+                    : 'Persona moral'}
+                </span>
+              </p>
+              <p>
+              <span
+                className={
+                  customer.status === 'activo'
+                    ? styles.statusActive
+                    : styles.statusInactive
+                }
               >
-                <Edit2 size={18} />
-              </button>
-              {/*
-              <button
-                onClick={() => handleDeleteCustomer(customer._idcustomer!)}
-                className={styles.deleteButton}
-              >
-                <Trash2 size={18} />
-              </button>
-              */}
+                {customer.status}
+              </span>
+            </p>
             </div>
           </div>
-        ))}
-        {filteredCustomers.length === 0 && (
-          <p className={styles.noResults}>{t('cust.noResults')}</p>
-        )}
+
+          <div className={styles.customerMeta}>
+            <p className={styles.taxId}>
+              {customer.fiscal_data.taxid}
+            </p>
+
+            <p className={styles.customerNationality}>
+              <span className={styles.badge}>
+                {customer.nationality === 'nacional'
+                  ? 'Nacional'
+                  : 'Extranjero'}
+              </span>
+            </p>
+            <div className={styles.customerActions}>
+                <button
+                  onClick={() => handleEditCustomer(customer)}
+                  className={styles.editButton}
+                >
+                  <Edit2 size={18} />
+                </button>
+              </div>
+          </div>
+        </div>
       </div>
+    );
+  })}
+
+  {filteredCustomers.length === 0 && (
+    <p className={styles.noResults}>{t('cust.noResults')}</p>
+  )}
+</div>
     </div>
   );
 }

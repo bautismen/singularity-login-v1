@@ -25,7 +25,6 @@ const menuItems = [
   { key: 'nav.quotations', icon: FileCheck, route: 'quotations' },
   { key: 'nav.controlsPricing', icon: DollarSign, route: 'controls-pricing' },
   { key: 'nav.executives', icon: UserCheck, route: 'executives' },
-  { key: 'nav.companies', icon: Building, route: 'companies' },
   { key: 'nav.customers', icon: Users, route: 'customers' },
   { key: 'nav.suppliers', icon: Users, route: 'suppliers' },
 ];
@@ -98,6 +97,13 @@ export function Sidebar({ onCollapsedChange, currentRoute = 'dashboard', onNavig
               >
                 <span>{t('nav.catalogs.incoterms')}</span>
               </button>
+              <button
+              onClick={() => onNavigate?.('catalogs/companies')}
+              className={`${styles.submenuButton} ${currentRoute === 'catalogs/companies' ? styles.active : ''
+              }`}
+            >
+              <span>{t('nav.catalogs.companies')}</span>
+            </button>
               <button
                 onClick={() => onNavigate?.('catalogs/services')}
                 className={`${styles.submenuButton} ${currentRoute === 'catalogs/services' ? styles.active : ''}`}
