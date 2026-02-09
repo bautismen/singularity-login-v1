@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, Filter, ChevronDown, Search, Clock, Plus, FilterXIcon } from 'lucide-react';
+import { RefreshCw, Filter, ChevronDown, Search, Clock, Plus, FilterXIcon, FileText } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { controlsPricingService, ControlsPricingRequest } from '../services/controlsPricingService';
 import { ControlsPricingForm } from './ControlsPricingForm';
 import { useAuth } from '../contexts/AuthContext';
+import { DocumentsModal } from '../components/DocumentsModal';
 import styles from './ControlsPricing.module.css';
 
 export function ControlsPricing() {
@@ -24,6 +25,8 @@ export function ControlsPricing() {
   const [executiveFilter, setExecutiveFilter] = useState<string>('todos');
   const [selectedExecutive, setSelectedExecutive] = useState<string>('');
   const [users, setUsers] = useState<any[]>([]);
+  const [showDocumentsModal, setShowDocumentsModal] = useState(false);
+  const [selectedRequestForDocs, setSelectedRequestForDocs] = useState<ControlsPricingRequest | null>(null);
 
   useEffect(() => {
     loadRequests();
@@ -102,6 +105,16 @@ export function ControlsPricing() {
     setSelectedRequestId(null);
     setSelectedControlId(null);
     loadRequests();
+  };
+
+  const handleOpenDocuments = (request: ControlsPricingRequest) => {
+    setSelectedRequestForDocs(request);
+    setShowDocumentsModal(true);
+  };
+
+  const handleCloseDocuments = () => {
+    setShowDocumentsModal(false);
+    setSelectedRequestForDocs(null);
   };
 
   if (showForm) {
@@ -469,6 +482,16 @@ export function ControlsPricing() {
                       <span>{request.requesting_data?.complete_name || t('ctrlpricing.unassigned')}</span>
                     </div>
                     <div className={styles.servicesCounter}>
+                      {(request.status_request_name === 'Parcialmente cotizada' || request.status_request_name === 'Cotizada') && (
+                        <button
+                          className={styles.documentsButton}
+                          onClick={() => handleOpenDocuments(request)}
+                          title="Ver documentos"
+                        >
+                          <FileText size={16} />
+                          Documentos
+                        </button>
+                      )}
                       {attendedServices}/{totalServices} {t('ctrlpricing.servicesattended')}
                     </div>
                   </div>
@@ -532,6 +555,18 @@ export function ControlsPricing() {
           </div>
         )}
       </div>
+
+      {showDocumentsModal && selectedRequestForDocs && (
+        <DocumentsModal
+          isOpen={showDocumentsModal}
+          onClose={handleCloseDocuments}
+          requestData={{
+            companyName: selectedRequestForDocs.customer_business_name,
+            reference: selectedRequestForDocs.reference_request,
+            location: getCountries(selectedRequestForDocs.services),
+          }}
+        />
+      )}
     </div>
   );
 }
