@@ -239,6 +239,12 @@ if (isFormOpen) {
                 className={styles.textInput}
                 placeholder={t('comp.CompanyName')}
                 required
+                onInvalid={(e) => 
+                  e.currentTarget.setCustomValidity(t('comp.CompanynameRequired')) /* si todavia no tiene capturado */
+                }
+                onInput={(e) =>
+                  e.currentTarget.setCustomValidity('') /* se limpia msj si ya se capturo */
+                }
               />
             </div>
 
@@ -276,6 +282,12 @@ if (isFormOpen) {
                 className={styles.textInput}
                 placeholder="RFC o TAXID"
                 required
+                onInvalid={(e) => 
+                  e.currentTarget.setCustomValidity(t('comp.RFCTAXIDRequired')) /* si todavia no tiene capturado */
+                }
+                onInput={(e) =>
+                  e.currentTarget.setCustomValidity('') /* se limpia msj si ya se capturo */
+                }
               />
             </div>
           </div>
@@ -287,6 +299,12 @@ if (isFormOpen) {
               <input
                 type="text"
                 required
+                onInvalid={(e) => 
+                  e.currentTarget.setCustomValidity(t('comp.stateRequired')) /* si todavia no tiene capturado */
+                }
+                onInput={(e) =>
+                  e.currentTarget.setCustomValidity('') /* se limpia msj si ya se capturo */
+                }
                 value={formData.state}
                 onChange={(e) =>
                   setFormData({ ...formData, state: e.target.value })
