@@ -65,7 +65,7 @@ Deno.serve(async (req: Request) => {
 
     if (method === "GET" && path.match(/\/suppliers\/[^/]+$/)) {
       const id = path.split("/").pop();
-      const supplier = await collection.findOne({ _idsupplier: new ObjectId(id!) });
+      const supplier = await collection.findOne({ _id: new ObjectId(id!) });
 
       if (!supplier) {
         return new Response(
@@ -98,7 +98,6 @@ Deno.serve(async (req: Request) => {
       const nextId = maxIdDoc.length > 0 ? (maxIdDoc[0].idsupplier || 0) + 1 : 1;
 
       const newSupplier = {
-        _id: new ObjectId(),
         idsupplier: nextId,
         ...body,
         datastate: 1,
@@ -121,10 +120,9 @@ Deno.serve(async (req: Request) => {
         );
       }
 
-      return new Response(JSON.stringify({
-        ...newSupplier,
-        _idsupplier: newSupplier._idsupplier.toString(),
-      }), {
+      const createdSupplier = await collection.findOne({ _id: result.insertedId });
+
+      return new Response(JSON.stringify(createdSupplier), {
         status: 201,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -139,11 +137,11 @@ Deno.serve(async (req: Request) => {
         updated_at: new Date(),
       };
 
-      delete updateData._idsupplier;
+      delete updateData._id;
       delete updateData.idsupplier;
 
       const result = await collection.findOneAndUpdate(
-        { _idsupplier: new ObjectId(id!) },
+        { _id: new ObjectId(id!) },
         { $set: updateData },
         { returnDocument: "after" }
       );
@@ -164,7 +162,7 @@ Deno.serve(async (req: Request) => {
       const id = path.split("/").pop();
 
       const result = await collection.updateOne(
-        { _idsupplier: new ObjectId(id!) },
+        { _id: new ObjectId(id!) },
         {
           $set: {
             datastate: 0,
