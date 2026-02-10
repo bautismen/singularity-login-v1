@@ -426,28 +426,24 @@ if (isFormOpen) {
         <div className={styles.cardGrid}>
           {filteredCompanies.map(company => (
             <div key={company._id} className={styles.companyCard}>
-              <div className={styles.cardHeader}>
-                <div className={styles.cardTitleSection}>
-                  <h3>{company.business_name}</h3>
-                  <p className={styles.companyType}>Persona moral</p>
-                </div>
-                <div className={styles.cardRfc}>{company.rfc_taxid}</div>
+              <h3>{company.business_name}</h3>
+              <p>RFC/TAXID: {company.rfc_taxid}</p>
+              <p>{company.state}, {company.country}</p>
+              <p> <span className={company.status === 'activo' ? styles.statusActive : styles.statusInactive}>{company.status}</span></p>
+              <div className={styles.cardActions}>
+                <button 
+                  onClick={() => handleEditCompanies(company)} 
+                  className={styles.editButton}>
+                    <Edit2 size={16} />
+                </button>
+                {/*
+                <button 
+                  onClick={() => handleDeleteCompanies(company._id!)}
+                  className={styles.deleteButton}>
+                    <Trash2 size={16} />
+                </button>
+                */}
               </div>
-              <div className={styles.cardFooter}>
-                <div className={styles.cardFooterLeft}>
-                  <span className={company.status === 'activo' ? styles.statusActive : styles.statusInactive}>
-                    {company.status === 'activo' ? 'Activo' : 'Inactivo'}
-                  </span>
-                </div>
-                <div className={styles.cardFooterRight}>
-                  <span className={styles.location}>{company.state}, {company.country}</span>
-                </div>
-              </div>
-              <button
-                onClick={() => handleEditCompanies(company)}
-                className={styles.cardEditButton}>
-                  <Edit2 size={18} />
-              </button>
             </div>
           ))}
         </div>
