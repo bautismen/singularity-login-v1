@@ -118,7 +118,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           complete_name_pricing: control.complete_name_pricing || ''
         });
 
-        const request = await pricingControlService.getResquetById(control._idrequest);
+        const request = await pricingControlService.getResquetById(control.idrequest);
         setRequestData(request);
         setPriority(request.priority === 1);
         setBidding(request.licitation === 1);
