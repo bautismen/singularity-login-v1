@@ -33,7 +33,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
     //person_id: '',
     status: 'activo' as 'activo' | 'inactivo',
     fiscal_data: {
-      supplier_name: '',
+      business_name: '',
       rfc_taxid: '',
       country: 'MX',
       state: '',
@@ -126,7 +126,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
       //person_id: '',
       status: 'activo',
       fiscal_data: {
-        supplier_name: '',
+        business_name: '',
         rfc_taxid: '',
         country: 'MX',
         state: '',
@@ -309,7 +309,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
   }
 
   const filteredSuppliers = suppliers.filter(supplier =>
-    supplier.fiscal_data.supplier_name || //.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    supplier.fiscal_data.business_name || //.toLowerCase().includes(searchTerm.toLowerCase()) ||
     supplier.fiscal_data.rfc_taxid //.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -359,7 +359,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                           company_id: selectedCompanyId,
                           is_national: selectedCompany.nationality === 'nacional' ? true : false,
                           fiscal_data: {
-                            supplier_name: selectedCompany.business_name || '',
+                            business_name: selectedCompany.business_name || '',
                             rfc_taxid: selectedCompany.rfc_taxid || '',
                             country: selectedCompany.country || 'MX',
                             state: selectedCompany.state || '',
@@ -372,7 +372,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                           company_id: '',
                           is_national: false,
                           fiscal_data: {
-                            supplier_name: '',
+                            business_name: '',
                             rfc_taxid: '',
                             country: 'MX',
                             state: '',
@@ -696,7 +696,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
               <div className={styles.supplierInfo}>
                 <div className={styles.supplierNameWrapper}>
 
-                  <p className={styles.supplierName}>{supplier.fiscal_data.supplier_name}</p>
+                  <p className={styles.supplierName}>{supplier.fiscal_data.business_name}</p>
                   <p className={styles.taxId}>{supplier.fiscal_data.rfc_taxid}</p>
                   
                   <p className={styles.supplierType}>

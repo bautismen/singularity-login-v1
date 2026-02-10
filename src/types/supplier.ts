@@ -80,7 +80,7 @@ export interface Supplier {
   company_id?: string;
   is_national?: boolean;
   fiscal_data: {
-    supplier_name: string;
+    business_name: string;
     rfc_taxid: string;
     country: string;
     state: string;
