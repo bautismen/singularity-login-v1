@@ -3,7 +3,7 @@ import { Search, Plus, Edit2, ChevronDown, ChevronUp, X, ArrowLeft } from 'lucid
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { Supplier, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES, SectorOfBusiness } from '../types/supplier';
-import { getSuppliers, createSupplier, updateSupplier, deleteSupplier, getCompanies, getSector, createCompany } from '../services/supplierService';
+import { getSuppliers, createSupplier, updateSupplier, getCompanies, getSector } from '../services/supplierService';
 import styles from './Suppliers.module.css';
 
 export default function Suppliers({ onNavigate }: { onNavigate: (route: string) => void }) {
@@ -309,8 +309,8 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
   }
 
   const filteredSuppliers = suppliers.filter(supplier =>
-    supplier.fiscal_data.supplier_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.fiscal_data.rfc_taxid.toLowerCase().includes(searchTerm.toLowerCase())
+    supplier.fiscal_data.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    supplier.fiscal_data.rfc_taxid //.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (isFormOpen) {
@@ -320,7 +320,9 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
         <div className={styles.formHeaderRow}>
           <div className={styles.header}>
             <button
-              onClick={() => setIsFormOpen(false)} className={styles.backButton} >
+              onClick={() => setIsFormOpen(false)} className={styles.backButton}
+              title="Volver a lista"
+            >
               <ArrowLeft size={18} />
             </button>
             
@@ -392,7 +394,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
 
                 <button
                   type="button"
-                  onClick={() => onNavigate('companies')}
+                  onClick={() => onNavigate('catalogs/companies')}
                   className={styles.fullWidthGreenButton}
                 >
                   <Plus size={16} />
@@ -689,24 +691,30 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
       <div className={styles.supplierList}>
         {filteredSuppliers.map((supplier) => (
           <div key={supplier._idsupplier} className={styles.supplierCard}>
-            <div className={styles.supplierInfo}>
-              <h3>{supplier.fiscal_data.supplier_name}</h3>
-              <p className={styles.taxId}>{supplier.fiscal_data.rfc_taxid}</p>
-              <p className={styles.supplierType}>
-                {supplier.is_persona_fisica === true ? 'Persona Física' : 'Persona Moral'}
-              </p>
-              <p className={styles.supplierLocation}>
-                {supplier.fiscal_data.state}, {supplier.fiscal_data.country}
-              </p>
-            </div>
-            <div className={styles.supplierActions}>
-              <button
-                onClick={() => handleEditSupplier(supplier)}
-                className={styles.editButton}
-              >
-                <Edit2 size={18} />
-              </button>
+            
+            <div className={styles.supplierRow}>
+              <div className={styles.supplierInfo}>
+                <div className={styles.customerNameWrapper}>
 
+                  <p className={styles.supplierName}>{supplier.fiscal_data.business_name}</p>
+                  <p className={styles.taxId}>{supplier.fiscal_data.rfc_taxid}</p>
+                  <p className={styles.supplierType}>
+                    {supplier.is_persona_fisica === true ? 'Persona Física' : 'Persona Moral'}
+                  </p>
+                  <p className={styles.supplierLocation}>
+                    {supplier.fiscal_data.state}, {supplier.fiscal_data.country}
+                  </p>
+                </div>
+
+                <div className={styles.supplierActions}>
+                  <button
+                    onClick={() => handleEditSupplier(supplier)}
+                    className={styles.editButton}
+                  >
+                    <Edit2 size={18} />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         ))}
