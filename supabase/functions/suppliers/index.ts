@@ -82,7 +82,7 @@ Deno.serve(async (req: Request) => {
     if (method === "POST" && path.endsWith("/suppliers")) {
       const body = await req.json();
 
-      //if (!body.fiscal_data || !body.fiscal_data.business_name || !body.fiscal_data.taxid) {
+      //if (!body.fiscal_data || !body.fiscal_data.supplier_name || !body.fiscal_data.taxid) {
       // return new Response(
       //    JSON.stringify({ error: "Faltan datos fiscales requeridos (Razón Social y RFC)" }),
       //    { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }

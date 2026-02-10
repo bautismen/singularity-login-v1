@@ -803,7 +803,7 @@ const translations = {
     'nav.catalogs.companies': 'Companies',
     'supp.title': 'Suppliers',
     'supp.newSupplier': 'New supplier',
-    'supp.search' : 'Search supplier, taxid ',
+    'supp.search' : 'Search supplier, taxid',
     'supp.selectCompany': 'Select company',
     'supp.newCompany': 'New company',
     'supp.IsNational': 'Is national',

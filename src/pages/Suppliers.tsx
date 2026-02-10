@@ -309,7 +309,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
   }
 
   const filteredSuppliers = suppliers.filter(supplier =>
-    supplier.fiscal_data.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    supplier.fiscal_data.supplier_name || //.toLowerCase().includes(searchTerm.toLowerCase()) ||
     supplier.fiscal_data.rfc_taxid //.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -696,7 +696,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
               <div className={styles.supplierInfo}>
                 <div className={styles.supplierNameWrapper}>
 
-                  <p className={styles.supplierName}>{supplier.fiscal_data.business_name}</p>
+                  <p className={styles.supplierName}>{supplier.fiscal_data.supplier_name}</p>
                   <p className={styles.taxId}>{supplier.fiscal_data.rfc_taxid}</p>
                   
                   <p className={styles.supplierType}>
