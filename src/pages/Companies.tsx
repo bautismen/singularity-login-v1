@@ -48,6 +48,7 @@ async function loadCompanies() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [formData, setFormData] = useState<Partial<Company>>({
     business_name: '',
@@ -172,10 +173,14 @@ async function handleDeleteCompanies(id: string) {
 };
 
 
-  const filteredCompanies = companies.filter(c =>
-    c.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.rfc_taxid.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCompanies = companies.filter(c => {
+    const matchesSearch = c.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.rfc_taxid.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === 'todos' || c.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   function handleNewCompany() {
   setEditingCompany(null);
@@ -381,15 +386,37 @@ if (isFormOpen) {
           </button>
         </div>
       </div>
-      <div className={styles.searchBar}>
-        <Search size={20} />
-        <input
-          type="text"
-          placeholder={t('comp.search') || 'Buscar empresa...'}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className={styles.searchInput}
-        />
+      <div className={styles.searchContainer}>
+        <div className={styles.searchBar}>
+          <Search size={20} />
+          <input
+            type="text"
+            placeholder={t('comp.search') || 'Buscar...'}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={styles.searchInput}
+          />
+        </div>
+        <div className={styles.filterButtons}>
+          <button
+            className={`${styles.filterButton} ${statusFilter === 'todos' ? styles.filterButtonActive : ''}`}
+            onClick={() => setStatusFilter('todos')}
+          >
+            Todos
+          </button>
+          <button
+            className={`${styles.filterButton} ${statusFilter === 'activo' ? styles.filterButtonActive : ''}`}
+            onClick={() => setStatusFilter('activo')}
+          >
+            Activo
+          </button>
+          <button
+            className={`${styles.filterButton} ${statusFilter === 'inactivo' ? styles.filterButtonActive : ''}`}
+            onClick={() => setStatusFilter('inactivo')}
+          >
+            Inactivo
+          </button>
+        </div>
       </div>
       {loading ? (
         <p>{t('comp.LoadCompanies')}</p>
