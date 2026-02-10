@@ -4,11 +4,6 @@
   margin: 0;
 }
 
-.required {
-  color: #ef4444;
-  font-size: 1.2rem;
-}
-
 .header {
   display: flex;
   justify-content: space-between;
@@ -113,7 +108,7 @@
 
 .supplierList {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.25rem;
 }
 
@@ -121,18 +116,13 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
-  padding: 1.2rem;
+  padding: 1.25rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+  justify-content: space-between;
   align-items: flex-start;
+  transition: all 0.2s;
   cursor: pointer;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  position: relative; 
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
 }
 
 .supplierCard:hover {
@@ -140,19 +130,12 @@
   border-color: #d1d5db;
 }
 
-.supplierRow {
-  display: flex;
-  width: 100%;
-}
-
 .supplierInfo {
-  /* flex: 1;
-  min-width: 0; */
-  max-width: 90%;
-  margin-top: 20px; /* bajar */
+  flex: 1;
+  min-width: 0;
 }
 
-/* .supplierInfo h3 {
+.supplierInfo h3 {
   font-size: 1.0625rem;
   font-weight: 600;
   color: #1f2937;
@@ -160,13 +143,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-} */
-
-.supplierNameWrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* o center si lo quieres centrado */
-  position: relative;
 }
 
 .taxId {
@@ -913,6 +889,11 @@
   color: #6b7280;
 }
 
+.required {
+  color: #ef4444;
+  font-size: 1.2rem;
+}
+
 .textInput,
 .selectInput {
   padding: 0.625rem 0.875rem;
@@ -1153,7 +1134,6 @@
 
 .supplierName {
   font-weight: 500;
-  margin-top: -10px;
 }
 
 .servicesCount {
@@ -1176,7 +1156,7 @@
   }
 
   .supplierList {
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
 }
 

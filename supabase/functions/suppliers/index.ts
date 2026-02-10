@@ -98,17 +98,17 @@ Deno.serve(async (req: Request) => {
       const nextId = maxIdDoc.length > 0 ? (maxIdDoc[0].idsupplier || 0) + 1 : 1;
 
       const newSupplier = {
-        _idsupplier: nextId,
+        idsupplier: nextId,
         ...body,
+        datastate: 1,
+        archivado: false,
+        status: body.status || "activo",
         history: [],
         created_at: new Date(),
         created_by: {
           user_id: "system",
           name: "System User"
         },
-        status: body.status || "activo",
-        archivado: false,
-        datastate: 1,
       };
 
       const result = await collection.insertOne(newSupplier);

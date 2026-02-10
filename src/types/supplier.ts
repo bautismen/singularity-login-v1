@@ -79,8 +79,9 @@ export interface Supplier {
   is_persona_fisica?: boolean;
   company_id?: string;
   is_national?: boolean;
+  datastate: number;
   fiscal_data: {
-    business_name: string;
+    supplier_name: string;
     rfc_taxid: string;
     country: string;
     state: string;
@@ -89,15 +90,14 @@ export interface Supplier {
   sector: string,
   contacts: Contact[];
   addresses: Address[];
+  status: 'activo' | 'inactivo';
+  archivado: boolean;
   history?: HistoryEntry[];
   created_at?: Date;
   created_by?: {
     user_id: string;
     name: string;
   };
-  status: 'activo' | 'inactivo';
-  archivado: boolean;
-  datastate: number;
 }
 
 export interface SupplierFormData {
