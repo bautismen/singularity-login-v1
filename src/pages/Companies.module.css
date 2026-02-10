@@ -175,39 +175,103 @@
   gap: 16px;
 }
 .companyCard {
+  position: relative;
   background: #fff;
   border-radius: 12px;
-  padding: 16px;
+  padding: 20px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
-  border: 2px solid transparent; 
+  gap: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  border: 2px solid #038C7F;
 }
 
-/* Hover: flotar y iluminar */
 .companyCard:hover {
-  transform: translateY(-5px);
-  box-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border-color: #3CA64C;    
-  background-color: #eff8f3;   
-  cursor: pointer;              
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(3, 140, 127, 0.15);
 }
 
-.companyCard h3 {
-  font-size: 1.1rem;
-  font-weight: 400;
-  color: #0f172a;
-  margin-bottom: 4px;
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding-right: 40px;
 }
 
-.companyCard p {
-  font-size: 0.85rem;
-  color: #64748b;
-  margin: 2px 0;
+.cardTitleSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cardTitleSection h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.companyType {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.cardRfc {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #038C7F;
+  white-space: nowrap;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.cardFooterLeft {
+  flex-shrink: 0;
+}
+
+.cardFooterRight {
+  flex: 1;
+  text-align: right;
+}
+
+.location {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.cardEditButton {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: #d1fae5;
+  color: #10b981;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cardEditButton:hover {
+  background: #a7f3d0;
+  transform: scale(1.05);
 }
 
 
@@ -216,9 +280,9 @@
 /* ===== Status badges ===== */
 .statusActive {
   display: inline-block;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: #166534;
   background-color: #dcfce7;
@@ -227,11 +291,11 @@
 
 .statusInactive {
   display: inline-block;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
   font-weight: 500;
-  color: #7f1d1d;
+  color: #991b1b;
   background-color: #fee2e2;
   text-transform: capitalize;
 }
