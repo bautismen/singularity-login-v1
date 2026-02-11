@@ -690,7 +690,9 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
 
             {!collapsedSections.address && (
               <div className={styles.sectionContent}>
-                <button onClick={addAddress} className={styles.addDashedButton}>
+                <button 
+                type="button"
+                onClick={addAddress} className={styles.addDashedButton}>
                   <Plus size={20} />
                   {t('cust.addAddress')}
                 </button>
