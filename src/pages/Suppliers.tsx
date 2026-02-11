@@ -14,6 +14,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
   const [companies, setCompanies] = useState<Company[]>([]);
   const [sector, setSector] = useState<SectorOfBusiness[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [loading, setLoading] = useState(false);
@@ -319,10 +320,14 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
     setFormData({ ...formData, addresses: updated });
   }
 
-  const filteredSuppliers = suppliers.filter(supplier =>
-    supplier.fiscal_data.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.fiscal_data.rfc_taxid.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredSuppliers = suppliers.filter(supplier => {
+    const matchesSearch = supplier.fiscal_data.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.fiscal_data.rfc_taxid.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === 'todos' || supplier.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   if (isFormOpen) {
     return (
@@ -697,15 +702,37 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
         </div>
       </div>
 
-      <div className={styles.searchBar}>
-        <Search size={20} />
-        <input
-          type="text"
-          placeholder={t('supp.search')}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className={styles.searchInput}
-        />
+      <div className={styles.searchContainer}>
+        <div className={styles.searchBar}>
+          <Search size={20} />
+          <input
+            type="text"
+            placeholder={t('supp.search')}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={styles.searchInput}
+          />
+        </div>
+        <div className={styles.filterButtons}>
+          <button
+            className={`${styles.filterButton} ${statusFilter === 'todos' ? styles.filterButtonActive : ''}`}
+            onClick={() => setStatusFilter('todos')}
+          >
+            Todos
+          </button>
+          <button
+            className={`${styles.filterButton} ${statusFilter === 'activo' ? styles.filterButtonActive : ''}`}
+            onClick={() => setStatusFilter('activo')}
+          >
+            Activo
+          </button>
+          <button
+            className={`${styles.filterButton} ${statusFilter === 'inactivo' ? styles.filterButtonActive : ''}`}
+            onClick={() => setStatusFilter('inactivo')}
+          >
+            Inactivo
+          </button>
+        </div>
       </div>
 
       <div className={styles.supplierList}>
