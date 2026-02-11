@@ -15,6 +15,7 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
   const [people, setPeople] = useState<Person[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(false);
@@ -342,10 +343,14 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
     setFormData({ ...formData, addresses: updated });
   }
 
-  const filteredCustomers = customers.filter(customer =>
-    customer.fiscal_data.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.fiscal_data.taxid.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCustomers = customers.filter(customer => {
+    const matchesSearch = customer.fiscal_data.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.fiscal_data.taxid.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === 'todos' || customer.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   if (isFormOpen) {
   return (
@@ -776,15 +781,37 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
           </button>
         </div>
       </div>
-      <div className={styles.searchBar}>
-        <Search size={20} />
-        <input
-          type="text"
-          placeholder={t('cust.search')}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className={styles.searchInput}
-        />
+      <div className={styles.searchContainer}>
+        <div className={styles.searchBar}>
+          <Search size={20} />
+          <input
+            type="text"
+            placeholder={t('cust.search')}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={styles.searchInput}
+          />
+        </div>
+        <div className={styles.filterButtons}>
+          <button
+            className={`${styles.filterButton} ${statusFilter === 'todos' ? styles.filterButtonActive : ''}`}
+            onClick={() => setStatusFilter('todos')}
+          >
+            Todos
+          </button>
+          <button
+            className={`${styles.filterButton} ${statusFilter === 'activo' ? styles.filterButtonActive : ''}`}
+            onClick={() => setStatusFilter('activo')}
+          >
+            Activo
+          </button>
+          <button
+            className={`${styles.filterButton} ${statusFilter === 'inactivo' ? styles.filterButtonActive : ''}`}
+            onClick={() => setStatusFilter('inactivo')}
+          >
+            Inactivo
+          </button>
+        </div>
       </div>
 
       <div className={styles.customerList}>
