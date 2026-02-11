@@ -438,6 +438,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   type="button"
                   onClick={() => onNavigate('catalogs/companies')}
                   className={styles.fullWidthGreenButton}
+                  disabled={!!editingCustomer}
                 >
                   <Plus size={16} />
                   {t('cust.newCompany')}
@@ -508,9 +509,9 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                 </div>
                 {/* Nivel de cliente */}
                 <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>
+                  {/* <label className={styles.fieldLabel}>
                     {t('cust.clientLevel')}
-                  </label>
+                  </label> */}
 
                   <select
                     value={formData.client_level ?? ''}
@@ -610,7 +611,11 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
 
             {!collapsedSections.contacts && (
               <div className={styles.sectionContent}>
-                <button onClick={addContact} className={styles.addDashedButton}>
+                <button
+                    type="button"
+                    onClick={addContact}
+                    className={styles.addDashedButton}
+                  >
                   <Plus size={20} />
                 {t('cust.addContact')}
                 </button>
@@ -693,7 +698,11 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   <div key={index} className={styles.itemCard}>
                     <div className={styles.itemHeader}>
                       <h4>{t('cust.addresses')} {index + 1}</h4>
-                      <button onClick={() => removeAddress(index)} className={styles.removeButton}>
+                      <button
+                        type="button"
+                        onClick={() => removeAddress(index)}
+                        className={styles.removeButton}
+                      >
                         <X size={18} />
                       </button>
                     </div>
