@@ -194,6 +194,16 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       return;
     }
 
+    if (generalData.unit_profit.length === 0) {
+      showError('Debe capturar el profit unitario');
+      return;
+    }    
+
+    if (generalData.volume.length === 0) {
+      showError('Debe capturar el volumen');
+      return;
+    }    
+
     try {
       setLoading(true);
 
@@ -388,7 +398,11 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
+      {loading ? (
+          <div className={styles.loading}>
+            <div className={styles.spinner}></div>
+          </div>
+          ) : <div className={styles.header}>
         <div className={styles.formHeaderLeft}>
           <button onClick={onBack} className={styles.backButton} disabled={loading}>
             <ArrowLeft size={20} />
@@ -402,11 +416,11 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         </div>
         <div className={styles.formHeaderRight}>
           <div className={styles.buttonGroup}>
-            <button className={styles.headerButton} onClick={handleSave} disabled={loading}>
+            <button className={styles.headerButton} onClick={handleSave} disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}>
               <Save size={18} />
               {t('ctrlpricing.save')}
             </button>
-            <button className={styles.headerButtonRefresh} onClick={loadData} disabled={loading}>
+            <button className={styles.headerButtonRefresh} onClick={loadData} disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}>
               <RefreshCw size={18} />
             </button>
             {/*<button
@@ -420,7 +434,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               <button
                 className={styles.headerButtonAction}
                 onClick={() => setShowActionsMenu(!showActionsMenu)}
-                disabled={loading}
+                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
               >
                 {t('ctrlpricing.actions')}
                 <ChevronDown size={16} />
@@ -436,7 +450,12 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           </div>
         </div>
       </div>
-
+      }
+      {loading ? (
+          <div className={styles.loading}>
+            <div className={styles.spinner}></div>
+          </div>
+          ) :
       <div className={styles.container}>
         <div className={styles.topCardsContainer}>
           <div className={styles.clientSection}>
@@ -499,13 +518,20 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               </div>
             </div>
             <div className={styles.clientActions}>
-              <button className={styles.btnDecline} disabled={loading} onClick={openModal}>
+              <button 
+              className={styles.btnDecline} 
+              disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+              onClick={openModal}
+              hidden={controlId ? false : true}
+              >
                 {t('ctrlpricing.decline')}
+                
               </button>
               <button
                 className={styles.btnQuote}
                 onClick={handleMarkAsQuoted}
-                disabled={loading || !controlId || statusControl._id_status_control === 5}
+                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                hidden={controlId ? false : true}
               >
                 {t('ctrlpricing.quoted')}
               </button>
@@ -524,12 +550,12 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                     onChange={(e) => updateSupplier(supplier.idsuplier, e.target.value)}
                     className={styles.supplierInput}
                     placeholder={t('ctrlpricing.suppliername')}
-                    disabled={loading}
+                    disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
                   />
                   <button
                     className={styles.btnRemoveSupplier}
                     onClick={() => removeSupplier(supplier.idsuplier)}
-                    disabled={loading}
+                    disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -539,7 +565,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             <button
               className={styles.btnAddSupplier}
               onClick={addSupplier}
-              disabled={loading}
+              disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
             >
               <Plus size={16} />
               {t('ctrlpricing.addsupplier')}
@@ -563,7 +589,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   setStatusControl(statusMap[e.target.value] || statusControl);
                 }}
                 className={styles.formSelect}
-                disabled={loading}
+                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
               >                
                 <option>Asignada</option>
                 <option>Cotizada</option>
@@ -576,7 +602,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 value={generalData.network}
                 onChange={(e) => setGeneralData({...generalData, network: e.target.value})}
                 className={styles.formSelect}
-                disabled={loading}
+                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
               >
                 <option>WCA</option>
                 <option>JC TRANS</option>
@@ -592,7 +618,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 value={generalData.complexity}
                 onChange={(e) => setGeneralData({...generalData, complexity: e.target.value})}
                 className={styles.formSelect}
-                disabled={loading}
+                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
               >
                 <option>Baja</option>
                 <option>Media</option>
@@ -605,7 +631,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 value={generalData.currency}
                 onChange={(e) => setGeneralData({...generalData, currency: e.target.value})}
                 className={styles.formSelect}
-                disabled={loading}
+                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
               >
                 <option>USD</option>
                 <option>MXN</option>
@@ -619,7 +645,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 value={generalData.unit_profit}
                 onChange={(e) => setGeneralData({...generalData, unit_profit: e.target.value})}
                 className={styles.formInput}
-                disabled={loading}                
+                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}                
               />
             </div>
              <div className={styles.formGroup}>
@@ -629,7 +655,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 value={generalData.volume}
                 onChange={(e) => setGeneralData({...generalData, volume: e.target.value})}
                 className={styles.formInput}                
-                disabled={loading}
+                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
               />
             </div>
             <div className={styles.formGroup}>
@@ -648,7 +674,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 value={generalData.key_td}
                 onChange={(e) => setGeneralData({...generalData, key_td: e.target.value})}
                 className={styles.formSelect}
-                disabled={loading}
+                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
               >
                 <option value="CI" >CI Complementar información</option>
                 <option value="RFQ" >RFQ Licitación</option>
@@ -670,7 +696,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               onChange={(e) => setGeneralData({...generalData, comments_general: e.target.value})}
               className={styles.formTextarea}
               rows={3}
-              disabled={loading}
+              disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
             />
           </div>
         </div>
@@ -681,7 +707,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             requestData.services.map((service: any, index: number) => {
               const serviceId = service.idServiceItem || service.idService || service._id;
               const isSelected = selectedServices.some(s => s.idService === serviceId);
-              const isUsed = service.used && !isSelected;
+              const isUsed = service.used && controlId ;
               const isExpanded = expandedServices.has(serviceId);
 
               const shipment = service.shipments && service.shipments.length > 0 ? service.shipments[0] : {};
@@ -716,7 +742,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                     <button
                       className={styles.btnServiceAction}
                       onClick={() => toggleServiceExpanded(serviceId)}
-                      disabled={loading}
+                      disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
                     >
                       {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </button>
@@ -936,13 +962,14 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           )}
         </div>
       </div>
-{showModal && (
+      }
+      {showModal && (
          <form onSubmit={handleMarkAsDecline}>          
         <div className={styles.modalOverlay} onClick={closeModal}>          
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>
-               Declinar control
+               Declinar Solicitud
               </h2>
               <button className={styles.closeButton} onClick={closeModal}>
                 <X size={24} />
@@ -951,7 +978,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
             <div className={styles.modalBody}>             
               <div className={styles.formGroup}>
-                <label className={styles.label}><span className={styles.required}>*</span> {t('catalog.imo.description')}</label>
+                <label className={styles.label}><span className={styles.required}>*</span> Motivo</label>
                 <textarea
                   className={styles.textarea}
                   value={reasoncancellation}

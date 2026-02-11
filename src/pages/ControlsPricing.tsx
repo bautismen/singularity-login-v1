@@ -405,7 +405,7 @@ export function ControlsPricing() {
           <div className={styles.loading}>
             <div className={styles.spinner}></div>
           </div>
-        ) : filteredRequests.length > 0 ? (
+          ) : filteredRequests.length > 0 ? (
           <div className={styles.cardsGrid}>
             {filteredRequests.map((request) => {
               const daysElapsed = getDaysElapsed(request.dateDeadline);
