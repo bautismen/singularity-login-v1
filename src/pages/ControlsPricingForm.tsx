@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Save, RefreshCw, Trash2, Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
-import { quotationService } from '../services/quotationService';
 import { pricingControlService } from '../services/pricingControlService';
 import { PricingControlSupplier } from '../types/pricingControl';
 import { PricingControlSupplierAPI } from '../types/pricingControl';
@@ -23,6 +22,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const [requestData, setRequestData] = useState<any>(null);
   const [controlData, setControlData] = useState<any>(null);
   const [countries, setCountries] = useState<any[]>([]);
+  const [showModal, setShowModal] = useState(false);
 
   const [suppliers, setSuppliers] = useState<PricingControlSupplier[]>([
     { idsuplier: 1, supplier_associated_name: 'Proveedor 1' }
@@ -50,13 +50,14 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     key_td: 'CI',
     comments_general: '',
     id_executive_pricing: user._id || '',
-    complete_name_pricing: user.name || ''
+    complete_name_pricing: user.name || '',    
   });
 
   const [priority, setPriority] = useState(false);
   const [bidding, setBidding] = useState(false);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const actionsMenuRef = useRef<HTMLDivElement>(null);
+  const [reasoncancellation, setreasoncancellation] = useState('');
 
   useEffect(() => {
     loadData();
@@ -81,18 +82,6 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       console.error('Error loading countries:', error);
     }
   };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (actionsMenuRef.current && !actionsMenuRef.current.contains(event.target as Node)) {
-        setShowActionsMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const loadData = async () => {
     if (!requestId) return;
 
@@ -115,7 +104,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           key_td: control.key_td || 'CI',
           comments_general: control.comments_general || '',
           id_executive_pricing: control._id_executive_pricing || '',
-          complete_name_pricing: control.complete_name_pricing || ''
+          complete_name_pricing: control.complete_name_pricing || '',          
         });
 
         const request = await pricingControlService.getResquetById(control.idrequest);
@@ -123,17 +112,17 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         setPriority(request.priority === 1);
         setBidding(request.licitation === 1);
 
-        const expandedIds = new Set(control.services?.map((s: any) => s.idservice) || []);
+        const expandedIds = new Set(control.services?.map((s: any) => s.idService) || []);
         setExpandedServices(expandedIds);
       } else {
-        const request = await quotationService.getById(requestId);
+        const request = await pricingControlService.getResquetById(requestId);
         setRequestData(request);
         setPriority(request.priority === 1);
         setBidding(request.licitation === 1);
 
         setSelectedServices([]);
 
-        const allServiceIds = new Set(request.services?.map((s: any) => s.id_service_item || s.idservice || s._id) || []);
+        const allServiceIds = new Set(request.services?.map((s: any) => s.idServiceItem || s.idService || s._id) || []);
         setExpandedServices(allServiceIds);
       }
     } catch (error) {
@@ -174,16 +163,16 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const toggleService = (serviceId: number) => {
     const service = requestData.services.find((s: any) =>
-      (s.id_service_item || s.idservice || s._id) === serviceId
+      (s.idServiceItem || s.idService || s._id) === serviceId
     );
     if (!service) return;
 
-    const isSelected = selectedServices.some(s => s.idservice === serviceId);
+    const isSelected = selectedServices.some(s => s.idService === serviceId);
 
     if (isSelected) {
-      setSelectedServices(selectedServices.filter(s => s.idservice !== serviceId));
+      setSelectedServices(selectedServices.filter(s => s.idService !== serviceId));
     } else {
-      setSelectedServices([...selectedServices, { ...service, idservice: serviceId }]);
+      setSelectedServices([...selectedServices, { ...service, idService: serviceId }]);
     }
   };
 
@@ -213,8 +202,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         if (serviceCopy.merchandise) {
           delete serviceCopy.merchandise;
         }
-        if (!serviceCopy.idservice) {
-          serviceCopy.idservice = serviceCopy._id;
+        if (!serviceCopy.idService) {
+          serviceCopy.idService = serviceCopy._id;
         }
         return serviceCopy;
       });
@@ -237,14 +226,14 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         Idcontrol: 0,
         Control: undefined,
         Idrequest: requestId,
-        Id_executive: requestData.created_by?._id_user || '',
-        Complete_name: requestData.created_by?.full_name || '',
+        Id_executive: requestData.createdBy?.idUser || '',
+        Complete_name: requestData.createdBy?.fullName || '',
         Creation_date: new Date().toISOString(),
         Updated_date: new Date().toISOString(),
-        _id_request_type: requestData.id_request_type,
-        request_type_name: requestData.request_type_name,
-        Id_customer: requestData.customer?._id_customer || '',
-        Customer_business_name: requestData.customer?.customer_name || '',
+        _id_request_type: requestData.idRequestType,
+        request_type_name: requestData.typeRequest,
+        Id_customer: requestData.customer?.idCustomer || '',
+        Customer_business_name: requestData.customer?.customerName || '',
         Status_control: {Id_status_control: statusControl._id_status_control, Status_control_name: statusControl.status_control_name},
         Suppliers: suppliersAPI,       
         Services: servicesData,       
@@ -307,7 +296,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       setLoading(true);
       await pricingControlService.QuoteControl({
           idcontrol_: controlId,
-          idresqued_: requestData._id
+          idresqued_: requestData.id
         });
       setStatusControl({
         _id_status_control: 5,
@@ -317,6 +306,30 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     } catch (error) {
       console.error('Error marking as quoted:', error);
       showError('Error al marcar como cotizado');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMarkAsDecline = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!controlId) return;
+
+    try {
+      setLoading(true);
+      await pricingControlService.DeclineControl({
+          idcontrol_: controlId,
+          idresqued_: requestData.id,
+          reason_for_cancellation:reasoncancellation
+        });
+      setStatusControl({
+        _id_status_control: 6,
+        status_control_name: 'Declinada'
+      });
+      showSuccess('Control marcado como declinado');
+    } catch (error) {
+      console.error('Error marking as decline:', error);
+      showError('Error al marcar como declinado');
     } finally {
       setLoading(false);
     }
@@ -343,6 +356,14 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     return 0;
   };
 
+  const openModal = () => {      
+      setShowModal(true);
+    };
+  
+    const closeModal = () => {
+      setShowModal(false);      
+    };
+
   if (loading && !requestData) {
     return (
       <div className={styles.formContainer}>
@@ -363,7 +384,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     );
   }
 
-  const medalSrc = getCategoryMedal(requestData.customer?.customer_category);
+  const medalSrc = getCategoryMedal(requestData.customer?.customerCategory);
 
   return (
     <div className={styles.container}>
@@ -426,17 +447,17 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 )}
                 <div>
                   <h2 className={styles.clientName}>
-                    {requestData.customer?.customer_name}
+                    {requestData.customer?.customerName}
                     {priority && (
                       <img src="/prioridad.png" alt="Prioridad" className={styles.priorityIcon} style={{width: '20px', height: '20px', marginLeft: '8px'}} />
                     )}
                   </h2>
                   <div className={styles.clientDetails}>
                     <span className={styles.clientId}>
-                      Ref: {requestData.reference_request}
+                      Ref: {requestData.referenceRequest}
                     </span>
                     <span className={styles.clientExecutive}>
-                      {requestData.created_by?.full_name}
+                      {requestData.createdBy?.fullName}
                     </span>
                   </div>
                   <div className={styles.clientToggles}>
@@ -474,11 +495,11 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 </div>
               </div>
               <div className={styles.clientMeta}>
-                <div className={styles.clientType}>{requestData.request_type_name}</div>
+                <div className={styles.clientType}>{requestData.requestType}</div>
               </div>
             </div>
             <div className={styles.clientActions}>
-              <button className={styles.btnDecline} disabled={loading}>
+              <button className={styles.btnDecline} disabled={loading} onClick={openModal}>
                 {t('ctrlpricing.decline')}
               </button>
               <button
@@ -536,16 +557,17 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 onChange={(e) => {
                   const statusMap: any = {
                     'Asignada': { _id_status_control: 3, status_control_name: 'Asignada' },                    
-                    'Cotizada': { _id_status_control: 5, status_control_name: 'Cotizada' }
+                    'Cotizada': { _id_status_control: 5, status_control_name: 'Cotizada' },
+                    'Declinada': { _id_status_control: 6, status_control_name: 'Declinada' }
                   };
                   setStatusControl(statusMap[e.target.value] || statusControl);
                 }}
                 className={styles.formSelect}
                 disabled={loading}
-              >
-                <option>En proceso</option>
+              >                
                 <option>Asignada</option>
                 <option>Cotizada</option>
+                <option>Declinada</option>
               </select>
             </div>
             <div className={styles.formGroup}>
@@ -657,8 +679,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           <h3 className={styles.sectionTitle}>{t('ctrlpricing.services')}</h3>
           {requestData.services && requestData.services.length > 0 ? (
             requestData.services.map((service: any, index: number) => {
-              const serviceId = service.id_service_item || service.idservice || service._id;
-              const isSelected = selectedServices.some(s => s.idservice === serviceId);
+              const serviceId = service.idServiceItem || service.idService || service._id;
+              const isSelected = selectedServices.some(s => s.idService === serviceId);
               const isUsed = service.used && !isSelected;
               const isExpanded = expandedServices.has(serviceId);
 
@@ -714,7 +736,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label><span className={styles.required}>*</span> {t('ctrlpricing.service')}</label>
                           <input
                             type="text"
-                            value={service.service_name || ''}
+                            value={service.nameService || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -723,7 +745,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label><span className={styles.required}>*</span> {t('ctrlpricing.operation')}</label>
                           <input
                             type="text"
-                            value={shipment.operation_type_name || ''}
+                            value={shipment.typeOperation || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -741,7 +763,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label>{t('ctrlpricing.expecteddeparture')}</label>
                           <input
                             type="date"
-                            value={shipment.departure_date_approximate ? new Date(shipment.departure_date_approximate.$date || shipment.departure_date_approximate).toISOString().split('T')[0] : ''}
+                            value={shipment.departureDateAproximate ? new Date(shipment.departureDateAproximate.$date || shipment.departureDateAproximate).toISOString().split('T')[0] : ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -751,7 +773,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <input
                             type="text"
                             value={(() => {
-                              const countryCode = shipment.origin_country_name || shipment.origin?.country_code || shipment.origin?.location || '';
+                              const countryCode = shipment.origin_country_name || shipment.origin?.countryCode || shipment.origin?.zipCode || '';
                               const country = countries.find(c => c.country_code === countryCode);
                               return country ? `(${country.country_code}) ${country.name_country}` : countryCode;
                             })()}
@@ -763,7 +785,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label><span className={styles.required}>*</span> {t('ctrlpricing.cpo')}</label>
                           <input
                             type="text"
-                            value={shipment.origin?.location || ''}
+                            value={shipment.origin?.countryCode || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -773,7 +795,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <input
                             type="text"
                             value={(() => {
-                              const countryCode = shipment.destination_country_name || shipment.destination?.country_code || shipment.destination?.location || '';
+                              const countryCode = shipment.destination_country_name || shipment.destination?.countryCode || shipment.destination?.zipCode || '';
                               const country = countries.find(c => c.country_code === countryCode);
                               return country ? `(${country.country_code}) ${country.name_country}` : countryCode;
                             })()}
@@ -785,7 +807,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label><span className={styles.required}>*</span> {t('ctrlpricing.cpd')}</label>
                           <input
                             type="text"
-                            value={shipment.destination?.location || ''}
+                            value={shipment.destination?.countryCode || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -794,7 +816,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label><span className={styles.required}>*</span> {t('ctrlpricing.shippingtype')}</label>
                           <input
                             type="text"
-                            value={shipment.shippment_type_name || ''}
+                            value={shipment.typeShipment || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -804,10 +826,10 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                       <div className={styles.associatedServices}>
                         <label>{t('ctrlpricing.associatedServices')}</label>
                         <div className={styles.servicesChips}>
-                          {(shipment.services_associated || shipment.services_asociated) && (shipment.services_associated || shipment.services_asociated).length > 0 ? (
-                            (shipment.services_associated || shipment.services_asociated).map((assocService: any, idx: number) => (
-                              <span key={assocService._id_service_associated?.$oid || idx} className={`${styles.serviceChip} ${styles.serviceChipActive}`}>
-                                {assocService.service_associated_name || 'Servicio'}
+                          {(shipment.servicesAsociated || shipment.services_asociated) && (shipment.servicesAsociated || shipment.services_asociated).length > 0 ? (
+                            (shipment.servicesAsociated || shipment.services_asociated).map((assocService: any, idx: number) => (
+                              <span key={assocService.idServiceAsociated?.$oid || idx} className={`${styles.serviceChip} ${styles.serviceChipActive}`}>
+                                {assocService.serviceAsociatedName || 'Servicio'}
                               </span>
                             ))
                           ) : (
@@ -831,18 +853,18 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                         <label className={styles.checkboxLabel}>
                           <input
                             type="checkbox"
-                            checked={!!shipment.projection_shipment}
+                            checked={!!shipment.projectionShipment}
                             disabled
                           />
                           {t('ctrlpricing.programFrequency')}
                         </label>
-                        {shipment.projection_shipment && (
+                        {shipment.projectionShipment && (
                           <div className={styles.frequencyGrid}>
                             <div className={styles.formGroup}>
                               <label>{t('ctrlpricing.frequency')}</label>
                               <input
                                 type="text"
-                                value={shipment.projection_shipment.frecuency || ''}
+                                value={shipment.projectionShipment.frecuency || ''}
                                 className={styles.formInput}
                                 disabled
                               />
@@ -851,7 +873,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               <label>{t('ctrlpricing.quantity')}</label>
                               <input
                                 type="number"
-                                value={shipment.projection_shipment.num || 0}
+                                value={shipment.projectionShipment.number || 0}
                                 className={styles.formInput}
                                 disabled
                               />
@@ -860,7 +882,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               <label>{t('ctrlpricing.unit')}</label>
                               <input
                                 type="text"
-                                value={shipment.projection_shipment.measurement_frecuency || ''}
+                                value={shipment.projectionShipment.measurementFrecuency || ''}
                                 className={styles.formInput}
                                 disabled
                               />
@@ -886,13 +908,13 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               </thead>
                               <tbody>
                                 {shipment.cargo.map((carg: any) => (
-                                  <tr key={carg.id}>
-                                    <td>{carg.merchandise_name}</td>
-                                    <td>{carg.dangerous ? 'Sí' : 'No'}</td>
-                                    <td>{carg.refrigerated ? 'Refrigerada' : 'General'}</td>
-                                    <td>{carg.stackable ? 'Sí' : 'No'}</td>
-                                    <td>{carg.volume_total ? `${carg.volume_total} ${carg.unit_measurement || ''}` : '0'} KG</td>
-                                    <td>{carg.weigth_total ? `${carg.weigth_total} ${carg.unit_weight   || ''}` : '0'} KG</td>                        
+                                  <tr key={carg.name}>
+                                    <td>{carg.name}</td>
+                                    <td>{carg.classification.idClassificationMerchandise === 5 ? 'Sí' : 'No'}</td>
+                                    <td>{carg.classification.idClassificationMerchandise === 4 ? 'Refrigerada' : 'General'}</td>
+                                    <td>{carg.stowable ? 'Sí' : 'No'}</td>
+                                    <td>{carg.volumeTotal ? `${carg.volumeTotal} ${carg.unitMeasurement || ''}` : '0'} KG</td>
+                                    <td>{carg.weigthTotal ? `${carg.weigthTotal} ${carg.unitWeight   || ''}` : '0'} KG</td>                        
                                   </tr>
                                 ))}                                
                               </tbody>
@@ -914,6 +936,45 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           )}
         </div>
       </div>
+{showModal && (
+         <form onSubmit={handleMarkAsDecline}>          
+        <div className={styles.modalOverlay} onClick={closeModal}>          
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>
+               Declinar control
+              </h2>
+              <button className={styles.closeButton} onClick={closeModal}>
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>             
+              <div className={styles.formGroup}>
+                <label className={styles.label}><span className={styles.required}>*</span> {t('catalog.imo.description')}</label>
+                <textarea
+                  className={styles.textarea}
+                  value={reasoncancellation}
+                onChange={(e) => setreasoncancellation(e.target.value)}
+                  disabled={loading}
+                  required
+                />
+              </div>              
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
+                {t('catalog.cancel')}
+              </button>
+              <button type="submit" className={styles.saveButton} disabled={loading}>
+                {loading ? 'Guardando...' : t('catalog.save')}
+              </button>
+            </div>
+          </div>
+        </div>
+        </form>
+      )}
+
     </div>
   );
 }

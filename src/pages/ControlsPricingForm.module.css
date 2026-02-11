@@ -165,6 +165,22 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+.saveButton {
+  padding: 0.625rem 1.25rem;
+  background-color: #038C7F;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.saveButton:hover {
+  background-color: #037F8C;
+}
+
 .actionBarSaveButton {
   padding: 0.75rem 1.25rem;
   background-color: #038C7F;

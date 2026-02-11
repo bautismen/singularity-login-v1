@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { RefreshCw, Filter, ChevronDown, Search, Clock, Plus, FilterXIcon, FileText } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
-import { controlsPricingService, ControlsPricingRequest } from '../services/controlsPricingService';
+import { controlsPricingService } from '../services/controlsPricingService';
+import { ResquetQuote } from '../types/pricingControl';
 import { ControlsPricingForm } from './ControlsPricingForm';
 import { useAuth } from '../contexts/AuthContext';
 import { DocumentsModal } from '../components/DocumentsModal';
@@ -11,8 +12,8 @@ import styles from './ControlsPricing.module.css';
 export function ControlsPricing() {
   const { t } = useLanguage();
   const { showError } = useNotification();
-  const [requests, setRequests] = useState<ControlsPricingRequest[]>([]);
-  const [filteredRequests, setFilteredRequests] = useState<ControlsPricingRequest[]>([]);
+  const [requests, setRequests] = useState<ResquetQuote[]>([]);
+  const [filteredRequests, setFilteredRequests] = useState<ResquetQuote[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -26,7 +27,7 @@ export function ControlsPricing() {
   const [selectedExecutive, setSelectedExecutive] = useState<string>('');
   const [users, setUsers] = useState<any[]>([]);
   const [showDocumentsModal, setShowDocumentsModal] = useState(false);
-  const [selectedRequestForDocs, setSelectedRequestForDocs] = useState<ControlsPricingRequest | null>(null);
+  const [selectedRequestForDocs, setSelectedRequestForDocs] = useState<ResquetQuote | null>(null);
 
   useEffect(() => {
     loadRequests();
@@ -75,7 +76,7 @@ export function ControlsPricing() {
 
       if (!excludedEmails.includes(user.email)) {
         filtered = filtered.filter(r =>
-          r.assigned_to?.some(a => a._id_user === user._id)
+          r.assignedTo?.some(a => a.idUser === user._id)
         );
       }
       setRequests(filtered);
@@ -106,7 +107,7 @@ export function ControlsPricing() {
     loadRequests();
   };
 
-  const handleOpenDocuments = (request: ControlsPricingRequest) => {
+  const handleOpenDocuments = (request: ResquetQuote) => {
     setSelectedRequestForDocs(request);
     setShowDocumentsModal(true);
   };
@@ -125,18 +126,18 @@ export function ControlsPricing() {
 
     if (searchQuery) {
       filtered = filtered.filter(r =>
-        r.reference_request.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.customer_business_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.assigned_to.some(assigned => assigned.pricing_control_numbers?.some(controlNumber => controlNumber.control.toLowerCase().includes(searchQuery.toLowerCase())))
+        r.ReferenceRequest.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.Customer?.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.AssignedTo.some(assigned => assigned.pricingControlNumbers?.some(controlNumber => controlNumber.control.toLowerCase().includes(searchQuery.toLowerCase())))
       );
     }
 
     if (dateFilter !== 'all') {
       const now = new Date();
       filtered = filtered.filter(q => {
-        const requestDate = new Date(q.request_date);
+        const requestDate = new Date(q.DateRequest);
         const diffDays = Math.ceil((now.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
-        console.log('Filter days: ' , q.reference_request , q.request_date, diffDays)
+        console.log('Filter days: ' , q.ReferenceRequest , q.DateRequest, diffDays)
 
         switch (dateFilter) {
           case 'hoy':
@@ -156,12 +157,12 @@ export function ControlsPricing() {
     }
 
     if (executiveFilter === 'solo_yo' && user) {
-      filtered = filtered.filter(q => q.requesting_data?._id_executive === user._id);
+      filtered = filtered.filter(q => q.CreatedBy?.IdExecutive === user._id);
     }
 
     if (executiveFilter === 'seleccionar' && selectedExecutive) {
       filtered = filtered.filter(r =>
-          r.assigned_to?.some(a => a._id_executive === selectedExecutive)
+          r.AssignedTo?.some(a => a.IdExecutive === selectedExecutive)
         );      
     }
 
@@ -207,13 +208,13 @@ export function ControlsPricing() {
 
   const getOperationType = (services: any[]) => {
     if (!services || services.length === 0) return '';
-    return services[0]._id_operation_type === 1 ? 'importación' : 'exportación';
+    return services[0].shipments[0].typeOperation === 1 ? 'importación' : 'exportación';
   };
 
   const getCountries = (services: any[]) => {
     if (!services || services.length === 0) return '';
-    const origin = services[0].shipments[0].origin?.country_code || 'NA';
-    const destination = services[0].shipments[0]?.destination?.country_code || 'NA';
+    const origin = services[0].shipments[0].origin?.countryCode || 'NA';
+    const destination = services[0].shipments[0]?.destination?.countryCode || 'NA';
     return `${origin} - ${destination}`;
   };
 
@@ -407,20 +408,21 @@ export function ControlsPricing() {
         ) : filteredRequests.length > 0 ? (
           <div className={styles.cardsGrid}>
             {filteredRequests.map((request) => {
-              const daysElapsed = getDaysElapsed(request.deadline_date);
-              const medalSrc = getCategoryMedal(request.customer.customer_category);
-              const categoryLabel = request.request_type_name;
+              const daysElapsed = getDaysElapsed(request.dateDeadline);
+              const medalSrc = getCategoryMedal(request.customer?.customerCategory);
+              const categoryLabel = request.typeRequest;
               const operationType = getOperationType(request.services);
               const countries = getCountries(request.services);
               const totalServices = getTotalServicesCount(request.services);
               const attendedServices = getAttendedServicesCount(request.services);
-              const assignedWithControls = request.assigned_to?.filter(
-                assigned => assigned.pricing_control_numbers && assigned.pricing_control_numbers.length > 0
+              console.log(request.id);
+              const assignedWithControls = request.assignedTo?.filter(
+                assigned => assigned.pricingControlNumbers && assigned.pricingControlNumbers.length > 0
               ) || [];
               const isDisabled = totalServices === attendedServices ? true : false;
 
               return (
-                <div key={request._id} className={styles.card}>
+                <div key={request.id} className={styles.card}>
                   <div className={styles.cardHeader}>
                     <div className={styles.cardHeaderLeft}>
                       {medalSrc && (
@@ -433,7 +435,7 @@ export function ControlsPricing() {
                       <div className={styles.companyInfo}>
                         <div className={styles.companyNameRow}>
                           <h3 className={styles.companyName}>
-                            {request.customer?.customer_name}
+                            {request.customer?.customerName}
                           </h3>
                           {request.priority === 1 && (
                             <img
@@ -444,9 +446,9 @@ export function ControlsPricing() {
                           )}
                         </div>
                         <div className={styles.referenceRow}>
-                          <span className={styles.referenceNumber}>{request.reference_request}</span>
-                          <span className={`${styles.statusBadge} ${getStatusClass(request.status_request_name)}`}>
-                            {request.status_request_name}
+                          <span className={styles.referenceNumber}>{request.referenceRequest}</span>
+                          <span className={`${styles.statusBadge} ${getStatusClass(request.statusRequest)}`}>
+                            {request.statusRequest}
                           </span>
                         </div>
                       </div>
@@ -478,10 +480,10 @@ export function ControlsPricing() {
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
                       </svg>
-                      <span>{request.created_by?.full_name || t('ctrlpricing.unassigned')}</span>
+                      <span>{request.createdBy?.fullName || t('ctrlpricing.unassigned')}</span>
                     </div>
                     <div className={styles.servicesCounter}>
-                      {(request.status_request_name === 'Parcialmente cotizada' || request.status_request_name === 'Cotizada') && (
+                      {(request.statusRequest === 'Parcialmente cotizada' || request.statusRequest === 'Cotizada') && (
                         <button
                           className={styles.documentsButton}
                           onClick={() => handleOpenDocuments(request)}
@@ -517,11 +519,11 @@ export function ControlsPricing() {
                             <span className={styles.assignedName}>{assigned.full_name}</span>
                           </div>
                           <div className={styles.controlNumberCenter}>
-                            {assigned.pricing_control_numbers.map((control, controlIndex) => (
+                            {assigned.pricingControlNumbers.map((control, controlIndex) => (
                               <button
                                 key={controlIndex}
                                 className={styles.controlCode}
-                                onClick={() => handleEditControl(request._id, control._id_pricing_controls)}
+                                onClick={() => handleEditControl(request.id, control.idPricingControl)}
                               >
                                 {control.control}
                               </button>
@@ -534,7 +536,7 @@ export function ControlsPricing() {
 
                   <button hidden ={isDisabled}
                     className={styles.addControlButton}
-                    onClick={() => handleAddControl(request._id)}
+                    onClick={() => handleAddControl(String(request.id))}
                   >
                     <Plus size={16} />
                     {t('ctrlpricing.addcontrol')}
@@ -560,8 +562,8 @@ export function ControlsPricing() {
           isOpen={showDocumentsModal}
           onClose={handleCloseDocuments}
           requestData={{
-            companyName: selectedRequestForDocs.customer_business_name,
-            reference: selectedRequestForDocs.reference_request,
+            companyName: selectedRequestForDocs.customerName,
+            reference: selectedRequestForDocs.referenceRequest,
             location: getCountries(selectedRequestForDocs.services),
           }}
         />
