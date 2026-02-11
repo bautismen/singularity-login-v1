@@ -8,7 +8,7 @@ import styles from './Suppliers.module.css';
 
 export default function Suppliers({ onNavigate }: { onNavigate: (route: string) => void }) {
   const { t } = useLanguage();
-  const { showSuccess, showError } = useNotification();
+  const {showError } = useNotification();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   //const [people, setPeople] = useState<Person[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -141,14 +141,27 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
 
   function handleEditSupplier(supplier: Supplier) {
     setEditingSupplier(supplier);
+
+    //const selectedCompany = companies.find(c => c._id === supplier.company_id);
+
     setFormData({
-      is_national: supplier.is_national || false,
       is_persona_fisica: supplier.is_persona_fisica || false,
+      curp: supplier.curp || '',
       company_id: supplier.company_id || '',
-      //person_id: supplier.person_id || '',
+      is_national: supplier.is_national || false,
+      status: supplier.status || 'activo',
       fiscal_data: supplier.fiscal_data,
-      contacts: supplier.contacts,
-      addresses: supplier.addresses,
+      // fiscal_data: selectedCompany ? {
+      //   business_name: selectedCompany.business_name || '',
+      //   rfc_taxid: selectedCompany.rfc_taxid || '',
+      //   country: selectedCompany.country || 'MX',
+      //   state: selectedCompany.state || '',
+      // } : supplier.fiscal_data,
+      //person_id: supplier.person_id || '',
+      serctor_id: supplier.serctor_id || '',
+      sector: supplier.sector || '',
+      contacts: supplier.contacts || [],
+      addresses: supplier.addresses || [],
     });
     setIsFormOpen(true);
   }
@@ -309,8 +322,8 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
   }
 
   const filteredSuppliers = suppliers.filter(supplier =>
-    supplier.fiscal_data.business_name || //.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.fiscal_data.rfc_taxid //.toLowerCase().includes(searchTerm.toLowerCase())
+    supplier.fiscal_data.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    supplier.fiscal_data.rfc_taxid.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (isFormOpen) {
@@ -382,6 +395,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                     }}
                     className={styles.selectInput}
                     required
+                    disabled = {editingSupplier ? true : false} 
                     >
                     <option value="">{t('supp.selectCompany')}</option>
                     {companies.map((company) => (
@@ -396,6 +410,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                   type="button"
                   onClick={() => onNavigate('catalogs/companies')}
                   className={styles.fullWidthGreenButton}
+                  disabled = {editingSupplier ? true : false}
                 >
                   <Plus size={16} />
                   {t('supp.newCompany')}
@@ -424,7 +439,13 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                     </label>
                   <select
                     value={formData.serctor_id}
-                    onChange={(e) => setFormData({ ...formData, serctor_id: e.target.value })}
+                    onChange={(e) => 
+                      setFormData({ 
+                        ...formData, 
+                        serctor_id: e.target.value,
+                        sector: e.target.options[e.target.selectedIndex].text
+                      })
+                    }
                     className={styles.selectInput}
                     required
                   >
@@ -433,7 +454,8 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                       <option key={sector._id} value={sector._id}>
                         {sector.name}
                       </option>
-                    ))}
+                    ))
+                    }
                   </select>
                 </div>
 
@@ -690,36 +712,58 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
 
       <div className={styles.supplierList}>
         {filteredSuppliers.map((supplier) => (
-          <div key={supplier._idsupplier} className={styles.supplierCard}>
-            
+          <div key={supplier._idsupplier} className={styles.supplierCard}>           
             <div className={styles.supplierRow}>
               <div className={styles.supplierInfo}>
                 <div className={styles.supplierNameWrapper}>
 
-                  <p className={styles.supplierName}>{supplier.fiscal_data.business_name}</p>
-                  <p className={styles.taxId}>{supplier.fiscal_data.rfc_taxid}</p>
+                  <h3 className={styles.supplierName}>
+                    {supplier.fiscal_data.business_name}
+                  </h3>
                   
                   <p className={styles.supplierType}>
-                    {supplier.is_persona_fisica === true ? 'Persona Física' : 'Persona Moral'}
+                    <span className={styles.badge}>
+                      {supplier.is_persona_fisica === true 
+                        ? 'Persona física' 
+                        : 'Persona moral'
+                      } 
+                    </span>
                   </p>
+
                   <span className={supplier.status === 'activo'
                     ? styles.statusActive
                     : styles.statusInactive
                     }
                   >
-                  {supplier.status}
-                </span>
-                </div>
-
-                <div className={styles.supplierActions}>
-                  <button
-                    onClick={() => handleEditSupplier(supplier)}
-                    className={styles.editButton}
-                  >
-                    <Edit2 size={18} />
-                  </button>
+                    {supplier.status}
+                  </span>
                 </div>
               </div>
+
+                <div className={styles.supplierMeta}>
+                  <p className={styles.taxId}>
+                    {supplier.fiscal_data.rfc_taxid}
+                  </p>
+
+                  <p className={styles.supplierNationality}>
+                    <span className={styles.badge}>
+                      {supplier.is_national === true
+                        ? 'Nacional'
+                        : 'Extranjero'
+                      }
+                    </span>
+                  </p>
+
+                  <div className={styles.supplierActions}>
+                    <button
+                      onClick={() => handleEditSupplier(supplier)}
+                      className={styles.editButton}
+                    >
+                      <Edit2 size={18} />
+                    </button>
+                  </div>
+                </div>
+
             </div>
           </div>
         ))}

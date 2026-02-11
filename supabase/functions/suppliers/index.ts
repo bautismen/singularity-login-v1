@@ -95,12 +95,25 @@ Deno.serve(async (req: Request) => {
         .limit(1)
         .toArray();
 
-      const nextId = maxIdDoc.length > 0 ? (maxIdDoc[0].idsupplier || 0) + 1 : 1;
+      const nextId = maxIdDoc.length > 0 ? (maxIdDoc[0]._idsupplier || 0) + 1 : 1;
 
       const newSupplier = {
         _idsupplier: nextId,
         ...body,
-        history: [],
+        history: [
+          {
+            date: new Date(),
+            user_id: "system",
+            user_name: "System User",
+            changes: [
+              {
+                field: "Created",
+                old_value: "",
+                new_value: "Supplier created",
+              },
+            ],
+          },
+        ],
         created_at: new Date(),
         created_by: {
           user_id: "system",

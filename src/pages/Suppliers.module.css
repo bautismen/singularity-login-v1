@@ -121,7 +121,7 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
-  padding: 1.2rem;
+  padding: 1.7rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
@@ -136,8 +136,11 @@
 }
 
 .supplierCard:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border-color: #d1d5db;
+  transform: translateY(-4px); /* hace que flote */
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: #10b981;
 }
 
 .supplierRow {
@@ -146,10 +149,8 @@
 }
 
 .supplierInfo {
-  /* flex: 1;
-  min-width: 0; */
   max-width: 90%;
-  margin-top: 20px; /* bajar */
+  margin-top: 5px; /* bajar */
 }
 
 /* .supplierInfo h3 {
@@ -184,7 +185,6 @@
   text-transform: capitalize;
 }
 
-
 .supplierNameWrapper {
   display: flex;
   flex-direction: column;
@@ -202,6 +202,19 @@
   padding: 0;
   border-radius: 0;
   display: inline-block;
+  margin-bottom: 0.4rem;
+}
+
+.supplierMeta {
+  margin-left: auto;     
+  text-align: right;
+}
+
+.supplierNationality {
+  font-size: 0.8125rem;
+  color: #607090;
+  font-weight: 500;
+  margin: 0 0 0.25rem 0;
   margin-bottom: 0.5rem;
 }
 
@@ -209,18 +222,15 @@
   font-size: 0.8125rem;
   color: #6b7280;
   margin: 0 0 0.25rem 0;
-}
-
-.supplierLocation {
-  font-size: 0.8125rem;
-  color: var(--text-tertiary);
-  margin: 0;
+  margin-bottom: 0.5rem;
 }
 
 .supplierActions {
+  position: absolute;
+  top: 5.2rem;
+  right: 1.5rem; 
   display: flex;
   gap: 0.5rem;
-  margin-left: 1rem;
 }
 
 .editButton,
@@ -945,7 +955,7 @@
   color: var(--text-primary);
   background: white;
   transition: border-color 0.2s;
-  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);  
 }
 
 .textInput:focus,
@@ -1144,24 +1154,6 @@
   color: var(--text-primary);
 }
 
-.badgeGold {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-  color: #7C5900;
-  font-weight: 600;
-}
-
-.badgeSilver {
-  background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
-  color: #404040;
-  font-weight: 600;
-}
-
-.badgeBronze {
-  background: linear-gradient(135deg, #CD7F32 0%, #B8691C 100%);
-  color: #4A2908;
-  font-weight: 600;
-}
-
 .reference {
   font-family: 'Courier New', monospace;
   font-weight: 600;
@@ -1176,7 +1168,8 @@
 
 .supplierName {
   font-weight: 500;
-  margin-top: -10px;
+  margin-top: -5px;
+  margin-bottom: 0.4rem;
 }
 
 .servicesCount {
@@ -1255,10 +1248,6 @@
 
   .searchBar {
     padding: 0.75rem 1rem;
-  }
-
-  .supplierCard {
-    padding: 1rem;
   }
 
   .formHeader {
