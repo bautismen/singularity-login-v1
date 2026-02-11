@@ -26,9 +26,15 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
   });
   const [showPersonForm, setShowPersonForm] = useState(false);
 
-  
+  const CLIENT_LEVEL_MAP = {
+    oro: 1,
+    plata: 2,
+    bronce: 3,
+  } as const;
+
   {/* const [showCompanyForm, setShowCompanyForm] = useState(false);*/}
 
+  
   const [formData, setFormData] = useState({
     is_branch: false,
     branch_name: '',
@@ -41,6 +47,7 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
     nationality: 'nacional' as 'nacional' | 'extranjero',
     status: 'activo' as 'activo' | 'inactivo',
     client_level: 'oro' as  'oro' | 'plata' | 'bronce',
+    client_level_id: 1 as 1 | 2 | 3,
     fiscal_data: {
       business_name: '',
       taxid: '',
@@ -142,6 +149,7 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
       nationality: 'nacional',
       status: 'activo',
       client_level: 'oro',
+      client_level_id: CLIENT_LEVEL_MAP.oro,
       fiscal_data: {
         business_name: '',
         taxid: '',
@@ -171,6 +179,9 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
     nationality: customer.nationality ?? 'nacional',
     status: customer.status,
     client_level: customer.client_level ?? 'oro',
+    client_level_id:
+    customer.client_level_id ??
+    CLIENT_LEVEL_MAP[customer.client_level ?? 'oro'],
     fiscal_data: selectedCompany
       ? {
           business_name: selectedCompany.business_name || '',
@@ -209,17 +220,29 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
         } : formData.fiscal_data,
       };
 
-      if (!editingCustomer && !formData.is_branch) {
-        const existingMatriz = customers.find(
-          customer => customer.company_id === formData.company_id && !customer.is_branch
-        );
+      const existsDuplicate = customers.some(customer =>
+      customer.company_id === formData.company_id &&
+      customer.status === formData.status &&
+      customer.is_branch === formData.is_branch &&
+      (
+        // matriz
+        !formData.is_branch ||
+        // sucursal
+        customer.branch_name?.trim().toLowerCase() ===
+          formData.branch_name.trim().toLowerCase()
+      ) &&
+      (
+        // si es edición, excluir el mismo registro
+        !editingCustomer ||
+        customer._idcustomer !== editingCustomer._idcustomer
+      )
+    );
 
-        if (existingMatriz) {
-          showError(t('cust.errorMatrizExists'));
-          setLoading(false);
-          return;
-        }
-      }
+    if (existsDuplicate) {
+      showError(t('cust.errorMatrizExists'));
+      setLoading(false);
+      return;
+    }
 
       if (editingCustomer) {
         await updateCustomer(editingCustomer._idcustomer!, dataToSave);
@@ -379,7 +402,9 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
               >
                 <ArrowLeft size={18} />
               </button>
-            <h2 className={styles.formTitle}> {t('cust.newCustomer')}</h2>
+              <h2 className={styles.formTitle}>
+                {editingCustomer ? t('cust.editCustomer') : t('cust.newCustomer')}
+              </h2>
             </div>
             
             <div className={styles.headerActions}>
@@ -454,7 +479,11 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                 <button
                   type="button"
                   onClick={() => onNavigate('catalogs/companies')}
-                  className={styles.fullWidthGreenButton}
+                  className={
+                    editingCustomer
+                      ? styles.fullWidthGrayButton
+                      : styles.fullWidthGreenButton
+                  }
                   disabled={!!editingCustomer}
                 >
                   <Plus size={16} />
@@ -488,6 +517,34 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   />
                   <label htmlFor="is_national" className={styles.checkboxText}>{t('cust.Isnational')}</label>
                 </div>
+
+                 {formData.is_national && (
+                  <div className={styles.checkboxField}>
+                    <input
+                      type="checkbox"
+                      id="is_persona_fisica"
+                      checked={formData.is_persona_fisica}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+
+                        setFormData({
+                          ...formData,
+                          is_persona_fisica: checked,
+                          type: checked ? 'fisica' : 'moral',
+                          person_id: checked ? formData.person_id : '',
+                          curp: checked ? formData.curp : '',
+                        });
+                      }}
+                      className={styles.checkbox}
+                    />
+                    <label
+                      htmlFor="is_persona_fisica"
+                      className={styles.checkboxText}
+                    >
+                      {t('cust.NaturalPerson')}
+                    </label>
+                  </div>
+                )}
               </div>
 
               <div className={styles.rightColumn}>
@@ -531,23 +588,21 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   </label> */}
 
                   <select
-                    value={formData.client_level ?? ''}
+                    value={formData.client_level}
                     onChange={(e) => {
-                      e.currentTarget.setCustomValidity(''); // limpia el error
+                      const level = e.target.value as 'oro' | 'plata' | 'bronce';
                       setFormData({
                         ...formData,
-                        client_level: e.target.value as 'oro' | 'plata' | 'bronce',
+                        client_level: level,
+                        client_level_id: CLIENT_LEVEL_MAP[level],
                       });
                     }}
                     className={styles.selectInput}
                     required
-                    onInvalid={(e) =>
-                      e.currentTarget.setCustomValidity(t('cust.RequiredLevel'))
-                    }
                     disabled={formData.status !== 'activo'}
                   >
                     <option value="" disabled>
-                      {t('cust.selectLevel')} {/* Ej: "Selecciona un nivel" */}
+                      {t('cust.selectLevel')}
                     </option>
                     <option value="oro">{t('cust.clientLevelGold')}</option>
                     <option value="plata">{t('cust.clientLevelSilver')}</option>
@@ -568,33 +623,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   </div>
                 )}
 
-                {formData.is_national && (
-                  <div className={styles.checkboxField}>
-                    <input
-                      type="checkbox"
-                      id="is_persona_fisica"
-                      checked={formData.is_persona_fisica}
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-
-                        setFormData({
-                          ...formData,
-                          is_persona_fisica: checked,
-                          type: checked ? 'fisica' : 'moral',
-                          person_id: checked ? formData.person_id : '',
-                          curp: checked ? formData.curp : '',
-                        });
-                      }}
-                      className={styles.checkbox}
-                    />
-                    <label
-                      htmlFor="is_persona_fisica"
-                      className={styles.checkboxText}
-                    >
-                      {t('cust.NaturalPerson')}
-                    </label>
-                  </div>
-                )}
+                
 
 
                 {formData.is_national && formData.is_persona_fisica && (
@@ -606,7 +635,6 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                     onChange={(e) => setFormData({ ...formData, curp: e.target.value })}
                     className={styles.textInput}
                     placeholder="CURP"
-                    disabled
                   />
                 </div>
                 )}
@@ -827,10 +855,10 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       </div>
 
       <div className={styles.customerList}>
-  {filteredCustomers.map((customer) => {
-    const medalSrc = customer.client_level
-  ? getClientLevelMedal(customer.client_level)
-  : null;
+      {filteredCustomers.map((customer) => {
+        const medalSrc = customer.client_level
+      ? getClientLevelMedal(customer.client_level)
+      : null;
 
     return (
       <div key={customer._idcustomer} className={styles.customerCard}>

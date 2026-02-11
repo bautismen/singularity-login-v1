@@ -81,6 +81,7 @@ export interface Customer {
   curp?: string;               
   datastate: number;
   client_level?: 'oro' | 'plata' | 'bronce';
+  client_level_id?: 1 | 2 | 3;
   fiscal_data: {
     business_name: string;
     taxid: string;
