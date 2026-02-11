@@ -1326,3 +1326,48 @@
     padding: 1.5rem;
   }
 }
+
+.headerButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: #038C7F;
+  color: white;
+  border: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.25); /* separador */
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.headerButton:last-child {
+  border-right: none; /* ⬅ elimina el borde final */
+}
+
+.headerButton:hover {
+  background: #037F8C;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+}
+
+.spinner {
+  display: inline-block;
+  width: 3rem;
+  height: 3rem;
+  border: 4px solid #e5e7eb;
+  border-top-color: #14b8a6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, ChevronDown, ChevronUp, X, ArrowLeft } from 'lucide-react';
+import { Search, Plus, Edit2, ChevronDown, ChevronUp, X, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { Supplier, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES, SectorOfBusiness } from '../types/supplier';
@@ -167,8 +167,8 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
 
   async function handleSaveSupplier(e: React.FormEvent) {
     try {
-      e.preventDefault();
       setLoading(true);
+      e.preventDefault();
 
       const selectedCompany = companies.find(c => c._id === formData.company_id);
 
@@ -187,6 +187,16 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
           state: selectedCompany.state,
         } : formData.fiscal_data,
       };
+
+      const existe = suppliers.filter(supplier =>
+        supplier.company_id === formData.company_id && supplier._id !== editingSupplier?._id
+      );
+
+      if (formData.company_id === selectedCompany?._id && existe.length > 0) {
+        showError('Ya existe un proveedor con esta empresa');
+        setLoading(false);
+        return;
+      }
 
       if (editingSupplier) {
         await updateSupplier(editingSupplier._id!, dataToSave);
@@ -334,29 +344,33 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
       <form onSubmit={handleSaveSupplier} className={styles.formContainer}>
             
         <div className={styles.formHeaderRow}>
+
           <div className={styles.header}>
             <button
               onClick={() => setIsFormOpen(false)} className={styles.backButton}
-              title="Volver a lista"
-            >
+              title="Volver a lista" >
               <ArrowLeft size={18} />
-            </button>
-            
+            </button> 
             <h2 className={styles.formTitle}>{t('supp.newSupplier')}</h2>
-          </div>
+          </div> {/*End form header */}
               
           <div className={styles.headerActions}>
             <button type="submit" className={styles.saveHeaderButton} disabled={loading}>
               <Plus size={18} />
               {t('supp.save')}
             </button>
-          </div>
-        </div>
+          </div> {/*End header actions */}
 
-        <div className={styles.sectionCard}>
-          <div className={styles.sectionTitle}>{t('supp.generalData')}</div>
+        </div> {/*End form header row */}
+
+          <div className={styles.sectionCard}>
+
+            <div className={styles.sectionTitle}>
+              {t('supp.generalData')}
+            </div> {/*End section title */}
 
             <div className={styles.twoColumnGrid}>
+              
               <div className={styles.leftColumn}>
                 <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel}>
@@ -462,7 +476,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                   </select>
                 </div>
 
-              </div>
+              </div>  {/*End left column */}
 
               <div className={styles.rightColumn}>
                 <div className={styles.fieldGroup}>
@@ -528,15 +542,15 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                     />
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
+              </div> {/*End right column */}
+
+            </div> {/*End two column grid */}
+
+          </div> {/*End general data sectionCard */}
 
           <div className={styles.sectionCard}>
-            <div
-              className={styles.sectionTitleCollapsible}
-              onClick={() => toggleSection('contacts')}
-            >
+            <div className={styles.sectionTitleCollapsible}
+              onClick={() => toggleSection('contacts')}>
               <div className={styles.sectionTitleWithDot}>
                 <span className={styles.greenDot}></span>
                 <span>{t('supp.contacts')}</span>
@@ -546,7 +560,9 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
 
             {!collapsedSections.contacts && (
               <div className={styles.sectionContent}>
-                <button onClick={addContact} className={styles.addDashedButton}>
+                <button  
+                  type="button"
+                  onClick={addContact} className={styles.addDashedButton}>
                   <Plus size={20} />
                   {t('supp.addContact')}
                 </button>
@@ -554,7 +570,9 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                   <div key={index} className={styles.itemCard}>
                     <div className={styles.itemHeader}>
                       <h4>{t('supp.contact')} {index + 1}</h4>
-                      <button onClick={() => removeContact(index)} className={styles.removeButton}>
+                      <button 
+                        type="button" 
+                        onClick={() => removeContact(index)} className={styles.removeButton}>
                         <X size={18} />
                       </button>
                     </div>
@@ -605,13 +623,11 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                 ))}
               </div>
             )}
-          </div>
+          </div> {/*End contacts section */}
 
           <div className={styles.sectionCard}>
-            <div
-              className={styles.sectionTitleCollapsible}
-              onClick={() => toggleSection('address')}
-            >
+            <div className={styles.sectionTitleCollapsible}
+              onClick={() => toggleSection('address')}>
               <div className={styles.sectionTitleWithDot}>
                 <span className={styles.greenDot}></span>
                 <span>{t('supp.addresses')}</span>
@@ -621,7 +637,9 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
 
             {!collapsedSections.address && (
               <div className={styles.sectionContent}>
-                <button onClick={addAddress} className={styles.addDashedButton}>
+                <button 
+                  type="button" 
+                  onClick={addAddress} className={styles.addDashedButton}>
                   <Plus size={20} />
                   {t('supp.addAddress')}
                 </button>
@@ -629,7 +647,9 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                   <div key={index} className={styles.itemCard}>
                     <div className={styles.itemHeader}>
                       <h4>{t('supp.address')} {index + 1}</h4>
-                      <button onClick={() => removeAddress(index)} className={styles.removeButton}>
+                      <button 
+                        type="button" 
+                        onClick={() => removeAddress(index)} className={styles.removeButton}>
                         <X size={18} />
                       </button>
                     </div>
@@ -681,7 +701,8 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                 ))}
               </div>
             )}
-          </div>
+          </div> {/*End addresses section */}
+      
       </form>
     );
   }
@@ -691,13 +712,11 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
       <div className={styles.header}>
         <h1 className={styles.title}>{t('supp.title')}</h1>
         <div className={styles.buttonGroup}>
-          <button onClick={handleNewSupplier} className={styles.iconButton}>
-            <Plus size={22} />
+          <button onClick={handleNewSupplier} className={styles.headerButton}>
+            <Plus size={20} />
           </button>
-          <button onClick={loadSuppliers} className={styles.iconButton}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-            </svg>
+          <button onClick={loadSuppliers} className={styles.headerButton} disabled={loading}>
+            <RefreshCw size={20} />
           </button>
         </div>
       </div>
@@ -735,35 +754,39 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
         </div>
       </div>
 
-      <div className={styles.supplierList}>
-        {filteredSuppliers.map((supplier) => (
-          <div key={supplier._idsupplier} className={styles.supplierCard}>           
-            <div className={styles.supplierRow}>
-              <div className={styles.supplierInfo}>
-                <div className={styles.supplierNameWrapper}>
+      {loading ? (
+        <div className={styles.loading}>
+          <div className={styles.spinner}></div>
+        </div>
+      ) : filteredSuppliers.length > 0 ? (
+        <div className={styles.supplierList}>
+          {filteredSuppliers.map((supplier) => (
+            <div key={supplier._idsupplier} className={styles.supplierCard}>           
+              <div className={styles.supplierRow}>
+                <div className={styles.supplierInfo}>
+                  <div className={styles.supplierNameWrapper}>
 
-                  <h3 className={styles.supplierName}>
-                    {supplier.fiscal_data.business_name}
-                  </h3>
-                  
-                  <p className={styles.supplierType}>
-                    <span className={styles.badge}>
-                      {supplier.is_persona_fisica === true 
-                        ? 'Persona física' 
-                        : 'Persona moral'
-                      } 
+                    <h3 className={styles.supplierName}>
+                      {supplier.fiscal_data.business_name}
+                    </h3>
+                      
+                    <p className={styles.supplierType}>
+                      <span className={styles.badge}>
+                        {supplier.is_persona_fisica === true 
+                          ? 'Persona física' 
+                          : 'Persona moral'
+                        } 
+                      </span>
+                    </p>
+
+                    <span className={supplier.status === 'activo'
+                      ? styles.statusActive
+                      : styles.statusInactive
+                      } >
+                      {supplier.status}
                     </span>
-                  </p>
-
-                  <span className={supplier.status === 'activo'
-                    ? styles.statusActive
-                    : styles.statusInactive
-                    }
-                  >
-                    {supplier.status}
-                  </span>
+                  </div>
                 </div>
-              </div>
 
                 <div className={styles.supplierMeta}>
                   <p className={styles.taxId}>
@@ -782,20 +805,21 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                   <div className={styles.supplierActions}>
                     <button
                       onClick={() => handleEditSupplier(supplier)}
-                      className={styles.editButton}
-                    >
+                      className={styles.editButton}>
                       <Edit2 size={18} />
                     </button>
                   </div>
                 </div>
 
+              </div>
             </div>
-          </div>
         ))}
-        {filteredSuppliers.length === 0 && (
+        </div> 
+      ) : (
+        <div className={styles.emptyState}>
           <p className={styles.noResults}>{t('supp.noResults')}</p>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
