@@ -113,7 +113,7 @@ Deno.serve(async (req: Request) => {
               },
             ],
           },
-        ],
+        ], 
         created_at: new Date(),
         created_by: {
           user_id: "system",

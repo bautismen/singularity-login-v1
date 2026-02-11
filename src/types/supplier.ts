@@ -77,7 +77,7 @@ export interface Supplier {
   _id?: string;
   _idsupplier?: number;
   is_persona_fisica?: boolean;
-  curp?: string;
+  curp?: string; 
   company_id?: string;
   is_national?: boolean;
   fiscal_data: {
@@ -87,7 +87,7 @@ export interface Supplier {
     state: string;
   };
   serctor_id: string;
-  sector: string,
+  sector: string;
   contacts: Contact[];
   addresses: Address[];
   history?: HistoryEntry[];
@@ -112,8 +112,8 @@ export interface SupplierFormData {
     country: string;
     state: string;
   }; 
-  serctor_id: number,
-  sector: string,
+  serctor_id: string;
+  sector: string;
   contacts: Contact[];
   addresses: Address[];
 }

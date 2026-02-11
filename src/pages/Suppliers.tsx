@@ -141,9 +141,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
 
   function handleEditSupplier(supplier: Supplier) {
     setEditingSupplier(supplier);
-
     //const selectedCompany = companies.find(c => c._id === supplier.company_id);
-
     setFormData({
       is_persona_fisica: supplier.is_persona_fisica || false,
       curp: supplier.curp || '',
@@ -395,7 +393,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                     }}
                     className={styles.selectInput}
                     required
-                    disabled = {editingSupplier ? true : false} 
+                    disabled = {editingSupplier ? true : false}
                     >
                     <option value="">{t('supp.selectCompany')}</option>
                     {companies.map((company) => (
