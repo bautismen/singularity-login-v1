@@ -209,6 +209,18 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
         } : formData.fiscal_data,
       };
 
+      if (!editingCustomer && !formData.is_branch) {
+        const existingMatriz = customers.find(
+          customer => customer.company_id === formData.company_id && !customer.is_branch
+        );
+
+        if (existingMatriz) {
+          showError(t('cust.errorMatrizExists'));
+          setLoading(false);
+          return;
+        }
+      }
+
       if (editingCustomer) {
         await updateCustomer(editingCustomer._idcustomer!, dataToSave);
       } else {
