@@ -46,7 +46,7 @@ export const quotationService = {
   },
 
   async getById(id: string) {
-    const response = await fetch(`http://localhost:5063/v1/api/quotationrequest/getById?id=${id}`, {
+    const response = await fetch(`http://10.66.12.54:14326/v1/api/quotationrequest/getById?id=${id}`, {
       method: 'GET',
       headers: {
         //'Authorization': `Bearer ${API_KEY}`,

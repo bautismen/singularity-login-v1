@@ -49,7 +49,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
   const loadQuotationsRequests = async () => {
     try {
       setLoading(true);      
-      const response = await fetch('http://localhost:5063/v1/api/quotationrequest/getRecentRequestQuotations?limit=10', {
+      const response = await fetch('http://10.66.12.54:14326/v1/api/quotationrequest/getRecentRequestQuotations?limit=10', {
         method: 'GET',
         headers: {
           //'Authorization': `Bearer ${API_KEY}`,
