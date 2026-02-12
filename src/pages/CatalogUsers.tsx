@@ -1,22 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { User } from '../types/user';
 import styles from './Catalogs.module.css';
+import { useNotification } from '../contexts/NotificationContext';
+import { Modal } from '../components/Modal';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/users`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-interface User {
-  _id: string;
-  email: string;
-  name: string | null;
-  roles: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
 export function CatalogUsers() {
   const { t } = useLanguage();
+  const catalogName = t('user.user');
+  const { showSuccess, showError } = useNotification();
   const [items, setItems] = useState<User[]>([]);
   const [filteredItems, setFilteredItems] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,6 +26,19 @@ export function CatalogUsers() {
     password: '',
     roles: ['user'],
   });
+  const [modalState, setModalState] = useState<{
+      isOpen: boolean;
+      type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
+      title: string;
+      message: string;
+      onConfirm?: () => void;
+      showCancel?: boolean;
+    }>({
+      isOpen: false,
+      type: 'info',
+      title: '',
+      message: ''
+    });
 
   useEffect(() => {
     loadData();
@@ -51,14 +60,14 @@ export function CatalogUsers() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al cargar los datos');
+        throw new Error(t('catalog.errorLoad'));
       }
 
       const data = await response.json();
       setItems(data);
     } catch (error) {
       console.error('Error loading Users data:', error);
-      alert('Error al cargar usuarios');
+      showError('user.errorLoad');
     } finally {
       setLoading(false);
     }
@@ -113,14 +122,15 @@ export function CatalogUsers() {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.FormEvent) => {
     try {
+      e.preventDefault();
       setLoading(true);
 
-      if (!formData.email) {
-        alert('El email es obligatorio');
-        return;
-      }
+      // if (!formData.email) {
+      //   alert('El email es obligatorio');
+      //   return;
+      // }
 
       if (!editingItem && !formData.password) {
         alert('La contraseña es obligatoria para nuevos usuarios');
@@ -148,8 +158,9 @@ export function CatalogUsers() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al actualizar el registro');
+          throw new Error(t('catalog.errorUpdate'));
         }
+
       } else {
         const response = await fetch(API_URL, {
           method: 'POST',
@@ -162,46 +173,55 @@ export function CatalogUsers() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Error al crear el registro');
+          throw new Error(errorData.error || t('catalog.errorSave'));
         }
+        
       }
 
       await loadData();
       closeModal();
-      alert('Usuario guardado exitosamente');
+      showSuccess('user.successSave');
     } catch (error: any) {
       console.error('Error saving User:', error);
-      alert(error.message || 'Error al guardar usuario');
+      showError(error.message || t('user.errorSave'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('¿Estás seguro de eliminar este usuario?')) {
-      try {
-        setLoading(true);
-        const response = await fetch(`${API_URL}/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-        });
+    
+    setModalState({
+      isOpen: true,
+      type: 'confirm',
+      title: t('modal.title').replace('{name}', catalogName.toLowerCase()),
+      message: t('modal.message'),
+      showCancel: true,
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          const response = await fetch(`${API_URL}/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          });
 
-        if (!response.ok) {
-          throw new Error('Error al eliminar el registro');
-        }
+          if (!response.ok) {
+            throw new Error(t('user.errorDelete'));
+          }
 
-        await loadData();
-        alert('Usuario eliminado exitosamente');
-      } catch (error) {
-        console.error('Error deleting User:', error);
-        alert('Error al eliminar usuario');
-      } finally {
-        setLoading(false);
+          await loadData();
+          showSuccess(t('user.successDelete'));
+        } catch (error) {
+          console.error('Error deleting User:', error);
+          showError(t('user.errorDelete'));
+        } finally {
+          setLoading(false);
+        }       
       }
-    }
+    });
   };
 
   const toggleRole = (role: string) => {
@@ -226,11 +246,13 @@ export function CatalogUsers() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Usuarios</h1>
-        <div className={styles.headerActions}>
-          <button className={styles.addButton} onClick={() => openModal()} disabled={loading}>
-            <Plus size={18} />
-            Nuevo Usuario
+        <h1 className={styles.title}>{t('user.title')}</h1>
+        <div className={styles.buttonGroup}>
+          <button className={styles.headerButton} onClick={() => openModal()} disabled={loading}>
+            <Plus size={20} /> 
+          </button>
+          <button onClick={loadData} className={styles.headerButton}>
+            <RefreshCw size={20} />
           </button>
         </div>
       </div>
@@ -239,7 +261,7 @@ export function CatalogUsers() {
         <input
           type="text"
           className={styles.searchInput}
-          placeholder="Buscar usuario..."
+          placeholder={t('user.search')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           disabled={loading}
@@ -250,21 +272,21 @@ export function CatalogUsers() {
             onClick={() => setRoleFilter('all')}
             disabled={loading}
           >
-            Todos
+            {t('user.filterAll')}
           </button>
           <button
             className={`${styles.filterButton} ${roleFilter === 'user' ? styles.active : ''}`}
             onClick={() => setRoleFilter('user')}
             disabled={loading}
           >
-            Usuarios
+            {t('user.title')}
           </button>
           <button
             className={`${styles.filterButton} ${roleFilter === 'admin' ? styles.active : ''}`}
             onClick={() => setRoleFilter('admin')}
             disabled={loading}
           >
-            Administradores
+            {t('user.filterAdmins')}
           </button>
         </div>
       </div>
@@ -279,11 +301,11 @@ export function CatalogUsers() {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Email</th>
-              <th>Nombre</th>
-              <th>Roles</th>
-              <th>Creado</th>
-              <th>Acciones</th>
+              <th>{t('user.email')}</th>
+              <th>{t('user.name')}</th>
+              <th>{t('user.roles')}</th>
+              <th>{t('user.created')}</th>
+              <th>{t('user.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -311,14 +333,14 @@ export function CatalogUsers() {
                       <button
                         className={`${styles.iconButton} ${styles.edit}`}
                         onClick={() => openModal(item)}
-                        title="Editar"
+                        title={t('catalog.edit').replace('{name}', catalogName.toLowerCase())}
                       >
                         <Edit2 size={16} />
                       </button>
                       <button
                         className={`${styles.iconButton} ${styles.delete}`}
                         onClick={() => handleDelete(item._id)}
-                        title="Eliminar"
+                        title={t('catalog.delete')}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -328,8 +350,8 @@ export function CatalogUsers() {
               ))
             ) : (
               <tr>
-                <td colSpan={5} className={styles.noResults}>
-                  No se encontraron usuarios
+                <td colSpan={4} className={styles.noResults}>
+                  {t('user.noResults')}
                 </td>
               </tr>
             )}
@@ -338,94 +360,139 @@ export function CatalogUsers() {
       )}
 
       {showModal && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>
-                {editingItem ? 'Editar Usuario' : 'Nuevo Usuario'}
-              </h2>
-              <button className={styles.closeButton} onClick={closeModal}>
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className={styles.modalBody}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Email *</label>
-                <input
-                  type="email"
-                  className={styles.input}
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  disabled={loading}
-                  placeholder="usuario@ejemplo.com"
-                />
+        <form onSubmit={handleSave}>
+          <div className={styles.modalOverlay} onClick={closeModal}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h2 className={styles.modalTitle}>
+                  {editingItem ? 
+                    t('user.editUser') : 
+                    t('user.newUser')}
+                </h2>
+                <button className={styles.closeButton} onClick={closeModal}>
+                  <X size={24} />
+                </button>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Nombre</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  disabled={loading}
-                  placeholder="Nombre completo"
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  Contraseña {editingItem ? '(dejar vacío para mantener actual)' : '*'}
-                </label>
-                <input
-                  type="password"
-                  className={styles.input}
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  disabled={loading}
-                  placeholder="Contraseña"
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Roles</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  <label className={styles.label} style={{ fontSize: '0.875rem', fontWeight: 'normal' }}>
-                    <input
-                      type="checkbox"
-                      className={styles.checkbox}
-                      checked={formData.roles.includes('user')}
-                      onChange={() => toggleRole('user')}
-                      disabled={loading}
-                    />
-                    {' '}Usuario
+              <div className={styles.modalBody}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>* </span>
+                    {t('user.email')}
                   </label>
-                  <label className={styles.label} style={{ fontSize: '0.875rem', fontWeight: 'normal' }}>
-                    <input
-                      type="checkbox"
-                      className={styles.checkbox}
-                      checked={formData.roles.includes('admin')}
-                      onChange={() => toggleRole('admin')}
-                      disabled={loading}
-                    />
-                    {' '}Administrador
+                  <input
+                    type="email"
+                    className={styles.input}
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    disabled={loading}
+                    placeholder="usuario@ejemplo.com"
+                    required
+                      onInvalid={(e) => 
+                        e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                      }
+                      onInput={(e) =>
+                        e.currentTarget.setCustomValidity('')
+                      }
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>* </span>
+                    {t('user.name')}
                   </label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    disabled={loading}
+                    placeholder={t('user.fullName')}
+                    required
+                      onInvalid={(e) => 
+                        e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                      }
+                      onInput={(e) =>
+                        e.currentTarget.setCustomValidity('')
+                      }
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>* </span>
+                    {t('user.password')} {/*editingItem ? '(dejar vacío para mantener actual)' : ''*/}
+                  </label>
+                  <input
+                    type="password"
+                    className={styles.input}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    disabled={editingItem ? true : false} 
+                    placeholder={t('user.password')}
+                    required ={!editingItem}
+                      onInvalid={(e) => 
+                        e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                      }
+                      onInput={(e) =>
+                        e.currentTarget.setCustomValidity('')
+                      }
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>{t('user.roles')}</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    <label className={styles.label} style={{ fontSize: '0.875rem', fontWeight: 'normal' }}>
+                      <input
+                        type="checkbox"
+                        className={styles.checkbox}
+                        checked={formData.roles.includes('user')}
+                        onChange={() => toggleRole('user')}
+                        disabled={loading}
+                      />
+                      {' '}{t('user.user')}
+                    </label>
+                    <label className={styles.label} style={{ fontSize: '0.875rem', fontWeight: 'normal' }}>
+                      <input
+                        type="checkbox"
+                        className={styles.checkbox}
+                        checked={formData.roles.includes('admin')}
+                        onChange={() => toggleRole('admin')}
+                        disabled={loading}
+                      />
+                      {' '}{t('user.admin')}
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className={styles.modalFooter}>
-              <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
-                Cancelar
-              </button>
-              <button className={styles.saveButton} onClick={handleSave} disabled={loading}>
-                {loading ? 'Guardando...' : 'Guardar'}
-              </button>
+              <div className={styles.modalFooter}>
+                <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
+                  {t('user.cancel')}
+                </button>
+                <button className={styles.saveButton} type="submit" disabled={loading}>
+                  {loading ? 'Guardando...' : t('user.save')}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </form>
       )}
+
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        showCancel={modalState.showCancel}
+        confirmText={t('catalog.continue')}
+        cancelText={t('catalog.cancel')}
+      />
+
     </div>
   );
 }

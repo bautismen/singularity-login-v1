@@ -351,7 +351,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
               title="Volver a lista" >
               <ArrowLeft size={18} />
             </button> 
-            <h2 className={styles.formTitle}>{t('supp.newSupplier')}</h2>
+            <h2 className={styles.formTitle}> {editingSupplier ? t('supp.editSupplier') : t('supp.newSupplier')}</h2>
           </div> {/*End form header */}
               
           <div className={styles.headerActions}>
