@@ -4,6 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { Country } from '../types/catalog';
 import styles from './Catalogs.module.css';
 import { useNotification } from '../contexts/NotificationContext';
+import { Modal } from '../components/Modal';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-countries`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -19,10 +20,25 @@ export function CatalogCountries() {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<Country | null>(null);
   const [loading, setLoading] = useState(false);
+  
   const [formData, setFormData] = useState({
     country_code: '',
     name_country: '',
     status: 1,
+  });
+
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+    showCancel?: boolean;
+  }>({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: ''
   });
 
   useEffect(() => {
@@ -115,8 +131,9 @@ export function CatalogCountries() {
   };
 
   const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+    
     try {
+      e.preventDefault();
       setLoading(true);
 
       if (editingItem) {
@@ -161,30 +178,38 @@ export function CatalogCountries() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm(t('catalog.confirmDelete'))) {
-      try {
-        setLoading(true);
-        const response = await fetch(`${API_URL}/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-        });
+    
+    setModalState({
+      isOpen: true,
+      type: 'confirm',
+      title: t('modal.title').replace('{name}', catalogName.toLowerCase()),
+      message: t('modal.message'),
+      showCancel: true,
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          const response = await fetch(`${API_URL}/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          });
 
-        if (!response.ok) {
-          throw new Error('Error al eliminar el registro');
+          if (!response.ok) {
+            throw new Error('Error al eliminar el registro');
+          }
+
+          await loadData();
+          showSuccess(t('catalog.successDelete'));
+        } catch (error) {
+          console.error('Error deleting Country:', error);
+          showError(t('catalog.errorDelete'));
+        } finally {
+          setLoading(false);
         }
-
-        await loadData();
-        showSuccess(t('catalog.successDelete'));
-      } catch (error) {
-        console.error('Error deleting Country:', error);
-        showError(t('catalog.errorDelete'));
-      } finally {
-        setLoading(false);
       }
-    }
+    });
   };
 
   return (
@@ -379,6 +404,19 @@ export function CatalogCountries() {
           </div>
         </form>
       )}
+
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        showCancel={modalState.showCancel}
+        confirmText={t('catalog.continue')}
+        cancelText={t('catalog.cancel')}
+      />
+
     </div>
   );
 }

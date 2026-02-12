@@ -4,12 +4,14 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { Incoterm } from '../types/catalog';
 import styles from './Catalogs.module.css';
 import { useNotification } from '../contexts/NotificationContext';
+import { Modal } from '../components/Modal';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-incoterms`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function CatalogIncoterms() {
   const { t } = useLanguage();
+  const catalogName = t('catalog.incoterm.code');
   const { showSuccess, showError } = useNotification();
   const [items, setItems] = useState<Incoterm[]>([]);
   const [filteredItems, setFilteredItems] = useState<Incoterm[]>([]);
@@ -18,11 +20,26 @@ export function CatalogIncoterms() {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<Incoterm | null>(null);
   const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     incoterm: '',
     status: 1,
   });
   const disabled = editingItem ? true : false;
+
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+    showCancel?: boolean;
+  }>({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: ''
+  });
 
   useEffect(() => {
     loadData();
@@ -152,30 +169,38 @@ export function CatalogIncoterms() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm(t('catalog.confirmDelete'))) {
-      try {
-        setLoading(true);
-        const response = await fetch(`${API_URL}/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-        });
+    
+    setModalState({
+      isOpen: true,
+      type: 'confirm',
+      title: t('modal.title').replace('{name}', catalogName.toLowerCase()),
+      message: t('modal.message'),
+      showCancel: true,
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          const response = await fetch(`${API_URL}/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          });
 
-        if (!response.ok) {
-          showError('Error al eliminar el registro');
+          if (!response.ok) {
+            showError('Error al eliminar el registro');
+          }
+
+          await loadData();
+          showSuccess(t('catalog.successDelete'));
+        } catch (error) {
+          console.error('Error deleting Incoterm:', error);
+          showError(t('catalog.errorDelete'));
+        } finally {
+          setLoading(false);
         }
-
-        await loadData();
-        showSuccess(t('catalog.successDelete'));
-      } catch (error) {
-        console.error('Error deleting Incoterm:', error);
-        showError(t('catalog.errorDelete'));
-      } finally {
-        setLoading(false);
       }
-    }
+    });
   };
 
   return (
@@ -254,9 +279,9 @@ export function CatalogIncoterms() {
                   <td>
                     <div className={styles.actions}>
                       <button
-                        className={`${styles.iconButton} ${styles.edit}`}
+                        className={`${styles.iconButton} ${styles.edit}`} 
                         onClick={() => openModal(item)}
-                        title={t('catalog.edit').replace('{name}', 'Incoterm')}
+                        title={t('catalog.edit').replace('{name}', catalogName.toLowerCase())}
                       >
                         <Edit2 size={16} />
                       </button>
@@ -284,58 +309,77 @@ export function CatalogIncoterms() {
 
       {showModal && (
         <form onSubmit={handleSave}>
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>
-                {editingItem
-                  ? t('catalog.edit').replace('{name}', 'incoterm')
-                  : t('catalog.new').replace('{name}', 'incoterm')}
-              </h2>
-              <button className={styles.closeButton} onClick={closeModal}>
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className={styles.modalBody}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}><span className={styles.required}>*</span> {t('catalog.incoterm.code')}</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={formData.incoterm}
-                  onChange={(e) => setFormData({ ...formData, incoterm: e.target.value })}
-                  disabled={disabled}
-                  required
-                />
+          <div className={styles.modalOverlay} onClick={closeModal}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h2 className={styles.modalTitle}>
+                  {editingItem
+                    ? t('catalog.edit').replace('{name}', catalogName.toLowerCase())
+                    : t('catalog.new').replace('{name}', catalogName.toLowerCase())}
+                </h2>
+                <button className={styles.closeButton} onClick={closeModal}>
+                  <X size={24} />
+                </button>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div className={styles.modalBody}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}><span className={styles.required}>*</span> {t('catalog.incoterm.code')}</label>
                   <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={formData.status === 1}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
-                    disabled={loading}
+                    type="text"
+                    className={styles.input}
+                    value={formData.incoterm}
+                    onChange={(e) => setFormData({ ...formData, incoterm: e.target.value })}
+                    disabled={disabled}
+                    required
+                    onInvalid={(e) => 
+                      e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                    }
+                    onInput={(e) =>
+                      e.currentTarget.setCustomValidity('')
+                    }
                   />
-                  {' '}{t('catalog.status.active')}
-                </label>
-              </div>
-            </div>
+                </div>
 
-            <div className={styles.modalFooter}>
-              <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
-                {t('catalog.cancel')}
-              </button>
-              <button type="submit" className={styles.saveButton} disabled={loading}>
-                {loading ? 'Guardando...' : t('catalog.save')}
-              </button>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <input
+                      type="checkbox"
+                      className={styles.checkbox}
+                      checked={formData.status === 1}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
+                      disabled={loading}
+                    />
+                    {' '}{t('catalog.status.active')}
+                  </label>
+                </div>
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
+                  {t('catalog.cancel')}
+                </button>
+                <button type="submit" className={styles.saveButton} disabled={loading}>
+                  {loading ? 'Guardando...' : t('catalog.save')}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
         </form>
       )}
+
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        showCancel={modalState.showCancel}
+        confirmText={t('catalog.continue')}
+        cancelText={t('catalog.cancel')}
+      />
+
     </div>
   );
 }

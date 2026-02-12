@@ -4,12 +4,14 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { Service } from '../types/catalog';
 import styles from './Catalogs.module.css';
 import { useNotification } from '../contexts/NotificationContext';
+import { Modal } from '../components/Modal';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-services`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function CatalogServices() {
   const { t } = useLanguage();
+  const catalogName = t('catalog.service');
   const { showSuccess, showError } = useNotification();
   const [items, setItems] = useState<Service[]>([]);
   const [filteredItems, setFilteredItems] = useState<Service[]>([]);
@@ -18,6 +20,7 @@ export function CatalogServices() {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<Service | null>(null);
   const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     service_name: '',
     category: 1,
@@ -28,6 +31,20 @@ export function CatalogServices() {
   const disabled = editingItem ? true : false;
 
   const isValidEmail = (email: string) => emailRegex.test(email);
+
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+    showCancel?: boolean;
+  }>({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: ''
+  });
 
   useEffect(() => {
     loadData();
@@ -170,30 +187,38 @@ export function CatalogServices() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm(t('catalog.confirmDelete'))) {
-      try {
-        setLoading(true);
-        const response = await fetch(`${API_URL}/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-        });
+    
+    setModalState({
+      isOpen: true,
+      type: 'confirm',
+      title: t('modal.title').replace('{name}', catalogName.toLowerCase()),
+      message: t('modal.message'),
+      showCancel: true,
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          const response = await fetch(`${API_URL}/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          });
 
-        if (!response.ok) {
-          showError('Error al eliminar el registro');
+          if (!response.ok) {
+            showError('Error al eliminar el registro');
+          }
+
+          await loadData();
+          showSuccess(t('catalog.successDelete'));
+        } catch (error) {
+          console.error('Error deleting Service:', error);
+          showError(t('catalog.errorDelete'));
+        } finally {
+          setLoading(false);
         }
-
-        await loadData();
-        showSuccess(t('catalog.successDelete'));
-      } catch (error) {
-        console.error('Error deleting Service:', error);
-        showError(t('catalog.errorDelete'));
-      } finally {
-        setLoading(false);
       }
-    }
+    });
   };
 
   return (
@@ -280,7 +305,7 @@ export function CatalogServices() {
                       <button
                         className={`${styles.iconButton} ${styles.edit}`}
                         onClick={() => openModal(item)}
-                        title={t('catalog.edit').replace('{name}', 'Servicio')}
+                        title={t('catalog.edit').replace('{name}', catalogName.toLowerCase())}
                       >
                         <Edit2 size={16} />
                       </button>
@@ -313,8 +338,8 @@ export function CatalogServices() {
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>
                 {editingItem
-                  ? t('catalog.edit').replace('{name}', 'servicio')
-                  : t('catalog.new').replace('{name}', 'servicio')}
+                  ? t('catalog.edit').replace('{name}', catalogName.toLowerCase())
+                  : t('catalog.new').replace('{name}', catalogName.toLowerCase())}
               </h2>
               <button className={styles.closeButton} onClick={closeModal}>
                 <X size={24} />
@@ -331,6 +356,12 @@ export function CatalogServices() {
                   onChange={(e) => setFormData({ ...formData, service_name: e.target.value })}
                   disabled={disabled}
                   required
+                  onInvalid={(e) =>
+                    e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                  }
+                  onInput={(e) =>
+                    e.currentTarget.setCustomValidity('')
+                  }
                 />
               </div>
 
@@ -348,7 +379,7 @@ export function CatalogServices() {
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.label}>{t('catalog.service.email')} (Opcional)</label>
+                <label className={styles.label}>{t('catalog.service.email')} {t('catalog.optional')}</label>
                 <input
                   type="email"
                   className={styles.input}
@@ -384,6 +415,19 @@ export function CatalogServices() {
         </div>
         </form>
       )}
+
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        showCancel={modalState.showCancel}
+        confirmText={t('catalog.continue')}
+        cancelText={t('catalog.cancel')}
+      />
+
     </div>
   );
 }

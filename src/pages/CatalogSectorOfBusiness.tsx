@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, X, RefreshCw } from 'lucide-react'; 
+import { Plus, Edit2, Trash2, X, RefreshCw } from 'lucide-react'; 
 import { useLanguage } from '../contexts/LanguageContext';
 import { SectorOfBusiness } from '../types/catalog';
 import styles from './Catalogs.module.css';
 import { useNotification } from '../contexts/NotificationContext';
+import { Modal } from '../components/Modal';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-sector-of-business`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -23,6 +24,20 @@ export function CatalogSectorOfBusiness() {
     name: '',
     description: '',
     status: 1,
+  });
+
+ const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+    showCancel?: boolean;
+  }>({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: ''
   });
 
   useEffect(() => {
@@ -159,6 +174,41 @@ export function CatalogSectorOfBusiness() {
     }
   };
   
+  const handleDelete = async (id: number) => {
+    
+    setModalState({
+      isOpen: true,
+      type: 'confirm',
+      title: t('modal.title').replace('{name}', catalogName.toLowerCase()),
+      message: t('modal.message'),
+      showCancel: true,
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          const response = await fetch(`${API_URL}/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(t('catalog.errorDelete'));
+          }
+
+          await loadData();
+          showSuccess(t('catalog.successDelete'));
+        } catch (error) {
+          console.error('Error deleting Sector of Business:', error);
+          showError(t('catalog.errorDelete'));
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -243,6 +293,13 @@ export function CatalogSectorOfBusiness() {
                       >
                         <Edit2 size={16} />
                       </button>
+                      <button
+                        className={`${styles.iconButton} ${styles.delete}`}
+                        onClick={() => handleDelete(item.id)}
+                        title={t('catalog.delete')}
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -265,8 +322,8 @@ export function CatalogSectorOfBusiness() {
               <div className={styles.modalHeader}>
                 <h2 className={styles.modalTitle}>
                   {editingItem
-                    ? t('catalog.edit').replace('{name}', catalogName )
-                    : t('catalog.new').replace('{name}', catalogName )}
+                    ? t('catalog.edit').replace('{name}', catalogName.toLowerCase())
+                    : t('catalog.new').replace('{name}', catalogName.toLowerCase())}
                 </h2>
                 <button className={styles.closeButton} onClick={closeModal}>
                   <X size={24} />
@@ -331,6 +388,19 @@ export function CatalogSectorOfBusiness() {
           </div>
         </form>
       )}
+
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        showCancel={modalState.showCancel}
+        confirmText={t('catalog.continue')}
+        cancelText={t('catalog.cancel')}
+      />
+      
     </div>
   );
 }

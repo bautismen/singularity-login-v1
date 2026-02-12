@@ -4,12 +4,14 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { ImoClass } from '../types/catalog';
 import styles from './Catalogs.module.css';
 import { useNotification } from '../contexts/NotificationContext';
+import { Modal } from '../components/Modal';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-imo`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function CatalogIMO() {
   const { t } = useLanguage();
+  const catalogName = t('nav.catalogs.imo');
   const { showSuccess, showError } = useNotification();
   const [items, setItems] = useState<ImoClass[]>([]);
   const [filteredItems, setFilteredItems] = useState<ImoClass[]>([]);
@@ -18,12 +20,27 @@ export function CatalogIMO() {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<ImoClass | null>(null);
   const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     imo: '',
     description: '',
     status: 1,
   });
   const disabled = editingItem ? true : false;
+
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+    showCancel?: boolean;
+  }>({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: ''
+  });
 
   useEffect(() => {
     loadData();
@@ -158,30 +175,38 @@ export function CatalogIMO() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm(t('catalog.confirmDelete'))) {
-      try {
-        setLoading(true);
-        const response = await fetch(`${API_URL}/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-        });
+    
+    setModalState({
+      isOpen: true,
+      type: 'confirm',
+      title: t('modal.title').replace('{name}', catalogName),
+      message: t('modal.message'),
+      showCancel: true,
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          const response = await fetch(`${API_URL}/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          });
 
-        if (!response.ok) {
-          throw new Error('Error al eliminar el registro');
+          if (!response.ok) {
+            throw new Error('Error al eliminar el registro');
+          }
+
+          await loadData();
+          showSuccess(t('catalog.successDelete'));
+        } catch (error) {
+          console.error('Error deleting IMO:', error);
+          showError(t('catalog.errorDelete'));
+        } finally {
+          setLoading(false);
         }
-
-        await loadData();
-        showSuccess(t('catalog.successDelete'));
-      } catch (error) {
-        console.error('Error deleting IMO:', error);
-        showError(t('catalog.errorDelete'));
-      } finally {
-        setLoading(false);
       }
-    }
+    });
   };
 
   return (
@@ -264,7 +289,7 @@ export function CatalogIMO() {
                       <button
                         className={`${styles.iconButton} ${styles.edit}`}
                         onClick={() => openModal(item)}
-                        title={t('catalog.edit').replace('{name}', 'IMO')}
+                        title={t('catalog.edit').replace('{name}', catalogName)}
                       >
                         <Edit2 size={16} />
                       </button>
@@ -297,8 +322,8 @@ export function CatalogIMO() {
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>
                 {editingItem
-                  ? t('catalog.edit').replace('{name}', 'imo')
-                  : t('catalog.new').replace('{name}', 'imo')}
+                  ? t('catalog.edit').replace('{name}', catalogName)
+                  : t('catalog.new').replace('{name}', catalogName)}
               </h2>
               <button className={styles.closeButton} onClick={closeModal}>
                 <X size={24} />
@@ -315,6 +340,12 @@ export function CatalogIMO() {
                   onChange={(e) => setFormData({ ...formData, imo: e.target.value })}
                   disabled={disabled}
                   required
+                  onInvalid={(e) => 
+                      e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                    }
+                    onInput={(e) =>
+                      e.currentTarget.setCustomValidity('')
+                    }
                   
                 />
               </div>
@@ -327,6 +358,12 @@ export function CatalogIMO() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   disabled={loading}
                   required
+                  onInvalid={(e) => 
+                    e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                  }
+                  onInput={(e) =>
+                    e.currentTarget.setCustomValidity('')
+                  }
                 />
               </div>
 
@@ -355,7 +392,20 @@ export function CatalogIMO() {
           </div>
         </div>
         </form>
-      )}      
+      )}
+
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        showCancel={modalState.showCancel}
+        confirmText={t('catalog.continue')}
+        cancelText={t('catalog.cancel')}
+      />
+
     </div>
   );
 }
