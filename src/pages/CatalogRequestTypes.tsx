@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { RequestType } from '../types/catalog';
 import styles from './Catalogs.module.css';
+import { useNotification } from '../contexts/NotificationContext';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-request-types`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function CatalogRequestTypes() {
   const { t } = useLanguage();
+  const catalogName = t('nav.catalogs.requestType');
+  const { showSuccess, showError } = useNotification();
   const [items, setItems] = useState<RequestType[]>([]);
   const [filteredItems, setFilteredItems] = useState<RequestType[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,20 +44,20 @@ export function CatalogRequestTypes() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al cargar los datos');
+        throw new Error(t('catalog.errorLoad'));
       }
 
       const data = await response.json();
       setItems(data.map((item: any) => ({
         id: item._id,
         request_type_name: item.request_type_name,
-        status: item.status,
-        archived: item.archived,
-        data_state: item.data_state,
+        status: item.status !== undefined ? item.status : 1,
+        archived: item.archived || false,
+        data_state: item.data_state || 1,
       })));
     } catch (error) {
       console.error('Error loading Request Types data:', error);
-      alert(t('catalog.errorLoad'));
+      showError(t('catalog.errorLoad'));
     } finally {
       setLoading(false);
     }
@@ -104,8 +107,9 @@ export function CatalogRequestTypes() {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.FormEvent) => {
     try {
+      e.preventDefault();
       setLoading(true);
 
       if (editingItem) {
@@ -119,8 +123,9 @@ export function CatalogRequestTypes() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al actualizar el registro');
+          throw new Error(t('catalog.errorUpdate'));
         }
+
       } else {
         const response = await fetch(API_URL, {
           method: 'POST',
@@ -132,16 +137,17 @@ export function CatalogRequestTypes() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al crear el registro');
+          throw new Error(t('catalog.errorSave'));
         }
+
       }
 
       await loadData();
       closeModal();
-      alert(t('catalog.successSave'));
+      showSuccess(t('catalog.successSave'));
     } catch (error) {
       console.error('Error saving Request Type:', error);
-      alert(t('catalog.errorSave'));
+      showError(t('catalog.errorSave'));
     } finally {
       setLoading(false);
     }
@@ -164,10 +170,10 @@ export function CatalogRequestTypes() {
         }
 
         await loadData();
-        alert(t('catalog.successDelete'));
+        showSuccess(t('catalog.successDelete'));
       } catch (error) {
         console.error('Error deleting Request Type:', error);
-        alert(t('catalog.errorDelete'));
+        showError(t('catalog.errorDelete'));
       } finally {
         setLoading(false);
       }
@@ -178,10 +184,12 @@ export function CatalogRequestTypes() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>{t('nav.catalogs.requestTypes')}</h1>
-        <div className={styles.headerActions}>
-          <button className={styles.addButton} onClick={() => openModal()} disabled={loading}>
-            <Plus size={18} />
-            {t('catalog.new').replace('{name}', 'Tipo de Solicitud')}
+        <div className={styles.buttonGroup}>
+          <button className={styles.headerButton} onClick={() => openModal()} disabled={loading}>
+            <Plus size={20} /> 
+          </button>
+          <button onClick={loadData} className={styles.headerButton}>
+            <RefreshCw size={20} />
           </button>
         </div>
       </div>
@@ -250,7 +258,7 @@ export function CatalogRequestTypes() {
                       <button
                         className={`${styles.iconButton} ${styles.edit}`}
                         onClick={() => openModal(item)}
-                        title={t('catalog.edit').replace('{name}', 'Tipo de Solicitud')}
+                        title={t('catalog.edit').replace('{name}', catalogName.toLowerCase())}
                       >
                         <Edit2 size={16} />
                       </button>
@@ -267,7 +275,7 @@ export function CatalogRequestTypes() {
               ))
             ) : (
               <tr>
-                <td colSpan={3} className={styles.noResults}>
+                <td colSpan={4} className={styles.noResults}>
                   {t('catalog.noResults')}
                 </td>
               </tr>
@@ -277,55 +285,67 @@ export function CatalogRequestTypes() {
       )}
 
       {showModal && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>
-                {editingItem
-                  ? t('catalog.edit').replace('{name}', 'Tipo de Solicitud')
-                  : t('catalog.new').replace('{name}', 'Tipo de Solicitud')}
-              </h2>
-              <button className={styles.closeButton} onClick={closeModal}>
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className={styles.modalBody}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>{t('catalog.requestType.name')}</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={formData.request_type_name}
-                  onChange={(e) => setFormData({ ...formData, request_type_name: e.target.value })}
-                  disabled={loading}
-                />
+        <form onSubmit={handleSave}>
+          <div className={styles.modalOverlay} onClick={closeModal}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h2 className={styles.modalTitle}>
+                  {editingItem
+                    ? t('catalog.edit').replace('{name}', catalogName.toLowerCase())
+                    : t('catalog.new').replace('{name}', catalogName.toLowerCase())}
+                </h2>
+                <button className={styles.closeButton} onClick={closeModal}>
+                  <X size={24} />
+                </button>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div className={styles.modalBody}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>* </span>
+                    {t('catalog.requestType.name')}
+                  </label>
                   <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={formData.status === 1}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
+                    type="text"
+                    className={styles.input}
+                    value={formData.request_type_name}
+                    onChange={(e) => setFormData({ ...formData, request_type_name: e.target.value })}
                     disabled={loading}
+                    required
+                    onInvalid={(e) => 
+                      e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                    }
+                    onInput={(e) =>
+                      e.currentTarget.setCustomValidity('')
+                    }
                   />
-                  {' '}{t('catalog.status.active')}
-                </label>
-              </div>
-            </div>
+                </div>
 
-            <div className={styles.modalFooter}>
-              <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
-                {t('catalog.cancel')}
-              </button>
-              <button className={styles.saveButton} onClick={handleSave} disabled={loading}>
-                {loading ? 'Guardando...' : t('catalog.save')}
-              </button>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <input
+                      type="checkbox"
+                      className={styles.checkbox}
+                      checked={formData.status === 1}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
+                      disabled={loading}
+                    />
+                    {' '}{t('catalog.status.active')}
+                  </label>
+                </div>
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
+                  {t('catalog.cancel')}
+                </button>
+                <button className={styles.saveButton} type="submit" disabled={loading}>
+                  {loading ? 'Guardando...' : t('catalog.save')}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </form>
       )}
     </div>
   );

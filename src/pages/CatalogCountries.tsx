@@ -10,6 +10,7 @@ const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function CatalogCountries() {
   const { t } = useLanguage();
+  const catalogName = t('nav.catalogs.country');
   const { showSuccess, showError } = useNotification();
   const [items, setItems] = useState<Country[]>([]);
   const [filteredItems, setFilteredItems] = useState<Country[]>([]);
@@ -266,7 +267,7 @@ export function CatalogCountries() {
                       <button
                         className={`${styles.iconButton} ${styles.edit}`}
                         onClick={() => openModal(item)}
-                        title={t('catalog.edit').replace('{name}', 'País')}
+                        title={t('catalog.edit').replace('{name}', catalogName.toLowerCase())}
                       >
                         <Edit2 size={16} />
                       </button>
@@ -299,8 +300,8 @@ export function CatalogCountries() {
               <div className={styles.modalHeader}>
                 <h2 className={styles.modalTitle}>
                   {editingItem
-                    ? t('catalog.edit').replace('{name}', 'país')
-                    : t('catalog.new').replace('{name}', 'país')}
+                    ? t('catalog.edit').replace('{name}', catalogName.toLowerCase())
+                    : t('catalog.new').replace('{name}', catalogName.toLowerCase())}
                 </h2>
                 <button className={styles.closeButton} onClick={closeModal}>
                   <X size={24} />
