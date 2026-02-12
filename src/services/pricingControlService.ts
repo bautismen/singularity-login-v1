@@ -40,7 +40,7 @@ class PricingControlService {
 
   async getById(id: string): Promise<PricingControl> {
     const response = await fetch(
-      `${PRICING_API_URL}/v1/quotes/quotation/getcontrolbyid?idcontrol_=${id}`,
+      `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/getcontrolbyid?idcontrol_=${id}`,
       {
         method: 'GET',
         headers: this.getHeaders2(),
@@ -56,7 +56,7 @@ class PricingControlService {
 
   async getResquetById(id: string): Promise<ResquetQuote> {
     const response = await fetch(
-      `${PRICING_API_URL}/v1/quotes/quotation/getresquetbyid?idresquet_=${id}`,
+      `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/getresquetbyid?idresquet_=${id}`,
       {
         method: 'GET',
         headers: this.getHeaders2(),
@@ -76,7 +76,7 @@ class PricingControlService {
       console.log('API URL:', `${API_URL}/functions/v1/pricing-controls`);
       console.log(JSON.stringify(data));
       const response = await fetch(
-        `${PRICING_API_URL}/v1/quotes/quotation/createcontrol`,
+        `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/createcontrol`,
         {
           method: 'POST',
           headers: this.getHeaders2(),
@@ -114,7 +114,7 @@ class PricingControlService {
       console.log('API URL:', `${API_URL}/functions/v1/pricing-controls`);
       console.log(JSON.stringify(data));
       const response = await fetch(
-        `${PRICING_API_URL}/v1/quotes/quotation/updatecontrol`,
+        `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/updatecontrol`,
         {
           method: 'POST',
           headers: this.getHeaders2(),
@@ -150,7 +150,7 @@ class PricingControlService {
      try {
       console.log(JSON.stringify(data))
         const response = await fetch(
-            `${PRICING_API_URL}/v1/quotes/quotation/quotedcontrol`,
+            `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/quotedcontrol`,
             {
               method: 'POST',
               headers: this.getHeaders2(),
@@ -174,7 +174,7 @@ class PricingControlService {
      try {
       console.log(JSON.stringify(data))
         const response = await fetch(
-            `${PRICING_API_URL}/v1/quotes/quotation/declinecontrol`,
+            `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/declinecontrol`,
             {
               method: 'POST',
               headers: this.getHeaders2(),

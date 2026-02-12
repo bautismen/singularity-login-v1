@@ -4,7 +4,7 @@ const API_KEYX = import.meta.env.VITE_APIKEYPRICING;
 
 export const controlsPricingService = {
   async getAll() {
-    const response = await fetch(`${PRICING_API_URL}/v1/quotes/quotation/getresquets`, {
+    const response = await fetch(`${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/getresquets`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${API_KEYPRICING}`,
