@@ -110,6 +110,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         const control = await pricingControlService.getById(controlId);
         setControlData(control);
         setSuppliers(control.suppliers || []);
+        setSuppliersAPI(control.suppliers || []);
         setSelectedServices(control.services || []);
         setStatusControl(control.status_control);
         setGeneralData({
@@ -153,11 +154,11 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const addSupplier = () => {    
     setSuppliers([...suppliers, {
-      idsuplier: suppliersCombo?.Idsuplier,
+      idsuplier: suppliersCombo?.idsuplier,
       supplier_associated_name: suppliersCombo?.supplier_associated_name
     }]);
     setSuppliersAPI([...suppliersAPI, {
-      Idsuplier: suppliersCombo?.Idsuplier,
+      Idsuplier: suppliersCombo?.idsuplier,
       Supplier_associated_name: suppliersCombo?.supplier_associated_name
     }]);
   };
@@ -566,7 +567,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   >
                     <option value="">Seleccionar</option>
                     {selectsuppliers.map((suppliers) => (
-                      <option key={suppliers._idsupplier} value={suppliers._idsupplier}>
+                      <option key={suppliers._id} value={suppliers._id}>
                         {suppliers.fiscal_data?.business_name}
                       </option>
                     ))

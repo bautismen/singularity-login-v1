@@ -1,10 +1,10 @@
 export interface PricingControlSupplier {
-  idsuplier: number;
+  idsuplier: string;
   supplier_associated_name: string;
 }
 
 export interface PricingControlSupplierAPI {
-  Idsuplier: number;
+  Idsuplier: string;
   Supplier_associated_name: string;
 }
 
