@@ -7,6 +7,7 @@ import { PricingControlSupplier } from '../types/pricingControl';
 import { PricingControlSupplierAPI } from '../types/pricingControl';
 import styles from './ControlsPricingForm.module.css';
 import { useAuth } from '../contexts/AuthContext';
+import { getSuppliers } from '../services/supplierService';
 
 interface ControlsPricingFormProps {
   requestId: string | null;
@@ -23,14 +24,17 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const [controlData, setControlData] = useState<any>(null);
   const [countries, setCountries] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [selectsuppliers, setSelectsuppliers] = useState<any[]>([]);
 
   const [suppliers, setSuppliers] = useState<PricingControlSupplier[]>([
-    { idsuplier: 1, supplier_associated_name: 'Proveedor 1' }
+    
   ]);
 
    const [suppliersAPI, setSuppliersAPI] = useState<PricingControlSupplierAPI[]>([
-    { Idsuplier: 1, Supplier_associated_name: 'Proveedor 1' }
+    
   ]);
+
+  const [suppliersCombo, setSuppliersCombo] = useState<PricingControlSupplierAPI>();
 
   const [selectedServices, setSelectedServices] = useState<any[]>([]);
   const [expandedServices, setExpandedServices] = useState<Set<number>>(new Set());
@@ -62,6 +66,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   useEffect(() => {
     loadData();
     loadCountries();
+    loadSuppliers();
   }, [requestId, controlId]);
 
   const loadCountries = async () => {
@@ -82,6 +87,19 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       console.error('Error loading countries:', error);
     }
   };
+
+   async function loadSuppliers() {
+    try {
+      setLoading(true);
+      const data = await getSuppliers();
+      setSelectsuppliers(data);
+    } catch (error) {
+      console.error('Error loading suppliers:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const loadData = async () => {
     if (!requestId) return;
 
@@ -133,17 +151,14 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     }
   };
 
-  const addSupplier = () => {
-    const nextId = suppliers.length > 0
-      ? Math.max(...suppliers.map(s => s.idsuplier)) + 1
-      : 1;
+  const addSupplier = () => {    
     setSuppliers([...suppliers, {
-      idsuplier: nextId,
-      supplier_associated_name: `Proveedor ${nextId}`
+      idsuplier: suppliersCombo?.Idsuplier,
+      supplier_associated_name: suppliersCombo?.supplier_associated_name
     }]);
     setSuppliersAPI([...suppliersAPI, {
-      Idsuplier: nextId,
-      Supplier_associated_name: `Proveedor ${nextId}`
+      Idsuplier: suppliersCombo?.Idsuplier,
+      Supplier_associated_name: suppliersCombo?.supplier_associated_name
     }]);
   };
 
@@ -186,21 +201,12 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     setExpandedServices(newExpanded);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!requestId) return;
 
     if (selectedServices.length === 0) {
       showError('Debe seleccionar al menos un servicio');
-      return;
-    }
-
-    if (generalData.unit_profit.length === 0) {
-      showError('Debe capturar el profit unitario');
-      return;
-    }    
-
-    if (generalData.volume.length === 0) {
-      showError('Debe capturar el volumen');
       return;
     }    
 
@@ -321,9 +327,13 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     }
   };
 
-  const handleMarkAsDecline = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleMarkAsDecline = async () => {    
     if (!controlId) return;
+
+    if (reasoncancellation.length === 0) {
+      showError('Debe capturar un motivo');
+      return;
+    }  
 
     try {
       setLoading(true);
@@ -337,6 +347,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         status_control_name: 'Declinada'
       });
       showSuccess('Control marcado como declinado');
+      loadData();
     } catch (error) {
       console.error('Error marking as decline:', error);
       showError('Error al marcar como declinado');
@@ -397,6 +408,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const medalSrc = getCategoryMedal(requestData.customer?.customerCategory);
 
   return (
+    <form onSubmit={handleSave}> 
     <div className={styles.container}>
       {loading ? (
           <div className={styles.loading}>
@@ -404,7 +416,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           </div>
           ) : <div className={styles.header}>
         <div className={styles.formHeaderLeft}>
-          <button onClick={onBack} className={styles.backButton} disabled={loading}>
+          <button type="button" onClick={onBack} className={styles.backButton} disabled={loading}>
             <ArrowLeft size={20} />
           </button>
           <div>
@@ -416,11 +428,11 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         </div>
         <div className={styles.formHeaderRight}>
           <div className={styles.buttonGroup}>
-            <button className={styles.headerButton} onClick={handleSave} disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}>
+            <button type="submit" className={styles.headerButton} disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}>
               <Save size={18} />
               {t('ctrlpricing.save')}
             </button>
-            <button className={styles.headerButtonRefresh} onClick={loadData} disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}>
+            <button type="button" className={styles.headerButtonRefresh} onClick={loadData} disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}>
               <RefreshCw size={18} />
             </button>
             {/*<button
@@ -431,7 +443,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               <Trash2 size={18} />
             </button>*/}
             <div className={styles.actionsMenuContainer} ref={actionsMenuRef}>
-              <button
+              <button type="button"
                 className={styles.headerButtonAction}
                 onClick={() => setShowActionsMenu(!showActionsMenu)}
                 disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
@@ -518,7 +530,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               </div>
             </div>
             <div className={styles.clientActions}>
-              <button 
+              <button type="button"
               className={styles.btnDecline} 
               disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
               onClick={openModal}
@@ -527,7 +539,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 {t('ctrlpricing.decline')}
                 
               </button>
-              <button
+              <button type="button"
                 className={styles.btnQuote}
                 onClick={handleMarkAsQuoted}
                 disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
@@ -540,19 +552,47 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
           <div className={styles.suppliersSection}>
             <h3 className={styles.sectionTitle}> {t('ctrlpricing.supplierassignment')}</h3>
+            <span className={styles.supplierLabel}>{t('ctrlpricing.supplier')}</span>
+                   <select                                       
+                    className={styles.selectInput}
+                    onChange={(e) => 
+                      setSuppliersCombo({ 
+                        ...suppliersCombo, 
+                        idsuplier: e.target.value,
+                        supplier_associated_name: e.target.options[e.target.selectedIndex].text
+                      })
+                    }
+                    required
+                  >
+                    <option value="">Seleccionar</option>
+                    {selectsuppliers.map((suppliers) => (
+                      <option key={suppliers._idsupplier} value={suppliers._idsupplier}>
+                        {suppliers.fiscal_data?.business_name}
+                      </option>
+                    ))
+                    }
+                  </select>         
+            <button type="button"
+              className={styles.btnAddSupplier}
+              onClick={addSupplier}
+              disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+            >
+              <Plus size={16} />
+              {t('ctrlpricing.addsupplier')}
+            </button>
             <div className={styles.suppliersList}>
               {suppliers.map((supplier) => (
                 <div key={supplier.idsuplier} className={styles.supplierItem}>
-                  <span className={styles.supplierLabel}>{t('ctrlpricing.supplier')}</span>
+                  <span className={styles.supplierLabel}>{t('ctrlpricing.supplier')}</span>                 
                   <input
                     type="text"
                     value={supplier.supplier_associated_name}
                     onChange={(e) => updateSupplier(supplier.idsuplier, e.target.value)}
                     className={styles.supplierInput}
                     placeholder={t('ctrlpricing.suppliername')}
-                    disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                    disabled
                   />
-                  <button
+                  <button type="button"
                     className={styles.btnRemoveSupplier}
                     onClick={() => removeSupplier(supplier.idsuplier)}
                     disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
@@ -562,14 +602,6 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 </div>
               ))}
             </div>
-            <button
-              className={styles.btnAddSupplier}
-              onClick={addSupplier}
-              disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
-            >
-              <Plus size={16} />
-              {t('ctrlpricing.addsupplier')}
-            </button>
           </div>
         </div>
 
@@ -578,7 +610,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           <div className={styles.formGrid}>
             <div className={styles.formGroup}>
               <label><span className={styles.required}>*</span> {t('ctrlpricing.status')}</label>
-              <select
+              <select required
                 value={statusControl.status_control_name}
                 onChange={(e) => {
                   const statusMap: any = {
@@ -598,7 +630,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             </div>
             <div className={styles.formGroup}>
               <label><span className={styles.required}>*</span> {t('ctrlpricing.network')}</label>
-              <select
+              <select required
                 value={generalData.network}
                 onChange={(e) => setGeneralData({...generalData, network: e.target.value})}
                 className={styles.formSelect}
@@ -614,7 +646,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             </div>
             <div className={styles.formGroup}>
               <label><span className={styles.required}>*</span> {t('ctrlpricing.complexity')}</label>
-              <select
+              <select required
                 value={generalData.complexity}
                 onChange={(e) => setGeneralData({...generalData, complexity: e.target.value})}
                 className={styles.formSelect}
@@ -627,7 +659,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             </div>
             <div className={styles.formGroup}>
               <label><span className={styles.required}>*</span> {t('ctrlpricing.currency')}</label>
-              <select
+              <select required
                 value={generalData.currency}
                 onChange={(e) => setGeneralData({...generalData, currency: e.target.value})}
                 className={styles.formSelect}
@@ -640,7 +672,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             </div>
             <div className={styles.formGroup}>
               <label><span className={styles.required}>*</span> {t('ctrlpricing.unitprofit')}</label>
-              <input
+              <input required
                 type="text"
                 value={generalData.unit_profit}
                 onChange={(e) => setGeneralData({...generalData, unit_profit: e.target.value})}
@@ -650,7 +682,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             </div>
              <div className={styles.formGroup}>
               <label><span className={styles.required}>*</span> {t('ctrlpricing.volume')}</label>
-              <input
+              <input required
                 type="text"
                 value={generalData.volume}
                 onChange={(e) => setGeneralData({...generalData, volume: e.target.value})}
@@ -660,7 +692,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             </div>
             <div className={styles.formGroup}>
               <label><span className={styles.required}>*</span> {t('ctrlpricing.generalprofit')}</label>
-              <input
+              <input required
                 type="text"
                 value={calculateProfit_general()}
                 onChange={(e) => setGeneralData({...generalData, general_profit: e.target.value})}
@@ -670,7 +702,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             </div>
               <div className={styles.formGroup}>
               <label><span className={styles.required}>*</span> Key TD</label>
-              <select
+              <select required
                 value={generalData.key_td}
                 onChange={(e) => setGeneralData({...generalData, key_td: e.target.value})}
                 className={styles.formSelect}
@@ -739,14 +771,14 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                         </span>
                       </div>
                     </div>
-                    <button
+                    <button type="button"
                       className={styles.btnServiceAction}
                       onClick={() => toggleServiceExpanded(serviceId)}
                       disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
                     >
                       {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </button>
-                    <button
+                    <button type="button"
                       className={styles.btnServiceAction}
                       onClick={() => toggleService(serviceId)}
                       disabled={isUsed || loading}
@@ -963,8 +995,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         </div>
       </div>
       }
-      {showModal && (
-         <form onSubmit={handleMarkAsDecline}>          
+      
+      {showModal && (                  
         <div className={styles.modalOverlay} onClick={closeModal}>          
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
@@ -990,18 +1022,18 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             </div>
 
             <div className={styles.modalFooter}>
-              <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
+              <button type="button" className={styles.cancelButton} onClick={closeModal} disabled={loading}>
                 {t('catalog.cancel')}
               </button>
-              <button type="submit" className={styles.saveButton} disabled={loading}>
+              <button type="button" onClick={handleMarkAsDecline} className={styles.saveButton} disabled={loading}>
                 {loading ? 'Guardando...' : t('catalog.save')}
               </button>
             </div>
           </div>
-        </div>
-        </form>
+        </div>        
       )}
 
     </div>
+    </form>
   );
 }
