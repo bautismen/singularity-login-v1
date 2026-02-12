@@ -276,7 +276,7 @@ export function CatalogSectorOfBusiness() {
               <div className={styles.modalBody}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>
+                    <span className={styles.required}>* </span>
                     {t('catalog.sectorOfBusiness.name')}
                   </label>
                   <input
@@ -286,6 +286,12 @@ export function CatalogSectorOfBusiness() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     disabled = {editingItem ? true : false} 
                     required
+                    onInvalid={(e) => 
+                      e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                    }
+                    onInput={(e) =>
+                      e.currentTarget.setCustomValidity('')
+                    }
                   />
                 </div>
 

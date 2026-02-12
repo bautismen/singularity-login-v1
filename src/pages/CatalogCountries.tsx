@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Country } from '../types/catalog';
 import styles from './Catalogs.module.css';
+import { useNotification } from '../contexts/NotificationContext';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-countries`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function CatalogCountries() {
   const { t } = useLanguage();
+  const { showSuccess, showError } = useNotification();
   const [items, setItems] = useState<Country[]>([]);
   const [filteredItems, setFilteredItems] = useState<Country[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,7 +44,7 @@ export function CatalogCountries() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al cargar los datos');
+        throw new Error(t('catalog.errorLoad'));
       }
 
       const data = await response.json();
@@ -57,7 +59,7 @@ export function CatalogCountries() {
       })));
     } catch (error) {
       console.error('Error loading Countries data:', error);
-      alert(t('catalog.errorLoad'));
+      showError(t('catalog.errorLoad'));
     } finally {
       setLoading(false);
     }
@@ -111,7 +113,8 @@ export function CatalogCountries() {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
       setLoading(true);
 
@@ -126,8 +129,9 @@ export function CatalogCountries() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al actualizar el registro');
+          throw new Error(t('catalog.errorUpdate'));
         }
+
       } else {
         const response = await fetch(API_URL, {
           method: 'POST',
@@ -139,16 +143,17 @@ export function CatalogCountries() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al crear el registro');
+          throw new Error(t('catalog.errorSave'));
         }
+
       }
 
       await loadData();
       closeModal();
-      alert(t('catalog.successSave'));
+      showSuccess(t('catalog.successSave'));
     } catch (error) {
       console.error('Error saving Country:', error);
-      alert(t('catalog.errorSave'));
+      showError(t('catalog.errorSave'));
     } finally {
       setLoading(false);
     }
@@ -171,10 +176,10 @@ export function CatalogCountries() {
         }
 
         await loadData();
-        alert(t('catalog.successDelete'));
+        showSuccess(t('catalog.successDelete'));
       } catch (error) {
         console.error('Error deleting Country:', error);
-        alert(t('catalog.errorDelete'));
+        showError(t('catalog.errorDelete'));
       } finally {
         setLoading(false);
       }
@@ -185,10 +190,12 @@ export function CatalogCountries() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>{t('nav.catalogs.countries')}</h1>
-        <div className={styles.headerActions}>
-          <button className={styles.addButton} onClick={() => openModal()} disabled={loading}>
-            <Plus size={18} />
-            {t('catalog.new').replace('{name}', 'País')}
+        <div className={styles.buttonGroup}>
+          <button className={styles.headerButton} onClick={() => openModal()} disabled={loading}>
+            <Plus size={20} />
+          </button>
+          <button onClick={loadData} className={styles.headerButton}>
+            <RefreshCw size={20} />
           </button>
         </div>
       </div>
@@ -286,68 +293,90 @@ export function CatalogCountries() {
       )}
 
       {showModal && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>
-                {editingItem
-                  ? t('catalog.edit').replace('{name}', 'País')
-                  : t('catalog.new').replace('{name}', 'País')}
-              </h2>
-              <button className={styles.closeButton} onClick={closeModal}>
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className={styles.modalBody}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>{t('catalog.country.code')}</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={formData.country_code}
-                  onChange={(e) => setFormData({ ...formData, country_code: e.target.value.toUpperCase() })}
-                  disabled={loading}
-                  maxLength={2}
-                  placeholder="US, MX, CA..."
-                />
+        <form onSubmit={handleSave}> 
+          <div className={styles.modalOverlay} onClick={closeModal}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h2 className={styles.modalTitle}>
+                  {editingItem
+                    ? t('catalog.edit').replace('{name}', 'país')
+                    : t('catalog.new').replace('{name}', 'país')}
+                </h2>
+                <button className={styles.closeButton} onClick={closeModal}>
+                  <X size={24} />
+                </button>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>{t('catalog.country.name')}</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={formData.name_country}
-                  onChange={(e) => setFormData({ ...formData, name_country: e.target.value })}
-                  disabled={loading}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div className={styles.modalBody}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>* </span>
+                    {t('catalog.country.code')}
+                    </label>
                   <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={formData.status === 1}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
-                    disabled={loading}
+                    type="text"
+                    className={styles.input}
+                    value={formData.country_code}
+                    onChange={(e) => setFormData({ ...formData, country_code: e.target.value.toUpperCase() })}
+                    disabled = {editingItem ? true : false} 
+                    maxLength={2}
+                    placeholder="US, MX, CA..."
+                    required
+                    onInvalid={(e) => 
+                      e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                    }
+                    onInput={(e) =>
+                      e.currentTarget.setCustomValidity('')
+                    }
                   />
-                  {' '}{t('catalog.status.active')}
-                </label>
-              </div>
-            </div>
+                </div>
 
-            <div className={styles.modalFooter}>
-              <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
-                {t('catalog.cancel')}
-              </button>
-              <button className={styles.saveButton} onClick={handleSave} disabled={loading}>
-                {loading ? 'Guardando...' : t('catalog.save')}
-              </button>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>* </span>
+                      {t('catalog.country.name')}
+                    </label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={formData.name_country}
+                    onChange={(e) => setFormData({ ...formData, name_country: e.target.value })}
+                    disabled = {editingItem ? true : false} 
+                    required
+                    onInvalid={(e) => 
+                      e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                    }
+                    onInput={(e) =>
+                      e.currentTarget.setCustomValidity('')
+                    }
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <input
+                      type="checkbox"
+                      className={styles.checkbox}
+                      checked={formData.status === 1}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
+                      disabled={loading}
+                    />
+                    {' '}{t('catalog.status.active')}
+                  </label>
+                </div>
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
+                  {t('catalog.cancel')}
+                </button>
+                <button className={styles.saveButton} type="submit" disabled={loading}>
+                  {loading ? 'Guardando...' : t('catalog.save')}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </form>
       )}
     </div>
   );
