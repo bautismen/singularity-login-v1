@@ -135,9 +135,9 @@ export function ControlsPricing() {
     if (dateFilter !== 'all') {
       const now = new Date();
       filtered = filtered.filter(q => {
-        const requestDate = new Date(q.DateRequest);
+        const requestDate = new Date(q.dateRequest);
         const diffDays = Math.ceil((now.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
-        console.log('Filter days: ' , q.ReferenceRequest , q.DateRequest, diffDays)
+        console.log('Filter days: ' , q.referenceRequest , q.dateRequest, diffDays)
 
         switch (dateFilter) {
           case 'hoy':
@@ -157,12 +157,14 @@ export function ControlsPricing() {
     }
 
     if (executiveFilter === 'solo_yo' && user) {
-      filtered = filtered.filter(q => q.CreatedBy?.IdExecutive === user._id);
+      filtered = filtered.filter(q => 
+        q.assignedTo?.some(a => a.idUser === user._id)
+      );     
     }
 
     if (executiveFilter === 'seleccionar' && selectedExecutive) {
       filtered = filtered.filter(r =>
-          r.AssignedTo?.some(a => a.IdExecutive === selectedExecutive)
+          r.assignedTo?.some(a => a.idExecutive === selectedExecutive)
         );      
     }
 
