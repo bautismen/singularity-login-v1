@@ -6,8 +6,9 @@ import { useNotification } from '../contexts/NotificationContext';
 import { Modal } from '../components/Modal';
 import { quotationService } from '../services/quotationService';
 import styles from './Quotations.module.css';
+import {QuotationRequest, Service, Executive, Shipment, Cargo, MerchandisePackage} from '../types/requestQuotation';
 
-interface MerchandisePackage {
+/*interface MerchandisePackage {
   id: number;
   type: string;
   quantity: number;
@@ -40,11 +41,13 @@ interface Merchandise {
 interface Executive {
   id: number;
   name: string;
+  iduser: string;
 }
 
 interface Service {
   id: number;
   service: string;
+  tipoCarga: string,
   operation: string;
   incoterm: string;
   origin: string;
@@ -64,7 +67,7 @@ interface Service {
   quantity: string;
   unit: string;
   merchandise: Merchandise[];
-}
+}*/
 
 interface QuotationsProps {
   mode?: 'create' | 'edit' | 'view';
@@ -80,7 +83,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const [saving, setSaving] = useState(false);
   const [services, setServices] = useState<Service[]>([]);
   const [executives, setExecutives] = useState<Executive[]>([]);
-
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
@@ -94,7 +96,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     title: '',
     message: ''
   });
-
   const [customers, setCustomers] = useState<any[]>([]);
   const [requestTypes, setRequestTypes] = useState<any[]>([]);
   const [availableServices, setAvailableServices] = useState<any[]>([]);
@@ -102,13 +103,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const [incoterms, setIncoterms] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
   const [imoList, setImoList] = useState<any[]>([]);
-
   const [showMerchandiseModal, setShowMerchandiseModal] = useState(false);
-  const [editingMerchandise, setEditingMerchandise] = useState<Merchandise | null>(null);
+  const [editingMerchandise, setEditingMerchandise] = useState<Cargo | null>(null);
   const [currentServiceId, setCurrentServiceId] = useState<number | null>(null);
   const [showExecutiveModal, setShowExecutiveModal] = useState(false);
   const [showCancelQuotationRequestModal, setShowCancelQuotationRequestModal] = useState(false);
-  const [merchandiseForm, setMerchandiseForm] = useState({
+  const [merchandiseForm, setMerchandiseForm] = useState<Cargo | null>(null);
+    /*{
     name: '',
     description: '',
     dangerous: false,
@@ -121,12 +122,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     un: '',
     temperature: '',
     tempUnit: '°C',
-  });
-
+  });*/
   const [showPackagingModal, setShowPackagingModal] = useState(false);
   const [currentPackages, setCurrentPackages] = useState<any[]>([]);
   const [useMetricSystem, setUseMetricSystem] = useState(true);
-
   const [formData, setFormData] = useState({
     referenceRequest: '',
     customerId: '',
@@ -134,7 +133,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     isPriority: false,
     isQuote: false,
     customerCategory: 1,
-    requestTypeId: '',
+    requestTypeId: 1,
     requestType: '',
     created: new Date().toISOString().split('T')[0],
     responseDeadline: '',
@@ -154,7 +153,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       });
 
       const quotations = await response.json();
-
       const currentYear = new Date().getFullYear().toString().slice(-2);
 
       const yearPrefix = `SC${currentYear}-`;
@@ -204,7 +202,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
       const [customersRes, requestTypesRes, servicesRes, executivesRes, incotermsRes, countriesRes, imoRes] = await Promise.all([
-        fetch(`${BASE_URL}/functions/v1/customers`, {
+        fetch(`${BASE_URL}/functions/v1/customers?includeArchived=${true}`, {
           headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
         }),
         fetch(`${BASE_URL}/functions/v1/catalog-request-types`, {
@@ -236,7 +234,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const imoData = await imoRes.json();
 
       console.log('Customers loaded:', customersData);
-      console.log('Request types loaded:', requestTypesData);
+      console.log('ejecutivos', executivesData);
 
       setCustomers(customersData.filter((c: any) => c.status === 'activo' || c.datastate === 1));
       setRequestTypes(requestTypesData.filter((r: any) => r.status === 1));
@@ -244,8 +242,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       setAvailableExecutives(executivesData.filter((e: any) => e.estado === 1 && e.activo === true));
       setIncoterms(incotermsData.filter((i: any) => i.status === 1));
       setCountries(countriesData.filter((co: any) => co.status === 1));
-      console.log(countries);
       setImoList(imoData.filter((imo: any) => imo.status === 1));
+
+      console.log('Paises: ', countries);
     } catch (error) {
       console.error('Error loading catalogs:', error);
       showError('Error al cargar los catálogos');
@@ -258,48 +257,51 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     try {
       setLoading(true);
       const data = await quotationService.getById(id);
-      console.log('Loading quotation:', data);
+      console.log('Loading quotation:', data.data);
 
       setFormData({
-        referenceRequest: data.reference_request || '',
-        customerId: data._id_customer || '',
-        client: data.customer_business_name || '',
-        isPriority: data.priority > 0,
-        isQuote: data.licitation || false,
-        customerCategory: data.customer_category || 1,
-        requestTypeId: data._id_request_type || '',
-        requestType: data.request_type_name || '',
-        created: data.request_date ? new Date(data.request_date).toISOString().split('T')[0] : '',
-        responseDeadline: data.deadline_date ? new Date(data.deadline_date).toISOString().split('T')[0] : '',
-        statuscomments: data.status_comments || null
+        referenceRequest: data.data.referenceRequest || '',
+        customerId: data.data.customer.idCustomer || '',
+        client: data.data.customer.customerName || '',
+        isPriority: data.data.priority || false,
+        isQuote: data.data.licitation || false,
+        customerCategory: data.data.customer.customerCategory || 1,
+        requestTypeId: data.data.idRequestType.toString() || 1,
+        requestType: data.data.typeRequest || '',
+        created: data.data.dateRequest ? new Date(data.data.dateRequest).toISOString().split('T')[0] : '',
+        responseDeadline: data.data.dateDeadline ? new Date(data.data.dateDeadline).toISOString().split('T')[0] : '',
+        statuscomments: data.data.services[0].shipments[0].comments || null
       });
 
-      if (data.services && data.services.length > 0) {
-        const loadedServices = data.services.map((svc: any, idx: number) => {
-          const shipment = svc.shipments?.[0] || {};
-          const cargo = shipment.cargo?.[0] || {};
+      console.log('FormData loaded: ', formData)
 
-          const servicesAssociated = shipment.services_asociated || [];
-          const hasInsurance = servicesAssociated.some((s: any) => s.service_associated_name === 'Seguro');
-          const hasManeuver = servicesAssociated.some((s: any) => s.service_associated_name === 'Maniobra');
-          const hasCustody = servicesAssociated.some((s: any) => s.service_associated_name === 'Custodia');
-          const hasInspection = servicesAssociated.some((s: any) => s.service_associated_name === 'Inspección');
-          const hasCustomsClearance = servicesAssociated.some((s: any) => s.service_associated_name === 'Despacho aduanal');
-
-          const projection = shipment.projection_shipment || {};
-          const hasProjection = !!projection.num;
-
-          const frequencyMap: { [key: number]: string } = { 1: 'semanal', 2: 'mensual', 3: 'anual' };
-          const unitMap: { [key: number]: string } = { 1: 'Kilos', 2: 'Toneladas', 3: 'Contenedores' };
+      if (data.data.services && data.data.services.length > 0) {
+        const loadedServices = data.data.services.map((service: any, idx: number) => {
+          const shipment = service.shipments?.[0] || {};
+          const cargo = service.shipments[0].cargo?.[0] || {};
+          //const servicesAssociated = shipment.services_asociated || [];
+          //const hasInsurance = servicesAssociated.some((s: any) => s.service_associated_name === 'Seguro');
+          //const hasManeuver = servicesAssociated.some((s: any) => s.service_associated_name === 'Maniobra');
+          //const hasCustody = servicesAssociated.some((s: any) => s.service_associated_name === 'Custodia');
+          //const hasInspection = servicesAssociated.some((s: any) => s.service_associated_name === 'Inspección');
+          //const hasCustomsClearance = servicesAssociated.some((s: any) => s.service_associated_name === 'Despacho aduanal');
+          //const projection = shipment.projection_shipment || {};
+          //const hasProjection = !!projection.num;
+          //const frequencyMap: { [key: number]: string } = { 1: 'semanal', 2: 'mensual', 3: 'anual' };
+          //const unitMap: { [key: number]: string } = { 1: 'Kilos', 2: 'Toneladas', 3: 'Contenedores' };
 
           return {
-            id: idx + 1,
-            service: svc.service_name || '',
+            idServiceItem: idx + 1,
+            idService : service.idService,
+            nameService: service.nameService || '',
+            used: service.used || false,
+            shipments : service.shipments,
+            /*tipoCarga: service.typeCarga || '',
             operation: shipment.operation_type_name || '',
             incoterm: shipment.incoterm || '',
-            origin: shipment.origin?.country_code || '',
+            origin: shipment.origin?.id_country || '',
             originZip: shipment.origin?.location || '',
-            destination: shipment.destination?.country_code || '',
+            destination: shipment.destination?.id_country || '',
             destinationZip: shipment.destination?.location || '',
             expectedDeparture: shipment.departure_date_approximate?.$date ? new Date(shipment.departure_date_approximate.$date).toISOString().split('T')[0] : (shipment.departure_date_approximate ? new Date(shipment.departure_date_approximate).toISOString().split('T')[0] : ''),
             insurance: hasInsurance,
@@ -339,23 +341,24 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 packages: c.unit || [],
                 merchandise_classification: classifications
               };
-            }) || []
+            }) || []*/
           };
         });
         setServices(loadedServices);
         console.log('Loaded services:', loadedServices);
       }
 
-      if (data.assigned_to && data.assigned_to.length > 0) {
-        const loadedExecutives = data.assigned_to.map((exec: any, idx: number) => ({
-          id: typeof exec._id_executive === 'object' && exec._id_executive.$oid
-            ? exec._id_executive.$oid
-            : exec._id_executive || idx + 1,
-          name: exec.complete_name || ''
+      if (data.data.assignedTo && data.data.assignedTo.length > 0) {
+        const loadedExecutives = data.data.assignedTo.map((exec: any, idx: number) => ({
+          id: typeof exec.idEmployee === 'object' && exec.idEmployee.$oid
+            ? exec.idEmployee.$oid
+            : exec.idEmployee || idx + 1,
+          name: exec.nameEmployee || ''
         }));
         setExecutives(loadedExecutives);
-        ///console.log('Loaded executives:', loadedExecutives);
+        console.log('Loaded executives:', loadedExecutives);
       }
+      
     } catch (error) {
       console.error('Error loading quotation:', error);
       showError('Error al cargar la cotización');
@@ -366,83 +369,90 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
   const addService = () => {
     const newService: Service = {
-      id: services.length + 1,
-      service: '',
-      operation: '',
-      incoterm: '',
-      origin: '',
-      originZip: '',
-      destination: '',
-      destinationZip: '',
-      expectedDeparture: '',
-      insurance: false,
-      maneuver: false,
-      custody: false,
-      inspection: false,
-      customsClearance: false,
-      comments: '',
-      shippingType: 'Door to Door',
-      programFrequency: false,
-      frequency: '',
-      quantity: '',
-      unit: '',
-      merchandise: [],
+      idServiceItem: services.length + 1,
+      idService: 0,
+      nameService: '',
+      used: false, 
+      shipments: [{
+        idShipment:0,
+        origin: '',
+        destination: '',
+        idTypeShipment: 0,
+        typeShipment: '',
+        idTypeOperation: 0,
+        typeOperation: '',
+        idInconterm: 0,
+        incoterm: '',
+        departureDateAproximate: '',
+        projectionShipment: '', 
+        comments: '',
+        servicesAsociated: [],
+        cargo : []
+      }]
     };
     setServices([...services, newService]);
   };
 
   const removeService = (id: number) => {
-    setServices(services.filter(s => s.id !== id));
+    setServices(services.filter(service => service.idService !== id));
   };
 
   const removeMerchandise = (serviceId: number, merchandiseId: number) => {
-    setServices(services.map(s =>
-      s.id === serviceId
-        ? { ...s, merchandise: s.merchandise.filter(m => m.id !== merchandiseId) }
-        : s
+    setServices(services.map(service =>
+      service.idService === serviceId
+        ? { ...service, merchandise: service.shipments[0].cargo.filter(m => m.id !== merchandiseId) }
+        : service
     ));
   };
 
-  const removeExecutive = (id: number) => {
-    setExecutives(executives.filter(e => e.id !== id));
+  const removeExecutive = (id: string) => {
+    setExecutives(executives.filter(executive => executive.idEmployee !== id));
   };
 
-  const openMerchandiseModal = (serviceId: number, merchandise?: Merchandise) => {
+  const openMerchandiseModal = (serviceId: number, cargo?: Cargo) => {
+    
     setCurrentServiceId(serviceId);
-    setEditingMerchandise(merchandise || null);
-    if (merchandise) {
-      const classifications = merchandise.merchandise_classification || [];
-      const dangerousClass = classifications.find((cl: any) => cl._id_merchandise_classification === 5);
+    
+    setEditingMerchandise(cargo || null);
+
+    if (cargo) {
+      
+      const dangerousClass = cargo.merchandiseClassification.find((classification: any) => classification.idClassificationMerchandise === 5);
 
       setMerchandiseForm({
-        name: merchandise.name,
-        description: merchandise.description || '',
-        dangerous: merchandise.dangerous,
-        refrigerated: merchandise.refrigerated,
-        oversized: merchandise.oversized,
-        grain: merchandise.grain,
-        stackable: merchandise.stackable,
-        imoClass: merchandise.imoClass || '',
-        imoId: dangerousClass?._id_imo || 0,
-        un: merchandise.un || '',
-        temperature: merchandise.temperature?.toString() || '',
-        tempUnit: merchandise.tempUnit || '°C',
+        nameMerchandise: cargo.nameMerchandise,
+        descriptionMerchandise: cargo.descriptionMerchandise || '',  
+        merchandiseClassification : cargo.merchandiseClassification,     
+        stowable: cargo.stowable,
+        typeCargo: cargo.typeCargo,
+        idUnitCargo: cargo.idUnitCargo,
+        unitCargo: cargo.unitCargo, 
+        idUnitMeasurement: cargo.idUnitMeasurement,
+        unitMeasurement: cargo.unitMeasurement,
+        idUnitWeight: cargo.idUnitWeight,
+        unitWeight: cargo.unitWeight,
+        totalVolume: cargo.totalVolume,
+        totalWeight: cargo.totalWeight,
+        packages: cargo.packages        
       });
-      setCurrentPackages(merchandise.packages || []);
+      setCurrentPackages(cargo.packages || []);
     } else {
       setMerchandiseForm({
-        name: '',
-        description: '',
-        dangerous: false,
-        refrigerated: false,
-        oversized: false,
-        grain: false,
-        stackable: false,
-        imoClass: '',
-        imoId: 0,
-        un: '',
-        temperature: '',
-        tempUnit: '°C',
+        //id: 0,
+        nameMerchandise: '',
+        descriptionMerchandise: '',
+        merchandiseClassification: [],
+        stowable: 0,
+        typeCargo: '', 
+        idUnitCargo: 0,
+        unitCargo: '',
+        idUnitMeasurement: 0,
+        unitMeasurement: '',
+        idUnitWeight: 0,
+        unitWeight: '',
+        totalVolume: 0,
+        totalWeight: 0,
+        packages: []
       });
       setCurrentPackages([]);
     }
@@ -493,45 +503,49 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const saveMerchandise = () => {
     if (!currentServiceId) return;
 
-    if (!merchandiseForm.name.trim()) {
+    if (!merchandiseForm?.nameMerchandise.trim()) {
       showWarning('Por favor ingresa el nombre de la mercancía');
       return;
     }
 
-    const { totalVolume, totalWeight } = calculateTotals();
+   // const { totalVolume, totalWeight } = calculateTotals();
 
     const merchandiseClassifications: any[] = [];
 
-    if (merchandiseForm.dangerous) {
-      const selectedImo = imoList.find(imo => imo._id === merchandiseForm.imoId);
+    //Dangerous merchandise
+    const dangerouseMerchandise = merchandiseForm.merchandiseClassification?.find((classification => classification.idClassificationMerchandise === 5)).valueOf
+    if (dangerouseMerchandise) {
+      const selectedImo = imoList.find(imo => imo._id === dangerouseMerchandise.imo);
       merchandiseClassifications.push({
-        _id_merchandise_classification: 5,
-        merchandise_name_classification: t('quote.dangerousClass'),
-        _id_imo: merchandiseForm.imoId,
+        idClassificationMerchandise: 5,
+        classificationMerchandise: t('quote.dangerousClass'),
         imo: selectedImo?.imo || '',
-        description_imo: selectedImo?.description || '',
-        UN: parseInt(merchandiseForm.un) || 0
+        imoDescription: selectedImo?.description || '',
+        un: parseInt(dangerouseMerchandise.un) || 0
       });
     }
 
-    if (merchandiseForm.refrigerated) {
+    const refrigeratedMerchandise = merchandiseForm.merchandiseClassification?.find((classification => classification.idClassificationMerchandise === 3)).valueOf
+    if (refrigeratedMerchandise) {
       merchandiseClassifications.push({
         _id_merchandise_classification: 3,
         merchandise_name_classification: t('quote.refrigeratedClass'),
-        _idunit_temperature: merchandiseForm.tempUnit === '°C' ? 1 : 2,
-        unit_temperature: merchandiseForm.tempUnit,
-        temperature: parseFloat(merchandiseForm.temperature) || 0
+        //_idunit_temperature: refrigeratedMerchandise.temperature === '°C' ? 1 : 2,
+        //unit_temperature: merchandiseForm.tempUnit,
+        temperature: parseFloat(refrigeratedMerchandise.temperature) || 0
       });
     }
 
-    if (merchandiseForm.grain) {
+    const grainMerchandise = merchandiseForm.merchandiseClassification?.find((classification => classification.idClassificationMerchandise === 2)).valueOf
+    if (grainMerchandise) {
       merchandiseClassifications.push({
         _id_merchandise_classification: 2,
         merchandise_name_classification: "A granel"
       });
     }
 
-    if (merchandiseForm.oversized) {
+    const oversizedMerchandise = merchandiseForm.merchandiseClassification?.find((classification => classification.idClassificationMerchandise === 4)).valueOf
+    if (oversizedMerchandise) {
       merchandiseClassifications.push({
         _id_merchandise_classification: 4,
         merchandise_name_classification: t('quote.oversizedClass')
@@ -545,42 +559,41 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       });
     }
 
-    const newMerchandise: Merchandise = {
-      id: editingMerchandise?.id || Date.now(),
-      name: merchandiseForm.name,
-      description: merchandiseForm.description,
-      dangerous: merchandiseForm.dangerous,
-      refrigerated: merchandiseForm.refrigerated,
-      oversized: merchandiseForm.oversized,
-      grain: merchandiseForm.grain,
-      stackable: merchandiseForm.stackable,
-      imoClass: merchandiseForm.dangerous ? merchandiseForm.imoClass : '',
-      un: merchandiseForm.dangerous ? merchandiseForm.un : '',
-      temperature: merchandiseForm.refrigerated ? parseFloat(merchandiseForm.temperature) || 0 : 0,
-      tempUnit: merchandiseForm.refrigerated ? merchandiseForm.tempUnit : '°C',
-      unitType: useMetricSystem ? 'kg' : 'lbs',
-      totalVolume,
-      totalWeight,
+    const newMerchandise: Cargo = {
+      //id: editingMerchandise?.id|| Date.now(),
+      nameMerchandise: merchandiseForm.nameMerchandise,
+      descriptionMerchandise: merchandiseForm.descriptionMerchandise || '',       
+      stowable: merchandiseForm.stowable,
+      typeCargo: merchandiseForm.typeCargo,
+      idUnitCargo: merchandiseForm.idUnitCargo,
+      unitCargo: merchandiseForm.unitCargo, 
+      idUnitMeasurement: merchandiseForm.idUnitMeasurement,
+      unitMeasurement: merchandiseForm.unitMeasurement,
+      idUnitWeight: merchandiseForm.idUnitWeight,
+      unitWeight: merchandiseForm.unitWeight,
+      totalVolume: merchandiseForm.totalVolume,
+      totalWeight: merchandiseForm.totalWeight,
+      //packages: merchandiseForm.packages  
       packages: currentPackages.map(pkg => ({
         ...pkg,
         unit: useMetricSystem ? 'metric' : 'imperial'
       })),
-      merchandise_classification: merchandiseClassifications
+      merchandiseClassification: merchandiseClassifications
     };
 
     setServices(services.map(service => {
-      if (service.id === currentServiceId) {
+      if (service.idServiceItem === currentServiceId) {
         if (editingMerchandise) {
           return {
             ...service,
-            merchandise: service.merchandise.map(m =>
-              m.id === editingMerchandise.id ? newMerchandise : m
+            merchandise: service.shipments[0].cargo.map(merchandise =>
+              merchandise.nameMerchandise === editingMerchandise.nameMerchandise ? newMerchandise : merchandise
             )
           };
         } else {
           return {
             ...service,
-            merchandise: [...service.merchandise, newMerchandise]
+            merchandise: [...service.shipments[0].cargo, newMerchandise]
           };
         }
       }
@@ -591,14 +604,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const copyMerchandise = (serviceId: number, merchandiseId: number) => {
-    const service = services.find(s => s.id === serviceId);
-    const merchToCopy = service?.merchandise.find(m => m.id === merchandiseId);
+    const service = services.find(service => service.idServiceItem === serviceId);
+    const merchToCopy = service?.shipments[0].cargo.find(merch => merch.id === merchandiseId);
     if (merchToCopy) {
       const newMerch = { ...merchToCopy, id: Date.now() };
-      setServices(services.map(s =>
-        s.id === serviceId
-          ? { ...s, merchandise: [...s.merchandise, newMerch] }
-          : s
+      setServices(services.map(service =>
+        service.idServiceItem === serviceId
+          ? { ...service, merchandise: [...service.shipments[0].cargo, newMerch] }
+          : service
       ));
     }
   };
@@ -612,7 +625,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const addExecutive = (executive: Executive) => {
-    const isAlreadyAdded = executives.some(e => e.id === executive.id);
+    const isAlreadyAdded = executives.some(e => e.idEmployee === executive.idEmployee);
     if (!isAlreadyAdded) {
       setExecutives([...executives, executive]);
     }
@@ -620,7 +633,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const duplicateService = (id: number) => {
-    const serviceToDuplicate = services.find(s => s.id === id);
+    const serviceToDuplicate = services.find(service => service.idServiceItem === id);
     if (serviceToDuplicate) {
       const newService = { ...serviceToDuplicate, id: Date.now() };
       setServices([...services, newService]);
@@ -628,7 +641,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const updateService = (id: number, field: keyof Service, value: any) => {
-    setServices(services.map(s => s.id === id ? { ...s, [field]: value } : s));
+    setServices(services.map(service => service.idServiceItem === id ? { 
+      ...service,
+      [field]: value 
+    } : service));
   };
 
   const handleStatusUpdate = async (statusId: number, statusName: string) => {
@@ -651,143 +667,198 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }
 
       const quotationData = {
-        reference_request: formData.referenceRequest,
+        id: '',
+        referenceRequest: formData.referenceRequest,
+        idStatusRequest: 1,
+        statusRequest: 'Creada',
+        dateRequest: formData.created.toString(),
+        ...(formData.responseDeadline.toString().length >= 0 && { dateDeadline: formData.responseDeadline.toString()}),        
+        idRequestType: selectedRequestType._id,
+        typeRequest: selectedRequestType.request_type_name,
         priority: formData.isPriority ? 1 : 0,
-        customer_category: formData.customerCategory,
-        _id_status_request: statusId,
-        status_request_name: statusName,
-        status_comments: statusId === 3 ? (document.getElementById('comments-cancelation') as HTMLInputElement).value : null,        
-        request_date: new Date(formData.created),
-        deadline_date: formData.responseDeadline ? new Date(formData.responseDeadline) : null,
-        _id_request_type: selectedRequestType._id,
-        request_type_name: selectedRequestType.request_type_name,
-        _id_customer: formData.customerId,
-        customer_business_name: selectedCustomer?.fiscal_data?.business_name || formData.client,
-        licitation: formData.isQuote,
-        requesting_data: user ? {
-          _id_executive: user._id,
-          complete_name: user.name || user.email,
-        } : {},
-        assigned_to: executives.map(exec => ({
-          _id_executive: exec.id,
-          complete_name: exec.name,
-          control_number: 'SN',
-        })),
+        licitation: formData.isQuote ? 1 : 0,
+        dateCreated: new Date().toISOString(),
+        createdBy: {
+          idUser: user?._id || '',
+          nameEmployee: user?.name || '',
+        },
+        customer : {
+          idCustomer: formData.customerId,
+          customerName: selectedCustomer?.fiscal_data?.business_name || formData.client,
+          customerCategory: formData.customerCategory,
+        },
+         assignedTo: executives.map(exec => ({
+          idEmployee: exec.idEmployee,
+          nameEmployee: exec.nameEmployee,
+          idUser: exec.idUser
+          //control_number: 'SN',
+        })),              
+       
         services: services.map((service, idx) => {
-          const selectedService = availableServices.find(s => s.service_name === service.service);
 
-          const servicesAssociated: any[] = [];
-          if (service.insurance) {
-            const insuranceService = availableServices.find(s => s.service_name === 'Seguro');
-            servicesAssociated.push({
-              _id_service_associated: insuranceService?._id || null,
-              service_associated_name: 'Seguro'
-            });
-          }
-          if (service.maneuver) {
-            const maneuverService = availableServices.find(s => s.service_name === 'Maniobra');
-            servicesAssociated.push({
-              _id_service_associated: maneuverService?._id || null,
-              service_associated_name: 'Maniobra'
-            });
-          }
-          if (service.custody) {
-            const custodyService = availableServices.find(s => s.service_name === 'Custodia');
-            servicesAssociated.push({
-              _id_service_associated: custodyService?._id || null,
-              service_associated_name: 'Custodia'
-            });
-          }
-          if (service.inspection) {
-            const inspectionService = availableServices.find(s => s.service_name === 'Inspección');
-            servicesAssociated.push({
-              _id_service_associated: inspectionService?._id || null,
-              service_associated_name: 'Inspección'
-            });
-          }
-          if (service.customsClearance) {
-            const customsClearanceService = availableServices.find(s => s.service_name === 'Despacho aduanal');
-            servicesAssociated.push({
-              _id_service_associated: customsClearanceService?._id || null,
-              service_associated_name: 'Despacho aduanal'
-            });
-          }
+          const shipmentsInService = service.shipments.map((shipment, index) => {
+            
+            const servicesAssociated: any[] = [];
 
-          const frequencyMap: { [key: string]: number } = { 'semanal': 1, 'mensual': 2, 'anual': 3 };
-          const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
-          const operationTypeMap: { [key: string]: number } = { 'Exportación': 1, 'Importación': 2, 'Nacional': 3, 'Local USA': 4, 'Triangulación': 5 };
-          const shipmentTypeMap: { [key: string]: number } = { 'Door to Door': 1, 'Port to Port': 2, 'Door to Port': 3, 'Port to Door': 4 };
+            if(shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Seguro')){              
+              const insuranceService = availableServices.find(s => s.service_name === 'Seguro');              
+              servicesAssociated.push({
+                _id_service_associated: insuranceService?._id || null,
+                service_associated_name: 'Seguro'
+              });
+            }       
+            
+            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Maniobra')) {
+              const maneuverService = availableServices.find(s => s.service_name === 'Maniobra');
+              servicesAssociated.push({
+                _id_service_associated: maneuverService?._id || null,
+                service_associated_name: 'Maniobra'
+              });
+            }   
+            
+            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Custodia')) {
+              const custodyService = availableServices.find(s => s.service_name === 'Custodia');
+              servicesAssociated.push({
+                _id_service_associated: custodyService?._id || null,
+                service_associated_name: 'Custodia'
+              });
+            }
 
-          const projectionShipment = service.programFrequency && service.quantity && service.frequency && service.unit ? {
-            num: parseInt(service.quantity),
-            _id_measurement_frecuency: unitMap[service.unit] || 0,
-            measurement_frecuency: service.unit,
-            _id_frecuency: frequencyMap[service.frequency] || 0,
-            frecuency: service.frequency,
-          } : undefined;
+            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Inspección')) {
+              const inspectionService = availableServices.find(s => s.service_name === 'Inspección');
+              servicesAssociated.push({
+                _id_service_associated: inspectionService?._id || null,
+                service_associated_name: 'Inspección'
+              });
+            }
 
-          const originCountry = countries.find(c => c.code_country === service.origin);
-          const destinationCountry = countries.find(c => c.code_country === service.destination);
-          const selectedIncoterm = incoterms.find(i => i.incoterm_name === service.incoterm);
+            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Despacho aduanal')) {
+              const customsClearanceService = availableServices.find(s => s.service_name === 'Despacho aduanal');
+              servicesAssociated.push({
+                _id_service_associated: customsClearanceService?._id || null,
+                service_associated_name: 'Despacho aduanal'
+              });
+            }
 
-          return {
-            id_service_item: idx + 1,
-            id_service: selectedService?.id_service || null,
-            service_name: service.service,
+            const frequencyMap: { [key: string]: number } = { 'semanal': 1, 'mensual': 2, 'anual': 3 };
+            const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
+            const operationTypeMap: { [key: string]: number } = { 'Exportación': 1, 'Importación': 2, 'Nacional': 3, 'Local USA': 4, 'Triangulación': 5 };
+            const shipmentTypeMap: { [key: string]: number } = { 'Door to Door': 1, 'Port to Port': 2, 'Door to Port': 3, 'Port to Door': 4 };
+
+            const projectionShipment = service.shipments[0].projectionShipment.idTypeMesurementFrecuency && 
+            service.shipments[0].projectionShipment.measurementFrecuency && 
+            service.shipments[0].projectionShipment.frecuency && 
+            service.shipments[0].projectionShipment.number ? {
+              idTypeMesurementFrecuency: service.shipments[0].projectionShipment.idTypeMesurementFrecuency|| 0,
+              measurementFrecuency: service.shipments[0].projectionShipment.measurementFrecuency ,
+              frecuency:service.shipments[0].projectionShipment.frecuency || 0,
+              number: service.shipments[0].projectionShipment.number,
+            } : undefined;
+
+            const originCountry = countries.find(country => country._id === service.shipments[0].origin.idCountry);
+            const destinationCountry = countries.find(country => country._id === service.shipments[0].destination.idCountry);
+            const selectedIncoterm = incoterms.find(i => i.incoterm_name === service.shipments[0].incoterm);
+          
+            return {              
+              idShipment:index + 1,
+              origin: {
+                idCountry: originCountry.idCountry,
+                countryCode: originCountry.countryCode,
+                zipCode: originCountry.zipCode,
+              },
+              destination: {
+                idCountry: destinationCountry.idCountry,
+                countryCode: destinationCountry.countryCode,
+                zipCode: shipment.destination.zipCode,
+              },
+              idTypeShipment: shipment.idTypeShipment,
+              typeShipment: shipment.typeShipment,
+              idTypeOperation: shipment.idTypeOperation,
+              typeOperation: shipment.typeOperation,
+              idInconterm: selectedIncoterm?._id || 0,
+              incoterm: shipment.incoterm,
+              ...(shipment.departureDateAproximate && { departureDateAproximate: shipment.departureDateAproximate}),
+              ...(projectionShipment && { projectionShipment: projectionShipment }),
+              comments: statusId === 3 ? (document.getElementById('comments-cancelation') as HTMLInputElement).value : null,        
+              ...(servicesAssociated.length > 0 && { servicesAsociated: servicesAssociated }),
+              cargo : shipment.cargo.map(merchandise => ({
+                merchandiseName: merchandise.nameMerchandise,
+                merchandiseDescription: merchandise.descriptionMerchandise,
+                classification: merchandise.merchandiseClassification || [],
+                stowable: merchandise.stowable,
+                typeCargo:'',
+                idUnitCargo: 1,
+                unitCargo: '',
+                idUnitMeasurement: 1, 
+                unitMeasurement:'',
+                idUnitWeight: 1, 
+                unitWeight:'kg',
+                totalVolume: merchandise.totalVolume,
+                totalWeight: merchandise.totalWeight,
+                packages: merchandise.packages
+              }))
+            }        
+          })
+          const selectedService = availableServices.find(s => s.service_name === service.nameService);          
+          
+          return {            
+            idServiceItem: idx + 1,
+            idService: selectedService?.id_service || null,
+            nameService: service.nameService,
             ...(mode === 'create' && { used: false }),
-            shipments: [{
-            id_shipment_item: 1,
-            origin: {
-              id_country: originCountry?._id || null,
-              country_code: originCountry?.code_country,
-              country_name: originCountry?.name_country,
-              location: service.originZip 
-            },
-            destination: {
-              id_country: destinationCountry?._id || null,
-              country_code: destinationCountry?.code_country,
-              country_name: destinationCountry?.name_country,
-              location: service.destinationZip
-            },
-            _id_shipment_type: shipmentTypeMap[service.shippingType] || 1,
-            shippment_type_name: service.shippingType,
-            _id_operation_type: operationTypeMap[service.operation] || 1,
-            operation_type_name: service.operation,
-            _id_incoterm: selectedIncoterm?._id || 0,
-            incoterm: service.incoterm,
-            ...(service.expectedDeparture && { departure_date_approximate: { $date: new Date(service.expectedDeparture).toISOString()}}),
-            ...(projectionShipment && { projection_shipment: projectionShipment }),
-            _id_status_shipment: 101,
-            last_status_shipment: "Pendiente",
-            comments: service.comments || '',
-            services_asociated: servicesAssociated,
-            cargo: service.merchandise.map((merch: Merchandise, merchIdx: number) => ({
-              id_merchandise_item: merchIdx + 1,
-              merchandise_name: merch.name,
-              merchandise_description: merch.description,
-              merchandise_classification: merch.merchandise_classification || [],
-              stowable: merch.stackable,
-              _id_shipment_type: 1,
-              shipment_type: "Suelta",
-              _id_unit_cargo: 1,
-              unit_cargo: "Caja",
-              _id_unit_measurement: 1,
-              unit_measurement: "CM",
-              _id_unit_weigh: merch.unitType === 'kg' ? 1 : 2,
-              unit_weight: merch.unitType === 'kg' ? 'KG' : 'Libras',
-              volume_total: merch.totalVolume,
-              weigth_total: merch.totalWeight,
-              unit: merch.packages?.map((pkg: any, pkgIdx: number) => ({
-                quantity: pkg.quantity,
-                length: pkg.length,
-                height: pkg.height,
-                width: pkg.width,
-                weigth: pkg.weight
-              })) || []
-            }))
-          }]
-        };
-        }),
+            shipments: shipmentsInService
+          }
+            /*[
+            {
+              idShipment: 1,
+              origin: {
+                idCountry: originCountry?.idCountry || null,
+                countryCode: originCountry?.countryCode,
+                zipCode: originCountry?.zipCode
+              },
+              destination: {
+                idCountry: destinationCountry?.idCountry || null,
+                countryCode: destinationCountry?.countryCode,
+                zipCode: destinationCountry?.zipCode
+              },
+              idTypeShipment: shipmentTypeMap[service.shipments[0].idTypeShipment] || 1,
+              typeShipment: service.shipments[0].typeShipment,
+              _id_operation_type: operationTypeMap[service.operation] || 1,
+              operation_type_name: service.operation,
+              _id_incoterm: selectedIncoterm?._id || 0,
+              incoterm: service.incoterm,
+              ...(service.expectedDeparture && { departure_date_approximate: { $date: new Date(service.expectedDeparture).toISOString()}}),
+              ...(projectionShipment && { projection_shipment: projectionShipment }),
+              _id_status_shipment: 101,
+              last_status_shipment: "Pendiente",
+              comments: service.comments || '',
+              services_asociated: servicesAssociated,
+              cargo: service.merchandise.map((merch: Merchandise, merchIdx: number) => ({
+                id_merchandise_item: merchIdx + 1,
+                merchandise_name: merch.name,
+                merchandise_description: merch.description,
+                merchandise_classification: merch.merchandise_classification || [],
+                stowable: merch.stackable,
+                _id_shipment_type: 1,
+                shipment_type: "Suelta",
+                _id_unit_cargo: 1,
+                unit_cargo: "Caja",
+                _id_unit_measurement: 1,
+                unit_measurement: "CM",
+                _id_unit_weigh: merch.unitType === 'kg' ? 1 : 2,
+                unit_weight: merch.unitType === 'kg' ? 'KG' : 'Libras',
+                volume_total: merch.totalVolume,
+                weigth_total: merch.totalWeight,
+                unit: merch.packages?.map((pkg: any, pkgIdx: number) => ({
+                  quantity: pkg.quantity,
+                  length: pkg.length,
+                  height: pkg.height,
+                  width: pkg.width,
+                  weigth: pkg.weight
+                })) || []
+              }))
+                */                  
+        })        
       };
 
       if (mode === 'edit' && quotationId) {
@@ -827,9 +898,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const handleSaveQuotation = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-
       setSaving(true);
-
       const selectedCustomer = customers.find(c => c._id === formData.customerId);
       const selectedRequestType = requestTypes.find(r => r._id === parseInt(formData.requestTypeId) || r._id === formData.requestTypeId);
       const hasAssignedExecutives = executives.length > 0;
@@ -852,104 +921,118 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           complete_name: user.name || user.email,
         } : {},
         assigned_to: executives.map(exec => ({
-          _id_executive: exec.id,
-          complete_name: exec.name,
+          _id_executive: exec.idEmployee,
+          complete_name: exec.nameEmployee,
+          _iduser: exec.idUser,
           control_number: 'SN',
         })),
-        services: services.map((service, idx) => {
-          const selectedService = availableServices.find(s => s.service_name === service.service);          
-          const servicesAssociated: any[] = [];
+        services: services.map((service, idx) => {      
+                                                         
+          const shipmentsInService = service.shipments.map((shipment, index) => {
+            
+            const servicesAssociated: any[] = [];
 
-          if (service.insurance) {
-            const insuranceService = availableServices.find(s => s.service_name === 'Seguro');
-            servicesAssociated.push({
-              _id_service_associated: insuranceService?._id || null,
-              service_associated_name: 'Seguro'
-            });
-          }
-          if (service.maneuver) {
-            const maneuverService = availableServices.find(s => s.service_name === 'Maniobra');
-            servicesAssociated.push({
-              _id_service_associated: maneuverService?._id || null,
-              service_associated_name: 'Maniobra'
-            });
-          }
-          if (service.custody) {
-            const custodyService = availableServices.find(s => s.service_name === 'Custodia');
-            servicesAssociated.push({
-              _id_service_associated: custodyService?._id || null,
-              service_associated_name: 'Custodia'
-            });
-          }
-          if (service.inspection) {
-            const inspectionService = availableServices.find(s => s.service_name === 'Inspección');
-            servicesAssociated.push({
-              _id_service_associated: inspectionService?._id || null,
-              service_associated_name: 'Inspección'
-            });
-          }
-          if (service.customsClearance) {
-            const customsClearanceService = availableServices.find(s => s.service_name === 'Despacho aduanal');
-            servicesAssociated.push({
-              _id_service_associated: customsClearanceService?._id || null,
-              service_associated_name: 'Despacho aduanal'
-            });
-          }
+            if(shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Seguro')){              
+              const insuranceService = availableServices.find(s => s.service_name === 'Seguro');              
+              servicesAssociated.push({
+                _id_service_associated: insuranceService?._id || null,
+                service_associated_name: 'Seguro'
+              });
+            }       
+            
+            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Maniobra')) {
+              const maneuverService = availableServices.find(s => s.service_name === 'Maniobra');
+              servicesAssociated.push({
+                _id_service_associated: maneuverService?._id || null,
+                service_associated_name: 'Maniobra'
+              });
+            }   
+            
+            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Custodia')) {
+              const custodyService = availableServices.find(s => s.service_name === 'Custodia');
+              servicesAssociated.push({
+                _id_service_associated: custodyService?._id || null,
+                service_associated_name: 'Custodia'
+              });
+            }
 
-          const frequencyMap: { [key: string]: number } = { 'semanal': 1, 'mensual': 2, 'anual': 3 };
-          const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
+            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Inspección')) {
+              const inspectionService = availableServices.find(s => s.service_name === 'Inspección');
+              servicesAssociated.push({
+                _id_service_associated: inspectionService?._id || null,
+                service_associated_name: 'Inspección'
+              });
+            }
 
-          const projectionShipment = service.programFrequency && service.quantity && service.frequency && service.unit ? {
-            num: parseInt(service.quantity),
-            _id_measurement_frecuency: unitMap[service.unit] || 0,
-            measurement_frecuency: service.unit,
-            _id_frecuency: frequencyMap[service.frequency] || 0,
-            frecuency: service.frequency,
-          } : undefined;
+            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Despacho aduanal')) {
+              const customsClearanceService = availableServices.find(s => s.service_name === 'Despacho aduanal');
+              servicesAssociated.push({
+                _id_service_associated: customsClearanceService?._id || null,
+                service_associated_name: 'Despacho aduanal'
+              });
+            }
 
-          const originCountry = countries.find(c => c.code_country === service.origin);
-          const destinationCountry = countries.find(c => c.code_country === service.destination);          
+            const frequencyMap: { [key: string]: number } = { 'semanal': 1, 'mensual': 2, 'anual': 3 };
 
+            const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
+
+            const projectionShipment = shipment.projectionShipment.frecuency && 
+                                       shipment.projectionShipment.idTypeMesurementFrecuency && 
+                                       shipment.projectionShipment.measurementFrecuency && 
+                                       shipment.projectionShipment.number ? {
+              frecuency: shipment.projectionShipment.frecuency,
+              idTypeMesurementFrecuency: unitMap[shipment.projectionShipment.idTypeMesurementFrecuency] || 0,
+              measurementFrecuency: shipment.projectionShipment.measurementFrecuency,
+              number: shipment.projectionShipment.number || 0,
+            } : undefined;
+
+            const originCountry = countries.find(country => country._id === shipment.origin.idCountry);
+            const destinationCountry = countries.find(country => country._id === shipment.destination.idCountry);   
+
+            return {
+              idShipment:index + 1,
+              origin: {
+                idCountry: originCountry.idCountry,
+                countryCode: originCountry.countryCode,
+                zipCode: originCountry.zipCode,
+              },
+              destination: {
+                idCountry: destinationCountry.idCountry,
+                countryCode: destinationCountry.countryCode,
+                zipCode: shipment.destination.zipCode,
+              },
+              idTypeShipment: shipment.idTypeShipment,
+              typeShipment: shipment.typeShipment,
+              idTypeOperation: shipment.idTypeOperation,
+              typeOperation: shipment.typeOperation,
+              idInconterm: shipment.idInconterm,
+              incoterm: shipment.incoterm,
+              departureDateAproximate: shipment.departureDateAproximate,
+              projectionShipment: projectionShipment,
+              comments: shipment.comments,
+              ...(servicesAssociated.length > 0 && { servicesAsociated: servicesAssociated }),
+              cargo : shipment.cargo.map(merchandise => ({
+                merchandise_name: merchandise.name,
+                merchandise_description: merchandise.description,
+                merchandise_classification: merchandise.merchandise_classification || [],
+                stowable: merchandise.stackable,
+                volume_total: merchandise.totalVolume,
+                weigth_total: merchandise.totalWeight,
+                unit: merchandise.packages
+              })), 
+            }
+            
+          })
+
+          const selectedService = availableServices.find(s => s.service_name === service.nameService); 
+                                        
           return {
-            id_service_item: idx + 1,
-            _id_service: selectedService?._id,
-            service_name: service.service,
+            idServiceItem: idx + 1,
+            idService: selectedService?._id,
+            nameService: selectedService.service_name,
             ...(mode === 'create' && { used: false }),
-            shipments: [{
-            id_shipment_item: 1,
-            origin: {
-              id_country: originCountry?._id || null,
-              country_code: originCountry?.code_country,
-              country_name: originCountry?.name_country,
-              location: service.originZip 
-            },
-            destination: {
-              id_country: destinationCountry?._id || null,
-              country_code: destinationCountry?.code_country,
-              country_name: destinationCountry?.name_country,
-              location: service.destinationZip
-            },
-            _id_shipment_type: service.shippingType === 'Door to Door' ? 1 : 2,
-            shippment_type_name: service.shippingType,
-            _id_operation_type: service.operation === 'Exportación' ? 1 : service.operation === 'Importación' ? 2 : null,
-            operation_type_name: service.operation,
-            _id_incoterm: incoterms.find(i => i.incoterm === service.incoterm)?._id || null,
-            incoterm: service.incoterm,
-            departure_date_approximate: service.expectedDeparture ? new Date(service.expectedDeparture) : null,
-            comments: service.comments,
-            ...(servicesAssociated.length > 0 && { services_asociated: servicesAssociated }),
-            ...(projectionShipment && { projection_shipment: projectionShipment }),
-            cargo: service.merchandise.map(merch => ({
-              merchandise_name: merch.name,
-              merchandise_description: merch.description,
-              merchandise_classification: merch.merchandise_classification || [],
-              stowable: merch.stackable,
-              volume_total: merch.totalVolume,
-              weigth_total: merch.totalWeight,
-              unit: merch.packages,
-            })),
-          }],
-        };
+            shipments : shipmentsInService            
+          };
         }),
       };
 
@@ -1038,7 +1121,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <input
               type="text"
               value={service.originZip}
-              onChange={(e) => updateService(service.id, 'originZip', e.target.value)}
+              onChange={(e) => updateService(service.id, service.originZip, e.target.value)}
               className={styles.input}
               disabled={mode === 'view'}
               required/>
@@ -1051,7 +1134,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <input
               type="text"
               value={service.destinationZip}
-              onChange={(e) => updateService(service.id, 'destinationZip', e.target.value)}
+              onChange={(e) => updateService(service.id, service.destinationZip, e.target.value)}
               className={styles.input}
               disabled={mode === 'view'}
               required/>
@@ -1067,15 +1150,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <input
               type="text"
               value={service.originZip}
-              onChange={(e) => updateService(service.id, 'originZip', e.target.value)}
+              onChange={(e) => updateService(service.id, service.originZip, e.target.value)}
               className={styles.input}
               disabled={mode === 'view'}
               required/>
-            </div>                     
+          </div>  
+          <div className={styles.formGroup}></div>                   
         </div>);
       
       case 'Port to Door' : return( 
-        <div className={styles.formGrid}>               
+        <div className={styles.formGrid}>   
+          <div className={styles.formGroup}></div>              
           <div className={styles.formGroup}>
             <label className={styles.label}>
               <span className={styles.required}>*</span>
@@ -1084,7 +1169,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <input
               type="text"
               value={service.destinationZip}
-              onChange={(e) => updateService(service.id, 'destinationZip', e.target.value)}
+              onChange={(e) => updateService(service.id, service.destinationZip, e.target.value)}
               className={styles.input}
               disabled={mode === 'view'}
               required/>
@@ -1151,7 +1236,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               value={formData.referenceRequest}
               onChange={(e) => setFormData({ ...formData, referenceRequest: e.target.value })}
               className={styles.input}
-              placeholder="QR250901-00001"
+              placeholder="QR250901-0001"
               disabled
             />
           </div>
@@ -1193,7 +1278,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 const requestType = requestTypes.find(r => r._id === parseInt(e.target.value));
                 setFormData({
                   ...formData,
-                  requestTypeId: e.target.value,
+                  requestTypeId: parseInt(e.target.value),
                   requestType: requestType?.request_type_name || ''
                 });
               }}
@@ -1322,17 +1407,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         <h2 className={styles.sectionTitle}>{t('quote.services')}</h2>
 
         {services.map((service, index) => (
-          <div key={service.id} className={styles.serviceCard}>
+          <div key={service.idService} className={styles.serviceCard}>
             <div className={styles.serviceHeader}>
               <div className={styles.serviceNumber}>{index + 1}</div>
               <div className={styles.serviceActions}>
-                <button type="button" className={styles.iconButton} onClick={() => duplicateService(service.id)} disabled={mode === 'view'}>
+                <button type="button" className={styles.iconButton} onClick={() => duplicateService(service.idService)} disabled={mode === 'view'}>
                   <Copy size={18} />
                 </button>
                 <button
                     type="button" 
                     className={`${styles.iconButton} ${styles.danger}`}
-                    onClick={() => removeService(service.id)}
+                    onClick={() => removeService(service.idService)}
                     disabled={mode === 'view'}>
                     <X size={18} />
                 </button>               
@@ -1343,11 +1428,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                   <span className={styles.required}>*</span>
-                  {t('quote.service')}
+                  Tipo Tráfico
                 </label>
                 <select
-                  value={service.service}
-                  onChange={(e) => updateService(service.id, 'service', e.target.value)}
+                  value={service.nameService}
+                  onChange={(e) => updateService(service.idService, 'nameService', e.target.value)}
                   className={styles.select}
                   disabled={loading || mode === 'view'}
                   required
@@ -1364,11 +1449,33 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                   <span className={styles.required}>*</span>
+                  Tipo Carga
+                </label>
+                <select
+                  value={service.shipments[0].typeShipment}
+                  onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
+                  className={styles.select}
+                  disabled={loading || mode === 'view'}
+                  required
+                >
+                  <option value="">{t('quote.select')}</option>                
+                    <option key='Consolidado' value='Consolidado'>
+                      Consolidado
+                    </option>  
+                    <option key='Full' value='Full'>
+                      Full
+                    </option>                   
+                </select>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
                   {t('quote.operation')}
                 </label>
                 <select
-                  value={service.operation}
-                  onChange={(e) => updateService(service.id, 'operation', e.target.value)}
+                  value={service.shipments[0].typeOperation}
+                  onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                   className={styles.select}
                   disabled={mode === 'view'}
                   required
@@ -1385,8 +1492,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   {t('quote.incoterm')}
                 </label>
                 <select
-                  value={service.incoterm}
-                  onChange={(e) => updateService(service.id, 'incoterm', e.target.value)}
+                  value={service.shipments[0].incoterm}
+                  onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                   className={styles.select}
                   disabled={loading || mode === 'view'}
                   required>
@@ -1404,8 +1511,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <span className={styles.required}>*</span>Tipo de envío
                 </label>
                 <select
-                  value={service.shippingType}
-                  onChange={(e) => updateService(service.id, 'shippingType', e.target.value)}
+                  value={service.shipments[0].idTypeShipment}
+                  onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                   className={styles.select}
                   disabled={mode === 'view'}>
                   <option>{t('quote.doorToDoor')}</option>
@@ -1419,8 +1526,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <label className={styles.label}>{t('quote.expectedDeparture')}</label>
                 <input
                   type="date"
-                  value={service.expectedDeparture}
-                  onChange={(e) => updateService(service.id, 'expectedDeparture', e.target.value)}
+                  value={service.shipments[0].departureDateAproximate || '' }
+                  onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                   className={styles.input}
                   disabled={mode === 'view'}/>
               </div>         
@@ -1433,16 +1540,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   {t('quote.origin')}
                 </label>
                 <select
-                  value={service.origin}
-                  onChange={(e) => updateService(service.id, 'origin', e.target.value)}
+                  value={service.shipments[0].origin.idCountry}
+                  onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                   className={styles.select}
                   disabled={loading || mode === 'view'}
                   required
                 >
                   <option value="">{t('quote.select')}</option>
                   {countries.map((country) => (
-                    <option key={country._id} value={country.code_country}>
-                      {country.name_country} ({country.code_country})
+                    <option key={country._id} value={country._id}>
+                      {country.name_country} ({country.country_code})
                     </option>
                   ))}
                 </select>
@@ -1453,15 +1560,15 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   {t('quote.destination')}
                 </label>
                 <select
-                  value={service.destination}
-                  onChange={(e) => updateService(service.id, 'destination', e.target.value)}
+                  value={service.shipments[0].destination.idCountry}
+                  onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                   className={styles.select}
                   disabled={loading || mode === 'view'}
                   required>
                   <option value="">{t('quote.select')}</option>
                   {countries.map((country) => (
-                    <option key={country._id} value={country.code_country}>
-                      {country.name_country} ({country.code_country})
+                    <option key={country._id} value={country._id}>
+                      {country.name_country} ({country.country_code})
                     </option>                    
                   ))}
                 </select>
@@ -1477,36 +1584,36 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.associatedServices}>
                 <button
                   type="button" 
-                  className={`${styles.serviceChip} ${service.insurance ? styles.selected : ''}`}
-                  onClick={() => updateService(service.id, 'insurance', !service.insurance)}
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Seguro') ? styles.selected : ''}`}
+                  onClick={() => updateService(service.idService, 'idService', '' )}
                   disabled={mode === 'view'}>
                   <span>Seguro</span>
                 </button>
                 <button
                   type="button" 
-                  className={`${styles.serviceChip} ${service.maneuver ? styles.selected : ''}`}
-                  onClick={() => updateService(service.id, 'maneuver', !service.maneuver)}
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Seguro') ? styles.selected : ''}`}
+                  onClick={() => updateService(service.idService, 'idService', '')}
                   disabled={mode === 'view'}>
                   <span>Maniobra</span>
                 </button>
                 <button
                   type="button" 
-                  className={`${styles.serviceChip} ${service.custody ? styles.selected : ''}`}
-                  onClick={() => updateService(service.id, 'custody', !service.custody)}
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Custodia') ? styles.selected : ''}`}
+                  onClick={() => updateService(service.idService, 'idService', '')}
                   disabled={mode === 'view'}>
                   <span>Custodia</span>
                 </button>
                 <button
                   type="button" 
-                  className={`${styles.serviceChip} ${service.inspection ? styles.selected : ''}`}
-                  onClick={() => updateService(service.id, 'inspection', !service.inspection)}
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Inspeccion') ? styles.selected : ''}`}
+                  onClick={() => updateService(service.idService, 'idService', '')}
                   disabled={mode === 'view'}>
                   <span>Inspección</span>
                 </button>
                 <button
                   type="button" 
-                  className={`${styles.serviceChip} ${service.customsClearance ? styles.selected : ''}`}
-                  onClick={() => updateService(service.id, 'customsClearance', !service.customsClearance)}
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Despacho Aduanal')? styles.selected : ''}`}
+                  onClick={() => updateService(service.idService, 'idService', '')}
                   disabled={mode === 'view'}>
                   <span>Despacho aduanal</span>
                 </button>
@@ -1516,8 +1623,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <div className={styles.formGroup} style={{ marginTop: '1.25rem' }}>
               <label className={styles.label}>{t('quote.comments')}</label>
               <textarea
-                value={service.comments}
-                onChange={(e) => updateService(service.id, 'comments', e.target.value)}
+                value={service.shipments[0].comments}
+                onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                 className={styles.textarea}
                 rows={3}
                 placeholder=""
@@ -1529,38 +1636,38 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.frequencyHeader}>
                 <input
                   type="checkbox"
-                  id={`freq-${service.id}`}
-                  checked={service.programFrequency}
-                  onChange={(e) => updateService(service.id, 'programFrequency', e.target.checked)}
+                  id={`freq-${service.idService}`}
+                  checked={service.shipments[0].projectionShipment}
+                  onChange={(e) => updateService(service.idService, 'idService', e.target.checked)}
                   className={styles.checkbox}
                   disabled={mode === 'view'}
                 />
-                <label htmlFor={`freq-${service.id}`} className={styles.checkboxLabel}>
+                <label htmlFor={`freq-${service.idService}`} className={styles.checkboxLabel}>
                   Programar frecuencia
                 </label>
               </div>
-              {service.programFrequency && (
+              {service.shipments[0].projectionShipment && (
                 <div className={styles.frequencyGrid}>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>{t('quote.frequencyPeriod')}</label>
                     <select
-                      value={service.frequency}
-                      onChange={(e) => updateService(service.id, 'frequency', e.target.value)}
+                      value={service.shipments[0].projectionShipment?.frecuency}
+                      onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                       className={styles.select}
                       disabled={mode === 'view'}
                     >
                       <option value="">{t('quote.select')}</option>
-                      <option value="semanal">{t('quote.weekly')}</option>
-                      <option value="mensual">{t('quote.monthly')}</option>
-                      <option value="anual">{t('quote.yearly')}</option>
+                      <option value="Semanal">{t('quote.weekly')}</option>
+                      <option value="Mensual">{t('quote.monthly')}</option>
+                      <option value="Anual">{t('quote.yearly')}</option>
                     </select>
                   </div>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>{t('quote.quantity')}</label>
                     <input
                       type="number"
-                      value={service.quantity}
-                      onChange={(e) => updateService(service.id, 'quantity', e.target.value)}
+                      value={service.shipments[0].projectionShipment.number}
+                      onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                       className={styles.input}
                       placeholder="0"
                       disabled={mode === 'view'}
@@ -1569,8 +1676,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <div className={styles.formGroup}>
                     <label className={styles.label}>{t('quote.unit')}</label>
                     <select
-                      value={service.unit}
-                      onChange={(e) => updateService(service.id, 'unit', e.target.value)}
+                      value={service.shipments[0].projectionShipment.measurementFrecuency}
+                      onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                       className={styles.select}
                       disabled={mode === 'view'}
                     >
@@ -1600,9 +1707,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     </tr>
                   </thead>
                   <tbody>
-                    {service.merchandise.map((merch) => (
+                    {service.shipments[0].cargo.map((merch) => (
                       <tr key={merch.id}>
-                        <td>{merch.name}</td>
+                        <td>{merch.merchandiseName}</td>
                         <td>{merch.dangerous ? 'No' : 'No'}</td>
                         <td>{merch.refrigerated ? 'Refrigerada' : 'General'}</td>
                         <td>{merch.stackable ? 'Sí' : 'No'}</td>
@@ -1613,7 +1720,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             <button
                               type="button" 
                               className={styles.iconButtonSmall}
-                              onClick={() => copyMerchandise(service.id, merch.id)}
+                              onClick={() => copyMerchandise(service.idService, merch.id)}
                               title={t('quote.copy')}
                               disabled={mode === 'view'}
                             >
@@ -1622,7 +1729,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             <button
                               type="button" 
                               className={styles.iconButtonSmall}
-                              onClick={() => removeMerchandise(service.id, merch.id)}
+                              onClick={() => removeMerchandise(service.idService, merch.id)}
                               title={t('quote.delete')}
                               disabled={mode === 'view'}
                             >
@@ -1631,7 +1738,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             <button
                               type="button" 
                               className={styles.viewButtonGreen}
-                              onClick={() => openMerchandiseModal(service.id, merch)}
+                              onClick={() => openMerchandiseModal(service.idService, merch)}
                               title={t('quote.view')}>
                               <Eye size={14} />
                             </button>
@@ -1645,7 +1752,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <button
                 type="button" 
                 className={styles.addItemButton}
-                onClick={() => openMerchandiseModal(service.id)}
+                onClick={() => openMerchandiseModal(service.idService)}
                 disabled={mode === 'view'}
               >
                 <Plus size={16} />
@@ -1672,7 +1779,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <button
                   type="button" 
                   className={styles.removeIconButton}
-                  onClick={() => removeExecutive(executive.id)}
+                  onClick={() => removeExecutive(executive.idEmployee || '')}
                   title={t('quote.delete')}
                   disabled={mode === 'view'}
                 >
@@ -1709,8 +1816,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     type="text"
                     placeholder="Baterías de Telefonos Modelo 388"
                     className={styles.input}
-                    value={merchandiseForm.name}
-                    onChange={(e) => setMerchandiseForm({ ...merchandiseForm, name: e.target.value })}
+                    value={merchandiseForm?.nameMerchandise}
+                    /*onChange={(e) => setMerchandiseForm({ 
+                      ...merchandiseForm, nameMerchandise: e.target.value
+                    })}*/
                     disabled={mode === 'view'}
                   />
                 </div>
@@ -1718,8 +1827,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <label className={styles.label}>{t('quote.isStackable')}</label>
                   <div className={styles.toggleContainer}>
                     <button
-                      className={`${styles.toggleSwitch} ${merchandiseForm.stackable ? styles.active : ''}`}
-                      onClick={() => setMerchandiseForm({ ...merchandiseForm, stackable: !merchandiseForm.stackable })}
+                      className={`${styles.toggleSwitch} ${merchandiseForm?.stowable ? styles.active : ''}`}
+                      //onClick={() => setMerchandiseForm({ ...merchandiseForm, stowable: !merchandiseForm.stowable })}
                       disabled={mode === 'view'}>
                       <div className={styles.toggleThumb}></div>
                     </button>
@@ -1732,9 +1841,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <textarea
                   className={styles.textarea}
                   rows={3}
-                  value={merchandiseForm.description}
+                  value={merchandiseForm?.descriptionMerchandise}
                   disabled={mode === 'view'}
-                  onChange={(e) => setMerchandiseForm({ ...merchandiseForm, description: e.target.value })}
+                  //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, descriptionMerchandise: e.target.value })}
                 ></textarea>
               </div>
 
@@ -1750,8 +1859,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           type="checkbox"
                           id="peligrosa"
                           className={styles.checkbox}                        
-                          checked={merchandiseForm.dangerous}
-                          onChange={(e) => setMerchandiseForm({ ...merchandiseForm, dangerous: e.target.checked })}
+                          checked={merchandiseForm?.merchandiseClassification.some(classification => classification.classificationMerchandise === 'Seguro')}
+                          //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, dangerous: e.target.checked })}
                           disabled={mode === 'view'}
                         />
                         <label htmlFor="peligrosa" className={styles.classificationLabel}>
@@ -1763,8 +1872,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           type="checkbox"
                           id="refrigerada"
                           className={styles.checkbox}
-                          checked={merchandiseForm.refrigerated}
-                          onChange={(e) => setMerchandiseForm({ ...merchandiseForm, refrigerated: e.target.checked })}
+                          checked={merchandiseForm?.merchandiseClassification.some(classification => classification.classificationMerchandise === 'Refrigerada')}
+                          //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, refrigerated: e.target.checked })}
                           disabled={mode === 'view'}
                         />
                         <label htmlFor="refrigerada" className={styles.classificationLabel}>
@@ -1776,8 +1885,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           type="checkbox"
                           id="sobredimensionada"
                           className={styles.checkbox}
-                          checked={merchandiseForm.oversized}
-                          onChange={(e) => setMerchandiseForm({ ...merchandiseForm, oversized: e.target.checked })}
+                          checked={merchandiseForm?.merchandiseClassification.some(classification => classification.classificationMerchandise === 'Sobredimensionada')}
+                          //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, oversized: e.target.checked })}
                           disabled={mode === 'view'}
                         />
                         <label htmlFor="sobredimensionada" className={styles.classificationLabel}>
@@ -1789,8 +1898,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           type="checkbox"
                           id="granel"
                           className={styles.checkbox}
-                          checked={merchandiseForm.grain}
-                          onChange={(e) => setMerchandiseForm({ ...merchandiseForm, grain: e.target.checked })}
+                          checked={merchandiseForm?.merchandiseClassification.some(classification => classification.classificationMerchandise === 'Granel')}
+                          //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, grain: e.target.checked })}
                           disabled={mode === 'view'}
                         />
                         <label htmlFor="granel" className={styles.classificationLabel}>
@@ -1799,21 +1908,21 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       </div>
                     </div>
                     <div className={styles.classificationColumn}>
-                      {merchandiseForm.dangerous && (
+                      {merchandiseForm?.merchandiseClassification.some(classification => classification.classificationMerchandise === 'Peligrosa') && (
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <div className={styles.formGroup}>
                             <label className={styles.label}>{t('quote.imo')}</label>
                             <select
                               className={styles.select}
-                              value={merchandiseForm.imoId}
+                              value={merchandiseForm.merchandiseClassification.find(classification => classification.classificationMerchandise === 'Peligrosa').imo}
                               onChange={(e) => {
                                 const selectedId = parseInt(e.target.value);
                                 const selectedImo = imoList.find(imo => imo._id === selectedId);
-                                setMerchandiseForm({
+                                /*setMerchandiseForm({
                                   ...merchandiseForm,
-                                  imoId: selectedId,
-                                  imoClass: selectedImo ? `${selectedImo.imo} ${selectedImo.description}` : ''
-                                });
+                                  imo: selectedId,
+                                  imoDescription: selectedImo ? `${selectedImo.imo} ${selectedImo.description}` : ''
+                                });*/
                               }}
                             >
                               <option value="0">{t('quote.selectOption')}</option>
@@ -1832,13 +1941,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               placeholder="19"
                               className={styles.input}
                               style={{ width: '80px' }}
-                              value={merchandiseForm.un}
-                              onChange={(e) => setMerchandiseForm({ ...merchandiseForm, un: e.target.value })}
+                              value={merchandiseForm?.merchandiseClassification.find(classification => classification.classificationMerchandise === 'Peligrosa').imo}
+                              //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, un: e.target.value })}
                             />
                           </div>
                         </div>
                       )}
-                      {merchandiseForm.refrigerated && (
+                      {merchandiseForm?.merchandiseClassification.some(classification => classification.classificationMerchandise === 'Refrigerada')  && (
                         <div className={styles.formGroup}>
                           <label className={styles.label}>{t('quote.temperature')}</label>
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -1847,14 +1956,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               placeholder="80"
                               className={styles.input}
                               style={{ width: '100px' }}
-                              value={merchandiseForm.temperature}
-                              onChange={(e) => setMerchandiseForm({ ...merchandiseForm, temperature: e.target.value })}
+                              value={merchandiseForm?.merchandiseClassification.find(classification => classification.classificationMerchandise === 'Refrigerada').temperature }
+                              //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, temperature: e.target.value })}
                             />
                             <select
                               className={styles.select}
                               style={{ width: '80px' }}
-                              value={merchandiseForm.tempUnit}
-                              onChange={(e) => setMerchandiseForm({ ...merchandiseForm, tempUnit: e.target.value })}
+                              //value={merchandiseForm.tempUnit}
+                              //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, tempUnit: e.target.value })}
                             >
                               <option>°C</option>
                               <option>°F</option>
@@ -1862,9 +1971,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           </div>
                         </div>
                       )}                     
-                    </div>
-                    
-                    
+                    </div>                                        
                   </div>
                 </div>
               </div>
@@ -1963,18 +2070,21 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <div className={styles.modalBody}>
               <div className={styles.executiveSelectionList}>
                 {availableExecutives
-                  .filter(exec => !executives.some(e => e.id === exec._id))
+                  .filter(exec => !executives.some(e => e.idEmployee === exec.idEmployee))
                   .map((executive) => (
                     <div
                       key={executive._id}
                       className={styles.executiveSelectionItem}
-                      onClick={() => addExecutive({ id: executive._id, name: `${executive.nombre} ${executive.apellido_paterno} ${executive.apellido_materno}` })}
+                      onClick={() => addExecutive({ 
+                        idEmployee: executive._id, 
+                        nameEmployee: `${executive.nombre} ${executive.apellido_paterno} ${executive.apellido_materno}`,
+                        idUser: executive._iduser })}
                     >
                       <span>{executive.nombre} {executive.apellido_paterno} {executive.apellido_materno}</span>
                       <Plus size={18} className={styles.addIcon} />
                     </div>
                   ))}
-                {availableExecutives.filter(exec => !executives.some(e => e.id === exec._id)).length === 0 && (
+                {availableExecutives.filter(exec => !executives.some(e => e.idEmployee === exec._id)).length === 0 && (
                   <div className={styles.noExecutivesMessage}>
                     {t('quote.allExecutivesAdded')}
                   </div>

@@ -1,7 +1,9 @@
+import {QuotationRequest} from '../types/requestQuotation';
+
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-interface QuotationRequest {
+/*interface QuotationRequest {
   reference_request: string;
   priority: number;
   customer_category: number;
@@ -24,7 +26,7 @@ interface QuotationRequest {
     control_number: string;
   }>;
   services: any[];
-}
+}*/
 
 export const quotationService = {
   async getAll() {
@@ -44,14 +46,14 @@ export const quotationService = {
   },
 
   async getById(id: string) {
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await fetch(`http://localhost:5063/v1/api/quotationrequest/getById?id=${id}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        //'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
       },
     });
-
+    console.log('API: ', response)
     if (!response.ok) {
       throw new Error('Error al cargar la cotización');
     }
@@ -76,7 +78,7 @@ export const quotationService = {
     return response.json();
   },
 
-  async update(id: string, data: Partial<QuotationRequest>) {
+  async update(id: string, data: QuotationRequest) {
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'PUT',
       headers: {

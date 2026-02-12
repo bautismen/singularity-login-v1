@@ -4,32 +4,13 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import styles from './QuotationsList.module.css';
+import {QuotationRequest} from '../types/requestQuotation';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
 //const EXECUTIVES_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/executives`;
 const USERS_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/users`;
 const REQUEST_TYPES_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-request-types`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-interface QuotationRequest {
-  _id: string;
-  reference_request: string;
-  priority: number;
-  customer_category: number;
-  _id_status_request: number;
-  status_request_name: string;
-  request_date: string;
-  deadline_date: string;
-  _id_request_type: number;
-  request_type_name: string;
-  customer_business_name: string;
-  licitation: boolean;
-  requesting_data: {
-    _id_executive: string;
-    complete_name: string;
-  };
-  services: any[];
-}
 
 interface QuotationsListProps {
   onCreateNew: () => void;
@@ -46,7 +27,6 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [executiveFilter, setExecutiveFilter] = useState<string>('todos');
   const [selectedExecutive, setSelectedExecutive] = useState<string>('');
@@ -65,14 +45,14 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
   useEffect(() => {
     filterQuotations();
   }, [quotations, searchQuery, statusFilter, executiveFilter, selectedExecutive, dateFilter, requestTypeFilters]);
-
+  
   const loadQuotationsRequests = async () => {
     try {
-      setLoading(true);
-      const response = await fetch(API_URL, {
+      setLoading(true);      
+      const response = await fetch('http://localhost:5063/v1/api/quotationrequest/getRecentRequestQuotations?limit=10', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          //'Authorization': `Bearer ${API_KEY}`,
           'Content-Type': 'application/json',
         },
       });
@@ -80,13 +60,14 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
         throw new Error('Error al cargar las cotizaciones');
       }
       const data = await response.json();
+      console.log(data.data);
 
-      const sortdata = [...data].sort((a, b) => {
-        if(a._id_status_request === 3 && b._id_status_request !== 3) return 1; // a va despues de b
-        if(a._id_status_request !== 3 && b._id_status_request === 3) return -1; // a va antes de b
+      const sortdata = [...data.data].sort((a, b) => {
+        if(a.idStatusRequest === 3 && b.idStatusRequest !== 3) return 1; // a va despues de b
+        if(a.idStatusRequest !== 3 && b.idStatusRequest === 3) return -1; // a va antes de b
         //(a.deadline_date > b.deadline_date) ? 1 : -1
-        const a_deadline = a.deadline_date ? new Date(a.deadline_date).getTime() : Infinity;
-        const b_deadline = b.deadline_date ? new Date(b.deadline_date).getTime() : Infinity;
+        const a_deadline = a.dateDeadline ? new Date(a.dateDeadline).getTime() : Infinity;
+        const b_deadline = b.dateDeadline ? new Date(b.dateDeadline).getTime() : Infinity;
         return a_deadline -  b_deadline; //fecha mas antigua va primero 
       }); 
 
@@ -146,30 +127,30 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
 
     if (searchQuery) {
       filtered = filtered.filter(q =>
-        q.reference_request.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        q.customer_business_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        q.request_type_name.toLowerCase().includes(searchQuery.toLowerCase())
+        q.referenceRequest.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        q.customer.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        q.typeRequest.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     if (statusFilter.length > 0) {
-      filtered = filtered.filter(q => statusFilter.includes(q._id_status_request.toString()));      
+      filtered = filtered.filter(q => statusFilter.includes(q.idStatusRequest.toString()));      
     }
 
     if (executiveFilter === 'solo_yo' && user) {
-      filtered = filtered.filter(q => q.requesting_data?._id_executive === user._id);
+      filtered = filtered.filter(q => q.createdBy?.idEmployee === user._id);
     }
 
     if (executiveFilter === 'seleccionar' && selectedExecutive) {
-      filtered = filtered.filter(q => q.requesting_data?._id_executive === selectedExecutive);
+      filtered = filtered.filter(q => q.createdBy?.idEmployee === selectedExecutive);
     }
 
     if (dateFilter !== 'all') {
       const now = new Date();
       filtered = filtered.filter(q => {
-        const requestDate = new Date(q.request_date);
+        const requestDate = new Date(q.dateRequest);
         const diffDays = Math.ceil((now.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
-        console.log('Filter days: ' , q.reference_request , q.request_date, diffDays)
+        console.log('Filter days: ' , q.referenceRequest , q.dateRequest, diffDays)
 
         switch (dateFilter) {
           case 'hoy':
@@ -189,11 +170,9 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
     }
 
     if (requestTypeFilters.length > 0) {
-      filtered = filtered.filter(q => requestTypeFilters.includes(q._id_request_type));
+      filtered = filtered.filter(q => requestTypeFilters.includes(q.idRequestType));
     }
-    
-   //filtered = filtered.filter(q => q._id_status_request !== 3 );
-    
+      
     setFilteredQuotations(filtered);
   };
 
@@ -482,16 +461,14 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
             className={styles.buttonGroupItem}
             onClick={onCreateNew}
             disabled={loading}
-            title="Nueva solicitud"
-          >
+            title="Nueva solicitud">
             <Plus size={20} />
           </button>
           <button
             className={styles.buttonGroupItem}
             onClick={loadQuotationsRequests}
             disabled={loading}
-            title="Actualizar"
-          >
+            title="Actualizar">
             <RefreshCw size={20} />
           </button>
           <button
@@ -534,14 +511,13 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       ) : filteredQuotations.length > 0 ? (
         <div className={styles.cardsGrid}>
           {filteredQuotations.map((quotation) => {
-            const daysRemaining = getDaysRemaining(quotation.deadline_date);
-            const medalSrc = getCategoryMedal(quotation.customer_category);
-
+            const daysRemaining = getDaysRemaining(quotation.dateDeadline || '');
+            const medalSrc = getCategoryMedal(quotation.customer.customerCategory);
             const totalServices = quotation.services?.length || 0;
             const attendedServices = quotation.services?.filter(s => s.used === true).length || 0;
 
             return (
-              <div key={quotation._id} className={styles.card}>
+              <div key={quotation.id} className={styles.card}>
                 <div className={styles.cardTop}>
                   <div className={styles.cardLeft}>
                     {medalSrc && (
@@ -556,7 +532,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                   <div className={styles.cardMain}>
                     <div className={styles.topRow}>
                       <h3 className={styles.clientName}>
-                        {quotation.customer_business_name}
+                        {quotation.customer.customerName}
                         {quotation.priority === 1 && (
                           <img
                             src="/prioridad.png"
@@ -569,7 +545,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                       <div className={styles.rightInfo}>
                         {quotation.services && quotation.services.length > 0 && (
                           <div className={styles.location}>
-                            {quotation.services[0].shipments[0].origin?.country_name || 'NA'} - {quotation.services[0].shipments[0].destination?.country_name || 'NA'}
+                            {quotation.services[0].shipments[0].origin?.countryCode || 'NA'} - {quotation.services[0].shipments[0].destination?.countryCode || 'NA'}
                           </div>
                         )}
                       </div>
@@ -579,10 +555,10 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                       <div className={styles.referenceContainer}>
                         <div className={styles.referenceRow}>
                           <FileText size={16} />
-                          <span>{quotation.reference_request}</span>
+                          <span>{quotation.referenceRequest}</span>
                         </div>
-                        <button className={`${styles.statusBadge} ${getStatusClass(quotation.status_request_name)}`}>
-                          {quotation.status_request_name}
+                        <button className={`${styles.statusBadge} ${getStatusClass(quotation.statusRequest)}`}>
+                          {quotation.statusRequest}
                         </button>
                       </div>
 
@@ -595,7 +571,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                           </div>
                         )}
                         <div className={styles.requestType}>
-                          {quotation.request_type_name}
+                          {quotation.typeRequest}
                         </div>
                       </div>
                     </div>
@@ -615,7 +591,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                           <circle cx="12" cy="7" r="4"></circle>
                         </svg>
-                        <span>{quotation.requesting_data?.complete_name || 'Sin asignar'}</span>
+                        <span>{quotation.createdBy?.nameEmployee || 'Sin asignar'}</span>
                       </div>
 
                       {totalServices > 0 && (
@@ -631,11 +607,11 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                   <button
                     className={`${styles.actionButton} ${styles.editButton}`}
                     onClick={()=> { 
-                      if (quotation._id_status_request === 3) {
-                        onView(quotation._id)
+                      if (quotation.idStatusRequest === 3) {
+                        onView(quotation.id)
                       }
                       else {   
-                        onEdit(quotation._id)
+                        onEdit(quotation.id)
                       }}}
                     title={t('quote.edit')}
                   >
