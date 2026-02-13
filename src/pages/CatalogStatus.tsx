@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Status } from '../types/catalog';
 import styles from './Catalogs.module.css';
+import { useNotification } from '../contexts/NotificationContext';
+import { Modal } from '../components/Modal';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-status`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function CatalogStatus() {
   const { t } = useLanguage();
+  const catalogName = t('nav.catalogs.status');
+  const { showSuccess, showError } = useNotification();
   const [items, setItems] = useState<Status[]>([]);
   const [filteredItems, setFilteredItems] = useState<Status[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,6 +27,20 @@ export function CatalogStatus() {
     status_name: '',
     description: '',
     status: 1,
+  });
+
+ const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+    showCancel?: boolean;
+  }>({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: ''
   });
 
   useEffect(() => {
@@ -45,7 +63,7 @@ export function CatalogStatus() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al cargar los datos');
+        throw new Error(t('catalog.errorLoad'));
       }
 
       const data = await response.json();
@@ -62,7 +80,7 @@ export function CatalogStatus() {
       })));
     } catch (error) {
       console.error('Error loading Status data:', error);
-      alert(t('catalog.errorLoad'));
+      showError(t('catalog.errorLoad'));
     } finally {
       setLoading(false);
     }
@@ -127,8 +145,9 @@ export function CatalogStatus() {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.FormEvent) => {
     try {
+      e.preventDefault();
       setLoading(true);
 
       if (editingItem) {
@@ -142,8 +161,9 @@ export function CatalogStatus() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al actualizar el registro');
+          throw new Error(t('catalog.errorUpdate'));
         }
+
       } else {
         const response = await fetch(API_URL, {
           method: 'POST',
@@ -155,56 +175,67 @@ export function CatalogStatus() {
         });
 
         if (!response.ok) {
-          throw new Error('Error al crear el registro');
+          throw new Error(t('catalog.errorSave'));
         }
+
       }
 
       await loadData();
       closeModal();
-      alert(t('catalog.successSave'));
+      showSuccess(t('catalog.successSave'));
     } catch (error) {
       console.error('Error saving Status:', error);
-      alert(t('catalog.errorSave'));
+      showError(t('catalog.errorSave'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm(t('catalog.confirmDelete'))) {
-      try {
-        setLoading(true);
-        const response = await fetch(`${API_URL}/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-        });
+    
+    setModalState({
+      isOpen: true,
+      type: 'confirm',
+      title: t('modal.title').replace('{name}', catalogName.toLowerCase()),
+      message: t('modal.message'),
+      showCancel: true,
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          const response = await fetch(`${API_URL}/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          });
 
-        if (!response.ok) {
-          throw new Error('Error al eliminar el registro');
+          if (!response.ok) {
+            throw new Error(t('catalog.errorDelete'));
+          }
+
+          await loadData();
+          showSuccess(t('catalog.successDelete'));
+        } catch (error) {
+          console.error('Error deleting Status:', error);
+          showError(t('catalog.errorDelete'));
+        } finally {
+          setLoading(false);
         }
-
-        await loadData();
-        alert(t('catalog.successDelete'));
-      } catch (error) {
-        console.error('Error deleting Status:', error);
-        alert(t('catalog.errorDelete'));
-      } finally {
-        setLoading(false);
       }
-    }
+    });
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>{t('nav.catalogs.status')}</h1>
-        <div className={styles.headerActions}>
-          <button className={styles.addButton} onClick={() => openModal()} disabled={loading}>
-            <Plus size={18} />
-            {t('catalog.new').replace('{name}', 'Estatus')}
+        <h1 className={styles.title}>{catalogName}</h1>
+        <div className={styles.buttonGroup}>
+          <button className={styles.headerButton} onClick={() => openModal()} disabled={loading}>
+            <Plus size={20} />
+          </button>
+          <button onClick={loadData} className={styles.headerButton}>
+            <RefreshCw size={20} />
           </button>
         </div>
       </div>
@@ -279,7 +310,7 @@ export function CatalogStatus() {
                       <button
                         className={`${styles.iconButton} ${styles.edit}`}
                         onClick={() => openModal(item)}
-                        title={t('catalog.edit').replace('{name}', 'Estatus')}
+                        title={t('catalog.edit').replace('{name}', catalogName.toLowerCase())}
                       >
                         <Edit2 size={16} />
                       </button>
@@ -296,7 +327,7 @@ export function CatalogStatus() {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className={styles.noResults}>
+                <td colSpan={4} className={styles.noResults}>
                   {t('catalog.noResults')}
                 </td>
               </tr>
@@ -306,99 +337,144 @@ export function CatalogStatus() {
       )}
 
       {showModal && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>
-                {editingItem
-                  ? t('catalog.edit').replace('{name}', 'Estatus')
-                  : t('catalog.new').replace('{name}', 'Estatus')}
-              </h2>
-              <button className={styles.closeButton} onClick={closeModal}>
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className={styles.modalBody}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>{t('catalog.status.category')}</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  disabled={loading}
-                />
+        <form onSubmit={handleSave}> 
+          <div className={styles.modalOverlay} onClick={closeModal}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h2 className={styles.modalTitle}>
+                  {editingItem
+                    ? t('catalog.edit').replace('{name}', catalogName.toLowerCase())
+                    : t('catalog.new').replace('{name}', catalogName.toLowerCase())}
+                </h2>
+                <button className={styles.closeButton} onClick={closeModal}>
+                  <X size={24} />
+                </button>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>{t('catalog.status.subcategory')}</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={formData.subcategory}
-                  onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
-                  disabled={loading}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>{t('catalog.status.code')} (Opcional)</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  disabled={loading}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>{t('catalog.status.name')}</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={formData.status_name}
-                  onChange={(e) => setFormData({ ...formData, status_name: e.target.value })}
-                  disabled={loading}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>{t('catalog.status.description')} (Opcional)</label>
-                <textarea
-                  className={styles.textarea}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  disabled={loading}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
+              <div className={styles.modalBody}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>* </span>
+                      {t('catalog.status.category')}
+                  </label>
                   <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={formData.status === 1}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
+                    type="text"
+                    className={styles.input}
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    disabled={loading}
+                    required
+                    onInvalid={(e) => 
+                      e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                    }
+                    onInput={(e) =>
+                      e.currentTarget.setCustomValidity('')
+                    }
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>* </span>
+                      {t('catalog.status.subcategory')}
+                  </label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={formData.subcategory}
+                    onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
+                    disabled={loading}
+                    required
+                    onInvalid={(e) => 
+                      e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                    }
+                    onInput={(e) =>
+                      e.currentTarget.setCustomValidity('')
+                    }
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>{t('catalog.status.code')} {t('catalog.optional')}</label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                     disabled={loading}
                   />
-                  {' '}{t('catalog.status.active')}
-                </label>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <span className={styles.required}>* </span>
+                      {t('catalog.status.name')}
+                  </label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={formData.status_name}
+                    onChange={(e) => setFormData({ ...formData, status_name: e.target.value })}
+                    disabled={loading}
+                    required
+                    onInvalid={(e) => 
+                      e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                    }
+                    onInput={(e) =>
+                      e.currentTarget.setCustomValidity('')
+                    }
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>{t('catalog.status.description')} {t('catalog.optional')}</label>
+                  <textarea
+                    className={styles.textarea}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    <input
+                      type="checkbox"
+                      className={styles.checkbox}
+                      checked={formData.status === 1}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
+                      disabled={loading}
+                    />
+                    {' '}{t('catalog.status.active')}
+                  </label>
+                </div>
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
+                  {t('catalog.cancel')}
+                </button>
+                <button className={styles.saveButton} type="submit" disabled={loading}>
+                  {loading ? 'Guardando...' : t('catalog.save')}
+                </button>
               </div>
             </div>
-
-            <div className={styles.modalFooter}>
-              <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
-                {t('catalog.cancel')}
-              </button>
-              <button className={styles.saveButton} onClick={handleSave} disabled={loading}>
-                {loading ? 'Guardando...' : t('catalog.save')}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        </form>
+        )}
+
+        <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        showCancel={modalState.showCancel}
+        confirmText={t('catalog.continue')}
+        cancelText={t('catalog.cancel')}
+      />
+
     </div>
   );
 }
