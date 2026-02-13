@@ -1,32 +1,26 @@
-import React, { useEffect } from 'react';
-import { useLanguage } from '../contexts/LanguageContext';
-import styles from './Customers.module.css';
+import { useLanguage } from "../contexts/LanguageContext";
+import styles from "./Customers.module.css";
 
 export function TrackingMonitor() {
   const { t } = useLanguage();
 
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://www.searates.com/container/widget';
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>{t('tracking.title')}</h1>
-          <p className={styles.subtitle}>{t('tracking.subtitle')}</p>
+        <div className="flex items-baseline gap-2">
+          <h1 className={styles.title}>{t("tracking.title")}</h1>
+          <span className="ml-4 text-slate-500 text-sm">{t("tracking.subtitle")}</span>
         </div>
       </div>
 
-      <div className={styles.content}>
-        <div id="tracking_system_root" data-filter='{"platform":33840, "lang": "es"}'></div>
+      <div className="sm:h-[200px] md:h-[437px] lg:h-[437px] xl:h-[900px]">
+        <iframe
+          lang="es"
+          src="https://krom-logistica.github.io/widgets-app/third-party-providers/searates/ContainerTracking.html"
+          title={t("tracking.title")}
+          className="w-full h-full border-0"
+        />
+
       </div>
     </div>
   );
