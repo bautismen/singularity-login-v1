@@ -141,7 +141,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
         setSelectedServices([]);
 
-        const allServiceIds = new Set(request.services?.map((s: any) => s.idServiceItem || s.idService || s._id) || []);
+        const allServiceIds = new Set(request.services?.map((s: any) => s.idService || s._id) || []);
         setExpandedServices(allServiceIds);
       }
     } catch (error) {
@@ -179,7 +179,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const toggleService = (serviceId: number) => {
     const service = requestData.services.find((s: any) =>
-      (s.idServiceItem || s.idService || s._id) === serviceId
+      (s.idService || s._id) === serviceId
     );
     if (!service) return;
 
@@ -738,7 +738,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           <h3 className={styles.sectionTitle}>{t('ctrlpricing.services')}</h3>
           {requestData.services && requestData.services.length > 0 ? (
             requestData.services.map((service: any, index: number) => {
-              const serviceId = service.idServiceItem || service.idService || service._id;
+              const serviceId = service.idService || service._id;
               const isSelected = selectedServices.some(s => s.idService === serviceId);
               const isUsed = service.used || statusControl.id_status_control === 5 || statusControl.id_status_control === 6 ;
               const isExpanded = expandedServices.has(serviceId);
