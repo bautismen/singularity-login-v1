@@ -26,7 +26,7 @@ export function TrackingMonitor() {
       </div>
 
       <div className={styles.content}>
-        <div id="UFWX" data-filter='{"platform":33840, "lang": "en"}'></div>
+        <div id="tracking_system_root" data-filter='{"platform":33840, "lang": "es"}'></div>
       </div>
     </div>
   );
