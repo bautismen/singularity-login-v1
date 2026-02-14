@@ -76,7 +76,7 @@ class PricingControlService {
       console.log('API URL:', `${API_URL}/functions/v1/pricing-controls`);
       console.log(JSON.stringify(data));
       const response = await fetch(
-        `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/createcontrol`,
+        `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/add`,
         {
           method: 'POST',
           headers: this.getHeaders2(),
@@ -174,7 +174,7 @@ class PricingControlService {
      try {
       console.log(JSON.stringify(data))
         const response = await fetch(
-            `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/declinecontrol`,
+            `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/declinerequest`,
             {
               method: 'POST',
               headers: this.getHeaders2(),
