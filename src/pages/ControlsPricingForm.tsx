@@ -131,7 +131,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         setPriority(request.priority === 1);
         setBidding(request.licitation === 1);
 
-        const expandedIds = new Set(control.services?.map((s: any) => s.idService) || []);
+        const expandedIds = new Set(request.services?.map((s: any) => s.idServiceItem) || []);
         setExpandedServices(expandedIds);
       } else {
         const request = await pricingControlService.getResquetById(requestId);
@@ -141,7 +141,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
         setSelectedServices([]);
 
-        const allServiceIds = new Set(request.services?.map((s: any) => s.idService || s._id) || []);
+        const allServiceIds = new Set(request.services?.map((s: any) => s.idServiceItem || s._id) || []);
         setExpandedServices(allServiceIds);
       }
     } catch (error) {
@@ -179,16 +179,16 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const toggleService = (serviceId: number) => {
     const service = requestData.services.find((s: any) =>
-      (s.idService || s._id) === serviceId
+      (s.idServiceItem || s._id) === serviceId
     );
     if (!service) return;
 
-    const isSelected = selectedServices.some(s => s.idService === serviceId);
+    const isSelected = selectedServices.some(s => s.idServiceItem === serviceId);
 
     if (isSelected) {
-      setSelectedServices(selectedServices.filter(s => s.idService !== serviceId));
+      setSelectedServices(selectedServices.filter(s => s.idServiceItem !== serviceId));
     } else {
-      setSelectedServices([...selectedServices, { ...service, idService: serviceId }]);
+      setSelectedServices([...selectedServices, { ...service, idServiceItem: serviceId }]);
     }
   };
 
@@ -219,8 +219,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         if (serviceCopy.merchandise) {
           delete serviceCopy.merchandise;
         }
-        if (!serviceCopy.idService) {
-          serviceCopy.idService = serviceCopy._id;
+        if (!serviceCopy.idServiceItem) {
+          serviceCopy.idServiceItem = serviceCopy._id;
         }
         return serviceCopy;
       });
@@ -562,8 +562,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                         idsuplier: e.target.value,
                         supplier_associated_name: e.target.options[e.target.selectedIndex].text
                       })
-                    }
-                    required
+                    }                    
                   >
                     <option value="">Seleccionar</option>
                     {selectsuppliers.map((suppliers) => (
@@ -738,9 +737,9 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           <h3 className={styles.sectionTitle}>{t('ctrlpricing.services')}</h3>
           {requestData.services && requestData.services.length > 0 ? (
             requestData.services.map((service: any, index: number) => {
-              const serviceId = service.idService || service._id;
-              const isSelected = selectedServices.some(s => s.idService === serviceId);
-              const isUsed = service.used || statusControl.id_status_control === 5 || statusControl.id_status_control === 6 ;
+              const serviceId = service.idServiceItem || service._id;
+              const isSelected = selectedServices.some(s => s.idServiceItem === serviceId);
+              const isUsed = service.used && (statusControl.id_status_control === 5 || statusControl.id_status_control === 6) ;
               const isExpanded = expandedServices.has(serviceId);
 
               const shipment = service.shipments && service.shipments.length > 0 ? service.shipments[0] : {};
