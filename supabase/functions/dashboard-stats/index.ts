@@ -52,11 +52,10 @@ Deno.serve(async (req: Request) => {
     const db = client.db(MONGODB_DATABASE!);
     const collection = db.collection("customer_summary_level");
 
-    const customers = await collection.find({}).toArray();
+    const levelData = await collection.find({}).toArray();
 
-    console.log("Total documents found:", customers.length);
-    console.log("Sample document:", customers.length > 0 ? JSON.stringify(customers[0], null, 2) : "No documents");
-    console.log("All levels found:", customers.map(c => c.level));
+    console.log("Total documents found:", levelData.length);
+    console.log("Raw data:", JSON.stringify(levelData, null, 2));
 
     const stats = {
       gold: 0,
@@ -65,23 +64,25 @@ Deno.serve(async (req: Request) => {
       total: 0,
     };
 
-    customers.forEach((customer: any) => {
-      const level = customer.level?.toLowerCase()?.trim();
-      console.log("Processing customer:", customer.customer_name || customer._id, "Level:", `'${level}'`);
+    levelData.forEach((item: any) => {
+      const nivel = item.nivel?.toLowerCase()?.trim();
+      const total = item.total || 0;
+
+      console.log("Processing level:", nivel, "Total customers:", total);
 
       // Buscar variaciones de "Oro/Gold"
-      if (level && (level.includes("gold") || level.includes("oro"))) {
-        stats.gold++;
+      if (nivel && (nivel.includes("gold") || nivel.includes("oro"))) {
+        stats.gold += total;
       }
       // Buscar variaciones de "Plata/Silver"
-      else if (level && (level.includes("silver") || level.includes("plata"))) {
-        stats.silver++;
+      else if (nivel && (nivel.includes("silver") || nivel.includes("plata"))) {
+        stats.silver += total;
       }
       // Buscar variaciones de "Bronce/Bronze"
-      else if (level && (level.includes("bronze") || level.includes("bronce"))) {
-        stats.bronze++;
+      else if (nivel && (nivel.includes("bronze") || nivel.includes("bronce"))) {
+        stats.bronze += total;
       } else {
-        console.log("⚠️ Level not matched:", level);
+        console.log("⚠️ Level not matched:", nivel);
       }
     });
 
