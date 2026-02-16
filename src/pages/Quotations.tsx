@@ -77,7 +77,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     requestType: '',
     created: new Date().toISOString().split('T')[0],
     responseDeadline: '',
-    statuscomments: null
+    statuscomments: null,
+    idStatusRequest: 1,
   });
 
   const generateReferenceNumber = async () => {
@@ -204,7 +205,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         requestType: data.data.typeRequest || '',
         created: data.data.dateRequest ? new Date(data.data.dateRequest).toISOString().split('T')[0] : '',
         responseDeadline: data.data.dateDeadline ? new Date(data.data.dateDeadline).toISOString().split('T')[0] : '',
-        statuscomments: data.data.services[0].shipments[0].comments || null
+        statuscomments: data.data.services[0].shipments[0].comments || null,
+        idStatusRequest: data.data.idStatusRequest || 1,
       });
 
       console.log('FormData loaded: ', formData)
@@ -1172,7 +1174,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               value={service.shipments[0].origin.zipCode}
               onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
               className={styles.input}
-              disabled={mode === 'view'}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
           </div>    
           <div className={styles.formGroup}>
@@ -1185,7 +1187,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               value={service.shipments[0].destination.zipCode}
               onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
               className={styles.input}
-              disabled={mode === 'view'}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
           </div>    
         </div>);
@@ -1201,7 +1203,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               value={service.shipments[0].origin.zipCode}
               onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
               className={styles.input}
-              disabled={mode === 'view'}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
           </div>  
           <div className={styles.formGroup}></div>                   
@@ -1220,7 +1222,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               value={service.shipments[0].destination.zipCode}
               onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
               className={styles.input}
-              disabled={mode === 'view'}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
           </div>    
         </div>
@@ -1257,7 +1259,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           <button
             className={styles.actionBarSaveButton}
             type="submit"
-            disabled={saving || mode === 'view'}>
+            disabled={saving || mode === 'view' || formData.idStatusRequest >= 2}>
             <Save size={18} />
             <span>{saving ? 'Guardando...' : t('quote.save')}</span>
           </button>
@@ -1311,12 +1313,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 });
               }}
               className={styles.select}
-              disabled={loading || mode === 'view'}
+              disabled={loading || mode === 'view' || mode === 'edit' || formData.idStatusRequest >= 2}
               required>
               <option value="">{t('quote.selectClient')}</option>
               {customers.map((customer) => (
                 <option key={customer._id} value={customer._id}>
-                  {customer.branch_name}, {customer.fiscal_data?.business_name}
+                  {customer.branch_name ? `${customer.branch_name}, ${customer.fiscal_data?.business_name}` : customer.fiscal_data?.business_name}
                 </option>
               ))}
             </select>
@@ -1337,7 +1339,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 });
               }}
               className={styles.select}
-              disabled={loading || mode === 'view'}
+              disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
               required
             >
               <option value="">{t('quote.selectType')}</option>
@@ -1355,7 +1357,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               value={formData.customerCategory}
               onChange={(e) => setFormData({ ...formData, customerCategory: parseInt(e.target.value) })}
               className={styles.select}
-              disabled={mode === 'view'}>
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}>
               <option value={1}>Golden</option>
               <option value={2}>Silver</option>
               <option value={3}>Bronze</option>
@@ -1370,7 +1372,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               onChange={(e) => setFormData({ ...formData, responseDeadline: e.target.value })}
               className={styles.input}
               placeholder="dd/mm/aaaa"
-              disabled={mode === 'view'}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
             />
           </div>
 
@@ -1383,7 +1385,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               value={formData.created}
               onChange={(e) => setFormData({ ...formData, created: e.target.value })}
               className={styles.input}
-              disabled={mode === 'view'}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
             />
           </div>
 
@@ -1393,7 +1395,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               type="button" 
               className={`${styles.toggleSwitch} ${formData.isPriority ? styles.active : ''}`}
               onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
-              disabled={mode === 'view'}>
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}>
               <div className={styles.toggleThumb}></div>
             </button>
           </div>
@@ -1404,7 +1406,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               type="button" 
               className={`${styles.toggleSwitch} ${formData.isQuote ? styles.active : ''}`}
               onClick={() => setFormData({ ...formData, isQuote: !formData.isQuote })}
-              disabled={mode === 'view'}>
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}>
               <div className={styles.toggleThumb}></div>
             </button>
           </div>
@@ -1464,14 +1466,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <div className={styles.serviceHeader}>
               <div className={styles.serviceNumber}>{index + 1}</div>
               <div className={styles.serviceActions}>
-                <button type="button" className={styles.iconButton} onClick={() => duplicateService(service.idService)} disabled={mode === 'view'}>
+                <button type="button" className={styles.iconButton} onClick={() => duplicateService(service.idService)} disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <Copy size={18} />
                 </button>
                 <button
                     type="button" 
                     className={`${styles.iconButton} ${styles.danger}`}
                     onClick={() => removeService(service.idService)}
-                    disabled={mode === 'view'}>
+                    disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                     <X size={18} />
                 </button>               
               </div>
@@ -1488,7 +1490,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   onChange={(e) => 
                     updateService(service.idServiceItem, 'nameService', e.target.value)}
                   className={styles.select}
-                  disabled={loading || mode === 'view'}
+                  disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
                   required
                 >
                   <option value="">{t('quote.select')}</option>
@@ -1509,7 +1511,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   value={service.idService === 2 || service.idService === 3  ? 'Consolidado' : 'Full' }
                   //onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                   className={styles.select}
-                  disabled={loading || mode === 'view'}
+                  disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
                   required
                 >
                   <option value="">{t('quote.select')}</option>                
@@ -1531,7 +1533,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   value={service.shipments[0].typeOperation}
                   onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'typeOperation', e.target.value)}
                   className={styles.select}
-                  disabled={mode === 'view'}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
                   required
                 >
                   <option value="">{t('quote.select')}</option>
@@ -1549,7 +1551,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   value={service.shipments[0].incoterm}
                   onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'incoterm', e.target.value)}
                   className={styles.select}
-                  disabled={loading || mode === 'view'}
+                  disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
                   required>
                   <option value="">{t('quote.select')}</option>
                   {incoterms.map((inc) => (
@@ -1568,7 +1570,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   value={service.shipments[0].typeShipment  }
                   onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'typeShipment', e.target.value)}
                   className={styles.select}
-                  disabled={mode === 'view'}>
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <option value="">{t('quote.select')}</option>
                   <option>{t('quote.doorToDoor')}</option>
                   <option>{t('quote.portToPort')}</option>
@@ -1584,7 +1586,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   value={formatDateForInput(service.shipments[0].departureDateAproximate || '') }
                   onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'departureDateAproximate', e.target.value)}
                   className={styles.input}
-                  disabled={mode === 'view'}/>
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
               </div>         
             </div>
 
@@ -1598,7 +1600,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   value={service.shipments[0].origin.idCountry}
                   onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, 'idCountry', e.target.value)}
                   className={styles.select}
-                  disabled={loading || mode === 'view'}
+                  disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
                   required
                 >
                   <option value="">{t('quote.select')}</option>
@@ -1618,7 +1620,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   value={service.shipments[0].destination.idCountry}
                   onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, 'idCountry', e.target.value)}
                   className={styles.select}
-                  disabled={loading || mode === 'view'}
+                  disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
                   required>
                   <option value="">{t('quote.select')}</option>
                   {countries.map((country) => (
@@ -1642,35 +1644,35 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 12) ? styles.selected : ''}`}
                   onClick={(e) => 
                     updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment, { idServiceAsociated: 12, serviceAsociatedName: 'Seguro' })}
-                  disabled={mode === 'view'}>
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <span>Seguro</span>
                 </button>
                 <button
                   type="button" 
                   className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 13) ? styles.selected : ''}`}
                   onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment,  { idServiceAsociated: 13, serviceAsociatedName: 'Maniobra' })}
-                  disabled={mode === 'view'}>
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <span>Maniobra</span>
                 </button>
                 <button
                   type="button" 
                   className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 15) ? styles.selected : ''}`}
                   onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment, { idServiceAsociated: 15, serviceAsociatedName: 'Custodia' } )}
-                  disabled={mode === 'view'}>
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <span>Custodia</span>
                 </button>
                 <button
                   type="button" 
                   className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 14) ? styles.selected : ''}`}
                   onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment, { idServiceAsociated: 14, serviceAsociatedName: 'Inspección' })}
-                  disabled={mode === 'view'}>
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <span>Inspección</span>
                 </button>
                 <button
                   type="button" 
                   className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 7)? styles.selected : ''}`}
                   onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment,  { idServiceAsociated: 7, serviceAsociatedName: 'Despacho' })}
-                  disabled={mode === 'view'}>
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <span>Despacho aduanal</span>
                 </button>
               </div>
@@ -1684,7 +1686,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 className={styles.textarea}
                 rows={3}
                 placeholder=""
-                disabled={mode === 'view'}
+                disabled={mode === 'view' || formData.idStatusRequest >= 2}
               />
             </div>
 
@@ -1696,7 +1698,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   checked={service.shipments[0].projectionShipment}
                   onChange={(e) => updateService(service.idService, 'idService', e.target.checked)}
                   className={styles.checkbox}
-                  disabled={mode === 'view'}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
                 />
                 <label htmlFor={`freq-${service.idService}`} className={styles.checkboxLabel}>
                   Programar frecuencia
@@ -1710,7 +1712,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       value={service.shipments[0].projectionShipment?.frecuency}
                       onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, 'frecuency', e.target.value)}
                       className={styles.select}
-                      disabled={mode === 'view'}
+                      disabled={mode === 'view' || formData.idStatusRequest >= 2}
                     >
                       <option value="">{t('quote.select')}</option>
                       <option value="Semanal">{t('quote.weekly')}</option>
@@ -1726,7 +1728,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, 'number', e.target.value)}
                       className={styles.input}
                       placeholder="0"
-                      disabled={mode === 'view'}
+                      disabled={mode === 'view' || formData.idStatusRequest >= 2}
                     />
                   </div>
                   <div className={styles.formGroup}>
@@ -1735,7 +1737,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       value={service.shipments[0].projectionShipment?.measurementFrecuency}
                       onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, 'measurementFrecuency', e.target.value)}
                       className={styles.select}
-                      disabled={mode === 'view'}>
+                      disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                       <option value="">Seleccionar...</option>
                       <option value="Kilos">{t('quote.kilos')}</option>
                       <option value="Toneladas">{t('quote.tons')}</option>
@@ -1777,7 +1779,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               className={styles.iconButtonSmall}
                               onClick={() => copyMerchandise(service.idService, merch.id)}
                               title={t('quote.copy')}
-                              disabled={mode === 'view'}
+                              disabled={mode === 'view' || formData.idStatusRequest >= 2}
                             >
                               <Copy size={14} />
                             </button>
@@ -1786,7 +1788,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               className={styles.iconButtonSmall}
                               onClick={() => removeMerchandise(service.idService, merch.id)}
                               title={t('quote.delete')}
-                              disabled={mode === 'view'}
+                              disabled={mode === 'view' || formData.idStatusRequest >= 2}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -1808,7 +1810,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 type="button" 
                 className={styles.addItemButton}
                 onClick={() => openMerchandiseModal(service.idServiceItem)}
-                disabled={mode === 'view'}>
+                disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                 <Plus size={16} />
                 {t('quote.addMerchandise')}
               </button>
@@ -1816,7 +1818,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           </div>
         ))}
 
-        <button type="button" className={styles.addServiceButton} onClick={addService} disabled={mode === 'view'}>
+        <button type="button" className={styles.addServiceButton} onClick={addService} disabled={mode === 'view' || formData.idStatusRequest >= 2}>
           <Plus size={20} />
           <span>{t('quote.addService')}</span>
         </button>
@@ -1841,7 +1843,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               </div>
             ))}
           </div>
-          <button type="button" className={styles.addExecutiveButton} onClick={openExecutiveModal} disabled={mode === 'view'} >
+          <button type="button" className={styles.addExecutiveButton} onClick={openExecutiveModal} disabled={mode === 'view' } >
             <Plus size={16} />
             {t('quote.addExecutive')}
           </button>
@@ -1871,7 +1873,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     className={styles.input}
                     value={merchandiseForm?.merchandiseName}
                     onChange={(e) => setMerchandiseForm({ ...merchandiseForm, merchandiseName: e.target.value})}
-                    disabled={mode === 'view'}
+                    disabled={mode === 'view' || formData.idStatusRequest >= 2}
                   />
                 </div>
                 <div className={styles.modalFieldSmall}>
@@ -1880,7 +1882,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <button
                       className={`${styles.toggleSwitch} ${merchandiseForm?.stowable === 1 ? styles.active : ''}`}
                       onClick={() => setMerchandiseForm({ ...merchandiseForm, stowable: !merchandiseForm.stowable ? 1 : 0 })}
-                      disabled={mode === 'view'}>
+                      disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                       <div className={styles.toggleThumb}></div>
                     </button>
                   </div>
@@ -1893,7 +1895,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   className={styles.textarea}
                   rows={3}
                   value={merchandiseForm?.merchandiseDescription}
-                  disabled={mode === 'view'}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
                   onChange={(e) => setMerchandiseForm({ ...merchandiseForm, merchandiseDescription: e.target.value || "" })}
                 ></textarea>
               </div>
@@ -1918,7 +1920,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             imoDescription: '',
                             un:  0
                           })}
-                          disabled={mode === 'view'}
+                          disabled={mode === 'view' || formData.idStatusRequest >= 2}
                         />
                         <label htmlFor="peligrosa" className={styles.classificationLabel}>
                           {t('quote.dangerousClass')}
@@ -1936,7 +1938,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             classificationMerchandise: t('quote.dangerousClass'),
                             temperature: "32"                         
                           })}
-                          disabled={mode === 'view'}
+                          disabled={mode === 'view' || formData.idStatusRequest >= 2}
                         />
                         <label htmlFor="refrigerada" className={styles.classificationLabel}>
                           {t('quote.refrigeratedClass')}
@@ -1953,7 +1955,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             idClassificationMerchandise: 3,
                             classificationMerchandise: t('quote.oversizedClass'),
                           })}
-                          disabled={mode === 'view'}
+                          disabled={mode === 'view' || formData.idStatusRequest >= 2}
                         />
                         <label htmlFor="sobredimensionada" className={styles.classificationLabel}>
                           {t('quote.oversizedClass')}
@@ -1970,7 +1972,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             idClassificationMerchandise: 1,
                             classificationMerchandise: t('quote.bulkClass'),
                           })}
-                          disabled={mode === 'view'}
+                          disabled={mode === 'view' || formData.idStatusRequest >= 2}
                         />
                         <label htmlFor="granel" className={styles.classificationLabel}>
                           {t('quote.bulkClass')}
@@ -2049,7 +2051,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               </div>
 
               <div style={{ marginTop: '1.5rem' }}>
-                <button className={styles.addPackageButtonIcon} onClick={openPackagingModal} disabled={mode === 'view'}>
+                <button className={styles.addPackageButtonIcon} onClick={openPackagingModal} disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <Plus size={18} />
                   {t('quote.addPackaging')}
                 </button>
@@ -2080,7 +2082,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               <button
                                 className={styles.removeRowButton}
                                 onClick={() => removePackage(pkg.id)}
-                                disabled={mode === 'view'}>
+                                disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                                 <X size={14} />
                               </button>
                             </td>
@@ -2099,7 +2101,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <button                     
                       className={`${styles.toggleSwitch} ${useMetricSystem ? styles.active : ''}`}
                       onClick={() => setUseMetricSystem(!useMetricSystem)}
-                      disabled={mode === 'view'}>
+                      disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                       <div className={styles.toggleThumb}></div>
                     </button>
                     <span className={useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.kgCm')}</span>
@@ -2122,7 +2124,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               )}
             </div>
             <div className={styles.modalFooter}>
-              <button className={styles.saveModalButton} onClick={saveMerchandise} disabled={mode === 'view'}>
+              <button className={styles.saveModalButton} onClick={saveMerchandise} disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                 {t('quote.save')}
               </button>
             </div>
