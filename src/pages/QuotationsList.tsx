@@ -13,8 +13,8 @@ const REQUEST_TYPES_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const PRICING_API_URL = import.meta.env.VITE_PRICING_API_URL;
 const API_REQUESTQUOTATION = import.meta.env.VITE_REQUESTQUOTATION;
-const API_KEYX = import.meta.env.VITE_APIKEYPRICING;
-const API_KEYPRICING = import.meta.env.VITE_API_KEYPRICING;
+const API_TOKENSL = import.meta.env.VITE_TOKENSL;
+const API_KEYSL = import.meta.env.VITE_APIKEYSL;
 
 
 interface QuotationsListProps {
@@ -57,9 +57,9 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       const response = await fetch(`${API_REQUESTQUOTATION}/v1/api/quotationrequest/getRecentRequestQuotations?limit=10`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_KEYPRICING}`,
+          'Authorization': `Bearer ${API_TOKENSL}`,
           'Content-Type': 'application/json',
-          'x-api-key': API_KEYX,
+          'x-api-key': API_KEYSL,
         },         
 
       });
