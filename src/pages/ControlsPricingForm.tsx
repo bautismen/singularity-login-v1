@@ -739,7 +739,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             requestData.services.map((service: any, index: number) => {
               const serviceId = service.idServiceItem || service._id;
               const isSelected = selectedServices.some(s => s.idServiceItem === serviceId);
-              const isUsed = (service.used && controlId === null) || (service.used && (statusControl.id_status_control === 5 || statusControl.id_status_control === 6)) ;
+              const isUsed = (service.used && controlId?.length === 0) || (service.used && (statusControl.id_status_control === 5 || statusControl.id_status_control === 6)) ;
               const isExpanded = expandedServices.has(serviceId);
 
               const shipment = service.shipments && service.shipments.length > 0 ? service.shipments[0] : {};

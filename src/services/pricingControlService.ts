@@ -3,8 +3,8 @@ import { PricingControl,CreatePricingControlAPI,QuotedControlRequest,ResquetQuot
 const API_URL = import.meta.env.VITE_SUPABASE_URL;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const PRICING_API_URL = import.meta.env.VITE_PRICING_API_URL;
-const API_TOKENSL = import.meta.env.VITE_TOKENSL;
-const API_KEYSL = import.meta.env.VITE_APIKEYSL;
+const API_KEYPRICING = import.meta.env.VITE_API_KEYPRICING;
+const API_KEYX = import.meta.env.VITE_APIKEYPRICING
 
 class PricingControlService {
   private getHeaders() {
@@ -16,9 +16,9 @@ class PricingControlService {
 
   private getHeaders2() {
     return {
-      'Authorization': `Bearer ${API_TOKENSL}`,
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEYSL,
+      'Authorization': `Bearer ${API_KEYPRICING}`,
+      'Content-Type': 'application/json',
+      'x-api-key': API_KEYX,
     };
   }
 

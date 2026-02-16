@@ -59,24 +59,6 @@ export async function getExecutiveById(id: string): Promise<Executive | null> {
     console.error('Error fetching executive:', error);
     throw new Error('Failed to fetch executive');
   }
-
-}
-
-export async function getExecutivesByDepartment(department : string): Promise<Executive[]>{
-  try {    
-    const response = await fetch(`${API_URL}/functions/v1/executives?departamento=${department}`, {headers});
-
-    if(!response.ok) {
-      console.log('ERROR fetch: ',response)
-      throw new Error('Failed to fetch executive');
-    }
-    
-    return await response.json();
-
-  } catch(error) {
-    console.log('ERROR: ', error);
-    throw new Error('Failed to fetch executives');
-  }
 }
 
 export async function updateExecutive(id: string, updates: Partial<Executive>): Promise<Executive | null> {

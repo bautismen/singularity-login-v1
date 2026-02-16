@@ -11,11 +11,6 @@ const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-req
 const USERS_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/users`;
 const REQUEST_TYPES_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-request-types`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const PRICING_API_URL = import.meta.env.VITE_PRICING_API_URL;
-const API_REQUESTQUOTATION = import.meta.env.VITE_REQUESTQUOTATION;
-const API_TOKENSL = import.meta.env.VITE_TOKENSL;
-const API_KEYSL = import.meta.env.VITE_APIKEYSL;
-
 
 interface QuotationsListProps {
   onCreateNew: () => void;
@@ -54,14 +49,12 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
   const loadQuotationsRequests = async () => {
     try {
       setLoading(true);      
-      const response = await fetch(`${API_REQUESTQUOTATION}/v1/api/quotationrequest/getRecentRequestQuotations?limit=10`, {
+      const response = await fetch('http://10.66.12.54:14326/v1/api/quotationrequest/getRecentRequestQuotations?limit=10', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_TOKENSL}`,
+          //'Authorization': `Bearer ${API_KEY}`,
           'Content-Type': 'application/json',
-          'x-api-key': API_KEYSL,
-        },         
-
+        },
       });
       if (!response.ok) {
         throw new Error('Error al cargar las cotizaciones');
@@ -73,8 +66,6 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
         if(a.idStatusRequest === 3 && b.idStatusRequest !== 3) return 1; // a va despues de b
         if(a.idStatusRequest !== 3 && b.idStatusRequest === 3) return -1; // a va antes de b
         //(a.deadline_date > b.deadline_date) ? 1 : -1
-        const fechafor = formatDate(b.dateDeadline)
-        console.log(fechafor); 
         const a_deadline = a.dateDeadline ? new Date(a.dateDeadline).getTime() : Infinity;
         const b_deadline = b.dateDeadline ? new Date(b.dateDeadline).getTime() : Infinity;
         return a_deadline -  b_deadline; //fecha mas antigua va primero 
@@ -237,7 +228,6 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    console.log('FECHA-',date);
     return date.toLocaleDateString('es-MX', {
       year: 'numeric',
       month: 'short',

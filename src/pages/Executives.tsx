@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Save, RotateCcw, Trash2, Plus, Edit, Search, X, ArrowLeft, RefreshCw } from 'lucide-react';
+import { Save, RotateCcw, Trash2, Plus, Edit, Search, X, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Executive, ExecutiveFormData, DEPARTMENTS } from '../types/executive';
-import { getExecutives, createExecutive, updateExecutive, deleteExecutive, checkNominaExists } from '../services/executiveService';
+import {
+  getExecutives,
+  createExecutive,
+  updateExecutive,
+  deleteExecutive,
+  checkNominaExists,
+} from '../services/executiveService';
 import styles from './Executives.module.css';
-import { useNotification } from '../contexts/NotificationContext';
-import { Modal } from '../components/Modal';
 
 const USERS_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/users`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function Executives() {
   const { t } = useLanguage();
-  const catalogName = t('quote.executive');
-  const {showError } = useNotification();
   const [executives, setExecutives] = useState<Executive[]>([]);
   const [filteredExecutives, setFilteredExecutives] = useState<Executive[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,20 +40,6 @@ export function Executives() {
     _iduser: '',
   });
 
- const [modalState, setModalState] = useState<{
-    isOpen: boolean;
-    type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
-    title: string;
-    message: string;
-    onConfirm?: () => void;
-    showCancel?: boolean;
-  }>({
-    isOpen: false,
-    type: 'info',
-    title: '',
-    message: ''
-  });
-  
   useEffect(() => {
     loadExecutives();
   }, []);
@@ -121,7 +109,7 @@ export function Executives() {
       !formData.departamento ||
       !formData._iduser
     ) {
-      showNotification('error', t('catalog.requiredFields'));
+      showNotification('error', t('exec.requiredFields'));
       return false;
     }
 
@@ -184,23 +172,17 @@ export function Executives() {
   };
 
   const handleDelete = async (id: string) => {
-    
-    setModalState({
-      isOpen: true,
-      type: 'confirm',
-      title: t('modal.title').replace('{name}', catalogName.toLowerCase()),
-      message: t('modal.message'),
-      showCancel: true,
-      onConfirm: async () => {
-        try {
-          await deleteExecutive(id);
-          showNotification('success', t('exec.successDelete'));
-          await loadExecutives();
-        } catch (error) {
-          showNotification('error', t('exec.errorDelete'));
-        }
-      }
-    });
+    if (!window.confirm(t('exec.confirmDelete'))) {
+      return;
+    }
+
+    try {
+      await deleteExecutive(id);
+      showNotification('success', t('exec.successDelete'));
+      await loadExecutives();
+    } catch (error) {
+      showNotification('error', t('exec.errorDelete'));
+    }
   };
 
   const resetForm = () => {
@@ -269,14 +251,10 @@ export function Executives() {
         {!showForm ? (
           <>
            <h1 className={styles.title}>{t('exec.title')}</h1>
-           <div className={styles.buttonGroup}>
-              <button className={styles.headerButton} onClick={handleNewExecutive}>
-              <Plus size={20} />
+           <button className={styles.newButton} onClick={handleNewExecutive}>
+            <Plus size={18} />
+            <span>{t('exec.newExecutive')}</span>
             </button>
-            <button onClick={loadExecutives} className={styles.headerButton} disabled={loading}>
-            <RefreshCw size={20} />
-            </button>
-           </div>
           </>          
         ): (
           <div style={{ display: 'flex', alignItems: 'left', gap: '1rem' }}>          
@@ -288,9 +266,9 @@ export function Executives() {
                 <ArrowLeft size={18} />
               </button>              
             </div>  
-            <h2 className={styles.formTitle}>
+            <h1 className={styles.title}>
               {editingId ? t('exec.editExecutive') : t('exec.newExecutive')}
-            </h2>      
+            </h1>      
         </div>
         )}
       </div>
@@ -542,19 +520,6 @@ export function Executives() {
           </div>
         </form>
       )}
-
-      <Modal
-        isOpen={modalState.isOpen}
-        onClose={() => setModalState({ ...modalState, isOpen: false })}
-        onConfirm={modalState.onConfirm}
-        title={modalState.title}
-        message={modalState.message}
-        type={modalState.type}
-        showCancel={modalState.showCancel}
-        confirmText={t('catalog.continue')}
-        cancelText={t('catalog.cancel')}
-      />
-
     </div>
   );
 }
