@@ -1,10 +1,36 @@
-import { MongoClient } from "npm:mongodb@6.3.0";
+import { MongoClient } from "npm:mongodb@7.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
+
+const MONGODB_URI = 'mongodb+srv://fox1:modelotx30@arcobitscluster0.w6meunj.mongodb.net/?retryWrites=true&w=majority&appName=ArcobitsCluster0';
+const MONGODB_DATABASE = 'singulatiry_sandbox';
+
+let cachedClient: MongoClient | null = null;
+
+async function getMongoClient(): Promise<MongoClient> {
+  if (!MONGODB_URI || !MONGODB_DATABASE) {
+    throw new Error("MongoDB configuration is missing.");
+  }
+
+  if (cachedClient) {
+    return cachedClient;
+  }
+
+  try {
+    cachedClient = new MongoClient(MONGODB_URI);
+    await cachedClient.connect();
+    console.log("MongoDB connected successfully");
+    return cachedClient;
+  } catch (error) {
+    console.error("MongoDB connection error:", error);
+    cachedClient = null;
+    throw error;
+  }
+}
 
 interface CustomerSummary {
   _id: string;
@@ -22,66 +48,53 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const mongoUri = Deno.env.get("VITE_MONGODB_URI");
-    const mongoDatabase = Deno.env.get("VITE_MONGODB_DATABASE");
+    const client = await getMongoClient();
+    const db = client.db(MONGODB_DATABASE!);
+    const collection = db.collection("customer_summary_level");
 
-    if (!mongoUri || !mongoDatabase) {
-      throw new Error("MongoDB configuration missing");
-    }
+    const customers = await collection.find({}).toArray() as CustomerSummary[];
 
-    const client = new MongoClient(mongoUri);
+    const stats = {
+      gold: 0,
+      silver: 0,
+      bronze: 0,
+      total: 0,
+    };
 
-    try {
-      await client.connect();
-      const db = client.db(mongoDatabase);
-      const collection = db.collection("customer_summary_level");
+    customers.forEach((customer: CustomerSummary) => {
+      const level = customer.level?.toLowerCase();
+      if (level === "gold" || level === "oro") {
+        stats.gold++;
+      } else if (level === "silver" || level === "plata") {
+        stats.silver++;
+      } else if (level === "bronze" || level === "bronce") {
+        stats.bronze++;
+      }
+    });
 
-      const customers = await collection.find({}).toArray() as CustomerSummary[];
+    stats.total = stats.gold + stats.silver + stats.bronze;
 
-      const stats = {
-        gold: 0,
-        silver: 0,
-        bronze: 0,
-        total: 0,
-      };
+    const goldPercentage = stats.total > 0 ? ((stats.gold / stats.total) * 100).toFixed(1) : "0.0";
+    const silverPercentage = stats.total > 0 ? ((stats.silver / stats.total) * 100).toFixed(1) : "0.0";
+    const bronzePercentage = stats.total > 0 ? ((stats.bronze / stats.total) * 100).toFixed(1) : "0.0";
 
-      customers.forEach((customer: CustomerSummary) => {
-        const level = customer.level?.toLowerCase();
-        if (level === "gold" || level === "oro") {
-          stats.gold++;
-        } else if (level === "silver" || level === "plata") {
-          stats.silver++;
-        } else if (level === "bronze" || level === "bronce") {
-          stats.bronze++;
-        }
-      });
-
-      stats.total = stats.gold + stats.silver + stats.bronze;
-
-      const goldPercentage = stats.total > 0 ? ((stats.gold / stats.total) * 100).toFixed(1) : "0.0";
-      const silverPercentage = stats.total > 0 ? ((stats.silver / stats.total) * 100).toFixed(1) : "0.0";
-      const bronzePercentage = stats.total > 0 ? ((stats.bronze / stats.total) * 100).toFixed(1) : "0.0";
-
-      return new Response(
-        JSON.stringify({
-          stats,
-          percentages: {
-            gold: goldPercentage,
-            silver: silverPercentage,
-            bronze: bronzePercentage,
-          },
-        }),
-        {
-          status: 200,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    } finally {
-      await client.close();
-    }
+    return new Response(
+      JSON.stringify({
+        stats,
+        percentages: {
+          gold: goldPercentage,
+          silver: silverPercentage,
+          bronze: bronzePercentage,
+        },
+      }),
+      {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
     return new Response(
