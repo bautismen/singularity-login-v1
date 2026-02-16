@@ -597,6 +597,16 @@
   color: #9ca3af;
 }
 
+@media (max-width: 1024px) {
+  .container {
+    padding: 1.5rem;
+  }
+
+  .formGrid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
@@ -608,12 +618,33 @@
     gap: 1rem;
   }
 
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .newButton {
+    width: 100%;
+    justify-content: center;
+  }
+
   .controls {
     flex-direction: column;
+    width: 100%;
   }
 
   .searchBar {
     min-width: 100%;
+  }
+
+  .filters {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .filterButton {
+    flex: 1;
+    min-width: calc(50% - 0.25rem);
+    text-align: center;
   }
 
   .formGrid {
@@ -628,14 +659,121 @@
 
   .actionBar {
     width: 100%;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .actionBarSaveButton,
+  .actionBarResetButton,
+  .actionBarDeleteButton,
+  .actionBarCancelButton {
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .actionBarSaveButton:first-child {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+  }
+
+  .actionBarCancelButton:last-child {
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+  }
+
+  .tableContainer {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .table {
     font-size: 0.8125rem;
+    min-width: 600px;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .section {
+    padding: 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.75rem;
+  }
+
+  .title {
+    font-size: 1.125rem;
+  }
+
+  .notification {
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .newButton {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+  }
+
+  .searchInput {
+    padding: 0.625rem 2.5rem 0.625rem 2.5rem;
+    font-size: 0.875rem;
+  }
+
+  .filterButton {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .section {
+    padding: 0.75rem;
+  }
+
+  .formHeader {
+    padding-bottom: 0.75rem;
+  }
+
+  .sectionTitle {
+    font-size: 0.9375rem;
+  }
+
+  .label {
+    font-size: 0.8125rem;
+  }
+
+  .input,
+  .select {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .table {
+    font-size: 0.75rem;
   }
 
   .table th,
   .table td {
     padding: 0.5rem;
+  }
+
+  .actionButtons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .actionButton {
+    width: 100%;
   }
 }

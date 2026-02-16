@@ -1557,6 +1557,20 @@
   color: #14b8a6;
 }
 
+@media (max-width: 1024px) {
+  .container {
+    padding: 1.5rem;
+  }
+
+  .generalDataGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .classificationGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
@@ -1566,6 +1580,28 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .actionBar {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .actionBarSaveButton,
+  .actionBarResetButton,
+  .actionBarDeleteButton,
+  .actionBarDropdownButton {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .actionBarDropdownButton {
+    border-bottom: none;
   }
 
   .formGrid {
@@ -1583,6 +1619,7 @@
   .toggleGroup {
     flex-direction: column;
     align-items: flex-start;
+    gap: 1rem;
   }
 
   .modalOverlay {
@@ -1591,13 +1628,107 @@
 
   .modalContent {
     max-height: 95vh;
+    width: 95%;
   }
 
   .classificationGrid {
     grid-template-columns: 1fr;
+    padding: 1rem;
   }
 
   .modalRow {
     grid-template-columns: 1fr;
+  }
+
+  .section {
+    padding: 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 1rem;
+  }
+
+  .serviceCard {
+    padding: 1rem;
+  }
+
+  .containersTable,
+  .merchandiseTable {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table {
+    min-width: 600px;
+  }
+
+  .statusButtonsContainer {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .cancelButton,
+  .sendButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.75rem;
+  }
+
+  .title {
+    font-size: 1.125rem;
+  }
+
+  .section {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 0.9375rem;
+  }
+
+  .formGroup {
+    gap: 0.375rem;
+  }
+
+  .label {
+    font-size: 0.8125rem;
+  }
+
+  .input,
+  .select,
+  .textarea {
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .serviceCard {
+    padding: 0.875rem;
+  }
+
+  .serviceNumber {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+
+  .modalContent {
+    width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .modalHeader,
+  .modalBody,
+  .modalFooter {
+    padding: 1rem;
+  }
+
+  .modalTitle {
+    font-size: 1.125rem;
   }
 }

@@ -459,6 +459,17 @@ buttonGroup {
   overflow: hidden; /* ⬅ asegura bordes limpios */
 }
 
+.tableContainer {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1024px) {
+  .container {
+    padding: 1.5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
@@ -470,16 +481,118 @@ buttonGroup {
     gap: 1rem;
   }
 
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .buttonGroup {
+    width: 100%;
+  }
+
+  .headerButton {
+    flex: 1;
+  }
+
+  .headerActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .addButton {
+    width: 100%;
+    justify-content: center;
+  }
+
   .searchBar {
     flex-direction: column;
+    width: 100%;
+  }
+
+  .searchInput {
+    width: 100%;
+  }
+
+  .filterButtons {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .filterButton {
+    flex: 1;
+    min-width: calc(50% - 0.25rem);
+  }
+
+  .tableContainer {
+    overflow-x: auto;
   }
 
   .table {
     font-size: 0.75rem;
+    min-width: 600px;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .modalContent {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .modalHeader,
+  .modalBody,
+  .modalFooter {
+    padding: 1rem;
+  }
+
+  .modalTitle {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.75rem;
+  }
+
+  .title {
+    font-size: 1.125rem;
+  }
+
+  .table {
+    font-size: 0.6875rem;
   }
 
   .table th,
   .table td {
     padding: 0.5rem;
+  }
+
+  .modalContent {
+    width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .label {
+    font-size: 0.8125rem;
+  }
+
+  .input,
+  .textarea,
+  .select {
+    font-size: 0.8125rem;
+    padding: 0.5rem;
+  }
+
+  .modalFooter {
+    flex-direction: column;
+  }
+
+  .cancelButton,
+  .saveButton {
+    width: 100%;
   }
 }
