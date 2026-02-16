@@ -62,10 +62,10 @@ export const quotationService = {
   },
 
   async create(data: QuotationRequest) {
-    const response = await fetch(API_URL, {
+    const response = await fetch('http://10.66.12.54:14326/v1/api/quotationrequest/', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+       // 'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
@@ -78,11 +78,10 @@ export const quotationService = {
     return response.json();
   },
 
-  async update(id: string, data: QuotationRequest) {
-    const response = await fetch(`${API_URL}/${id}`, {
+  async update(data: QuotationRequest) {
+    const response = await fetch('http://10.66.12.54:14326/v1/api/quotationrequest/', {
       method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+      headers: {       
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),

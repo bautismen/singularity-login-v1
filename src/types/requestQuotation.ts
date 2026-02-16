@@ -42,35 +42,33 @@ export interface Shipment{
   departureDateAproximate?: string;
   projectionShipment?: any; 
   comments: string;
-  servicesAsociated: any[];
+  servicesAsociated?: any[];
   cargo : any[];  
 }
 
 export interface Cargo {
-  nameMerchandise: string;
-  descriptionMerchandise: string;
-  merchandiseClassification: any[];
+  merchandiseName: string;
+  merchandiseDescription: string;
+  classification: any[];
   stowable: number;
-  typeCargo: string; 
-  idUnitCargo: number;
-  unitCargo: string;
+  shipmentTypeCargo: string; 
   idUnitMeasurement: number;
-  unitMeasurement: string;
+  unitMeasurement: string;  
   idUnitWeight: number;
   unitWeight: string;
-  totalVolume: number;
-  totalWeight: number;
-  packages: MerchandisePackage[];
+  volumeTotal: number;
+  weigthTotal: number;
+  units?: MerchandisePackage[];
 }
 
 export interface MerchandisePackage {
-  id: number;
-  type: string;
   quantity: number;
   length: number;
   width: number;
   height: number;
   weight: number;
+  idUnitCargo: number;
+  unitCargo: string;
 }
 
 export interface Executive {

@@ -66,6 +66,8 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
         if(a.idStatusRequest === 3 && b.idStatusRequest !== 3) return 1; // a va despues de b
         if(a.idStatusRequest !== 3 && b.idStatusRequest === 3) return -1; // a va antes de b
         //(a.deadline_date > b.deadline_date) ? 1 : -1
+        const fechafor = formatDate(b.dateDeadline)
+        console.log(fechafor); 
         const a_deadline = a.dateDeadline ? new Date(a.dateDeadline).getTime() : Infinity;
         const b_deadline = b.dateDeadline ? new Date(b.dateDeadline).getTime() : Infinity;
         return a_deadline -  b_deadline; //fecha mas antigua va primero 
@@ -228,6 +230,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
+    console.log('FECHA-',date);
     return date.toLocaleDateString('es-MX', {
       year: 'numeric',
       month: 'short',
