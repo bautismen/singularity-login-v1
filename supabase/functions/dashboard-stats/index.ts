@@ -52,7 +52,11 @@ Deno.serve(async (req: Request) => {
     const db = client.db(MONGODB_DATABASE!);
     const collection = db.collection("customer_summary_level");
 
-    const customers = await collection.find({}).toArray() as CustomerSummary[];
+    const customers = await collection.find({}).toArray();
+
+    console.log("Total documents found:", customers.length);
+    console.log("Sample document:", customers.length > 0 ? JSON.stringify(customers[0], null, 2) : "No documents");
+    console.log("All levels found:", customers.map(c => c.level));
 
     const stats = {
       gold: 0,
@@ -61,18 +65,29 @@ Deno.serve(async (req: Request) => {
       total: 0,
     };
 
-    customers.forEach((customer: CustomerSummary) => {
-      const level = customer.level?.toLowerCase();
-      if (level === "gold" || level === "oro") {
+    customers.forEach((customer: any) => {
+      const level = customer.level?.toLowerCase()?.trim();
+      console.log("Processing customer:", customer.customer_name || customer._id, "Level:", `'${level}'`);
+
+      // Buscar variaciones de "Oro/Gold"
+      if (level && (level.includes("gold") || level.includes("oro"))) {
         stats.gold++;
-      } else if (level === "silver" || level === "plata") {
+      }
+      // Buscar variaciones de "Plata/Silver"
+      else if (level && (level.includes("silver") || level.includes("plata"))) {
         stats.silver++;
-      } else if (level === "bronze" || level === "bronce") {
+      }
+      // Buscar variaciones de "Bronce/Bronze"
+      else if (level && (level.includes("bronze") || level.includes("bronce"))) {
         stats.bronze++;
+      } else {
+        console.log("⚠️ Level not matched:", level);
       }
     });
 
     stats.total = stats.gold + stats.silver + stats.bronze;
+
+    console.log("Final stats:", stats);
 
     const goldPercentage = stats.total > 0 ? ((stats.gold / stats.total) * 100).toFixed(1) : "0.0";
     const silverPercentage = stats.total > 0 ? ((stats.silver / stats.total) * 100).toFixed(1) : "0.0";
