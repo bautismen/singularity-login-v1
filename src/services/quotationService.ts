@@ -1,9 +1,10 @@
 import {QuotationRequest} from '../types/requestQuotation';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
-const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+//const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const API_REQUESTQUOTATION = import.meta.env.VITE_REQUESTQUOTATION;
 const API_KEYX = import.meta.env.VITE_APIKEYPRICING;
+const API_KEYPRICING = import.meta.env.VITE_API_KEYPRICING;
 
 
 /*interface QuotationRequest {
@@ -36,8 +37,9 @@ export const quotationService = {
     const response = await fetch(API_URL, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': `Bearer ${API_KEYPRICING}`,
         'Content-Type': 'application/json',
+        'x-api-key': API_KEYX,
       },
     });
 
@@ -52,7 +54,7 @@ export const quotationService = {
     const response = await fetch(`${API_REQUESTQUOTATION}/v1/api/quotationrequest/getById?id=${id}`, {
       method: 'GET',
       headers: {
-        //'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': `Bearer ${API_KEYPRICING}`,
         'Content-Type': 'application/json',
         'x-api-key': API_KEYX,
       },
@@ -69,7 +71,7 @@ export const quotationService = {
     const response = await fetch(`${API_REQUESTQUOTATION}/v1/api/quotationrequest/`, {
       method: 'POST',
       headers: {
-       // 'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': `Bearer ${API_KEYPRICING}`,
         'Content-Type': 'application/json',
          'x-api-key': API_KEYX,
       },
@@ -104,8 +106,9 @@ export const quotationService = {
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': `Bearer ${API_KEYPRICING}`,
         'Content-Type': 'application/json',
+        'x-api-key': API_KEYX,
       },
     });
 
