@@ -101,7 +101,7 @@ export function Login() {
       <div className="w-full max-w-md">
         <div className="w-full max-w-md rounded-2xl bg-white/10 dark:bg-slate-800/40 backdrop-blur-xl dark:backdrop-blur-2xl border border-white/20 dark:border-slate-300/20 shadow-2xl p-8 ">
           <div className="flex justify-center mb-2">
-            <img src="/logo_png_small 1.png" alt="Singularity" className="h-16 w-auto object-contain" />
+            <img src="/logo_png_small_1.png" alt="Singularity" className="h-16 w-auto object-contain" />
           </div>
 
           <p className="text-center text-white mb-8">
