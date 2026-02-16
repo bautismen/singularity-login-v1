@@ -117,7 +117,7 @@
 
 .filterButtons {
   display: flex;
-  gap: 0;
+  gap: 0.5rem;
   border-radius: 0.5rem;
   overflow: hidden;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -126,11 +126,12 @@
 .filterButton {
   padding: 0.875rem 1.5rem;
   background: white;
-  color: #6b7280;
   border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
   border-right: none;
   font-size: 0.9375rem;
   font-weight: 500;
+  color: #6b7280;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
@@ -158,9 +159,9 @@
   border-color: #038C7F;
 }
 
-.filterButtonActive + .filterButton {
+/* .filterButtonActive + .filterButton {
   border-left-color: #038C7F;
-}
+} */
 
 .customerList {
   display: grid;
