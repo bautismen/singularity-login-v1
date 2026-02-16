@@ -2,6 +2,9 @@ import {QuotationRequest} from '../types/requestQuotation';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const API_REQUESTQUOTATION = import.meta.env.VITE_REQUESTQUOTATION;
+const API_KEYX = import.meta.env.VITE_APIKEYPRICING;
+
 
 /*interface QuotationRequest {
   reference_request: string;
@@ -46,11 +49,12 @@ export const quotationService = {
   },
 
   async getById(id: string) {
-    const response = await fetch(`http://10.66.12.54:14326/v1/api/quotationrequest/getById?id=${id}`, {
+    const response = await fetch(`${API_REQUESTQUOTATION}/v1/api/quotationrequest/getById?id=${id}`, {
       method: 'GET',
       headers: {
         //'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
+        'x-api-key': API_KEYX,
       },
     });
     console.log('API: ', response)
@@ -62,11 +66,12 @@ export const quotationService = {
   },
 
   async create(data: QuotationRequest) {
-    const response = await fetch('http://10.66.12.54:14326/v1/api/quotationrequest/', {
+    const response = await fetch(`${API_REQUESTQUOTATION}/v1/api/quotationrequest/`, {
       method: 'POST',
       headers: {
        // 'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
+         'x-api-key': API_KEYX,
       },
       body: JSON.stringify(data),
     });
@@ -79,10 +84,11 @@ export const quotationService = {
   },
 
   async update(data: QuotationRequest) {
-    const response = await fetch('http://10.66.12.54:14326/v1/api/quotationrequest/', {
+    const response = await fetch(`${API_REQUESTQUOTATION}/v1/api/quotationrequest/`, {
       method: 'PUT',
       headers: {       
         'Content-Type': 'application/json',
+         'x-api-key': API_KEYX,
       },
       body: JSON.stringify(data),
     });
