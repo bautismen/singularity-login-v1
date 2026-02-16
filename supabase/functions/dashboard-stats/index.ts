@@ -6,8 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-const MONGODB_URI = 'mongodb+srv://fox1:modelotx30@arcobitscluster0.w6meunj.mongodb.net/?retryWrites=true&w=majority&appName=ArcobitsCluster0';
-const MONGODB_DATABASE = 'singulatiry_sandbox';
+const MONGODB_URI = Deno.env.get('VITE_MONGODB_URI') || 'mongodb+srv://singularityatlas:yHAuUQlpYrD16JkL@cluster0.m2t3c.mongodb.net/';
+const MONGODB_DATABASE = Deno.env.get('VITE_MONGODB_DATABASE') || 'singulatiry_sandbox';
 
 let cachedClient: MongoClient | null = null;
 
@@ -17,18 +17,27 @@ async function getMongoClient(): Promise<MongoClient> {
   }
 
   if (cachedClient) {
-    return cachedClient;
+    try {
+      await cachedClient.db(MONGODB_DATABASE).command({ ping: 1 });
+      return cachedClient;
+    } catch {
+      cachedClient = null;
+    }
   }
 
   try {
-    cachedClient = new MongoClient(MONGODB_URI);
+    console.log("Connecting to MongoDB...");
+    cachedClient = new MongoClient(MONGODB_URI, {
+      connectTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 10000,
+    });
     await cachedClient.connect();
     console.log("MongoDB connected successfully");
     return cachedClient;
   } catch (error) {
     console.error("MongoDB connection error:", error);
     cachedClient = null;
-    throw error;
+    throw new Error(`Failed to connect to MongoDB: ${error.message}`);
   }
 }
 
