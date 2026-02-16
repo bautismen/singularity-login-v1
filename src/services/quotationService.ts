@@ -68,7 +68,7 @@ export const quotationService = {
   },
 
   async create(data: QuotationRequest) {
-    const response = await fetch(`${API_REQUESTQUOTATION}/v1/api/quotationrequest/`, {
+    const response = await fetch(`${API_REQUESTQUOTATION}/v1/api/quotationrequest/add`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${API_KEYPRICING}`,
@@ -86,9 +86,10 @@ export const quotationService = {
   },
 
   async update(data: QuotationRequest) {
-    const response = await fetch(`${API_REQUESTQUOTATION}/v1/api/quotationrequest/`, {
-      method: 'PUT',
-      headers: {       
+    const response = await fetch(`${API_REQUESTQUOTATION}/v1/api/quotationrequest/update`, {
+      method: 'POST',
+      headers: {   
+        'Authorization': `Bearer ${API_KEYPRICING}`,    
         'Content-Type': 'application/json',
          'x-api-key': API_KEYX,
       },
