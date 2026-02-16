@@ -59,9 +59,9 @@ Deno.serve(async (req: Request) => {
   try {
     const client = await getMongoClient();
     const db = client.db(MONGODB_DATABASE!);
-    const collection = db.collection("customer_summary_level");
+    const view = db.collection("custumer_sumary_level");
 
-    const levelData = await collection.find({}).toArray();
+    const levelData = await view.find({}).toArray();
 
     console.log("Total documents found:", levelData.length);
     console.log("Raw data:", JSON.stringify(levelData, null, 2));
@@ -79,16 +79,11 @@ Deno.serve(async (req: Request) => {
 
       console.log("Processing level:", nivel, "Total customers:", total);
 
-      // Buscar variaciones de "Oro/Gold"
-      if (nivel && (nivel.includes("gold") || nivel.includes("oro"))) {
+      if (nivel === "oro") {
         stats.gold += total;
-      }
-      // Buscar variaciones de "Plata/Silver"
-      else if (nivel && (nivel.includes("silver") || nivel.includes("plata"))) {
+      } else if (nivel === "plata") {
         stats.silver += total;
-      }
-      // Buscar variaciones de "Bronce/Bronze"
-      else if (nivel && (nivel.includes("bronze") || nivel.includes("bronce"))) {
+      } else if (nivel === "bronce") {
         stats.bronze += total;
       } else {
         console.log("⚠️ Level not matched:", nivel);
