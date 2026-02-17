@@ -1,73 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Trash2, ChevronDown, Plus, Copy, X, RotateCcw, Save, Eye, ArrowLeft } from 'lucide-react';
+import { Trash2, ChevronDown, Plus, Copy, X, RotateCcw, Save, Eye, ArrowLeft, ShieldOff } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { Modal } from '../components/Modal';
 import { quotationService } from '../services/quotationService';
+import { getCustomers} from '../services/customerService';
+import { getExecutivesByDepartment} from '../services/executiveService';
 import styles from './Quotations.module.css';
 import {QuotationRequest, Service, Executive, Shipment, Cargo, MerchandisePackage} from '../types/requestQuotation';
-
-/*interface MerchandisePackage {
-  id: number;
-  type: string;
-  quantity: number;
-  length: number;
-  width: number;
-  height: number;
-  weight: number;
-}
-
-interface Merchandise {
-  id: number;
-  name: string;
-  description: string;
-  dangerous: boolean;
-  refrigerated: boolean;
-  oversized: boolean;
-  imoClass: string;
-  un: string;
-  temperature: number;
-  tempUnit: string;
-  grain: boolean;
-  stackable: boolean;
-  unitType: 'lbs' | 'kg';
-  totalVolume: number;
-  totalWeight: number;
-  packages: MerchandisePackage[];
-  merchandise_classification?: any[];
-}
-
-interface Executive {
-  id: number;
-  name: string;
-  iduser: string;
-}
-
-interface Service {
-  id: number;
-  service: string;
-  tipoCarga: string,
-  operation: string;
-  incoterm: string;
-  origin: string;
-  originZip: string;
-  destination: string;
-  destinationZip: string;
-  expectedDeparture: string;
-  insurance: boolean;
-  maneuver: boolean;
-  custody: boolean;
-  inspection: boolean;
-  customsClearance: boolean;
-  comments: string;
-  shippingType: string;
-  programFrequency: boolean;
-  frequency: string;
-  quantity: string;
-  unit: string;
-  merchandise: Merchandise[];
-}*/
 
 interface QuotationsProps {
   mode?: 'create' | 'edit' | 'view';
@@ -108,21 +49,20 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const [currentServiceId, setCurrentServiceId] = useState<number | null>(null);
   const [showExecutiveModal, setShowExecutiveModal] = useState(false);
   const [showCancelQuotationRequestModal, setShowCancelQuotationRequestModal] = useState(false);
-  const [merchandiseForm, setMerchandiseForm] = useState<Cargo | null>(null);
-    /*{
-    name: '',
-    description: '',
-    dangerous: false,
-    refrigerated: false,
-    oversized: false,
-    grain: false,
-    stackable: false,
-    imoClass: '',
-    imoId: 0,
-    un: '',
-    temperature: '',
-    tempUnit: '°C',
-  });*/
+  const [merchandiseForm, setMerchandiseForm] = useState<Cargo>({
+    merchandiseName: '',
+    merchandiseDescription: '',
+    classification: [],
+    stowable: 0,
+    shipmentTypeCargo: '', 
+    idUnitMeasurement: 0,
+    unitMeasurement: '',  
+    idUnitWeight: 0,
+    unitWeight: '',
+    volumeTotal: 0,
+    weigthTotal: 0,
+    units: []
+  });
   const [showPackagingModal, setShowPackagingModal] = useState(false);
   const [currentPackages, setCurrentPackages] = useState<any[]>([]);
   const [useMetricSystem, setUseMetricSystem] = useState(true);
@@ -137,7 +77,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     requestType: '',
     created: new Date().toISOString().split('T')[0],
     responseDeadline: '',
-    statuscomments: null
+    statuscomments: null,
+    idStatusRequest: 1,
   });
 
   const generateReferenceNumber = async () => {
@@ -154,7 +95,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
       const quotations = await response.json();
       const currentYear = new Date().getFullYear().toString().slice(-2);
-
       const yearPrefix = `SC${currentYear}-`;
       const currentYearQuotations = quotations.filter((q: any) =>
         q.reference_request?.startsWith(yearPrefix)
@@ -201,17 +141,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
       const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-      const [customersRes, requestTypesRes, servicesRes, executivesRes, incotermsRes, countriesRes, imoRes] = await Promise.all([
-        fetch(`${BASE_URL}/functions/v1/customers?includeArchived=${true}`, {
-          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
-        }),
+      const [requestTypesRes, servicesRes, incotermsRes, countriesRes, imoRes] = await Promise.all([
+
         fetch(`${BASE_URL}/functions/v1/catalog-request-types`, {
           headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
         }),
         fetch(`${BASE_URL}/functions/v1/catalog-services`, {
-          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
-        }),
-        fetch(`${BASE_URL}/functions/v1/executives?departamento=Pricing`, {
           headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
         }),
         fetch(`${BASE_URL}/functions/v1/catalog-incoterms`, {
@@ -225,26 +160,26 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         }),
       ]);
 
-      const customersData = await customersRes.json();
+      const customersData = await  await getCustomers(true);
       const requestTypesData = await requestTypesRes.json();
       const servicesData = await servicesRes.json();
-      const executivesData = await executivesRes.json();
+      const executivesData = await getExecutivesByDepartment('Pricing');
       const incotermsData = await incotermsRes.json();
       const countriesData = await countriesRes.json();
       const imoData = await imoRes.json();
 
-      console.log('Customers loaded:', customersData);
-      console.log('ejecutivos', executivesData);
+      console.log('customer: ', customersData);
+      //console.log('ejecutivos', executivesData);
 
       setCustomers(customersData.filter((c: any) => c.status === 'activo' || c.datastate === 1));
       setRequestTypes(requestTypesData.filter((r: any) => r.status === 1));
-      setAvailableServices(servicesData.filter((s: any) => s.status === 1 && s.category === 1));
+      setAvailableServices(servicesData.filter((s: any) => s.status === 1)); // && s.category === 1));
       setAvailableExecutives(executivesData.filter((e: any) => e.estado === 1 && e.activo === true));
       setIncoterms(incotermsData.filter((i: any) => i.status === 1));
       setCountries(countriesData.filter((co: any) => co.status === 1));
       setImoList(imoData.filter((imo: any) => imo.status === 1));
 
-      console.log('Paises: ', countries);
+      //console.log('AVAILABLE SERVICES', availableServices)
     } catch (error) {
       console.error('Error loading catalogs:', error);
       showError('Error al cargar los catálogos');
@@ -270,7 +205,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         requestType: data.data.typeRequest || '',
         created: data.data.dateRequest ? new Date(data.data.dateRequest).toISOString().split('T')[0] : '',
         responseDeadline: data.data.dateDeadline ? new Date(data.data.dateDeadline).toISOString().split('T')[0] : '',
-        statuscomments: data.data.services[0].shipments[0].comments || null
+        statuscomments: data.data.services[0].shipments[0].comments || null,
+        idStatusRequest: data.data.idStatusRequest || 1,
       });
 
       console.log('FormData loaded: ', formData)
@@ -279,7 +215,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         const loadedServices = data.data.services.map((service: any, idx: number) => {
           const shipment = service.shipments?.[0] || {};
           const cargo = service.shipments[0].cargo?.[0] || {};
-          //const servicesAssociated = shipment.services_asociated || [];
+          const servicesAssociated = shipment.servicesAsociated || [];
+          console.log('serv asociados: ',shipment.servicesAsociated )
           //const hasInsurance = servicesAssociated.some((s: any) => s.service_associated_name === 'Seguro');
           //const hasManeuver = servicesAssociated.some((s: any) => s.service_associated_name === 'Maniobra');
           //const hasCustody = servicesAssociated.some((s: any) => s.service_associated_name === 'Custodia');
@@ -346,17 +283,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         });
         setServices(loadedServices);
         console.log('Loaded services:', loadedServices);
+        console.log('services: ', services)
       }
 
       if (data.data.assignedTo && data.data.assignedTo.length > 0) {
-        const loadedExecutives = data.data.assignedTo.map((exec: any, idx: number) => ({
-          id: typeof exec.idEmployee === 'object' && exec.idEmployee.$oid
-            ? exec.idEmployee.$oid
-            : exec.idEmployee || idx + 1,
-          name: exec.nameEmployee || ''
+        const loadedExecutives : Executive[] = data.data.assignedTo.map((exec: Executive) => ({
+          idEmployee: exec.idEmployee ,
+          nameEmployee: exec.nameEmployee || '',
+          idUser: exec.idUser || ''
         }));
         setExecutives(loadedExecutives);
-        console.log('Loaded executives:', loadedExecutives);
       }
       
     } catch (error) {
@@ -409,54 +345,50 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     setExecutives(executives.filter(executive => executive.idEmployee !== id));
   };
 
-  const openMerchandiseModal = (serviceId: number, cargo?: Cargo) => {
-    
-    setCurrentServiceId(serviceId);
-    
-    setEditingMerchandise(cargo || null);
+  const openMerchandiseModal = (serviceId: number, cargo?: Cargo) => {    
+    setCurrentServiceId(serviceId);    
+    setEditingMerchandise(cargo || null);    
 
-    if (cargo) {
-      
-      const dangerousClass = cargo.merchandiseClassification.find((classification: any) => classification.idClassificationMerchandise === 5);
-
+    if (cargo) {      
+      const dangerousClass = cargo.classification.find((classification: any) => classification.idClassificationMerchandise === 5);
+     
       setMerchandiseForm({
-        nameMerchandise: cargo.nameMerchandise,
-        descriptionMerchandise: cargo.descriptionMerchandise || '',  
-        merchandiseClassification : cargo.merchandiseClassification,     
+        merchandiseName: cargo.merchandiseName,
+        merchandiseDescription: cargo.merchandiseDescription || '',  
+        classification : cargo.classification,     
         stowable: cargo.stowable,
-        typeCargo: cargo.typeCargo,
-        idUnitCargo: cargo.idUnitCargo,
-        unitCargo: cargo.unitCargo, 
+        shipmentTypeCargo: cargo.shipmentTypeCargo,
         idUnitMeasurement: cargo.idUnitMeasurement,
-        unitMeasurement: cargo.unitMeasurement,
+        unitMeasurement: cargo.unitMeasurement,                 
         idUnitWeight: cargo.idUnitWeight,
         unitWeight: cargo.unitWeight,
-        totalVolume: cargo.totalVolume,
-        totalWeight: cargo.totalWeight,
-        packages: cargo.packages        
+        volumeTotal: cargo.volumeTotal,
+        weigthTotal: cargo.weigthTotal,
+        units: cargo.units        
       });
-      setCurrentPackages(cargo.packages || []);
+      setCurrentPackages(cargo.units || []);
+       console.log(merchandiseForm, currentPackages)
+
     } else {
       setMerchandiseForm({
         //id: 0,
-        nameMerchandise: '',
-        descriptionMerchandise: '',
-        merchandiseClassification: [],
+        merchandiseName: '',
+        merchandiseDescription: '',
+        classification: [],
         stowable: 0,
-        typeCargo: '', 
-        idUnitCargo: 0,
-        unitCargo: '',
+        shipmentTypeCargo: '', 
         idUnitMeasurement: 0,
         unitMeasurement: '',
         idUnitWeight: 0,
         unitWeight: '',
-        totalVolume: 0,
-        totalWeight: 0,
-        packages: []
+        volumeTotal: 0,
+        weigthTotal: 0,
+        units: []
       });
       setCurrentPackages([]);
     }
     setShowMerchandiseModal(true);
+    console.log('Serv: ', serviceId, 'cargo', cargo, 'Merch: ', editingMerchandise, 'packages', currentPackages)
   };
 
   const closeMerchandiseModal = () => {
@@ -501,9 +433,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const saveMerchandise = () => {
+    console.log('Serv id:', currentServiceId, 'services: ', services)
     if (!currentServiceId) return;
 
-    if (!merchandiseForm?.nameMerchandise.trim()) {
+    if (!merchandiseForm?.merchandiseName.trim()) {
       showWarning('Por favor ingresa el nombre de la mercancía');
       return;
     }
@@ -513,7 +446,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     const merchandiseClassifications: any[] = [];
 
     //Dangerous merchandise
-    const dangerouseMerchandise = merchandiseForm.merchandiseClassification?.find((classification => classification.idClassificationMerchandise === 5)).valueOf
+    const dangerouseMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 5))
     if (dangerouseMerchandise) {
       const selectedImo = imoList.find(imo => imo._id === dangerouseMerchandise.imo);
       merchandiseClassifications.push({
@@ -525,7 +458,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       });
     }
 
-    const refrigeratedMerchandise = merchandiseForm.merchandiseClassification?.find((classification => classification.idClassificationMerchandise === 3)).valueOf
+    const refrigeratedMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 3))
     if (refrigeratedMerchandise) {
       merchandiseClassifications.push({
         _id_merchandise_classification: 3,
@@ -536,7 +469,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       });
     }
 
-    const grainMerchandise = merchandiseForm.merchandiseClassification?.find((classification => classification.idClassificationMerchandise === 2)).valueOf
+    const grainMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 2))
     if (grainMerchandise) {
       merchandiseClassifications.push({
         _id_merchandise_classification: 2,
@@ -544,7 +477,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       });
     }
 
-    const oversizedMerchandise = merchandiseForm.merchandiseClassification?.find((classification => classification.idClassificationMerchandise === 4)).valueOf
+    const oversizedMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 4))
     if (oversizedMerchandise) {
       merchandiseClassifications.push({
         _id_merchandise_classification: 4,
@@ -561,24 +494,21 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
     const newMerchandise: Cargo = {
       //id: editingMerchandise?.id|| Date.now(),
-      nameMerchandise: merchandiseForm.nameMerchandise,
-      descriptionMerchandise: merchandiseForm.descriptionMerchandise || '',       
+      merchandiseName: merchandiseForm.merchandiseName,
+      merchandiseDescription: merchandiseForm.merchandiseDescription || '',       
       stowable: merchandiseForm.stowable,
-      typeCargo: merchandiseForm.typeCargo,
-      idUnitCargo: merchandiseForm.idUnitCargo,
-      unitCargo: merchandiseForm.unitCargo, 
-      idUnitMeasurement: merchandiseForm.idUnitMeasurement,
-      unitMeasurement: merchandiseForm.unitMeasurement,
-      idUnitWeight: merchandiseForm.idUnitWeight,
-      unitWeight: merchandiseForm.unitWeight,
-      totalVolume: merchandiseForm.totalVolume,
-      totalWeight: merchandiseForm.totalWeight,
+      shipmentTypeCargo: merchandiseForm.shipmentTypeCargo,
+      idUnitMeasurement: merchandiseForm.idUnitMeasurement || 1,
+      unitMeasurement: merchandiseForm.unitMeasurement || 'cm', 
+      idUnitWeight: merchandiseForm.idUnitWeight || 1,
+      unitWeight: merchandiseForm.unitWeight || 'kg',
+      volumeTotal: merchandiseForm.volumeTotal || 0,
+      weigthTotal: merchandiseForm.weigthTotal || 0,
       //packages: merchandiseForm.packages  
-      packages: currentPackages.map(pkg => ({
-        ...pkg,
-        unit: useMetricSystem ? 'metric' : 'imperial'
+      units: currentPackages?.map(pkg => ({
+        ...pkg
       })),
-      merchandiseClassification: merchandiseClassifications
+      classification: merchandiseClassifications
     };
 
     setServices(services.map(service => {
@@ -587,19 +517,26 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           return {
             ...service,
             merchandise: service.shipments[0].cargo.map(merchandise =>
-              merchandise.nameMerchandise === editingMerchandise.nameMerchandise ? newMerchandise : merchandise
+              merchandise.merchandiseName === editingMerchandise.merchandiseName ? newMerchandise : merchandise
             )
           };
         } else {
           return {
             ...service,
-            merchandise: [...service.shipments[0].cargo, newMerchandise]
+            shipments: service.shipments.map(shipment => shipment.idShipment=== 0 ? {
+              ...shipment,
+              cargo:  [...service.shipments[0].cargo, newMerchandise]
+            }: shipment)
+            //merchandise: [...service.shipments[0].cargo, newMerchandise]
           };
         }
       }
       return service;
-    }));
-    //console.log('Merchandise saved with classifications:', newMerchandise);
+    }
+  ));
+
+
+    console.log('New merch ',newMerchandise, 'editing: ', editingMerchandise, 'Services', services)
     closeMerchandiseModal();
   };
 
@@ -647,6 +584,81 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     } : service));
   };
 
+  const updateShipment =(idServiceItem: number, idShipment: number,  field: keyof Shipment, value: any) => {
+    setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
+      ...service,
+      shipments: service.shipments.map(shipment => shipment.idShipment=== idShipment ? {
+        ...shipment,
+        [field]: value
+      }: shipment)
+    }: service));
+  };
+
+  const updateOrigin = (idServiceItem: number, idShipment: number,  field: keyof any, value: any) => {
+    console.log('origin', value, 'id shipment: ', idShipment, 'services', services );
+    setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
+      ...service,
+      shipments: service.shipments.map(shipment => shipment.idShipment=== idShipment ? {
+        ...shipment,
+        origin : {
+          ...shipment.origin,
+          [field]: value,
+        }        
+      }: shipment)
+    }: service));
+  };
+
+   const updateDestination = (idServiceItem: number, idShipment: number,  field: keyof any, value: any) => {
+    console.log('destination', value, 'id shipment: ', idShipment, 'services', services );
+    setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
+      ...service,
+      shipments: service.shipments.map(shipment => shipment.idShipment=== idShipment ? {
+        ...shipment,
+        destination : {
+          ...shipment.destination,
+          [field]: value,
+        }        
+      }: shipment)
+    }: service));
+  };
+
+  const updateProjectionShipment = (idServiceItem: number, idShipment: number,  field: keyof any, value: any) => {
+    setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
+      ...service,
+      shipments: service.shipments.map(shipment => shipment.idShipment=== idShipment ? {
+        ...shipment,
+        projectionShipment : {
+          [field]: value,
+        }        
+      }: shipment)
+    }: service));
+  };
+
+  const updateServicesAssociated =  (idServiceItem: number, idShipment: number,  serviceAsociated: any) => {
+    setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
+      ...service,
+      shipments: service.shipments.map(shipment => {
+       if(shipment.idShipment !== idShipment) return shipment;
+
+       const currentServices = shipment.servicesAsociated ?? [];
+       const exists =  currentServices.some(s => s.idServiceAsociated === serviceAsociated.idServiceAsociated);
+
+      return {
+        ...shipment,
+        servicesAsociated : exists ? currentServices.filter(serv => 
+          serv.idServiceAsociated !== serviceAsociated.idServiceAsociated) 
+        : [ ...currentServices, serviceAsociated]        
+      };
+       // {
+       // ...shipment,
+      //        const current = shipment.servicesAsociated ?? [],
+       /* servicesAsociated : shipment.servicesAsociated?.map(servAsoc => 
+          servAsoc.idServiceAsociated === serviceAsociated.idServiceAsociated ?
+         );     */
+      })
+    }: service));
+  }
+
   const handleStatusUpdate = async (statusId: number, statusName: string) => {
     try {
       setSaving(true);      
@@ -658,23 +670,24 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }
 
       const selectedCustomer = customers.find(c => c._id === formData.customerId);
-      const selectedRequestType = requestTypes.find(r => r._id === parseInt(formData.requestTypeId) || r._id === formData.requestTypeId);
-
+      const selectedRequestType = requestTypes.find(r => r._id === formData.requestTypeId || r._id === formData.requestTypeId);
+      console.log('Tipo seleccionado: ',requestTypes);
+      /*
       if (!selectedRequestType) {
         showError(t('quote.errors.requestTypeNotFound'));
         setSaving(false);
         return;
-      }
+      }*/
 
       const quotationData = {
-        id: '',
+        id: quotationId,
         referenceRequest: formData.referenceRequest,
-        idStatusRequest: 1,
-        statusRequest: 'Creada',
+        idStatusRequest: statusId,
+        statusRequest: statusName,
         dateRequest: formData.created.toString(),
         ...(formData.responseDeadline.toString().length >= 0 && { dateDeadline: formData.responseDeadline.toString()}),        
-        idRequestType: selectedRequestType._id,
-        typeRequest: selectedRequestType.request_type_name,
+        idRequestType: formData.requestTypeId,
+        typeRequest: formData.requestType,
         priority: formData.isPriority ? 1 : 0,
         licitation: formData.isQuote ? 1 : 0,
         dateCreated: new Date().toISOString(),
@@ -700,7 +713,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             
             const servicesAssociated: any[] = [];
 
-            if(shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Seguro')){              
+            if(shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Seguro')){              
               const insuranceService = availableServices.find(s => s.service_name === 'Seguro');              
               servicesAssociated.push({
                 _id_service_associated: insuranceService?._id || null,
@@ -708,7 +721,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               });
             }       
             
-            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Maniobra')) {
+            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Maniobra')) {
               const maneuverService = availableServices.find(s => s.service_name === 'Maniobra');
               servicesAssociated.push({
                 _id_service_associated: maneuverService?._id || null,
@@ -716,7 +729,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               });
             }   
             
-            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Custodia')) {
+            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Custodia')) {
               const custodyService = availableServices.find(s => s.service_name === 'Custodia');
               servicesAssociated.push({
                 _id_service_associated: custodyService?._id || null,
@@ -724,7 +737,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               });
             }
 
-            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Inspección')) {
+            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Inspección')) {
               const inspectionService = availableServices.find(s => s.service_name === 'Inspección');
               servicesAssociated.push({
                 _id_service_associated: inspectionService?._id || null,
@@ -732,7 +745,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               });
             }
 
-            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Despacho aduanal')) {
+            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Despacho aduanal')) {
               const customsClearanceService = availableServices.find(s => s.service_name === 'Despacho aduanal');
               servicesAssociated.push({
                 _id_service_associated: customsClearanceService?._id || null,
@@ -782,20 +795,18 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               comments: statusId === 3 ? (document.getElementById('comments-cancelation') as HTMLInputElement).value : null,        
               ...(servicesAssociated.length > 0 && { servicesAsociated: servicesAssociated }),
               cargo : shipment.cargo.map(merchandise => ({
-                merchandiseName: merchandise.nameMerchandise,
+                merchandiseName: merchandise.merchandiseName,
                 merchandiseDescription: merchandise.descriptionMerchandise,
-                classification: merchandise.merchandiseClassification || [],
+                classification: merchandise.classification || [],
                 stowable: merchandise.stowable,
-                typeCargo:'',
-                idUnitCargo: 1,
-                unitCargo: '',
+                shipmentTypeCargo:'',
                 idUnitMeasurement: 1, 
                 unitMeasurement:'',
                 idUnitWeight: 1, 
                 unitWeight:'kg',
-                totalVolume: merchandise.totalVolume,
-                totalWeight: merchandise.totalWeight,
-                packages: merchandise.packages
+                volumeTotal: merchandise.volumeTotal,
+                weigthTotal: merchandise.weigthTotal,
+                units: merchandise.packages
               }))
             }        
           })
@@ -862,7 +873,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       };
 
       if (mode === 'edit' && quotationId) {
-        await quotationService.update(quotationId, quotationData);
+        await quotationService.update(quotationData);
         showSuccess(t('quote.success.statusUpdated').replace('{status}', statusName));
       }
 
@@ -900,23 +911,50 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       e.preventDefault();
       setSaving(true);
       const selectedCustomer = customers.find(c => c._id === formData.customerId);
-      const selectedRequestType = requestTypes.find(r => r._id === parseInt(formData.requestTypeId) || r._id === formData.requestTypeId);
+      const selectedRequestType = requestTypes.find(r => r._id as number === 1);
       const hasAssignedExecutives = executives.length > 0;
+      console.log('services: ', services)
+      console.log('Customer', selectedCustomer)
+      console.log('tipo sol', selectedRequestType._id)
+      console.log('ej asignados', hasAssignedExecutives)
+      console.log('available serv: ', availableServices)
 
       const quotationData = {
-        reference_request: formData.referenceRequest,
+        referenceRequest: formData.referenceRequest,
+        idStatusRequest: hasAssignedExecutives ? 4 : 1,
+        statusRequest: hasAssignedExecutives ? 'Asignada' : 'Nueva', 
+        dateRequest: new Date(formData.created),
+        dateDeadline: formData.responseDeadline ? new Date(formData.responseDeadline) : null,
+        idRequestType:  formData.requestTypeId,
+        typeRequest:formData.requestType,
         priority: formData.isPriority ? 1 : 0,
-        customer_category: formData.customerCategory,
-        _id_status_request: hasAssignedExecutives ? 4 : 1,
-        status_request_name: hasAssignedExecutives ? 'Asignada' : 'Nueva',
-        request_date: new Date(formData.created),
-        deadline_date: formData.responseDeadline ? new Date(formData.responseDeadline) : null,
-        _id_request_type: selectedRequestType._id,
-        request_type_name: selectedRequestType.request_type_name,
-        _id_customer: formData.customerId,
-        customer_business_name: selectedCustomer?.fiscal_data?.business_name || formData.client,
-        licitation: formData.isQuote,
-        requesting_data: user ? {
+        licitation: formData.isQuote ? 1: 0, 
+        dateCreated: new Date().toISOString(),
+        createdBy: {
+          idUser: user?._id || '',
+          nameEmployee: user?.name || '',
+        },
+        customer : {
+          idCustomer: formData.customerId,
+          customerName: selectedCustomer?.branch_name,
+          customerCategory: formData.customerCategory,
+        },
+        assignedTo: executives.map(exec => ({
+          idEmployee: exec.idEmployee,
+          nameEmployee: exec.nameEmployee,
+          idUser: exec.idUser
+          //control_number: 'SN',
+        })),        
+       // customer_category: formData.customerCategory,
+        //_id_status_request: hasAssignedExecutives ? 4 : 1,
+       // status_request_name: hasAssignedExecutives ? 'Asignada' : 'Nueva',
+       // request_date: new Date(formData.created),
+       //_id_request_type: selectedRequestType._id,
+        //request_type_name: selectedRequestType.request_type_name,
+       // _id_customer: formData.customerId,
+       // customer_business_name: selectedCustomer?.fiscal_data?.business_name || formData.client,
+       // licitation: formData.isQuote,
+       /*  requesting_data: user ? {
           _id_executive: user._id,
           complete_name: user.name || user.email,
         } : {},
@@ -925,22 +963,23 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           complete_name: exec.nameEmployee,
           _iduser: exec.idUser,
           control_number: 'SN',
-        })),
+        })),*/
         services: services.map((service, idx) => {      
                                                          
           const shipmentsInService = service.shipments.map((shipment, index) => {
             
             const servicesAssociated: any[] = [];
 
-            if(shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Seguro')){              
-              const insuranceService = availableServices.find(s => s.service_name === 'Seguro');              
+            if(shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Seguro')){              
+              const insuranceService = availableServices.find(s => s.service_name === 'Seguro');    
+              console.log('asoci: ',availableServices)          
               servicesAssociated.push({
                 _id_service_associated: insuranceService?._id || null,
                 service_associated_name: 'Seguro'
               });
             }       
             
-            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Maniobra')) {
+            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Maniobra')) {
               const maneuverService = availableServices.find(s => s.service_name === 'Maniobra');
               servicesAssociated.push({
                 _id_service_associated: maneuverService?._id || null,
@@ -948,7 +987,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               });
             }   
             
-            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Custodia')) {
+            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Custodia')) {
               const custodyService = availableServices.find(s => s.service_name === 'Custodia');
               servicesAssociated.push({
                 _id_service_associated: custodyService?._id || null,
@@ -956,7 +995,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               });
             }
 
-            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Inspección')) {
+            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Inspección')) {
               const inspectionService = availableServices.find(s => s.service_name === 'Inspección');
               servicesAssociated.push({
                 _id_service_associated: inspectionService?._id || null,
@@ -964,7 +1003,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               });
             }
 
-            if (shipment.servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Despacho aduanal')) {
+            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Despacho aduanal')) {
               const customsClearanceService = availableServices.find(s => s.service_name === 'Despacho aduanal');
               servicesAssociated.push({
                 _id_service_associated: customsClearanceService?._id || null,
@@ -976,29 +1015,32 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
             const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
 
-            const projectionShipment = shipment.projectionShipment.frecuency && 
-                                       shipment.projectionShipment.idTypeMesurementFrecuency && 
-                                       shipment.projectionShipment.measurementFrecuency && 
-                                       shipment.projectionShipment.number ? {
-              frecuency: shipment.projectionShipment.frecuency,
-              idTypeMesurementFrecuency: unitMap[shipment.projectionShipment.idTypeMesurementFrecuency] || 0,
-              measurementFrecuency: shipment.projectionShipment.measurementFrecuency,
-              number: shipment.projectionShipment.number || 0,
+            const projectionShipment = shipment.projectionShipment?.frecuency && 
+                                       shipment.projectionShipment?.idTypeMesurementFrecuency && 
+                                       shipment.projectionShipment?.measurementFrecuency && 
+                                       shipment.projectionShipment?.number ? {
+              frecuency: shipment.projectionShipment?.frecuency,
+              idTypeMesurementFrecuency: unitMap[shipment.projectionShipment?.idTypeMesurementFrecuency] || 0,
+              measurementFrecuency: shipment.projectionShipment?.measurementFrecuency,
+              number: shipment.projectionShipment?.number || 0,
             } : undefined;
 
-            const originCountry = countries.find(country => country._id === shipment.origin.idCountry);
+            const originCountry = countries.find(country => country._id === service.shipments[0].origin.idCountry);
             const destinationCountry = countries.find(country => country._id === shipment.destination.idCountry);   
+
+            console.log('Origen', originCountry)
+            console.log('Destino', destinationCountry)
 
             return {
               idShipment:index + 1,
               origin: {
-                idCountry: originCountry.idCountry,
-                countryCode: originCountry.countryCode,
-                zipCode: originCountry.zipCode,
+                idCountry: originCountry._id,
+                countryCode: originCountry.country_code,
+                zipCode: shipment.destination.zipCode,
               },
               destination: {
-                idCountry: destinationCountry.idCountry,
-                countryCode: destinationCountry.countryCode,
+                idCountry: destinationCountry._id,
+                countryCode: destinationCountry.country_code,
                 zipCode: shipment.destination.zipCode,
               },
               idTypeShipment: shipment.idTypeShipment,
@@ -1007,18 +1049,24 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               typeOperation: shipment.typeOperation,
               idInconterm: shipment.idInconterm,
               incoterm: shipment.incoterm,
-              departureDateAproximate: shipment.departureDateAproximate,
+              departureDateAproximate: shipment.departureDateAproximate ? new Date(shipment.departureDateAproximate): null,
               projectionShipment: projectionShipment,
               comments: shipment.comments,
               ...(servicesAssociated.length > 0 && { servicesAsociated: servicesAssociated }),
+              
               cargo : shipment.cargo.map(merchandise => ({
-                merchandise_name: merchandise.name,
-                merchandise_description: merchandise.description,
-                merchandise_classification: merchandise.merchandise_classification || [],
-                stowable: merchandise.stackable,
-                volume_total: merchandise.totalVolume,
-                weigth_total: merchandise.totalWeight,
-                unit: merchandise.packages
+                merchandiseName: merchandise.merchandiseName,
+                merchandiseDescription: merchandise.merchandiseDescription,
+                classification: merchandise.classification || [],
+                stowable: merchandise.stowable,
+                shipmentTypeCargo: merchandise.shipmentTypeCargo,
+                idUnitMeasurement: merchandise.idUnitMeasurement, 
+                unitMeasurement: merchandise.unitMeasurement,
+                idUnitWeight: merchandise.idUnitWeight, 
+                unitWeight: merchandise.unitMeasurement,
+                volumeTotal: merchandise.volumeTotal,
+                weigthTotal: merchandise.weigthTotal,
+                units: merchandise.units
               })), 
             }
             
@@ -1061,7 +1109,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         return;
       }
 
-      if (quotationData.assigned_to.length === 0) {
+      if (quotationData.assignedTo.length === 0) {
         setModalState({
           isOpen: true,
           type: 'warning',
@@ -1077,6 +1125,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }
 
       await performSave(quotationData);
+
     } catch (error) {
       console.error('Error saving quotation:', error);
       showError('Error al guardar la cotización');
@@ -1085,11 +1134,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     }
   };
 
-  const performSave = async (quotationData: any) => {
+  const performSave = async (quotationData: QuotationRequest) => {
     try {
       setSaving(true);
       if (mode === 'edit' && quotationId) {
-        const result = await quotationService.update(quotationId, quotationData);
+        quotationData.id = quotationId;
+        console.log('UPDATE: ', JSON.stringify(quotationData, null, 2))
+        const result = await quotationService.update(quotationData);
         //console.log('Update result:', result);
         showSuccess('Cotización actualizada exitosamente');
       } else {
@@ -1109,8 +1160,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     }
   };
 
-  const renderZipCodesOriginDestination =  (service : any) => {
-    switch(service.shippingType){
+  const renderZipCodesOriginDestination =  (service : Service) => {
+    switch(service.shipments[0].typeShipment){
       case 'Door to Door': return (
         <div className={styles.formGrid}>
           <div className={styles.formGroup}>
@@ -1120,10 +1171,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               </label>
             <input
               type="text"
-              value={service.originZip}
-              onChange={(e) => updateService(service.id, service.originZip, e.target.value)}
+              value={service.shipments[0].origin.zipCode}
+              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
               className={styles.input}
-              disabled={mode === 'view'}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
           </div>    
           <div className={styles.formGroup}>
@@ -1133,10 +1184,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="text"
-              value={service.destinationZip}
-              onChange={(e) => updateService(service.id, service.destinationZip, e.target.value)}
+              value={service.shipments[0].destination.zipCode}
+              onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
               className={styles.input}
-              disabled={mode === 'view'}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
           </div>    
         </div>);
@@ -1149,10 +1200,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="text"
-              value={service.originZip}
-              onChange={(e) => updateService(service.id, service.originZip, e.target.value)}
+              value={service.shipments[0].origin.zipCode}
+              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
               className={styles.input}
-              disabled={mode === 'view'}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
           </div>  
           <div className={styles.formGroup}></div>                   
@@ -1168,18 +1219,23 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="text"
-              value={service.destinationZip}
-              onChange={(e) => updateService(service.id, service.destinationZip, e.target.value)}
+              value={service.shipments[0].destination.zipCode}
+              onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
               className={styles.input}
-              disabled={mode === 'view'}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
           </div>    
         </div>
       )
-
       default: return null;
     }
   }
+
+  const formatDateForInput = (date: string) => {
+  if (!date) return "";
+  return date.split("T")[0];
+};
+
 
   return (
     <div className={styles.container}>
@@ -1203,7 +1259,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           <button
             className={styles.actionBarSaveButton}
             type="submit"
-            disabled={saving || mode === 'view'}>
+            disabled={saving || mode === 'view' || formData.idStatusRequest >= 2}>
             <Save size={18} />
             <span>{saving ? 'Guardando...' : t('quote.save')}</span>
           </button>
@@ -1252,17 +1308,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 setFormData({
                   ...formData,
                   customerId: e.target.value,
-                  client: customer?.fiscal_data?.business_name || ''
+                  client: customer?.fiscal_data?.business_name || '',
+                  customerCategory: customer?.client_level_id
                 });
               }}
               className={styles.select}
-              disabled={loading || mode === 'view'}
-              required
-            >
+              disabled={loading || mode === 'view' || mode === 'edit' || formData.idStatusRequest >= 2}
+              required>
               <option value="">{t('quote.selectClient')}</option>
               {customers.map((customer) => (
                 <option key={customer._id} value={customer._id}>
-                  {customer.fiscal_data?.business_name || customer.commercial_name}
+                  {customer.branch_name ? `${customer.branch_name}, ${customer.fiscal_data?.business_name}` : customer.fiscal_data?.business_name}
                 </option>
               ))}
             </select>
@@ -1283,7 +1339,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 });
               }}
               className={styles.select}
-              disabled={loading || mode === 'view'}
+              disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
               required
             >
               <option value="">{t('quote.selectType')}</option>
@@ -1301,8 +1357,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               value={formData.customerCategory}
               onChange={(e) => setFormData({ ...formData, customerCategory: parseInt(e.target.value) })}
               className={styles.select}
-              disabled={mode === 'view'}
-              >
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}>
               <option value={1}>Golden</option>
               <option value={2}>Silver</option>
               <option value={3}>Bronze</option>
@@ -1317,7 +1372,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               onChange={(e) => setFormData({ ...formData, responseDeadline: e.target.value })}
               className={styles.input}
               placeholder="dd/mm/aaaa"
-              disabled={mode === 'view'}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
             />
           </div>
 
@@ -1330,7 +1385,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               value={formData.created}
               onChange={(e) => setFormData({ ...formData, created: e.target.value })}
               className={styles.input}
-              disabled={mode === 'view'}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
             />
           </div>
 
@@ -1340,7 +1395,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               type="button" 
               className={`${styles.toggleSwitch} ${formData.isPriority ? styles.active : ''}`}
               onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
-              disabled={mode === 'view'}>
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}>
               <div className={styles.toggleThumb}></div>
             </button>
           </div>
@@ -1351,7 +1406,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               type="button" 
               className={`${styles.toggleSwitch} ${formData.isQuote ? styles.active : ''}`}
               onClick={() => setFormData({ ...formData, isQuote: !formData.isQuote })}
-              disabled={mode === 'view'}>
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}>
               <div className={styles.toggleThumb}></div>
             </button>
           </div>
@@ -1411,14 +1466,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <div className={styles.serviceHeader}>
               <div className={styles.serviceNumber}>{index + 1}</div>
               <div className={styles.serviceActions}>
-                <button type="button" className={styles.iconButton} onClick={() => duplicateService(service.idService)} disabled={mode === 'view'}>
+                <button type="button" className={styles.iconButton} onClick={() => duplicateService(service.idService)} disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <Copy size={18} />
                 </button>
                 <button
                     type="button" 
                     className={`${styles.iconButton} ${styles.danger}`}
                     onClick={() => removeService(service.idService)}
-                    disabled={mode === 'view'}>
+                    disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                     <X size={18} />
                 </button>               
               </div>
@@ -1432,15 +1487,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </label>
                 <select
                   value={service.nameService}
-                  onChange={(e) => updateService(service.idService, 'nameService', e.target.value)}
+                  onChange={(e) => 
+                    updateService(service.idServiceItem, 'nameService', e.target.value)}
                   className={styles.select}
-                  disabled={loading || mode === 'view'}
+                  disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
                   required
                 >
                   <option value="">{t('quote.select')}</option>
-                  {availableServices.map((srv) => (
-                    <option key={srv._id} value={srv.service_name}>
-                      {srv.service_name}
+                  {availableServices.filter((service) => service.status === 1 && service.category === 1).map((service_) => (
+                    <option key={service_._id} value={service_.service_name}>
+                      {service_.service_name}
                     </option>
                   ))}
                 </select>
@@ -1452,10 +1508,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   Tipo Carga
                 </label>
                 <select
-                  value={service.shipments[0].typeShipment}
-                  onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
+                  value={service.idService === 2 || service.idService === 3  ? 'Consolidado' : 'Full' }
+                  //onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                   className={styles.select}
-                  disabled={loading || mode === 'view'}
+                  disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
                   required
                 >
                   <option value="">{t('quote.select')}</option>                
@@ -1475,9 +1531,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </label>
                 <select
                   value={service.shipments[0].typeOperation}
-                  onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
+                  onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'typeOperation', e.target.value)}
                   className={styles.select}
-                  disabled={mode === 'view'}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
                   required
                 >
                   <option value="">{t('quote.select')}</option>
@@ -1493,9 +1549,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </label>
                 <select
                   value={service.shipments[0].incoterm}
-                  onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
+                  onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'incoterm', e.target.value)}
                   className={styles.select}
-                  disabled={loading || mode === 'view'}
+                  disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
                   required>
                   <option value="">{t('quote.select')}</option>
                   {incoterms.map((inc) => (
@@ -1511,10 +1567,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <span className={styles.required}>*</span>Tipo de envío
                 </label>
                 <select
-                  value={service.shipments[0].idTypeShipment}
-                  onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
+                  value={service.shipments[0].typeShipment  }
+                  onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'typeShipment', e.target.value)}
                   className={styles.select}
-                  disabled={mode === 'view'}>
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                  <option value="">{t('quote.select')}</option>
                   <option>{t('quote.doorToDoor')}</option>
                   <option>{t('quote.portToPort')}</option>
                   <option>{t('quote.doorToPort')}</option>
@@ -1526,10 +1583,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <label className={styles.label}>{t('quote.expectedDeparture')}</label>
                 <input
                   type="date"
-                  value={service.shipments[0].departureDateAproximate || '' }
-                  onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
+                  value={formatDateForInput(service.shipments[0].departureDateAproximate || '') }
+                  onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'departureDateAproximate', e.target.value)}
                   className={styles.input}
-                  disabled={mode === 'view'}/>
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
               </div>         
             </div>
 
@@ -1541,9 +1598,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </label>
                 <select
                   value={service.shipments[0].origin.idCountry}
-                  onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
+                  onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, 'idCountry', e.target.value)}
                   className={styles.select}
-                  disabled={loading || mode === 'view'}
+                  disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
                   required
                 >
                   <option value="">{t('quote.select')}</option>
@@ -1561,9 +1618,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </label>
                 <select
                   value={service.shipments[0].destination.idCountry}
-                  onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
+                  onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, 'idCountry', e.target.value)}
                   className={styles.select}
-                  disabled={loading || mode === 'view'}
+                  disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
                   required>
                   <option value="">{t('quote.select')}</option>
                   {countries.map((country) => (
@@ -1584,37 +1641,38 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.associatedServices}>
                 <button
                   type="button" 
-                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Seguro') ? styles.selected : ''}`}
-                  onClick={() => updateService(service.idService, 'idService', '' )}
-                  disabled={mode === 'view'}>
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 12) ? styles.selected : ''}`}
+                  onClick={(e) => 
+                    updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment, { idServiceAsociated: 12, serviceAsociatedName: 'Seguro' })}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <span>Seguro</span>
                 </button>
                 <button
                   type="button" 
-                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Seguro') ? styles.selected : ''}`}
-                  onClick={() => updateService(service.idService, 'idService', '')}
-                  disabled={mode === 'view'}>
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 13) ? styles.selected : ''}`}
+                  onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment,  { idServiceAsociated: 13, serviceAsociatedName: 'Maniobra' })}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <span>Maniobra</span>
                 </button>
                 <button
                   type="button" 
-                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Custodia') ? styles.selected : ''}`}
-                  onClick={() => updateService(service.idService, 'idService', '')}
-                  disabled={mode === 'view'}>
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 15) ? styles.selected : ''}`}
+                  onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment, { idServiceAsociated: 15, serviceAsociatedName: 'Custodia' } )}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <span>Custodia</span>
                 </button>
                 <button
                   type="button" 
-                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Inspeccion') ? styles.selected : ''}`}
-                  onClick={() => updateService(service.idService, 'idService', '')}
-                  disabled={mode === 'view'}>
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 14) ? styles.selected : ''}`}
+                  onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment, { idServiceAsociated: 14, serviceAsociatedName: 'Inspección' })}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <span>Inspección</span>
                 </button>
                 <button
                   type="button" 
-                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated.some(servAsociated => servAsociated.serviceAsociatedName ==='Despacho Aduanal')? styles.selected : ''}`}
-                  onClick={() => updateService(service.idService, 'idService', '')}
-                  disabled={mode === 'view'}>
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 7)? styles.selected : ''}`}
+                  onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment,  { idServiceAsociated: 7, serviceAsociatedName: 'Despacho' })}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <span>Despacho aduanal</span>
                 </button>
               </div>
@@ -1624,11 +1682,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <label className={styles.label}>{t('quote.comments')}</label>
               <textarea
                 value={service.shipments[0].comments}
-                onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
+                onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'comments', e.target.value)}
                 className={styles.textarea}
                 rows={3}
                 placeholder=""
-                disabled={mode === 'view'}
+                disabled={mode === 'view' || formData.idStatusRequest >= 2}
               />
             </div>
 
@@ -1640,7 +1698,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   checked={service.shipments[0].projectionShipment}
                   onChange={(e) => updateService(service.idService, 'idService', e.target.checked)}
                   className={styles.checkbox}
-                  disabled={mode === 'view'}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
                 />
                 <label htmlFor={`freq-${service.idService}`} className={styles.checkboxLabel}>
                   Programar frecuencia
@@ -1652,9 +1710,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <label className={styles.label}>{t('quote.frequencyPeriod')}</label>
                     <select
                       value={service.shipments[0].projectionShipment?.frecuency}
-                      onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
+                      onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, 'frecuency', e.target.value)}
                       className={styles.select}
-                      disabled={mode === 'view'}
+                      disabled={mode === 'view' || formData.idStatusRequest >= 2}
                     >
                       <option value="">{t('quote.select')}</option>
                       <option value="Semanal">{t('quote.weekly')}</option>
@@ -1666,21 +1724,20 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <label className={styles.label}>{t('quote.quantity')}</label>
                     <input
                       type="number"
-                      value={service.shipments[0].projectionShipment.number}
-                      onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
+                      value={service.shipments[0].projectionShipment?.number}
+                      onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, 'number', e.target.value)}
                       className={styles.input}
                       placeholder="0"
-                      disabled={mode === 'view'}
+                      disabled={mode === 'view' || formData.idStatusRequest >= 2}
                     />
                   </div>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>{t('quote.unit')}</label>
                     <select
-                      value={service.shipments[0].projectionShipment.measurementFrecuency}
-                      onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
+                      value={service.shipments[0].projectionShipment?.measurementFrecuency}
+                      onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, 'measurementFrecuency', e.target.value)}
                       className={styles.select}
-                      disabled={mode === 'view'}
-                    >
+                      disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                       <option value="">Seleccionar...</option>
                       <option value="Kilos">{t('quote.kilos')}</option>
                       <option value="Toneladas">{t('quote.tons')}</option>
@@ -1713,8 +1770,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         <td>{merch.dangerous ? 'No' : 'No'}</td>
                         <td>{merch.refrigerated ? 'Refrigerada' : 'General'}</td>
                         <td>{merch.stackable ? 'Sí' : 'No'}</td>
-                        <td>{merch.totalVolume} KG</td>
-                        <td>{merch.totalWeight} KG</td>
+                        <td>{merch.volumeTotal} KG</td>
+                        <td>{merch.weigthTotal} KG</td>
                         <td>
                           <div className={styles.tableActions}>
                             <button
@@ -1722,7 +1779,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               className={styles.iconButtonSmall}
                               onClick={() => copyMerchandise(service.idService, merch.id)}
                               title={t('quote.copy')}
-                              disabled={mode === 'view'}
+                              disabled={mode === 'view' || formData.idStatusRequest >= 2}
                             >
                               <Copy size={14} />
                             </button>
@@ -1731,7 +1788,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               className={styles.iconButtonSmall}
                               onClick={() => removeMerchandise(service.idService, merch.id)}
                               title={t('quote.delete')}
-                              disabled={mode === 'view'}
+                              disabled={mode === 'view' || formData.idStatusRequest >= 2}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -1752,9 +1809,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <button
                 type="button" 
                 className={styles.addItemButton}
-                onClick={() => openMerchandiseModal(service.idService)}
-                disabled={mode === 'view'}
-              >
+                onClick={() => openMerchandiseModal(service.idServiceItem)}
+                disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                 <Plus size={16} />
                 {t('quote.addMerchandise')}
               </button>
@@ -1762,7 +1818,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           </div>
         ))}
 
-        <button type="button" className={styles.addServiceButton} onClick={addService} disabled={mode === 'view'}>
+        <button type="button" className={styles.addServiceButton} onClick={addService} disabled={mode === 'view' || formData.idStatusRequest >= 2}>
           <Plus size={20} />
           <span>{t('quote.addService')}</span>
         </button>
@@ -1773,22 +1829,21 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         <div className={styles.executivesCard}>
           <div className={styles.executivesList}>
             {executives.map((executive) => (
-              <div key={executive.id} className={styles.executiveItemSimple}>
+              <div key={executive.idEmployee} className={styles.executiveItemSimple}>
                 <span className={styles.executiveLabel}>Ejecutivo</span>
-                <span className={styles.executiveNameSimple}>{executive.name}</span>
+                <span className={styles.executiveNameSimple}>{executive.nameEmployee}</span>
                 <button
                   type="button" 
                   className={styles.removeIconButton}
                   onClick={() => removeExecutive(executive.idEmployee || '')}
                   title={t('quote.delete')}
-                  disabled={mode === 'view'}
-                >
+                  disabled={mode === 'view'}>
                   <Trash2 size={16} />
                 </button>
               </div>
             ))}
           </div>
-          <button type="button" className={styles.addExecutiveButton} onClick={openExecutiveModal} disabled={mode === 'view'} >
+          <button type="button" className={styles.addExecutiveButton} onClick={openExecutiveModal} disabled={mode === 'view' } >
             <Plus size={16} />
             {t('quote.addExecutive')}
           </button>
@@ -1816,20 +1871,18 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     type="text"
                     placeholder="Baterías de Telefonos Modelo 388"
                     className={styles.input}
-                    value={merchandiseForm?.nameMerchandise}
-                    /*onChange={(e) => setMerchandiseForm({ 
-                      ...merchandiseForm, nameMerchandise: e.target.value
-                    })}*/
-                    disabled={mode === 'view'}
+                    value={merchandiseForm?.merchandiseName}
+                    onChange={(e) => setMerchandiseForm({ ...merchandiseForm, merchandiseName: e.target.value})}
+                    disabled={mode === 'view' || formData.idStatusRequest >= 2}
                   />
                 </div>
                 <div className={styles.modalFieldSmall}>
                   <label className={styles.label}>{t('quote.isStackable')}</label>
                   <div className={styles.toggleContainer}>
                     <button
-                      className={`${styles.toggleSwitch} ${merchandiseForm?.stowable ? styles.active : ''}`}
-                      //onClick={() => setMerchandiseForm({ ...merchandiseForm, stowable: !merchandiseForm.stowable })}
-                      disabled={mode === 'view'}>
+                      className={`${styles.toggleSwitch} ${merchandiseForm?.stowable === 1 ? styles.active : ''}`}
+                      onClick={() => setMerchandiseForm({ ...merchandiseForm, stowable: !merchandiseForm.stowable ? 1 : 0 })}
+                      disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                       <div className={styles.toggleThumb}></div>
                     </button>
                   </div>
@@ -1841,9 +1894,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <textarea
                   className={styles.textarea}
                   rows={3}
-                  value={merchandiseForm?.descriptionMerchandise}
-                  disabled={mode === 'view'}
-                  //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, descriptionMerchandise: e.target.value })}
+                  value={merchandiseForm?.merchandiseDescription}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
+                  onChange={(e) => setMerchandiseForm({ ...merchandiseForm, merchandiseDescription: e.target.value || "" })}
                 ></textarea>
               </div>
 
@@ -1859,9 +1912,15 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           type="checkbox"
                           id="peligrosa"
                           className={styles.checkbox}                        
-                          checked={merchandiseForm?.merchandiseClassification.some(classification => classification.classificationMerchandise === 'Seguro')}
-                          //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, dangerous: e.target.checked })}
-                          disabled={mode === 'view'}
+                          checked={merchandiseForm?.classification.some(classification => classification.classificationMerchandise === 'Peligrosa')}
+                          onChange={(e) => merchandiseForm?.classification.push({
+                            idClassificationMerchandise: 5,
+                            classificationMerchandise: t('quote.dangerousClass'),
+                            imo: 32,
+                            imoDescription: '',
+                            un:  0
+                          })}
+                          disabled={mode === 'view' || formData.idStatusRequest >= 2}
                         />
                         <label htmlFor="peligrosa" className={styles.classificationLabel}>
                           {t('quote.dangerousClass')}
@@ -1872,9 +1931,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           type="checkbox"
                           id="refrigerada"
                           className={styles.checkbox}
-                          checked={merchandiseForm?.merchandiseClassification.some(classification => classification.classificationMerchandise === 'Refrigerada')}
+                          checked={merchandiseForm?.classification.some(classification => classification.classificationMerchandise === 'Refrigerada')}
                           //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, refrigerated: e.target.checked })}
-                          disabled={mode === 'view'}
+                          onChange={(e) => merchandiseForm?.classification.push({
+                            idClassificationMerchandise: 4,
+                            classificationMerchandise: t('quote.dangerousClass'),
+                            temperature: "32"                         
+                          })}
+                          disabled={mode === 'view' || formData.idStatusRequest >= 2}
                         />
                         <label htmlFor="refrigerada" className={styles.classificationLabel}>
                           {t('quote.refrigeratedClass')}
@@ -1885,9 +1949,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           type="checkbox"
                           id="sobredimensionada"
                           className={styles.checkbox}
-                          checked={merchandiseForm?.merchandiseClassification.some(classification => classification.classificationMerchandise === 'Sobredimensionada')}
+                          checked={merchandiseForm?.classification.some(classification => classification.classificationMerchandise === 'Sobredimensionada')}
                           //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, oversized: e.target.checked })}
-                          disabled={mode === 'view'}
+                          onChange={(e) => merchandiseForm?.classification.push({
+                            idClassificationMerchandise: 3,
+                            classificationMerchandise: t('quote.oversizedClass'),
+                          })}
+                          disabled={mode === 'view' || formData.idStatusRequest >= 2}
                         />
                         <label htmlFor="sobredimensionada" className={styles.classificationLabel}>
                           {t('quote.oversizedClass')}
@@ -1898,9 +1966,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           type="checkbox"
                           id="granel"
                           className={styles.checkbox}
-                          checked={merchandiseForm?.merchandiseClassification.some(classification => classification.classificationMerchandise === 'Granel')}
+                          checked={merchandiseForm?.classification.some(classification => classification.classificationMerchandise === 'Granel')}
                           //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, grain: e.target.checked })}
-                          disabled={mode === 'view'}
+                           onChange={(e) => merchandiseForm?.classification.push({
+                            idClassificationMerchandise: 1,
+                            classificationMerchandise: t('quote.bulkClass'),
+                          })}
+                          disabled={mode === 'view' || formData.idStatusRequest >= 2}
                         />
                         <label htmlFor="granel" className={styles.classificationLabel}>
                           {t('quote.bulkClass')}
@@ -1908,16 +1980,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       </div>
                     </div>
                     <div className={styles.classificationColumn}>
-                      {merchandiseForm?.merchandiseClassification.some(classification => classification.classificationMerchandise === 'Peligrosa') && (
+                      {merchandiseForm?.classification.some(classification => classification.classificationMerchandise === 'Peligrosa') && (
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <div className={styles.formGroup}>
                             <label className={styles.label}>{t('quote.imo')}</label>
                             <select
                               className={styles.select}
-                              value={merchandiseForm.merchandiseClassification.find(classification => classification.classificationMerchandise === 'Peligrosa').imo}
+                              value={merchandiseForm.classification.find(classification => classification.classificationMerchandise === 'Peligrosa').imo}
                               onChange={(e) => {
                                 const selectedId = parseInt(e.target.value);
-                                const selectedImo = imoList.find(imo => imo._id === selectedId);
+                                const selectedImo = imoList.find(imo => imo.imo === selectedId);
                                 /*setMerchandiseForm({
                                   ...merchandiseForm,
                                   imo: selectedId,
@@ -1927,7 +1999,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             >
                               <option value="0">{t('quote.selectOption')}</option>
                               {imoList.map((imo) => (
-                                <option key={imo._id} value={imo._id}>
+                                <option key={imo.imo} value={imo.imo}>
                                   {imo.imo} - {imo.description}
                                 </option>
                               ))}
@@ -1941,13 +2013,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               placeholder="19"
                               className={styles.input}
                               style={{ width: '80px' }}
-                              value={merchandiseForm?.merchandiseClassification.find(classification => classification.classificationMerchandise === 'Peligrosa').imo}
+                              value={merchandiseForm?.classification.find(classification => classification.classificationMerchandise === 'Peligrosa').un}
                               //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, un: e.target.value })}
+                              onChange={() =>console.log('UN') }
                             />
                           </div>
                         </div>
                       )}
-                      {merchandiseForm?.merchandiseClassification.some(classification => classification.classificationMerchandise === 'Refrigerada')  && (
+                      {merchandiseForm?.classification.some(classification => classification.classificationMerchandise === 'Refrigerada')  && (
                         <div className={styles.formGroup}>
                           <label className={styles.label}>{t('quote.temperature')}</label>
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -1956,8 +2029,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               placeholder="80"
                               className={styles.input}
                               style={{ width: '100px' }}
-                              value={merchandiseForm?.merchandiseClassification.find(classification => classification.classificationMerchandise === 'Refrigerada').temperature }
+                              value={merchandiseForm?.classification.find(classification => classification.classificationMerchandise === 'Refrigerada').temperature }
                               //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, temperature: e.target.value })}
+                               onChange={() =>console.log('tempera' ) }
                             />
                             <select
                               className={styles.select}
@@ -1977,7 +2051,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               </div>
 
               <div style={{ marginTop: '1.5rem' }}>
-                <button className={styles.addPackageButtonIcon} onClick={openPackagingModal} disabled={mode === 'view'}>
+                <button className={styles.addPackageButtonIcon} onClick={openPackagingModal} disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <Plus size={18} />
                   {t('quote.addPackaging')}
                 </button>
@@ -1998,17 +2072,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       <tbody>
                         {currentPackages.map((pkg) => (
                           <tr key={pkg.id}>
-                            <td>{pkg.type}</td>
+                            <td>{pkg.unitMeasurement}</td>
                             <td>{pkg.quantity}</td>
                             <td>{pkg.length}</td>
                             <td>{pkg.height}</td>
                             <td>{pkg.width}</td>
-                            <td>{pkg.weight}</td>
+                            <td>{pkg.weigth}</td>
                             <td>
                               <button
                                 className={styles.removeRowButton}
                                 onClick={() => removePackage(pkg.id)}
-                                disabled={mode === 'view'}>
+                                disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                                 <X size={14} />
                               </button>
                             </td>
@@ -2027,7 +2101,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <button                     
                       className={`${styles.toggleSwitch} ${useMetricSystem ? styles.active : ''}`}
                       onClick={() => setUseMetricSystem(!useMetricSystem)}
-                      disabled={mode === 'view'}>
+                      disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                       <div className={styles.toggleThumb}></div>
                     </button>
                     <span className={useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.kgCm')}</span>
@@ -2050,7 +2124,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               )}
             </div>
             <div className={styles.modalFooter}>
-              <button className={styles.saveModalButton} onClick={saveMerchandise} disabled={mode === 'view'}>
+              <button className={styles.saveModalButton} onClick={saveMerchandise} disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                 {t('quote.save')}
               </button>
             </div>
@@ -2069,17 +2143,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </div>
             <div className={styles.modalBody}>
               <div className={styles.executiveSelectionList}>
-                {availableExecutives
-                  .filter(exec => !executives.some(e => e.idEmployee === exec.idEmployee))
-                  .map((executive) => (
+                {availableExecutives.filter(exec => !executives.some(e => e.idEmployee === exec._id)).map((executive) => (
                     <div
                       key={executive._id}
                       className={styles.executiveSelectionItem}
                       onClick={() => addExecutive({ 
                         idEmployee: executive._id, 
                         nameEmployee: `${executive.nombre} ${executive.apellido_paterno} ${executive.apellido_materno}`,
-                        idUser: executive._iduser })}
-                    >
+                        idUser: executive._iduser })}>
                       <span>{executive.nombre} {executive.apellido_paterno} {executive.apellido_materno}</span>
                       <Plus size={18} className={styles.addIcon} />
                     </div>
