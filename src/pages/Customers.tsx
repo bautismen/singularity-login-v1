@@ -387,11 +387,11 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
   });
 
   if (isFormOpen) {
-  return (
-    <form
-      onSubmit={handleSaveCustomer} // <- aquí
-      className={styles.formContainer}
-    >
+    return (
+      <form
+        onSubmit={handleSaveCustomer} // <- aquí
+        className={styles.formContainer}>
+
           <div className={styles.formHeaderRow}>
             <div className={styles.header}>
               <button
@@ -629,9 +629,6 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   </div>
                 )}
 
-                
-
-
                 {formData.is_national && formData.is_persona_fisica && (
                   <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel}>CURP</label>
@@ -809,12 +806,13 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
               </div>
             )}
           </div>
-    </form>
-  );
+      </form>
+    );
   }
 
   return (
     <div className={styles.container}>
+      
       <div className={styles.header}>
         <h1 className={styles.title}>{t('cust.title')}</h1>
         <div className={styles.buttonGroup}>
@@ -828,6 +826,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
           </button>
         </div>
       </div>
+      
       <div className={styles.searchContainer}>
         <div className={styles.searchBar}>
           <Search size={20} />
@@ -861,82 +860,92 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
         </div>
       </div>
 
-      <div className={styles.customerList}>
-      {filteredCustomers.map((customer) => {
-        const medalSrc = customer.client_level
-      ? getClientLevelMedal(customer.client_level)
-      : null;
-
-    return (
-      <div key={customer._idcustomer} className={styles.customerCard}>
-        <div className={styles.customerRow}>
-          <div className={styles.customerInfo}>
-            <div className={styles.customerNameWrapper}>
-
-              {medalSrc && (
-                <div className={styles.medalWrapper}>
-                  <img
-                    src={medalSrc}
-                    alt={customer.client_level}
-                    className={styles.medalImage}
-                  />
-                </div>
-              )}
-
-              <h3 className={styles.customerName}>
-                {customer.fiscal_data.business_name}
-              </h3>
-              <p className={styles.customerType}>
-                <span className={styles.badge}>
-                  {customer.type === 'fisica'
-                    ? 'Persona física'
-                    : 'Persona moral'}
-                </span>
-              </p>
-              <p>
-              <span
-                className={
-                  customer.status === 'activo'
-                    ? styles.statusActive
-                    : styles.statusInactive
-                }
-              >
-                {customer.status}
-              </span>
-            </p>
-            </div>
-          </div>
-
-          <div className={styles.customerMeta}>
-            <p className={styles.taxId}>
-              {customer.fiscal_data.taxid}
-            </p>
-
-            <p className={styles.customerNationality}>
-              <span className={styles.badge}>
-                {customer.nationality === 'nacional'
-                  ? 'Nacional'
-                  : 'Extranjero'}
-              </span>
-            </p>
-            <div className={styles.customerActions}>
-                <button
-                  onClick={() => handleEditCustomer(customer)}
-                  className={styles.editButton}
-                >
-                  <Edit2 size={18} />
-                </button>
-              </div>
-          </div>
+      {loading ? (
+        <div className={styles.loading}>
+          <div className={styles.spinner}></div>
         </div>
-      </div>
-    );
-  })}
+      ) : filteredCustomers.length > 0 ? (
+        <div className={styles.customerList}>
+          {filteredCustomers.map((customer) => {
+            const medalSrc = customer.client_level
+            ? getClientLevelMedal(customer.client_level)
+            : null;
 
-  {filteredCustomers.length === 0 && (
-    <p className={styles.noResults}>{t('cust.noResults')}</p>
-  )}
-</div>
+            return (
+              <div key={customer._idcustomer} className={styles.customerCard}>
+                
+                <div className={styles.customerRow}>
+                  <div className={styles.customerInfo}>
+                    <div className={styles.customerNameWrapper}>
+
+                    {medalSrc && (
+                      <div className={styles.medalWrapper}>
+                        <img
+                          src={medalSrc}
+                          alt={customer.client_level}
+                          className={styles.medalImage}
+                        />
+                      </div>
+                    )}
+
+                    <h3 className={styles.customerName}>
+                      {customer.fiscal_data.business_name}
+                    </h3>
+                    <p className={styles.customerType}>
+                      <span className={styles.badge}>
+                        {customer.type === 'fisica'
+                          ? 'Persona física'
+                          : 'Persona moral'}
+                      </span>
+                    </p>
+                    <p>
+                    <span
+                      className={
+                        customer.status === 'activo'
+                          ? styles.statusActive
+                          : styles.statusInactive
+                      }
+                    >
+                      {customer.status}
+                    </span>
+                  </p>
+                  </div>
+                </div>
+
+                <div className={styles.customerMeta}>
+                  <p className={styles.taxId}>
+                    {customer.fiscal_data.taxid}
+                  </p>
+
+                  <p className={styles.customerNationality}>
+                    <span className={styles.badge}>
+                      {customer.nationality === 'nacional'
+                        ? 'Nacional'
+                        : 'Extranjero'}
+                    </span>
+                  </p>
+                  <div className={styles.customerActions}>
+                      <button
+                        onClick={() => handleEditCustomer(customer)}
+                        className={styles.editButton}
+                      >
+                        <Edit2 size={18} />
+                      </button>
+                    </div>
+                </div>
+
+                </div>
+
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className={styles.emptyState}>
+          <p className={styles.noResults}>{t('catalog.noResults')}</p>
+        </div>
+      )}
+
     </div>
   );
 }
