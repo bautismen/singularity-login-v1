@@ -273,7 +273,7 @@ export function CatalogIncoterms() {
                   <td>{item.incoterm}</td>
                   <td>
                     <span className={`${styles.statusBadge} ${item.status === 1 ? styles.active : styles.inactive}`}>
-                      {item.status === 1 ? t('catalog.filterActive') : t('catalog.filterInactive')}
+                      {item.status === 1 ? t('catalog.status.active') : t('catalog.status.inactive')}
                     </span>
                   </td>
                   <td>

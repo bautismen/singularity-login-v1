@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Search, Plus, Edit2, ChevronDown, ChevronUp, X, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { Customer, Person, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES } from '../types/customer';
 import { getCustomers, createCustomer, updateCustomer, getPeople, getCompanies } from '../services/customerService';
 import styles from './Customers.module.css';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react'
 
 export default function Customers({ onNavigate }: { onNavigate: (route: string) => void }) {
   const { t } = useLanguage();
@@ -837,19 +836,19 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
             className={`${styles.filterButton} ${statusFilter === 'todos' ? styles.filterButtonActive : ''}`}
             onClick={() => setStatusFilter('todos')}
           >
-            Todos
+            {t('catalog.filterAll')}
           </button>
           <button
             className={`${styles.filterButton} ${statusFilter === 'activo' ? styles.filterButtonActive : ''}`}
             onClick={() => setStatusFilter('activo')}
           >
-            Activo
+            {t('catalog.filterActive')}
           </button>
           <button
             className={`${styles.filterButton} ${statusFilter === 'inactivo' ? styles.filterButtonActive : ''}`}
             onClick={() => setStatusFilter('inactivo')}
           >
-            Inactivo
+            {t('catalog.filterInactive')}
           </button>
         </div>
       </div>

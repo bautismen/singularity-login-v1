@@ -358,7 +358,7 @@ if (isFormOpen) {
                   className={styles.checkbox}
                 />
                 <label htmlFor="is_active" className={styles.checkboxText}>
-                  {formData.status === 'activo' ? 'Activo' : 'Inactivo'}
+                  {formData.status === 'activo' ? t('catalog.status.active') : t('catalog.status.inactive')}
                 </label>
               </div>
             </div>
@@ -402,19 +402,19 @@ if (isFormOpen) {
             className={`${styles.filterButton} ${statusFilter === 'todos' ? styles.filterButtonActive : ''}`}
             onClick={() => setStatusFilter('todos')}
           >
-            Todos
+            {t('catalog.filterAll')}
           </button>
           <button
             className={`${styles.filterButton} ${statusFilter === 'activo' ? styles.filterButtonActive : ''}`}
             onClick={() => setStatusFilter('activo')}
           >
-            Activo
+            {t('catalog.filterActive')}
           </button>
           <button
             className={`${styles.filterButton} ${statusFilter === 'inactivo' ? styles.filterButtonActive : ''}`}
             onClick={() => setStatusFilter('inactivo')}
           >
-            Inactivo
+            {t('catalog.filterInactive')}
           </button>
         </div>
       </div>

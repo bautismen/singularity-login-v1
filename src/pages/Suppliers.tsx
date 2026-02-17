@@ -753,19 +753,19 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
             className={`${styles.filterButton} ${statusFilter === 'todos' ? styles.filterButtonActive : ''}`}
             onClick={() => setStatusFilter('todos')}
           >
-            Todos
+            {t('catalog.filterAll')}
           </button>
           <button
             className={`${styles.filterButton} ${statusFilter === 'activo' ? styles.filterButtonActive : ''}`}
             onClick={() => setStatusFilter('activo')}
           >
-            Activo
+            {t('catalog.filterActive')}
           </button>
           <button
             className={`${styles.filterButton} ${statusFilter === 'inactivo' ? styles.filterButtonActive : ''}`}
             onClick={() => setStatusFilter('inactivo')}
           >
-            Inactivo
+            {t('catalog.filterInactive')}
           </button>
         </div>
       </div>
