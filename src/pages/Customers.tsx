@@ -434,7 +434,10 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
             <div className={styles.twoColumnGrid}>
               <div className={styles.leftColumn}>
                 <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>{t('cust.selectCompany')}</label>
+                  <label className={styles.fieldLabel}>
+                    <span className={styles.required}>* </span>
+                      {t('cust.selectCompany')}
+                  </label>
                   <select
                     value={formData.company_id}
                     disabled={!!editingCustomer}
@@ -496,6 +499,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                     checked={formData.is_branch}
                     onChange={(e) => setFormData({ ...formData, is_branch: e.target.checked })}
                     className={styles.checkbox}
+                    disabled={!!editingCustomer}
                   />
                   <label htmlFor="is_branch" className={styles.checkboxText}>{t('cust.isBranch')}</label>
                 </div>
@@ -535,6 +539,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                         });
                       }}
                       className={styles.checkbox}
+                      disabled={!!editingCustomer}
                     />
                     <label
                       htmlFor="is_persona_fisica"
@@ -549,7 +554,8 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
               <div className={styles.rightColumn}>
                 <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel}>
-                    RFC/TAXID <span className={styles.required}>*</span>
+                    <span className={styles.required}>* </span>
+                    RFC/TAXID 
                   </label>
                   <input
                     type="text"
@@ -618,6 +624,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                       onChange={(e) => setFormData({ ...formData, branch_name: e.target.value })}
                       className={styles.textInput}
                       placeholder={t('cust.branchName')}
+                      disabled={!!editingCustomer}
                     />
                   </div>
                 )}
@@ -634,6 +641,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                     onChange={(e) => setFormData({ ...formData, curp: e.target.value })}
                     className={styles.textInput}
                     placeholder="CURP"
+                    disabled={!!editingCustomer}
                   />
                 </div>
                 )}
