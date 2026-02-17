@@ -134,9 +134,9 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
 
     if (searchQuery) {
       filtered = filtered.filter(q =>
-        q.referenceRequest.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        q.customer.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        q.typeRequest.toLowerCase().includes(searchQuery.toLowerCase())
+        q.referenceRequest?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        q.customer.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        q.typeRequest?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
