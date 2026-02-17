@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, X, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { User } from '../types/user';
-import styles from './Catalogs.module.css';
+//import styles from './Catalogs.module.css';
 import { useNotification } from '../contexts/NotificationContext';
 import { Modal } from '../components/Modal';
 
@@ -244,45 +244,45 @@ export function CatalogUsers() {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>{t('user.title')}</h1>
-        <div className={styles.buttonGroup}>
-          <button className={styles.headerButton} onClick={() => openModal()} disabled={loading}>
+    <div className="container">
+      <div className="header">
+        <h1 className="title">{t('user.title')}</h1>
+        <div className="buttonGroup">
+          <button className="headerButton" onClick={() => openModal()} disabled={loading}>
             <Plus size={20} /> 
           </button>
-          <button onClick={loadData} className={styles.headerButton}>
+          <button onClick={loadData} className="headerButton">
             <RefreshCw size={20} />
           </button>
         </div>
       </div>
 
-      <div className={styles.searchBar}>
+      <div className="searchBar">
         <input
           type="text"
-          className={styles.searchInput}
+          className="searchInput"
           placeholder={t('user.search')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           disabled={loading}
         />
-        <div className={styles.filterButtons}>
+        <div className="filterButtons">
           <button
-            className={`${styles.filterButton} ${roleFilter === 'all' ? styles.active : ''}`}
+            className={`filterButton ${roleFilter === 'all' ? "active" : ''}`}
             onClick={() => setRoleFilter('all')}
             disabled={loading}
           >
             {t('user.filterAll')}
           </button>
           <button
-            className={`${styles.filterButton} ${roleFilter === 'user' ? styles.active : ''}`}
+            className={`filterButton ${roleFilter === 'user' ? "active" : ''}`}
             onClick={() => setRoleFilter('user')}
             disabled={loading}
           >
             {t('user.title')}
           </button>
           <button
-            className={`${styles.filterButton} ${roleFilter === 'admin' ? styles.active : ''}`}
+            className={`filterButton ${roleFilter === 'admin' ? "active" : ''}`}
             onClick={() => setRoleFilter('admin')}
             disabled={loading}
           >
@@ -298,7 +298,7 @@ export function CatalogUsers() {
       )}
 
       {!loading && (
-        <table className={styles.table}>
+        <table className="table">
           <thead>
             <tr>
               <th>{t('user.email')}</th>
@@ -317,7 +317,7 @@ export function CatalogUsers() {
                   <td>
                     <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
                       {item.roles.map(role => (
-                        <span key={role} className={styles.statusBadge} style={{
+                        <span key={role} className="statusBadge" style={{
                           background: role === 'admin' ? '#fef3c7' : '#dbeafe',
                           color: role === 'admin' ? '#92400e' : '#1e40af',
                           border: 'none'
@@ -329,16 +329,16 @@ export function CatalogUsers() {
                   </td>
                   <td>{formatDate(item.createdAt)}</td>
                   <td>
-                    <div className={styles.actions}>
+                    <div className="actions">
                       <button
-                        className={`${styles.iconButton} ${styles.edit}`}
+                        className="iconButton edit"
                         onClick={() => openModal(item)}
                         title={t('catalog.edit').replace('{name}', catalogName.toLowerCase())}
                       >
                         <Edit2 size={16} />
                       </button>
                       <button
-                        className={`${styles.iconButton} ${styles.delete}`}
+                        className="iconButton delete"
                         onClick={() => handleDelete(item._id)}
                         title={t('catalog.delete')}
                       >
@@ -350,7 +350,7 @@ export function CatalogUsers() {
               ))
             ) : (
               <tr>
-                <td colSpan={4} className={styles.noResults}>
+                <td colSpan={4} className="noResults">
                   {t('user.noResults')}
                 </td>
               </tr>
@@ -361,28 +361,28 @@ export function CatalogUsers() {
 
       {showModal && (
         <form onSubmit={handleSave}>
-          <div className={styles.modalOverlay} onClick={closeModal}>
-            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-              <div className={styles.modalHeader}>
-                <h2 className={styles.modalTitle}>
+          <div className="modalOverlay" onClick={closeModal}>
+            <div className="modalContent" onClick={(e) => e.stopPropagation()}>
+              <div className="modalHeader">
+                <h2 className="modalTitle">
                   {editingItem ? 
                     t('user.editUser') : 
                     t('user.newUser')}
                 </h2>
-                <button className={styles.closeButton} onClick={closeModal}>
+                <button className="closeButton" onClick={closeModal}>
                   <X size={24} />
                 </button>
               </div>
 
-              <div className={styles.modalBody}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    <span className={styles.required}>* </span>
+              <div className="modalBody">
+                <div className="formGroup">
+                  <label className="label">
+                    <span className="required">* </span>
                     {t('user.email')}
                   </label>
                   <input
                     type="email"
-                    className={styles.input}
+                    className="input"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     disabled={loading}
@@ -397,14 +397,14 @@ export function CatalogUsers() {
                   />
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    <span className={styles.required}>* </span>
+                <div className="formGroup">
+                  <label className="label">
+                    <span className="required">* </span>
                     {t('user.name')}
                   </label>
                   <input
                     type="text"
-                    className={styles.input}
+                    className="input"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     disabled={loading}
@@ -419,14 +419,14 @@ export function CatalogUsers() {
                   />
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    <span className={styles.required}>* </span>
+                <div className="formGroup">
+                  <label className="label">
+                    <span className="required">* </span>
                     {t('user.password')} {/*editingItem ? '(dejar vacío para mantener actual)' : ''*/}
                   </label>
                   <input
                     type="password"
-                    className={styles.input}
+                    className="input"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     disabled={editingItem ? true : false} 
@@ -441,23 +441,23 @@ export function CatalogUsers() {
                   />
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>{t('user.roles')}</label>
+                <div className="formGroup">
+                  <label className="label">{t('user.roles')}</label>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    <label className={styles.label} style={{ fontSize: '0.875rem', fontWeight: 'normal' }}>
+                    <label className="label" style={{ fontSize: '0.875rem', fontWeight: 'normal' }}>
                       <input
                         type="checkbox"
-                        className={styles.checkbox}
+                        className="checkbox"
                         checked={formData.roles.includes('user')}
                         onChange={() => toggleRole('user')}
                         disabled={loading}
                       />
                       {' '}{t('user.user')}
                     </label>
-                    <label className={styles.label} style={{ fontSize: '0.875rem', fontWeight: 'normal' }}>
+                    <label className="label" style={{ fontSize: '0.875rem', fontWeight: 'normal' }}>
                       <input
                         type="checkbox"
-                        className={styles.checkbox}
+                        className="checkbox"
                         checked={formData.roles.includes('admin')}
                         onChange={() => toggleRole('admin')}
                         disabled={loading}
@@ -468,11 +468,11 @@ export function CatalogUsers() {
                 </div>
               </div>
 
-              <div className={styles.modalFooter}>
-                <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
+              <div className="modalFooter">
+                <button className="cancelButton" onClick={closeModal} disabled={loading}>
                   {t('user.cancel')}
                 </button>
-                <button className={styles.saveButton} type="submit" disabled={loading}>
+                <button className="saveButton" type="submit" disabled={loading}>
                   {loading ? 'Guardando...' : t('user.save')}
                 </button>
               </div>

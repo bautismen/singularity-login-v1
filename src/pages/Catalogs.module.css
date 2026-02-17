@@ -1,9 +1,15 @@
+@tailwind components;
+@layer components{
+
 .container {
   padding: 24px;
-  background-color: var(--bg-page, #f8fafc);
+  background-color: #f8fafc;
   min-height: 100%;
 }
 
+.dark .container{
+  @apply bg-slate-800;
+}
 
 /* ===== Header ===== */
 .header {
@@ -23,7 +29,7 @@
 }
 
 .dark .title {
-  color: #6b7280;
+  @apply text-slate-300;
 }
 
 .buttonGroup {
@@ -171,6 +177,12 @@
 }
 
 .filterButton.active {
+  background-color: #038C7F;
+  border-color: #038C7F;
+  color: white;
+}
+
+.dark .filterButton.active {
   background-color: #038C7F;
   border-color: #038C7F;
   color: white;
@@ -617,4 +629,6 @@ buttonGroup {
   .saveButton {
     width: 100%;
   }
+}
+
 }

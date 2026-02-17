@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, X, RefreshCw } from 'lucide-react'; 
 import { useLanguage } from '../contexts/LanguageContext';
 import { SectorOfBusiness } from '../types/catalog';
-import styles from './Catalogs.module.css';
+//import styles from './Catalogs.module.css';
 import { useNotification } from '../contexts/NotificationContext';
 import { Modal } from '../components/Modal';
 
@@ -210,45 +210,45 @@ export function CatalogSectorOfBusiness() {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>{catalogName}</h1>
-        <div className={styles.buttonGroup}> 
-          <button className={styles.headerButton} onClick={() => openModal()} disabled={loading}>
+    <div className="container">
+      <div className="header">
+        <h1 className="title">{catalogName}</h1>
+        <div className="buttonGroup"> 
+          <button className="headerButton" onClick={() => openModal()} disabled={loading}>
             <Plus size={20} /> 
           </button>
-          <button onClick={loadData} className={styles.headerButton}>
+          <button onClick={loadData} className="headerButton">
             <RefreshCw size={20} />
           </button>
         </div>
       </div>
 
-      <div className={styles.searchBar}>
+      <div className="searchBar">
         <input
           type="text"
-          className={styles.searchInput}
+          className="searchInput"
           placeholder={t('catalog.search')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           disabled={loading}
         />
-        <div className={styles.filterButtons}>
+        <div className="filterButtons">
           <button
-            className={`${styles.filterButton} ${filter === 'all' ? styles.active : ''}`} 
+            className={`filterButton ${filter === 'all' ? "active" : ''}`} 
             onClick={() => setFilter('all')} 
             disabled={loading}
           >
             {t('catalog.filterAll')}
           </button>
           <button
-            className={`${styles.filterButton} ${filter === 'active' ? styles.active : ''}`}
+            className={`filterButton ${filter === 'active' ? "active" : ''}`}
             onClick={() => setFilter('active')}
             disabled={loading}
           >
             {t('catalog.filterActive')}
           </button>
           <button
-            className={`${styles.filterButton} ${filter === 'inactive' ? styles.active : ''}`}
+            className={`filterButton ${filter === 'inactive' ? "active" : ''}`}
             onClick={() => setFilter('inactive')}
             disabled={loading}
           >
@@ -264,7 +264,7 @@ export function CatalogSectorOfBusiness() {
       )}
 
       {!loading && (
-        <table className={styles.table}>
+        <table className="table">
           <thead>
             <tr>
               <th>{t('catalog.sectorOfBusiness.name')}</th>
@@ -280,21 +280,21 @@ export function CatalogSectorOfBusiness() {
                   <td>{item.name}</td>
                   <td>{item.description}</td>
                   <td>
-                    <span className={`${styles.statusBadge} ${item.status === 1 ? styles.active : styles.inactive}`}>
+                    <span className={`statusBadge ${item.status === 1 ? "active" : "inactive"}`}>
                       {item.status === 1 ? t('catalog.status.active') : t('catalog.status.inactive')}
                     </span>
                   </td>
                   <td>
-                    <div className={styles.actions}>
+                    <div className="actions">
                       <button
-                        className={`${styles.iconButton} ${styles.edit}`}
+                        className="iconButton edit"
                         onClick={() => openModal(item)}
                         title={t('catalog.edit')}
                       >
                         <Edit2 size={16} />
                       </button>
                       <button
-                        className={`${styles.iconButton} ${styles.delete}`}
+                        className="iconButton delete"
                         onClick={() => handleDelete(item.id)}
                         title={t('catalog.delete')}
                       >
@@ -306,7 +306,7 @@ export function CatalogSectorOfBusiness() {
               ))
             ) : (
               <tr>
-                <td colSpan={4} className={styles.noResults}>
+                <td colSpan={4} className="noResults">
                   {t('catalog.noResults')}
                 </td>
               </tr>
@@ -317,28 +317,28 @@ export function CatalogSectorOfBusiness() {
 
       {showModal && (
         <form onSubmit={handleSave}> 
-          <div className={styles.modalOverlay} onClick={closeModal}>
-            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-              <div className={styles.modalHeader}>
-                <h2 className={styles.modalTitle}>
+          <div className="modalOverlay" onClick={closeModal}>
+            <div className="modalContent" onClick={(e) => e.stopPropagation()}>
+              <div className="modalHeader">
+                <h2 className="modalTitle">
                   {editingItem
                     ? t('catalog.edit').replace('{name}', catalogName.toLowerCase())
                     : t('catalog.new').replace('{name}', catalogName.toLowerCase())}
                 </h2>
-                <button className={styles.closeButton} onClick={closeModal}>
+                <button className="closeButton" onClick={closeModal}>
                   <X size={24} />
                 </button>
               </div>
 
-              <div className={styles.modalBody}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    <span className={styles.required}>* </span>
+              <div className="modalBody">
+                <div className="formGroup">
+                  <label className="label">
+                    <span className="required">* </span>
                     {t('catalog.sectorOfBusiness.name')}
                   </label>
                   <input
                     type="text"
-                    className={styles.input}
+                    className="input"
                     value={formData.name} 
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     disabled = {editingItem ? true : false} 
@@ -352,21 +352,21 @@ export function CatalogSectorOfBusiness() {
                   />
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>{t('catalog.sectorOfBusiness.description')}</label>
+                <div className="formGroup">
+                  <label className="label">{t('catalog.sectorOfBusiness.description')}</label>
                   <textarea
-                    className={styles.textarea}
+                    className="textarea"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     disabled={loading}
                   />
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
+                <div className="formGroup">
+                  <label className="label">
                     <input
                       type="checkbox"
-                      className={styles.checkbox}
+                      className="checkbox"
                       checked={formData.status === 1}
                       onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
                       disabled={loading}
@@ -376,11 +376,11 @@ export function CatalogSectorOfBusiness() {
                 </div>
               </div>
 
-              <div className={styles.modalFooter}>
-                <button className={styles.cancelButton} onClick={closeModal} disabled={loading}>
+              <div className="modalFooter">
+                <button className="cancelButton" onClick={closeModal} disabled={loading}>
                   {t('catalog.cancel')}
                 </button>
-                <button className={styles.saveButton} type="submit" disabled={loading}>
+                <button className="saveButton" type="submit" disabled={loading}>
                   {loading ? 'Guardando...' : t('catalog.save')}
                 </button>
               </div>
