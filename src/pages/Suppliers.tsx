@@ -707,7 +707,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                       <label>
                         {t('supp.postalCode')}
                         <input
-                          type="number"
+                          type="number" 
                           value={address.postal_code}
                           onChange={(e) => updateAddress(index, 'postal_code', e.target.value)}
                         />
