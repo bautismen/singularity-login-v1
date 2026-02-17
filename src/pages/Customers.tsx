@@ -791,7 +791,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                       <label>
                         {t('cust.postalCode')}
                         <input
-                          type="number"
+                          type="number" 
                           value={address.postal_code}
                           onChange={(e) => updateAddress(index, 'postal_code', e.target.value)}
                         />
