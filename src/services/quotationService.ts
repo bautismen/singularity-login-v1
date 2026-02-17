@@ -1,4 +1,4 @@
-import {ChangeStatusRequest, QuotationRequest} from '../types/requestQuotation';
+import {AsignateToRequest, ChangeStatusRequest, QuotationRequest} from '../types/requestQuotation';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
 const API_REQUESTQUOTATION = import.meta.env.VITE_REQUESTQUOTATION;
@@ -136,5 +136,33 @@ export const quotationService = {
 
     return response.json();
   },
+
+  async AsignateExecutive(data: AsignateToRequest) {    
+       try {
+        console.log(JSON.stringify(data))
+          const response = await fetch(
+              `${API_REQUESTQUOTATION}/v1/api/quotationrequest/addasigneto`,
+              {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${API_TOKENSL}`,
+                  'Content-Type': 'application/json',
+                  'x-api-key': API_KEYSL,
+                },
+                body: JSON.stringify(data),
+              }
+            );    
+  
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Error al asignar el ejecutivo de pricing a la solicitud de cotización');
+          }
+  
+          return response.json();
+      } catch (error: any) {
+        console.error('Fetch error:', error);
+        throw new Error(error.message || 'Error de conexión al asignar el ejecutivo de pricing a la solicitud de cotización');
+      }
+    }
 
 };

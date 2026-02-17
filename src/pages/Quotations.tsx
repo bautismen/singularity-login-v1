@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, ChevronDown, Plus, Copy, X, RotateCcw, Save, Eye, ArrowLeft, ShieldOff } from 'lucide-react';
+import { Trash2, ChevronDown, Plus, Copy, X, RotateCcw, Save, Eye, ArrowLeft, ShieldOff, User } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -704,6 +704,42 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     }
   };
 
+  const handleAsignateto = async () => {
+    try {
+      
+
+      const quotationData = {
+        IdRequest: quotationId,       
+        Employees: executives.map(exec => ({
+          IdExecutive: exec.idEmployee,
+          FullName: exec.nameEmployee,
+          IdUser: exec.idUser 
+          //control_number: 'SN',
+        })),        
+                
+      };
+
+      if (quotationData.Employees.length === 0) {
+        showError('Debe seleccionar al menos un ejecutivo para asignar la cotización');
+        return;
+      }
+
+      if (quotationId) {
+        await quotationService.AsignateExecutive(quotationData);
+        showSuccess(t('quote.success.executiveAssigned'));
+      }
+
+      if (onBack) {
+        onBack();
+      }
+    } catch (error) {
+      console.error('Error updating quotation status:', error);
+      showError('Error al asignar ejecutivos a la cotización');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSendQuotation = () => {
     handleStatusUpdate(2, 'Enviada');
   };
@@ -1058,17 +1094,22 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           <button
             className={styles.actionBarSaveButton}
             type="submit"
-            disabled={saving || mode === 'view'}>
+            disabled={saving || mode === 'view' || formData.idStatusRequest >= 2}>
             <Save size={18} />
             <span>{saving ? 'Guardando...' : t('quote.save')}</span>
           </button>
           <button type="button" className={styles.actionBarResetButton}>
             <RotateCcw size={18} />
           </button>
-          <button type="button" className={styles.actionBarDropdownButton}>
+           <button type="button" className={styles.actionBarResetButton} onClick={handleAsignateto} >
+            <User size={18} />
+            <span>{'Agregar'}</span>
+          </button>
+          {/*<button type="button" className={styles.actionBarDropdownButton}>
             <span>{t('quote.actions')}</span>
             <ChevronDown size={16} />
           </button>
+          </button>*/}
         </div>
       </div>
 

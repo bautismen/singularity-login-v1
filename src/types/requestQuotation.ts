@@ -83,3 +83,8 @@ export interface ChangeStatusRequest {
   StatusRequest: string;
   statusComment?: string;
 }
+
+export interface AsignateToRequest {
+  IdRequest: string;
+  Employees: any[];
+}
