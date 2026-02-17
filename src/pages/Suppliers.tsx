@@ -405,7 +405,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
               <div className={styles.leftColumn}>
                 <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel}>
-                    <span className={styles.required}>*</span>{t('supp.selectCompany')}
+                    <span className={styles.required}>* </span>{t('supp.selectCompany')}
                   </label>
                   <select
                     value={formData.company_id}
@@ -462,7 +462,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
 
                 <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel}>
-                    <span className={styles.required}>*</span>{t('supp.selectSector')}
+                    <span className={styles.required}>* </span>{t('supp.selectSector')}
                     </label>
                   <select
                     value={formData.serctor_id}
@@ -497,7 +497,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
               <div className={styles.rightColumn}>
                 <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel}>
-                    <span className={styles.required}>*</span>RFC/TAXID</label>
+                    <span className={styles.required}>* </span>RFC/TAXID</label>
                   <input
                     type="text"
                     value={formData.fiscal_data.rfc_taxid}
@@ -538,6 +538,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                         curp: e.target.checked ? formData.curp : ''
                       })}
                       className={styles.checkbox}
+                      disabled = {editingSupplier ? true : false}
                     />
                     <label htmlFor="is_persona_fisica" className={styles.checkboxText}>
                       {t('supp.IsPersonFisica')}
@@ -555,6 +556,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                       onChange={(e) => setFormData({ ...formData, curp: e.target.value })}
                       className={styles.textInput}
                       placeholder="CURP"
+                      disabled = {editingSupplier ? true : false}
                     />
                   </div>
                 )}
