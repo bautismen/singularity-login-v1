@@ -29,7 +29,6 @@ export default function Companies() {
     }
   };
 
-
 async function loadCompanies() {
     try {
       setLoading(true);
@@ -42,7 +41,6 @@ async function loadCompanies() {
     }
   };
   
-
   const { showError, showSuccess } = useNotification();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -75,7 +73,7 @@ useEffect(() => {
   }
 }, [countries, formData.nationality]);
 
-  const handleEditCompanies = (company: Company) => {
+const handleEditCompanies = (company: Company) => {
   setEditingCompany(company);
   setFormData({
     business_name: company.business_name ?? '',
@@ -106,7 +104,7 @@ async function handleDeleteCompanies(id: string) {
 
 */
   
-  const handleSaveCompany = async (e: React.FormEvent) => {
+const handleSaveCompany = async (e: React.FormEvent) => {
   try {
     e.preventDefault();
     setLoading(true);
@@ -173,16 +171,16 @@ async function handleDeleteCompanies(id: string) {
 };
 
 
-  const filteredCompanies = companies.filter(c => {
-    const matchesSearch = c.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.rfc_taxid.toLowerCase().includes(searchTerm.toLowerCase());
+const filteredCompanies = companies.filter(c => {
+  const matchesSearch = c.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.rfc_taxid.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = statusFilter === 'todos' || c.status === statusFilter;
+  const matchesStatus = statusFilter === 'todos' || c.status === statusFilter;
 
-    return matchesSearch && matchesStatus;
-  });
+  return matchesSearch && matchesStatus;
+});
 
-  function handleNewCompany() {
+function handleNewCompany() {
   setEditingCompany(null);
   setFormData({
     business_name: '',
@@ -369,8 +367,6 @@ if (isFormOpen) {
   );
 }
 
-
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -418,17 +414,22 @@ if (isFormOpen) {
           </button>
         </div>
       </div>
+
       {loading ? (
-        <p>{t('comp.LoadCompanies')}</p>
+        <div className={styles.loading}>
+          <div className={styles.spinner}></div>
+        </div>
       ) : filteredCompanies.length === 0 ? (
-        <p>No se encontraron empresas</p>
+        <div className={styles.emptyState}>
+          <p className={styles.noResults}>{t('catalog.noResults')}</p>
+        </div>
       ) : (
         <div className={styles.cardGrid}>
           {filteredCompanies.map(company => (
             <div key={company._id} className={styles.companyCard}>
               <h3>{company.business_name}</h3>
               <p>RFC/TAXID: {company.rfc_taxid}</p>
-              <p>{company.state}, {company.country}</p>
+              <p>{company.country}</p>
               <p> <span className={company.status === 'activo' ? styles.statusActive : styles.statusInactive}>{company.status}</span></p>
               <div className={styles.cardActions}>
                 <button 
@@ -448,8 +449,6 @@ if (isFormOpen) {
           ))}
         </div>
       )}
-
     </div>
   );
-
 }
