@@ -81,4 +81,5 @@ export interface ChangeStatusRequest {
   IdRequest: string;
   IdStatusRequest: number;
   StatusRequest: string;
+  statusComment?: string;
 }

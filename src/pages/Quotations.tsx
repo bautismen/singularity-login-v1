@@ -212,7 +212,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         requestType: data.data.typeRequest || '',
         created: data.data.dateRequest ? new Date(data.data.dateRequest).toISOString().split('T')[0] : '',
         responseDeadline: data.data.dateDeadline ? new Date(data.data.dateDeadline).toISOString().split('T')[0] : '',
-        statuscomments: data.data.services[0].shipments[0].comments || null,
+        statuscomments: data.data.statusComment || null,
         idStatusRequest: data.data.idStatusRequest || 1,
       });
 
@@ -684,6 +684,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         IdRequest: quotationId,       
         IdStatusRequest: statusId,
         StatusRequest: statusName,
+        statusComment: statusId === 10 ? (document.getElementById('comments-cancelation') as HTMLInputElement).value : '',
                 
       };
 
@@ -1234,7 +1235,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <textarea id="comments-cancelation" className={styles.textarea} rows={3} placeholder="" />
                     <div className={styles.modalFooter}>
                       <button type="button" className={styles.saveModalButton} 
-                      onClick={() => handleStatusUpdate(3, "Cancelada")}>
+                      onClick={() => handleStatusUpdate(10, "Cancelada")}>
                         {t('quote.save')}
                       </button>
                     </div>
