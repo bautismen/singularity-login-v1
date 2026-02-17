@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, RotateCcw, Trash2, Plus, Edit, Search, X, ArrowLeft, RefreshCw } from 'lucide-react';
+import { Save, RotateCcw, Trash2, Plus, Edit2, Search, X, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Executive, ExecutiveFormData, DEPARTMENTS } from '../types/executive';
 import { getExecutives, createExecutive, updateExecutive, deleteExecutive, checkNominaExists } from '../services/executiveService';
@@ -251,8 +251,8 @@ export function Executives() {
 
   if (loading) {
     return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Cargando...</div>
+      <div className={styles.loading}>
+          <div className={styles.spinner}></div>
       </div>
     );
   }
@@ -371,11 +371,11 @@ export function Executives() {
                         <td>
                           <div className={styles.actionButtons}>
                             <button
-                              className={styles.actionButton}
+                              className={`${styles.actionButton} ${styles.edit}`}
                               onClick={() => handleEdit(executive)}
                               title="Editar"
                             >
-                              <Edit size={16} />
+                              <Edit2 size={16} />
                             </button>
                             <button
                               className={`${styles.actionButton} ${styles.danger}`}
