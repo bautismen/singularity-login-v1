@@ -483,7 +483,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         classificationMerchandise: t('quote.refrigeratedClass'),
         //_idunit_temperature: refrigeratedMerchandise.temperature === '°C' ? 1 : 2,
         //unit_temperature: merchandiseForm.tempUnit,
-        temperature: refrigeratedMerchandise.temperature || 0
+        temperature: refrigeratedMerchandise.temperature || ''
       });
     }
 
@@ -678,219 +678,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
   const handleStatusUpdate = async (statusId: number, statusName: string) => {
     try {
-      setSaving(true);      
-
-      if (!formData.referenceRequest || !formData.customerId || !formData.requestTypeId) {
-        showWarning(t('quote.warnings.requiredFields'));
-        setSaving(false);
-        return;
-      }
-
-      const selectedCustomer = customers.find(c => c._id === formData.customerId);
-      const selectedRequestType = requestTypes.find(r => r._id === formData.requestTypeId || r._id === formData.requestTypeId);
-      console.log('Tipo seleccionado: ',requestTypes);
-      /*
-      if (!selectedRequestType) {
-        showError(t('quote.errors.requestTypeNotFound'));
-        setSaving(false);
-        return;
-      }*/
+      
 
       const quotationData = {
-        id: quotationId,
-        referenceRequest: formData.referenceRequest,
-        idStatusRequest: statusId,
-        statusRequest: statusName,
-        dateRequest: formData.created.toString(),
-        ...(formData.responseDeadline.toString().length >= 0 && { dateDeadline: formData.responseDeadline.toString()}),        
-        idRequestType: formData.requestTypeId,
-        typeRequest: formData.requestType,
-        priority: formData.isPriority ? 1 : 0,
-        licitation: formData.isQuote ? 1 : 0,
-        dateCreated: new Date().toISOString(),
-        createdBy: {
-          idUser: user?._id || '',
-          nameEmployee: user?.name || '',
-        },
-        customer : {
-          idCustomer: formData.customerId,
-          customerName: selectedCustomer?.fiscal_data?.business_name || formData.client,
-          customerCategory: formData.customerCategory,
-        },
-         assignedTo: executives.map(exec => ({
-          idEmployee: exec.idEmployee,
-          nameEmployee: exec.nameEmployee,
-          idUser: exec.idUser
-          //control_number: 'SN',
-        })),              
-       
-        services: services.map((service, idx) => {
-
-          const shipmentsInService = service.shipments.map((shipment, index) => {
-            
-            const servicesAssociated: any[] = [];
-
-            if(shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Seguro')){              
-              const insuranceService = availableServices.find(s => s.service_name === 'Seguro');              
-              servicesAssociated.push({
-                idServiceAsociated: insuranceService?._id || null,
-                serviceAsociatedName: 'Seguro'
-              });
-            }       
-            
-            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Maniobra')) {
-              const maneuverService = availableServices.find(s => s.service_name === 'Maniobra');
-              servicesAssociated.push({
-                idServiceAsociated: maneuverService?._id || null,
-                serviceAsociatedName: 'Maniobra'
-              });
-            }   
-            
-            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Custodia')) {
-              const custodyService = availableServices.find(s => s.service_name === 'Custodia');
-              servicesAssociated.push({
-                idServiceAsociated: custodyService?._id || null,
-                serviceAsociatedName: 'Custodia'
-              });
-            }
-
-            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Inspección')) {
-              const inspectionService = availableServices.find(s => s.service_name === 'Inspección');
-              servicesAssociated.push({
-                idServiceAsociated: inspectionService?._id || null,
-                serviceAsociatedName: 'Inspección'
-              });
-            }
-
-            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Despacho aduanal')) {
-              const customsClearanceService = availableServices.find(s => s.service_name === 'Despacho aduanal');
-              servicesAssociated.push({
-                idServiceAsociated: customsClearanceService?._id || null,
-                serviceAsociatedName: 'Despacho aduanal'
-              });
-            }
-
-            const frequencyMap: { [key: string]: number } = { 'semanal': 1, 'mensual': 2, 'anual': 3 };
-            const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
-            const operationTypeMap: { [key: string]: number } = { 'Exportación': 1, 'Importación': 2, 'Nacional': 3, 'Local USA': 4, 'Triangulación': 5 };
-            const shipmentTypeMap: { [key: string]: number } = { 'Door to Door': 1, 'Port to Port': 2, 'Door to Port': 3, 'Port to Door': 4 };
-
-            const projectionShipment = service.shipments[0].projectionShipment.idTypeMesurementFrecuency && 
-            service.shipments[0].projectionShipment.measurementFrecuency && 
-            service.shipments[0].projectionShipment.frecuency && 
-            service.shipments[0].projectionShipment.number ? {
-              idTypeMesurementFrecuency: service.shipments[0].projectionShipment.idTypeMesurementFrecuency|| 0,
-              measurementFrecuency: service.shipments[0].projectionShipment.measurementFrecuency ,
-              frecuency:service.shipments[0].projectionShipment.frecuency || 0,
-              number: service.shipments[0].projectionShipment.number,
-            } : undefined;
-
-            const originCountry = countries.find(country => country._id === service.shipments[0].origin.idCountry);
-            const destinationCountry = countries.find(country => country._id === service.shipments[0].destination.idCountry);
-            const selectedIncoterm = incoterms.find(i => i.incoterm_name === service.shipments[0].incoterm);
-          
-            return {              
-              idShipment:index + 1,
-              origin: {
-                idCountry: originCountry.idCountry,
-                countryCode: originCountry.countryCode,
-                zipCode: originCountry.zipCode,
-              },
-              destination: {
-                idCountry: destinationCountry.idCountry,
-                countryCode: destinationCountry.countryCode,
-                zipCode: shipment.destination.zipCode,
-              },
-              idTypeShipment: shipment.idTypeShipment,
-              typeShipment: shipment.typeShipment,
-              idTypeOperation: shipment.idTypeOperation,
-              typeOperation: shipment.typeOperation,
-              idInconterm: selectedIncoterm?._id || 0,
-              incoterm: shipment.incoterm,
-              ...(shipment.departureDateAproximate && { departureDateAproximate: shipment.departureDateAproximate}),
-              ...(projectionShipment && { projectionShipment: projectionShipment }),
-              comments: statusId === 3 ? (document.getElementById('comments-cancelation') as HTMLInputElement).value : null,        
-              ...(servicesAssociated.length > 0 && { servicesAsociated: servicesAssociated }),
-              cargo : shipment.cargo.map(merchandise => ({
-                merchandiseName: merchandise.merchandiseName,
-                merchandiseDescription: merchandise.descriptionMerchandise,
-                classification: merchandise.classification || [],
-                stowable: merchandise.stowable,
-                shipmentTypeCargo:'',
-                idUnitMeasurement: 1, 
-                unitMeasurement:'',
-                idUnitWeight: 1, 
-                unitWeight:'kg',
-                volumeTotal: merchandise.volumeTotal,
-                weigthTotal: merchandise.weigthTotal,
-                units: merchandise.packages
-              }))
-            }        
-          })
-          const selectedService = availableServices.find(s => s.service_name === service.nameService);          
-          
-          return {            
-            idServiceItem: idx + 1,
-            idService: selectedService?.id_service || null,
-            nameService: service.nameService,
-            ...(mode === 'create' && { used: false }),
-            shipments: shipmentsInService
-          }
-            /*[
-            {
-              idShipment: 1,
-              origin: {
-                idCountry: originCountry?.idCountry || null,
-                countryCode: originCountry?.countryCode,
-                zipCode: originCountry?.zipCode
-              },
-              destination: {
-                idCountry: destinationCountry?.idCountry || null,
-                countryCode: destinationCountry?.countryCode,
-                zipCode: destinationCountry?.zipCode
-              },
-              idTypeShipment: shipmentTypeMap[service.shipments[0].idTypeShipment] || 1,
-              typeShipment: service.shipments[0].typeShipment,
-              _id_operation_type: operationTypeMap[service.operation] || 1,
-              operation_type_name: service.operation,
-              _id_incoterm: selectedIncoterm?._id || 0,
-              incoterm: service.incoterm,
-              ...(service.expectedDeparture && { departure_date_approximate: { $date: new Date(service.expectedDeparture).toISOString()}}),
-              ...(projectionShipment && { projection_shipment: projectionShipment }),
-              _id_status_shipment: 101,
-              last_status_shipment: "Pendiente",
-              comments: service.comments || '',
-              services_asociated: servicesAssociated,
-              cargo: service.merchandise.map((merch: Merchandise, merchIdx: number) => ({
-                id_merchandise_item: merchIdx + 1,
-                merchandise_name: merch.name,
-                merchandise_description: merch.description,
-                merchandise_classification: merch.merchandise_classification || [],
-                stowable: merch.stackable,
-                _id_shipment_type: 1,
-                shipment_type: "Suelta",
-                _id_unit_cargo: 1,
-                unit_cargo: "Caja",
-                _id_unit_measurement: 1,
-                unit_measurement: "CM",
-                _id_unit_weigh: merch.unitType === 'kg' ? 1 : 2,
-                unit_weight: merch.unitType === 'kg' ? 'KG' : 'Libras',
-                volume_total: merch.totalVolume,
-                weigth_total: merch.totalWeight,
-                unit: merch.packages?.map((pkg: any, pkgIdx: number) => ({
-                  quantity: pkg.quantity,
-                  length: pkg.length,
-                  height: pkg.height,
-                  width: pkg.width,
-                  weigth: pkg.weight
-                })) || []
-              }))
-                */                  
-        })        
+        IdRequest: quotationId,       
+        IdStatusRequest: statusId,
+        StatusRequest: statusName,
+                
       };
 
-      if (mode === 'edit' && quotationId) {
-        await quotationService.update(quotationData);
+      if (quotationId) {
+        await quotationService.changeStatus(quotationData);
         showSuccess(t('quote.success.statusUpdated').replace('{status}', statusName));
       }
 
@@ -938,7 +736,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
       const quotationData = {
         referenceRequest: formData.referenceRequest,
-        idStatusRequest: hasAssignedExecutives ? 4 : 1,
+        idStatusRequest: hasAssignedExecutives ? 3 : 1,
         statusRequest: hasAssignedExecutives ? 'Asignada' : 'Nueva', 
         dateRequest: new Date(formData.created),
         dateDeadline: formData.responseDeadline ? new Date(formData.responseDeadline) : null,
@@ -955,7 +753,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         },
         customer : {
           idCustomer: formData.customerId,
-          customerName: selectedCustomer?.branch_name,
+          customerName: selectedCustomer?.fiscal_data?.business_name,
           customerCategory: formData.customerCategory,
         },
         assignedTo: executives.map(exec => ({

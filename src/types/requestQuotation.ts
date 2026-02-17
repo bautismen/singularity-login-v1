@@ -76,3 +76,9 @@ export interface Executive {
   idUser: string;
   nameEmployee: string;
 }
+
+export interface ChangeStatusRequest {
+  IdRequest: string;
+  IdStatusRequest: number;
+  StatusRequest: string;
+}
