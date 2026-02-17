@@ -276,6 +276,37 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
   //   }
   // }
 
+  function handleCompanyChange(selectedCompanyId: string) {
+    const selectedCompany = companies.find(c => c._id === selectedCompanyId);
+
+    if (!selectedCompany) {
+      setFormData({
+        ...formData,
+        company_id: '',
+        is_national: false,
+        fiscal_data: {
+          business_name: '',
+          rfc_taxid: '',
+          country: 'MX',
+          state: '',
+        },
+      });
+      return;
+    }
+
+    setFormData({
+      ...formData,
+      company_id: selectedCompanyId,
+      is_national: selectedCompany.nationality === 'nacional' ? true : false,
+      fiscal_data: {
+        business_name: selectedCompany.business_name || '',
+        rfc_taxid: selectedCompany.rfc_taxid || '',
+        country: selectedCompany.country || 'MX',
+        state: selectedCompany.state || '',
+      },
+    });
+  }
+
   function addContact() {
     const newContact: Contact = {
       type: 'general',
@@ -378,40 +409,15 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                   </label>
                   <select
                     value={formData.company_id}
-                    onChange={(e) => {
-                      const selectedCompanyId = e.target.value;
-                      const selectedCompany = companies.find(c => c._id === selectedCompanyId);
-                        
-                      if (selectedCompany) {
-                        // Cargar automáticamente los datos de la empresa seleccionada
-                        setFormData({
-                          ...formData,
-                          company_id: selectedCompanyId,
-                          is_national: selectedCompany.nationality === 'nacional' ? true : false,
-                          fiscal_data: {
-                            business_name: selectedCompany.business_name || '',
-                            rfc_taxid: selectedCompany.rfc_taxid || '',
-                            country: selectedCompany.country || 'MX',
-                            state: selectedCompany.state || '',
-                          },
-                        });
-                      } else {
-                        // Si no hay empresa seleccionada, limpia los campos
-                        setFormData({
-                          ...formData,
-                          company_id: '',
-                          is_national: false,
-                          fiscal_data: {
-                            business_name: '',
-                            rfc_taxid: '',
-                            country: 'MX',
-                            state: '',
-                          },
-                        });
-                      }
-                    }}
+                    onChange={(e) => handleCompanyChange(e.target.value)}
                     className={styles.selectInput}
                     required
+                    onInvalid={(e) => 
+                      e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                    }
+                    onInput={(e) =>
+                      e.currentTarget.setCustomValidity('')
+                    }
                     disabled = {editingSupplier ? true : false}
                     >
                     <option value="">{t('supp.selectCompany')}</option>
@@ -426,7 +432,11 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                 <button
                   type="button"
                   onClick={() => onNavigate('catalogs/companies')}
-                  className={styles.fullWidthGreenButton}
+                  className={
+                    editingSupplier
+                      ? styles.fullWidthGrayButton
+                      : styles.fullWidthGreenButton
+                  }
                   disabled = {editingSupplier ? true : false}
                 >
                   <Plus size={16} />
@@ -465,6 +475,12 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                     }
                     className={styles.selectInput}
                     required
+                    onInvalid={(e) => 
+                      e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                    }
+                    onInput={(e) =>
+                      e.currentTarget.setCustomValidity('')
+                    }
                   >
                     <option value="">{t('supp.selectSector')}</option>
                     {sector.map((sector) => (
@@ -691,7 +707,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
                       <label>
                         {t('supp.postalCode')}
                         <input
-                          type="text"
+                          type="number"
                           value={address.postal_code}
                           onChange={(e) => updateAddress(index, 'postal_code', e.target.value)}
                         />
@@ -761,7 +777,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
       ) : filteredSuppliers.length > 0 ? (
         <div className={styles.supplierList}>
           {filteredSuppliers.map((supplier) => (
-            <div key={supplier._idsupplier} className={styles.supplierCard}>           
+            <div key={supplier._id} className={styles.supplierCard}>            
               <div className={styles.supplierRow}>
                 <div className={styles.supplierInfo}>
                   <div className={styles.supplierNameWrapper}>
