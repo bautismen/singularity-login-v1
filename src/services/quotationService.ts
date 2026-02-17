@@ -1,7 +1,11 @@
 import {QuotationRequest} from '../types/requestQuotation';
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
-const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+//const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const API_REQUESTQUOTATION = import.meta.env.VITE_REQUESTQUOTATION;
+const API_TOKENSL = import.meta.env.VITE_TOKENSL;
+const API_KEYSL = import.meta.env.VITE_APIKEYSL;
+
 
 /*interface QuotationRequest {
   reference_request: string;
@@ -33,8 +37,9 @@ export const quotationService = {
     const response = await fetch(API_URL, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': `Bearer ${API_TOKENSL}`,
         'Content-Type': 'application/json',
+        'x-api-key': API_KEYSL,
       },
     });
 
@@ -46,11 +51,12 @@ export const quotationService = {
   },
 
   async getById(id: string) {
-    const response = await fetch(`http://10.66.12.54:14326/v1/api/quotationrequest/getById?id=${id}`, {
+    const response = await fetch(`${API_REQUESTQUOTATION}/v1/api/quotationrequest/getById?id=${id}`, {
       method: 'GET',
       headers: {
-        //'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': `Bearer ${API_TOKENSL}`,
         'Content-Type': 'application/json',
+        'x-api-key': API_KEYSL,
       },
     });
     console.log('API: ', response)
@@ -62,11 +68,12 @@ export const quotationService = {
   },
 
   async create(data: QuotationRequest) {
-    const response = await fetch(API_URL, {
+    const response = await fetch(`${API_REQUESTQUOTATION}/v1/api/quotationrequest/add`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': `Bearer ${API_TOKENSL}`,
         'Content-Type': 'application/json',
+        'x-api-key': API_KEYSL,
       },
       body: JSON.stringify(data),
     });
@@ -78,12 +85,13 @@ export const quotationService = {
     return response.json();
   },
 
-  async update(id: string, data: QuotationRequest) {
-    const response = await fetch(`${API_URL}/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+  async update(data: QuotationRequest) {
+    const response = await fetch(`${API_REQUESTQUOTATION}/v1/api/quotationrequest/update`, {
+      method: 'POST',
+      headers: {   
+        'Authorization': `Bearer ${API_TOKENSL}`,
         'Content-Type': 'application/json',
+        'x-api-key': API_KEYSL,
       },
       body: JSON.stringify(data),
     });
@@ -99,8 +107,9 @@ export const quotationService = {
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+         'Authorization': `Bearer ${API_TOKENSL}`,
         'Content-Type': 'application/json',
+        'x-api-key': API_KEYSL,
       },
     });
 
