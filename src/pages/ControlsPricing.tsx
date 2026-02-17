@@ -126,9 +126,9 @@ export function ControlsPricing() {
 
     if (searchQuery) {
       filtered = filtered.filter(r =>
-        r.ReferenceRequest.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.Customer?.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.AssignedTo.some(assigned => assigned.pricingControlNumbers?.some(controlNumber => controlNumber.control.toLowerCase().includes(searchQuery.toLowerCase())))
+        r.referenceRequest?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.customer?.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.assignedTo.some(assigned => assigned.pricingControlNumbers?.some(controlNumber => controlNumber?.control?.toLowerCase().includes(searchQuery.toLowerCase())))
       );
     }
 
