@@ -1121,22 +1121,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         });
         setSaving(false);
         return;
-      }
-
-      if (quotationData.assignedTo.length === 0) {
-        setModalState({
-          isOpen: true,
-          type: 'warning',
-          title: t('quote.noExecutivesTitle'),
-          message: t('quote.noExecutivesMessage'),
-          showCancel: true,
-          onConfirm: async () => {
-            await performSave(quotationData);
-          }
-        });
-        setSaving(false);
-        return;
-      }
+      }      
 
       await performSave(quotationData);
 
@@ -1372,7 +1357,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               value={formData.customerCategory}
               onChange={(e) => setFormData({ ...formData, customerCategory: parseInt(e.target.value) })}
               className={styles.select}
-              disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+              disabled>
               <option value={1}>Golden</option>
               <option value={2}>Silver</option>
               <option value={3}>Bronze</option>
