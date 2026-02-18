@@ -453,6 +453,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             <div className={styles.actionsMenuContainer} ref={actionsMenuRef}>
               <button type="button"
                 className={styles.headerButtonAction}
+                hidden
                 onClick={() => setShowActionsMenu(!showActionsMenu)}
                 disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
               >

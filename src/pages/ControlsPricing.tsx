@@ -350,7 +350,7 @@ export function ControlsPricing() {
                 <option value="">{t('ctrlpricing.selectexecutive')}</option>
                 {users.map((user) => (
                   <option key={user._id} value={user._id}>
-                    {user.nombre + '' + user.apellido_paterno + ' ' + user.apellido_materno}
+                    {user.nombre + ' ' + user.apellido_paterno + ' ' + user.apellido_materno}
                   </option>
                 ))}
               </select>
@@ -396,6 +396,7 @@ export function ControlsPricing() {
             <button
               className={styles.headerButtonAction}
               disabled
+              hidden
               title={t('ctrlpricing.actions')}
             >
               {t('ctrlpricing.actions')}
