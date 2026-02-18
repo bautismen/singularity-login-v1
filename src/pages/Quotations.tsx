@@ -98,6 +98,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     idStatusRequest: 1,
   });
 
+  const excludedEmails = [
+        "maria.cervantes@kromlogistica.com",
+        "estela.guerrero@kromlogistica.com",
+        "magali.tamayo@kromlogistica.com",
+        "erick.barrientos@kromlogistica.com"        
+  ];
+
   const generateReferenceNumber = async () => {
     try {
       const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -1720,7 +1727,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         </button>
       </div>
 
-      <div className={styles.section}>
+      <div className={styles.section} hidden={!excludedEmails.includes(user.email)}>
         <h2 className={styles.sectionTitle}>{t('quote.executiveAssignment')}</h2>
         <div className={styles.executivesCard}>
           <div className={styles.executivesList}>
