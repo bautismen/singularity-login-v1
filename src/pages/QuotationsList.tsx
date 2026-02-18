@@ -650,8 +650,6 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           </p>
           <button className={styles.greenButton} onClick={onCreateNew}>
             <Plus size={20} />
-            {t('quote.newRequest')}
-          </button>
         </div>
       )}
       </div>
