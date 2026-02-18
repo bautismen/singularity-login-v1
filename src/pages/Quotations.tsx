@@ -10,6 +10,15 @@ import { getExecutivesByDepartment} from '../services/executiveService';
 import styles from './Quotations.module.css';
 import {QuotationRequest, Service, Executive, Shipment, Cargo, MerchandisePackage} from '../types/requestQuotation';
 
+/**
+ * CLASIFICACION MERCANCIAS
+ *  7 - PELIGROSA
+ * 10 - REFRIGERADO
+ * 8 - SOBREDIMENSIONADA
+ * 5 - A GRANEL
+ * 11- GENERAL
+ */
+
 interface QuotationsProps {
   mode?: 'create' | 'edit' | 'view';
   quotationId?: string | null;
@@ -67,11 +76,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const [currentPackages, setCurrentPackages] = useState<any[]>([]);
   const [useMetricSystem, setUseMetricSystem] = useState(true);
   const [showProjectionShipment, setShowProjectionShipment] = useState(false);
-  const [showDangerouseMerch, setshowDangerouseMerch] = useState(false);
-  const [showRefrigeratedMerch, setShowRefrigeratedMerch] = useState(false);
-  const [showOversizedMerch, setShowOversizedMerch] = useState(false);
-  const [showBulkClass, setShowBulkClass] = useState(false);
-
+  const [classificationMerchFlags, setClassificationMerchFlags] = useState({
+    showDangerouseMerch : false,
+    showRefrigeratedMerch : false,
+    showOversizedMerch: false,
+    showBulkClassMerch: false,
+  })
 
   const [formData, setFormData] = useState({
     referenceRequest: '',
@@ -141,6 +151,19 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       loadQuotation(quotationId);
     }
   }, [mode, quotationId]);
+
+  /*useEffect(() => {
+    if(showMerchandiseModal){
+
+      setClassificationMerchFlags({
+       showDangerouseMerch : false,
+       showRefrigeratedMerch : false,
+       showOversizedMerch: false,
+       showBulkClassMerch: false,
+      });
+
+    }
+  }, [showMerchandiseModal])*/
 
   const loadCatalogs = async () => {
     try {
@@ -219,7 +242,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       console.log('FormData loaded: ', formData)
 
       if (data.data.services && data.data.services.length > 0) {
-        const loadedServices = data.data.services.map((service: any, idx: number) => {
+          const loadedServices = data.data.services.map((service: any, idx: number) => {
           const shipment = service.shipments?.[0] || {};
           const cargo = service.shipments[0].cargo?.[0] || {};
           const servicesAssociated = shipment.servicesAsociated || [];
@@ -233,7 +256,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           setshowDangerouseMerch(shipment.cargo[0]?. true : false)
           setShowRefrigeratedMerch()
           setShowOversizedMerch()
-          setShowBulkClass()*/
+          setShowBulkClassMerch()*/
 
           //const hasProjection = !!projection.num;
           //const frequencyMap: { [key: number]: string } = { 1: 'semanal', 2: 'mensual', 3: 'anual' };
@@ -294,7 +317,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           };
         });
         setServices(loadedServices);
-        console.log('Loaded services:', loadedServices);
         console.log('services: ', services)
       }
 
@@ -322,7 +344,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       nameService: '',
       used: false, 
       shipments: [{
-        idShipment:0,
+        idShipment: 1,
         origin: '',
         destination: '',
         idTypeShipment: 0,
@@ -345,12 +367,29 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     setServices(services.filter(service => service.idService !== id));
   };
 
-  const removeMerchandise = (serviceId: number, merchandiseId: number) => {
-    setServices(services.map(service =>
+  const removeMerchandise = (serviceId: number,  merchandise: Cargo) => {
+   /* setServices(services.map(service =>
       service.idService === serviceId
-        ? { ...service, merchandise: service.shipments[0].cargo.filter(m => m.id !== merchandiseId) }
+        ? { ...service,
+          merchandise: service.shipments[0].cargo.filter(m => m !== merchandise) }
         : service
-    ));
+    ));*/
+
+    console.log(merchandise)
+    console.log(serviceId)
+
+    setServices(services.map(service => {
+      if (service.idServiceItem === serviceId) {       
+          return {
+            ...service,
+            shipments: service.shipments.map(shipment => shipment.idShipment === 1 ? {
+              ...shipment,
+              cargo: shipment.cargo.filter(merch => merch !== merchandise)
+            }: shipment)
+          };              
+      } return service;
+    }));    
+
   };
 
   const removeExecutive = (id: string) => {
@@ -360,14 +399,21 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const openMerchandiseModal = (serviceId: number, cargo?: Cargo) => {    
     setCurrentServiceId(serviceId);    
     setEditingMerchandise(cargo || null);    
+    setClassificationMerchFlags({
+      showDangerouseMerch : false,
+      showRefrigeratedMerch : false,
+      showOversizedMerch: false,
+      showBulkClassMerch: false,
+    })
 
     if (cargo) {      
-      const dangerousClass = cargo.classification.find((classification: any) => classification.idClassificationMerchandise === 5);
-     
-      setshowDangerouseMerch(merchandiseForm?.classification.some(classification => classification.classificationMerchandise === 'Peligrosa'))
-      setShowRefrigeratedMerch(merchandiseForm?.classification.some(classification => classification.classificationMerchandise === 'Refrigerada'))
-      setShowOversizedMerch(merchandiseForm?.classification.some(classification => classification.classificationMerchandise === 'Sobredimensionada'))
-      setShowBulkClass(merchandiseForm?.classification.some(classification => classification.classificationMerchandise === 'Granel'))
+
+      setClassificationMerchFlags({
+      showDangerouseMerch : cargo?.classification.some(classification => classification.idClassificationMerchandise === 7),
+      showRefrigeratedMerch : cargo?.classification.some(classification => classification.idClassificationMerchandise === 10),
+      showOversizedMerch: cargo?.classification.some(classification => classification.idClassificationMerchandise === 8),
+      showBulkClassMerch: cargo?.classification.some(classification => classification.idClassificationMerchandise === 5),
+      })
 
       setMerchandiseForm({
         merchandiseName: cargo.merchandiseName,
@@ -383,19 +429,18 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         weigthTotal: cargo.weigthTotal,
         units: cargo.units        
       });
+
       setCurrentPackages(cargo.units || []);
-       console.log(merchandiseForm, currentPackages)
 
     } else {
       setMerchandiseForm({
-        //id: 0,
         merchandiseName: '',
         merchandiseDescription: '',
         classification: [],
         stowable: 0,
         shipmentTypeCargo: '', 
         idUnitMeasurement: 0,
-        unitMeasurement: '',
+        unitMeasurement: '',  
         idUnitWeight: 0,
         unitWeight: '',
         volumeTotal: 0,
@@ -403,15 +448,27 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         units: []
       });
       setCurrentPackages([]);
+      console.log('ELSE', merchandiseForm)
     }
     setShowMerchandiseModal(true);
-    console.log('Serv: ', serviceId, 'cargo', cargo, 'Merch: ', editingMerchandise, 'packages', currentPackages)
+    console.log('OPEN MERCH. MerchForm:', merchandiseForm, 'packages', currentPackages)
   };
 
   const closeMerchandiseModal = () => {
+
     setShowMerchandiseModal(false);
+
+    setClassificationMerchFlags({
+      showDangerouseMerch : false,
+      showRefrigeratedMerch : false,
+      showOversizedMerch: false,
+      showBulkClassMerch: false,
+    })
+
     setEditingMerchandise(null);
+
     setCurrentServiceId(null);
+
   };
 
   const openPackagingModal = () => {
@@ -450,6 +507,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const saveMerchandise = () => {
+    console.log('SAVE', currentServiceId)
 
     if (!currentServiceId) return;
 
@@ -457,56 +515,53 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       showWarning('Por favor ingresa el nombre de la mercancía');
       return;
     }
-
     const { totalVolume, totalWeight } = calculateTotals();
-    console.log('Serv id:', currentServiceId, 'volum: ', totalVolume, 'weight ', totalWeight )
-
     const merchandiseClassifications: any[] = [];
 
     //Dangerous merchandise
-    const dangerouseMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 5))
+    const dangerouseMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 7))
     if (dangerouseMerchandise) {
       const selectedImo = imoList.find(imo => imo._id === dangerouseMerchandise.imo);
       merchandiseClassifications.push({
-        idClassificationMerchandise: 5,
-        classificationMerchandise: t('quote.dangerousClass'),
+        idClassificationMerchandise: 7,
+        classificationMerchandise: 'Peligrosa',
         imo: dangerouseMerchandise?.imo || '',
         imoDescription: dangerouseMerchandise?.description || '',
         un: parseInt(dangerouseMerchandise.un) || 0
       });
     }
 
-    const refrigeratedMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 3))
+    const refrigeratedMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 10))
     if (refrigeratedMerchandise) {
       merchandiseClassifications.push({
-        idClassificationMerchandise: 3,
-        classificationMerchandise: t('quote.refrigeratedClass'),
+        idClassificationMerchandise: 10,
+        classificationMerchandise: 'Refrigerada',
         //_idunit_temperature: refrigeratedMerchandise.temperature === '°C' ? 1 : 2,
         //unit_temperature: merchandiseForm.tempUnit,
         temperature: refrigeratedMerchandise.temperature || ''
       });
     }
 
-    const grainMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 2))
+    const grainMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 5))
     if (grainMerchandise) {
       merchandiseClassifications.push({
-        idClassificationMerchandise: 2,
-        classificationMerchandise: "A granel"
+        idClassificationMerchandise: 5,
+        classificationMerchandise: "Granel"
       });
     }
 
-    const oversizedMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 4))
+    const oversizedMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 8))
     if (oversizedMerchandise) {
       merchandiseClassifications.push({
-        idClassificationMerchandise: 4,
-        classificationMerchandise: t('quote.oversizedClass')
+        idClassificationMerchandise: 8,
+        classificationMerchandise: 'Sobredimensionada'
       });
     }
 
     if (merchandiseClassifications.length === 0) {
       merchandiseClassifications.push({
-        idClassificationMerchandise: 1,
-        classificationMerchandise: t('quote.generalClass')
+        idClassificationMerchandise: 11,
+        classificationMerchandise:'General'
       });
     }
 
@@ -534,14 +589,18 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         if (editingMerchandise) {
           return {
             ...service,
-            merchandise: service.shipments[0].cargo.map(merchandise =>
+            shipments: service.shipments.map(shipment =>  shipment.idShipment === 1 ? {
+              ...shipment,
+              cargo: shipment.cargo.map(merch => merch === editingMerchandise ? newMerchandise : merch )
+            }: shipment)
+            /*merchandise: service.shipments[0].cargo.map(merchandise =>
               merchandise.merchandiseName === editingMerchandise.merchandiseName ? newMerchandise : merchandise
-            )
+            )*/
           };
         } else {
           return {
             ...service,
-            shipments: service.shipments.map(shipment => shipment.idShipment=== 0 ? {
+            shipments: service.shipments.map(shipment => shipment.idShipment=== 1 ? {
               ...shipment,
               cargo:  [...service.shipments[0].cargo, newMerchandise]
             }: shipment)
@@ -550,25 +609,27 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         }
       }
       return service;
-    }
-  ));
+    }));
 
-    console.log('New merch ',newMerchandise, 'editing: ', editingMerchandise, 'Services', services)
+    setMerchandiseForm({
+      merchandiseName: '',
+      merchandiseDescription: '',
+      classification: [],
+      stowable: 0,
+      shipmentTypeCargo: '', 
+      idUnitMeasurement: 0,
+      unitMeasurement: '',  
+      idUnitWeight: 0,
+      unitWeight: '',
+      volumeTotal: 0,
+      weigthTotal: 0,
+      units: []
+    });
+
+    console.log('SAVE MERCH. New merch ',newMerchandise, 'editing: ', editingMerchandise, 'Services', services, "Merch Form", merchandiseForm)
     closeMerchandiseModal();
   };
 
-  const copyMerchandise = (serviceId: number, merchandiseId: number) => {
-    const service = services.find(service => service.idServiceItem === serviceId);
-    const merchToCopy = service?.shipments[0].cargo.find(merch => merch.id === merchandiseId);
-    if (merchToCopy) {
-      const newMerch = { ...merchToCopy, id: Date.now() };
-      setServices(services.map(service =>
-        service.idServiceItem === serviceId
-          ? { ...service, merchandise: [...service.shipments[0].cargo, newMerch] }
-          : service
-      ));
-    }
-  };
 
   const openExecutiveModal = () => {
     setShowExecutiveModal(true);
@@ -665,21 +726,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         servicesAsociated : exists ? currentServices.filter(serv => 
           serv.idServiceAsociated !== serviceAsociated.idServiceAsociated) 
         : [ ...currentServices, serviceAsociated]        
-      };
-       // {
-       // ...shipment,
-      //        const current = shipment.servicesAsociated ?? [],
-       /* servicesAsociated : shipment.servicesAsociated?.map(servAsoc => 
-          servAsoc.idServiceAsociated === serviceAsociated.idServiceAsociated ?
-         );     */
-      })
+      }; 
+    })
     }: service));
   }
 
   const handleStatusUpdate = async (statusId: number, statusName: string) => {
     try {
       
-
       const quotationData = {
         IdRequest: quotationId,       
         IdStatusRequest: statusId,
@@ -758,18 +812,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
    
   };
 
+
   const handleSaveQuotation = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
       setSaving(true);
       const selectedCustomer = customers.find(c => c._id === formData.customerId);
       const selectedRequestType = requestTypes.find(r => r._id as number === 1);
-      const hasAssignedExecutives = executives.length > 0;
-      console.log('services: ', services)
-      console.log('Customer', selectedCustomer)
-      console.log('tipo sol', selectedRequestType)
-      console.log('ej asignados', hasAssignedExecutives)
-      console.log('available serv: ', availableServices)
+      const hasAssignedExecutives = executives.length > 0;      
 
       const quotationData = {
         referenceRequest: formData.referenceRequest,
@@ -808,7 +858,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
             if(shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Seguro')){              
               const insuranceService = availableServices.find(s => s.service_name === 'Seguro');    
-              console.log('asoci: ',availableServices)          
               servicesAssociated.push({
                 idServiceAsociated: insuranceService?._id || null,
                 serviceAsociatedName: 'Seguro'
@@ -864,11 +913,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             const originCountry = countries.find(country => country._id === service.shipments[0].origin.idCountry);
             const destinationCountry = countries.find(country => country._id === shipment.destination.idCountry);   
 
-            console.log('Origen', originCountry)
-            console.log('Destino', destinationCountry)
-
             return {
-              idShipment:index + 1,
+              idShipment: index + 1,
               origin: {
                 idCountry: originCountry._id,
                 countryCode: originCountry.country_code,
@@ -994,6 +1040,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       setSaving(false);
     }
   };
+
 
   const renderZipCodesOriginDestination =  (service : Service) => {
     switch(service.shipments[0].typeShipment){
@@ -1374,11 +1421,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'typeOperation', e.target.value)}
                   className={styles.select}
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}
-                  required
-                >
+                  required>
                   <option value="">{t('quote.select')}</option>
                   <option>{t('quote.export')}</option>
                   <option>{t('quote.import')}</option>
+                  <option>Nacional</option>
+                  <option>Local USA</option>
                 </select>
               </div>  
 
@@ -1607,8 +1655,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     {service.shipments[0].cargo.map((merch, index = 0) => (
                       <tr key={index + 1}>
                         <td>{merch.merchandiseName}</td>
-                        <td>{merch.classification?.some(clas => clas.idClassificationMerchandise === 5) ? 'Si' : 'No'}</td>
-                        <td>{merch.classification?.some(clas => clas.idClassificationMerchandise === 3) ? 'Si' : 'No'}</td>
+                        <td>{merch.classification?.some(clas => clas.idClassificationMerchandise === 7) ? 'Si' : 'No'}</td>
+                        <td>{merch.classification?.some(clas => clas.idClassificationMerchandise === 10) ? 'Si' : 'No'}</td>
                         <td>{merch.stackable ? 'Si' : 'No'}</td>
                         <td>{merch.volumeTotal} KG</td>
                         <td>{merch.weigthTotal} KG</td>
@@ -1617,25 +1665,15 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             <button
                               type="button" 
                               className={styles.iconButtonSmall}
-                              onClick={() => copyMerchandise(service.idService, merch.id)}
-                              title={t('quote.copy')}
-                              disabled={mode === 'view' || formData.idStatusRequest >= 2}
-                            >
-                              <Copy size={14} />
-                            </button>
-                            <button
-                              type="button" 
-                              className={styles.iconButtonSmall}
-                              onClick={() => removeMerchandise(service.idService, merch.id)}
+                              onClick={() => removeMerchandise(service.idServiceItem, merch)}
                               title={t('quote.delete')}
-                              disabled={mode === 'view' || formData.idStatusRequest >= 2}
-                            >
+                              disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                               <Trash2 size={14} />
                             </button>
                             <button
                               type="button" 
                               className={styles.viewButtonGreen}
-                              onClick={() => openMerchandiseModal(service.idService, merch)}
+                              onClick={() => openMerchandiseModal(service.idServiceItem, merch)}
                               title={t('quote.view')}>
                               <Eye size={14} />
                             </button>
@@ -1692,7 +1730,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       </form>
 
       {showMerchandiseModal && (
-        <div className={styles.modalOverlay} onClick={closeMerchandiseModal}>
+        <div className={styles.modalOverlay} >
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>{t('quote.merchandiseModal')}</h2>
@@ -1755,24 +1793,22 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           type="checkbox"
                           id="peligrosa"
                           className={styles.checkbox}                        
-                          checked={showDangerouseMerch}
+                          checked={classificationMerchFlags.showDangerouseMerch}
                           onChange={(e) => {
-                            setshowDangerouseMerch(!showDangerouseMerch)
-
+                            setClassificationMerchFlags({...classificationMerchFlags, showDangerouseMerch:!classificationMerchFlags.showDangerouseMerch });
                             const currentClassifications =  merchandiseForm?.classification ?? [];
-                            const exists = currentClassifications.some(cl  => cl.idClassificationMerchandise === 5)
+                            const exists = currentClassifications.some(cl  => cl.idClassificationMerchandise === 7)
                             
                             setMerchandiseForm({
                               ...merchandiseForm,
                               classification : exists ? currentClassifications.filter(ccl => 
-                                ccl.idClassificationMerchandise === 5
+                                ccl.idClassificationMerchandise === 7
                               ) : [ ...currentClassifications,  
-                                    { idClassificationMerchandise: 5,
-                                      classificationMerchandise: t('quote.dangerousClass')
+                                    { idClassificationMerchandise: 7,
+                                      classificationMerchandise: 'Peligrosa'
                                     } 
                                   ]
                             })
-                            console.log(merchandiseForm)                       
                           }
                         }
                           disabled={mode === 'view' || formData.idStatusRequest >= 2}
@@ -1786,13 +1822,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           type="checkbox"
                           id="refrigerada"
                           className={styles.checkbox}
-                          checked={showRefrigeratedMerch}
-                          //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, refrigerated: e.target.checked })}
+                          checked={classificationMerchFlags.showRefrigeratedMerch}
                           onChange={(e) => {
-                            setShowRefrigeratedMerch(!showRefrigeratedMerch)                            
+                            setClassificationMerchFlags({...classificationMerchFlags, showRefrigeratedMerch:!classificationMerchFlags.showRefrigeratedMerch });                                                     
+                           
                             merchandiseForm?.classification.push({
-                            idClassificationMerchandise: 3,
-                            classificationMerchandise: 'refrigerada'
+                            idClassificationMerchandise: 10,
+                            classificationMerchandise: 'Refrigerada'
                             })}
                           }
                           disabled={mode === 'view' || formData.idStatusRequest >= 2}
@@ -1806,12 +1842,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           type="checkbox"
                           id="sobredimensionada"
                           className={styles.checkbox}
-                          checked={showOversizedMerch}
+                          checked={classificationMerchFlags.showOversizedMerch}
                           onChange={(e) => {
-                            setShowOversizedMerch(!showOversizedMerch)
+                            setClassificationMerchFlags({...classificationMerchFlags, showOversizedMerch: !classificationMerchFlags.showOversizedMerch });                         
                             merchandiseForm?.classification.push({
-                            idClassificationMerchandise: 3,
-                            classificationMerchandise: t('quote.oversizedClass'),
+                            idClassificationMerchandise: 8,
+                            classificationMerchandise: 'Sobredimensionada',
                             })}
                           }
                           disabled={mode === 'view' || formData.idStatusRequest >= 2}
@@ -1825,12 +1861,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           type="checkbox"
                           id="granel"
                           className={styles.checkbox}
-                          checked={showBulkClass}
+                          checked={classificationMerchFlags.showBulkClassMerch}
                            onChange={(e) => {
-                            setShowBulkClass(!showBulkClass)
+                            setClassificationMerchFlags({...classificationMerchFlags, showBulkClassMerch:!classificationMerchFlags.showBulkClassMerch });                         
                             merchandiseForm?.classification.push({
-                            idClassificationMerchandise: 1,
-                            classificationMerchandise: t('quote.bulkClass'),
+                            idClassificationMerchandise: 5,
+                            classificationMerchandise: 'Granel',
                           })
                            }
                           }
@@ -1842,23 +1878,23 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       </div>
                     </div>
                     <div className={styles.classificationColumn}>
-                      {showDangerouseMerch && (
+                      {classificationMerchFlags.showDangerouseMerch && (
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <div className={styles.formGroup}>
                             <label className={styles.label}>{t('quote.imo')}</label>
                             <select
                               className={styles.select}
-                              value={merchandiseForm.classification?.find(classification => classification.classificationMerchandise === 'Peligrosa')?.imo }
+                              value={merchandiseForm.classification?.find(classification => classification.idClassificationMerchandise === 7)?.imo }
                               onChange={(e) => {
                                 const selectedImo = imoList.find(imo_ => imo_.imo === e.target.value);                               
                                 const currentClassifications =  merchandiseForm?.classification ?? [];     
-                                console.log('VALOR: ',e.target.value, 'imo: ' , selectedImo, 'Lista: ', imoList );                           
+                                console.log('IMO', selectedImo, e.target.value)
                                  
                                 setMerchandiseForm({
                                   ...merchandiseForm,
-                                  classification : currentClassifications.map(currentClas => currentClas.idClassificationMerchandise === 5 ? {
+                                  classification : currentClassifications.map(currentClas => currentClas.idClassificationMerchandise === 7 ? {
                                     ...currentClas,
-                                    imo: selectedImo?.imo,
+                                    imo: e.target.value,
                                     imoDescription :  selectedImo?.description
                                   } : currentClas)                                  
                                 })
@@ -1880,12 +1916,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               placeholder="19"
                               className={styles.input}
                               style={{ width: '80px' }}
-                              value={merchandiseForm?.classification.find(classification => classification.classificationMerchandise === 'Peligrosa').un}
+                              value={merchandiseForm?.classification.find(classification => classification.idClassificationMerchandise === 7)?.un || ''}
                               onChange={(e) => {
                                 const currentClassifications =  merchandiseForm?.classification ?? [];                                                                 
                                 setMerchandiseForm({
                                   ...merchandiseForm,
-                                  classification : currentClassifications.map(currentClas => currentClas.idClassificationMerchandise === 5 ? {
+                                  classification : currentClassifications.map(currentClas => currentClas.idClassificationMerchandise === 7 ? {
                                     ...currentClas,
                                     un:  e.target.value
                                   } : currentClas)                                  
@@ -1895,7 +1931,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           </div>
                         </div>
                       )}
-                      {showRefrigeratedMerch && (
+                      {classificationMerchFlags.showRefrigeratedMerch && (
                         <div className={styles.formGroup}>
                           <label className={styles.label}>{t('quote.temperature')}</label>
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -1904,13 +1940,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               placeholder="80"
                               className={styles.input}
                               style={{width: '100px' }}
-                              value={merchandiseForm?.classification?.find(classification => classification.idClassificationMerchandise === 3).temperature || ''}
+                              value={merchandiseForm?.classification?.find(classification => classification.idClassificationMerchandise === 10)?.temperature || ''}
                                onChange={(e) => {
                                 const currentClassifications =  merchandiseForm?.classification ?? [];                                                                 
 
                                 setMerchandiseForm({
                                   ...merchandiseForm,
-                                  classification : currentClassifications.map(currentClas => currentClas.idClassificationMerchandise === 3 ? {
+                                  classification : currentClassifications.map(currentClas => currentClas.idClassificationMerchandise === 10 ? {
                                     ...currentClas,
                                     temperature:  e.target.value
                                   } : currentClas)                                  
