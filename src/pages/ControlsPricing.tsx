@@ -145,7 +145,10 @@ export function ControlsPricing() {
     if (dateFilter !== 'all') {
       const now = new Date();
       filtered = filtered.filter(q => {
-        const requestDate = new Date(q.dateRequest);
+        //const requestDate = new Date(q.dateRequest);
+        const requestDate = new Date(q.dateRequest.substring(0, 10)+ "T00:00:00");
+        now.setHours(0, 0, 0, 0);
+        requestDate.setHours(0, 0, 0, 0);
         const diffDays = Math.ceil((now.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
         console.log('Filter days: ' , q.referenceRequest , q.dateRequest, diffDays)
 
