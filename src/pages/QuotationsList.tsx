@@ -76,8 +76,8 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       console.log(data.data);
 
       const sortdata = [...data.data].sort((a, b) => {
-        if(a.idStatusRequest === 3 && b.idStatusRequest !== 3) return 1; // a va despues de b
-        if(a.idStatusRequest !== 3 && b.idStatusRequest === 3) return -1; // a va antes de b
+        if(a.idStatusRequest === 10 && b.idStatusRequest !== 10) return 1; // a va despues de b
+        if(a.idStatusRequest !== 10 && b.idStatusRequest === 10) return -1; // a va antes de b
         //(a.deadline_date > b.deadline_date) ? 1 : -1
         const a_deadline = a.dateDeadline ? new Date(a.dateDeadline).getTime() : Infinity;
         const b_deadline = b.dateDeadline ? new Date(b.dateDeadline).getTime() : Infinity;
@@ -161,7 +161,10 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
     if (dateFilter !== 'all') {
       const now = new Date();
       filtered = filtered.filter(q => {
-        const requestDate = new Date(q.dateRequest);
+        //const requestDate = new Date(q.dateRequest);
+        const requestDate = new Date(q.dateRequest.substring(0, 10)+ "T00:00:00");
+        now.setHours(0, 0, 0, 0);
+        requestDate.setHours(0, 0, 0, 0);
         const diffDays = Math.ceil((now.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
         console.log('Filter days: ' , q.referenceRequest , q.dateRequest, diffDays)
 
