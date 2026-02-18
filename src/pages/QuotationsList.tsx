@@ -648,8 +648,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
               ? t('quote.noResultsFilters')
               : t('quote.startNewQuotation')}
           </p>
-          <button className={styles.greenButton} onClick={onCreateNew}>
-            <Plus size={20} />
+          
         </div>
       )}
       </div>
