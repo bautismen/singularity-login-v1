@@ -1406,7 +1406,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   Tipo Carga
                 </label>
                 <select
-                  value={service.nameService === "Maritimo FCL" || service.nameService === "Terrestre FTL"  ? 'Consolidado' : 'Full' }
+                  value={service.nameService === "Maritimo FCL" || service.nameService === "Terrestre FTL"  ? 'Full' : 'Consolidado' }
                   //onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                   className={styles.select}
                   disabled
