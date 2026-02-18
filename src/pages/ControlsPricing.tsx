@@ -94,8 +94,8 @@ export function ControlsPricing() {
   };
 
   const handleAddControl = (requestId: string) => {
-    const r = requests.find(r => r._id === requestId);
-    if (r?.assignedTo?.some(a => a.idUser === user._id)) {
+    const re = requests.find(r => r.id === requestId);
+    if (re?.assignedTo?.some(a => a.idUser === user._id)) {
       setSelectedRequestId(requestId);
       setSelectedControlId(null);
       setShowForm(true);
