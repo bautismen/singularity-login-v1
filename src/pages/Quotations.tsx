@@ -1348,10 +1348,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   Tipo Carga
                 </label>
                 <select
-                  value={service.idService === 2 || service.idService === 3  ? 'Consolidado' : 'Full' }
+                  value={service.nameService === "Maritimo FCL" || service.nameService === "Terrestre FTL"  ? 'Consolidado' : 'Full' }
                   //onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                   className={styles.select}
-                  disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
+                  disabled
                   required
                 >
                   <option value="">{t('quote.select')}</option>                
@@ -1859,7 +1859,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                                   classification : currentClassifications.map(currentClas => currentClas.idClassificationMerchandise === 5 ? {
                                     ...currentClas,
                                     imo: selectedImo?.imo,
-                                    imoDescription :  selectedImo?.imoDescription
+                                    imoDescription :  selectedImo?.description
                                   } : currentClas)                                  
                                 })
                                 
