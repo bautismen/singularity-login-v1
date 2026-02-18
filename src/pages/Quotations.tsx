@@ -772,7 +772,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const handleAsignateto = async () => {
     try {
       
-
       const quotationData = {
         IdRequest: quotationId,       
         Employees: executives.map(exec => ({
@@ -1159,7 +1158,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           <button type="button" className={styles.actionBarResetButton}>
             <RotateCcw size={18} />
           </button>
-           <button type="button" className={styles.actionBarResetButton} onClick={handleAsignateto} >
+           <button type="button" className={styles.actionBarResetButton} onClick={handleAsignateto} hidden={formData.idStatusRequest <= 2} >
             <User size={18} />
             <span>{'Agregar'}</span>
           </button>
@@ -1348,7 +1347,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 type="button" 
                 className={styles.sendButton}
                 onClick={handleSendQuotation}
-                disabled={saving}>
+                disabled={saving} 
+                hidden={formData.idStatusRequest >= 2}>                  
                 {t('quote.send')}
               </button>
             </div>
