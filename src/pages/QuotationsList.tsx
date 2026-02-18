@@ -26,7 +26,7 @@ interface QuotationsListProps {
 export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListProps) {
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { showSuccess, showError } = useNotification();
+  const { showInfo, showError } = useNotification();
   const [quotations, setQuotations] = useState<QuotationRequest[]>([]);
   const [filteredQuotations, setFilteredQuotations] = useState<QuotationRequest[]>([]);
   const [loading, setLoading] = useState(false);
@@ -68,7 +68,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       }
 
        if (response.status === 204) {
-        showSuccess('No hay solicitudes disponibles');        
+        showInfo('No hay solicitudes disponibles');        
         return;
       }
       

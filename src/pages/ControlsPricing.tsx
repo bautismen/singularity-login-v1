@@ -11,7 +11,7 @@ import styles from './ControlsPricing.module.css';
 
 export function ControlsPricing() {
   const { t } = useLanguage();
-  const { showSuccess, showError} = useNotification();
+  const { showInfo, showError, showWarning} = useNotification();
   const [requests, setRequests] = useState<ResquetQuote[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<ResquetQuote[]>([]);
   const [loading, setLoading] = useState(false);
@@ -68,14 +68,15 @@ export function ControlsPricing() {
       setLoading(true);
       const data = await controlsPricingService.getAll();
       if (data.message === 'No hay solicitudes disponibles') {
-        showSuccess(data.message);
+        showInfo(data.message);
         return;
       }
       let filtered = [...data.data];    
       const excludedEmails = [
         "maria.cervantes@kromlogistica.com",
         "estela.guerrero@kromlogistica.com",
-        "magali.tamayo@kromlogistica.com"        
+        "magali.tamayo@kromlogistica.com",
+        "erick.barrientos@kromlogistica.com"        
       ];
 
       if (!excludedEmails.includes(user.email)) {
@@ -93,9 +94,14 @@ export function ControlsPricing() {
   };
 
   const handleAddControl = (requestId: string) => {
-    setSelectedRequestId(requestId);
-    setSelectedControlId(null);
-    setShowForm(true);
+    const r = requests.find(r => r._id === requestId);
+    if (r?.assignedTo?.some(a => a.idUser === user._id)) {
+      setSelectedRequestId(requestId);
+      setSelectedControlId(null);
+      setShowForm(true);
+    } else {
+      showWarning('El usuario no es el ejecutivo asignado a la solicitud, no puede agregar controles');
+    }
   };
 
   const handleEditControl = (requestId: string, controlId: string) => {
