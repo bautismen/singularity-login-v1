@@ -268,7 +268,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={statusFilter.includes('1')}
                 onChange={(e) => handleRequesStatus(e.target.value)}
               />
-              <span>NUEVA</span>
+              <span>CREADA</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -282,8 +282,8 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
             <label className={styles.radioLabel}>
               <input
                 type="checkbox"
-                value="4"
-                checked={statusFilter.includes('4')}
+                value="3"
+                checked={statusFilter.includes('3')}
                 onChange={(e) => handleRequesStatus(e.target.value)}
               />
               <span>ASIGNADA</span>
@@ -309,8 +309,8 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
             <label className={styles.radioLabel}>
               <input
                 type="checkbox"
-                value="3"
-                checked={statusFilter.includes('3')}
+                value="10"
+                checked={statusFilter.includes('10')}
                 onChange={(e) => handleRequesStatus(e.target.value)}
               />
               <span>CANCELADA</span>
@@ -614,7 +614,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                   <button
                     className={`${styles.actionButton} ${styles.editButton}`}
                     onClick={()=> { 
-                      if (quotation.idStatusRequest === 3) {
+                      if (quotation.idStatusRequest === 10) {
                         onView(quotation.id)
                       }
                       else {   
