@@ -519,6 +519,7 @@ const translations = {
     'user.admin': 'Administrador',
     'modal.message': '¿Desea continuar con la eliminación?',
     'modal.title': 'Está a punto de eliminar este {name}.',
+    'ctrlpricing.selectprov': 'Debe seleccionar un proveedor',
   },
   en: {
     'app.title': 'Singularity',
@@ -1028,6 +1029,7 @@ const translations = {
     'user.admin': 'Administrator',
     'modal.title': 'This {name} is about to be deleted.',
     'modal.message': 'Do you wish to continue with the removal?',
+    'ctrlpricing.selectprov': 'You must select a provider',
   },
 };
 

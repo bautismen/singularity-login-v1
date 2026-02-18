@@ -154,8 +154,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const addSupplier = () => {  
     
-    if (suppliersCombo?.supplier_associated_name ==='Seleccionar' || suppliersCombo?.supplier_associated_name === undefined || suppliersCombo?.supplier_associated_name === '') {
-      showError('Debe seleccionar un proveedor');
+    if (suppliersCombo?.supplier_associated_name ===t('ctrlpricing.select') || suppliersCombo?.supplier_associated_name === undefined || suppliersCombo?.supplier_associated_name === '') {
+      showError(t('ctrlpricing.selectprov'));
       return;
     }    
 
@@ -572,7 +572,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                       })
                     }                    
                   >
-                    <option value="">Seleccionar</option>
+                    <option value="">{t('ctrlpricing.select')}</option>
                     {selectsuppliers.map((suppliers) => (
                       <option key={suppliers._id} value={suppliers._id}>
                         {suppliers.fiscal_data?.business_name}
