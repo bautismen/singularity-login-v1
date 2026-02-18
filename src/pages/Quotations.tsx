@@ -726,7 +726,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
       if (quotationId) {
         await quotationService.AsignateExecutive(quotationData);
-        showSuccess(t('quote.success.executiveAssigned'));
+        showSuccess(t('quote.executiveAssigned'));
       }
 
       if (onBack) {
