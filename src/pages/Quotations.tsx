@@ -526,7 +526,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         idClassificationMerchandise: 7,
         classificationMerchandise: 'Peligrosa',
         imo: dangerouseMerchandise?.imo || '',
-        imoDescription: dangerouseMerchandise?.description || '',
+        imoDescription: dangerouseMerchandise?.imoDescription || '',
         un: parseInt(dangerouseMerchandise.un) || 0
       });
     }

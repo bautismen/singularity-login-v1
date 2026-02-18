@@ -11,7 +11,7 @@ import styles from './ControlsPricing.module.css';
 
 export function ControlsPricing() {
   const { t } = useLanguage();
-  const { showError } = useNotification();
+  const { showSuccess, showError} = useNotification();
   const [requests, setRequests] = useState<ResquetQuote[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<ResquetQuote[]>([]);
   const [loading, setLoading] = useState(false);
@@ -67,7 +67,11 @@ export function ControlsPricing() {
     try {
       setLoading(true);
       const data = await controlsPricingService.getAll();
-      let filtered = [...data];    
+      if (data.message === 'No hay solicitudes disponibles') {
+        showSuccess(data.message);
+        return;
+      }
+      let filtered = [...data.data];    
       const excludedEmails = [
         "maria.cervantes@kromlogistica.com",
         "estela.guerrero@kromlogistica.com",

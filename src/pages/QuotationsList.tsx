@@ -26,7 +26,7 @@ interface QuotationsListProps {
 export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListProps) {
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { showError } = useNotification();
+  const { showSuccess, showError } = useNotification();
   const [quotations, setQuotations] = useState<QuotationRequest[]>([]);
   const [filteredQuotations, setFilteredQuotations] = useState<QuotationRequest[]>([]);
   const [loading, setLoading] = useState(false);
@@ -66,6 +66,12 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       if (!response.ok) {
         throw new Error('Error al cargar las cotizaciones');
       }
+
+       if (response.status === 204) {
+        showSuccess('No hay solicitudes disponibles');        
+        return;
+      }
+      
       const data = await response.json();
       console.log(data.data);
 

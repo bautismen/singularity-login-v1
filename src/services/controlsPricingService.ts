@@ -14,10 +14,22 @@ export const controlsPricingService = {
     });
 
     if (!response.ok) {
-      throw new Error('Error al cargar las cotizaciones');
+      
+        throw new Error('Error al cargar las cotizaciones');      
     }
-
-    const data = await response.json();    
-    return data.data;
+    
+    if (response.status === 204) {
+        return {
+        message: 'No hay solicitudes disponibles',
+        data: [],
+        };
+      }
+      else {
+        const data = await response.json();
+        return {
+            message: '',
+            data: data.data || [],
+        }; 
+      }
   },
 };
