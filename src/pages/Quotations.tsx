@@ -672,6 +672,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     }: service));
   };
 
+  const handleTypeOperationChange = (idServiceItem: number, idShipment: number, value: number, text: string) => {
+    setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
+      ...service,
+      shipments: service.shipments.map(shipment => shipment.idShipment=== idShipment ? {
+        ...shipment,
+        idTypeOperation: value, 
+        typeOperation: text 
+      }: shipment)
+    }: service));
+  };
+
   const updateOrigin = (idServiceItem: number, idShipment: number,  field: keyof any, value: any) => {
     console.log('origin', value, 'id shipment: ', idShipment, 'services', services );
     setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
@@ -1417,16 +1428,23 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   {t('quote.operation')}
                 </label>
                 <select
-                  value={service.shipments[0].typeOperation}
-                  onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'typeOperation', e.target.value)}
+                  value={service.shipments[0].idTypeOperation}
+                  onChange={(e) => //updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'typeOperation', e.target.value)}
+                    handleTypeOperationChange(
+                      service.idServiceItem,
+                      service.shipments[0].idShipment,
+                      Number(e.target.value),
+                      e.target.options[e.target.selectedIndex].text
+                    )
+                  }
                   className={styles.select}
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}
                   required>
                   <option value="">{t('quote.select')}</option>
-                  <option>{t('quote.export')}</option>
-                  <option>{t('quote.import')}</option>
-                  <option>Nacional</option>
-                  <option>Local USA</option>
+                  <option value={1}>{t('quote.import')}</option>
+                  <option value={2}>{t('quote.export')}</option>
+                  <option value={3}>{'Nacional'}</option>
+                  <option value={4}>{'Local USA'}</option>
                 </select>
               </div>  
 
