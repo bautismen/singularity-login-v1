@@ -152,7 +152,14 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     }
   };
 
-  const addSupplier = () => {    
+  const addSupplier = () => {  
+    
+    if (suppliersCombo?.supplier_associated_name ==='Seleccionar' || suppliersCombo?.supplier_associated_name === undefined || suppliersCombo?.supplier_associated_name === '') {
+      showError('Debe seleccionar un proveedor');
+      return;
+    }    
+
+    
     setSuppliers([...suppliers, {
       idsuplier: suppliersCombo?.idsuplier,
       supplier_associated_name: suppliersCombo?.supplier_associated_name

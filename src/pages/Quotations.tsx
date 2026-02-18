@@ -470,8 +470,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       merchandiseClassifications.push({
         idClassificationMerchandise: 5,
         classificationMerchandise: t('quote.dangerousClass'),
-        imo: selectedImo?.imo || '',
-        imoDescription: selectedImo?.description || '',
+        imo: dangerouseMerchandise?.imo || '',
+        imoDescription: dangerouseMerchandise?.description || '',
         un: parseInt(dangerouseMerchandise.un) || 0
       });
     }
