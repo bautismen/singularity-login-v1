@@ -758,6 +758,20 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     }: service));
   };
 
+  const handleTypeShipmentChange = (idServiceItem: number, idShipment: number, value: number, text: string) => {
+    console.log('ANTES', JSON.stringify(services, null, 2));
+
+    setServices(prevServices => 
+      prevServices.map(service => service.idServiceItem === idServiceItem ? {
+      ...service,
+      shipments: service.shipments.map(shipment => shipment.idShipment === idShipment ? {
+        ...shipment,
+        idTypeShipment: value,
+        typeShipment: text
+      }: shipment)
+    }: service));
+  };
+
   const handleStatusUpdate = async (statusId: number, statusName: string) => {
     try {
       
@@ -1493,15 +1507,22 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <span className={styles.required}>*</span>Tipo de envío
                 </label>
                 <select
-                  value={service.shipments[0].typeShipment  }
-                  onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'typeShipment', e.target.value)}
+                  value={service.shipments[0].idTypeShipment}
+                  onChange={(e) => //updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'typeShipment', e.target.value)}
+                  handleTypeShipmentChange(
+                      service.idServiceItem,
+                      service.shipments[0].idShipment,
+                      Number(e.target.value),
+                      e.target.options[e.target.selectedIndex].text
+                    )
+                  }
                   className={styles.select}
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <option value="">{t('quote.select')}</option>
-                  <option>{t('quote.doorToDoor')}</option>
-                  <option>{t('quote.portToPort')}</option>
-                  <option>{t('quote.doorToPort')}</option>
-                  <option>{t('quote.portToDoor')}</option>
+                  <option value={1}>{t('quote.doorToDoor')}</option>
+                  <option value={2}>{t('quote.portToPort')}</option>
+                  <option value={3}>{t('quote.doorToPort')}</option>
+                  <option value={4}>{t('quote.portToDoor')}</option>
                 </select>
               </div>    
 
