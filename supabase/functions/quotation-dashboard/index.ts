@@ -73,13 +73,20 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    const acceptedByChannel = dashboardData.acceptedByChannel || [];
+
+    const channelPerformance = acceptedByChannel.map((item: any) => ({
+      channelName: item.channelName || item._id || 'Unknown',
+      value: item.count || item.value || 0
+    }));
+
     const result = {
-      channelPerformance: dashboardData.channelPerformance || [],
+      channelPerformance: channelPerformance,
       statusPercentageCurrentMonth: dashboardData.statusPercentageCurrentMonth || [],
       totalQuotations: dashboardData.totalQuotations || 0,
     };
 
-    console.log("Quotation dashboard data:", result);
+    console.log("Quotation dashboard data:", JSON.stringify(result, null, 2));
 
     return new Response(
       JSON.stringify(result),
