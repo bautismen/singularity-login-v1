@@ -206,7 +206,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const imoData = await imoRes.json();
 
       console.log('customer: ', customersData);
-      //console.log('ejecutivos', executivesData);
+      console.log('services: ', services)
 
       setCustomers(customersData.filter((c: any) => c.status === 'activo' || c.datastate === 1));
       setRequestTypes(requestTypesData.filter((r: any) => r.status === 1));
@@ -358,7 +358,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         typeShipment: '',
         idTypeOperation: 0,
         typeOperation: '',
-        idInconterm: 0,
+        idIncoterm: 0,
         incoterm: '',
         departureDateAproximate: '',
         projectionShipment: '', 
@@ -370,8 +370,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     setServices([...services, newService]);
   };
 
-  const removeService = (id: number) => {
-    setServices(services.filter(service => service.idService !== id));
+  const removeService = (idServiceItem: number) => {
+    setServices(services.filter(service => service.idServiceItem !== idServiceItem));
   };
 
   const removeMerchandise = (serviceId: number,  merchandise: Cargo) => {
@@ -381,10 +381,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           merchandise: service.shipments[0].cargo.filter(m => m !== merchandise) }
         : service
     ));*/
-
-    console.log(merchandise)
-    console.log(serviceId)
-
     setServices(services.map(service => {
       if (service.idServiceItem === serviceId) {       
           return {
@@ -514,7 +510,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const saveMerchandise = () => {
-    console.log('SAVE', currentServiceId)
 
     if (!currentServiceId) return;
 
@@ -654,10 +649,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     closeExecutiveModal();
   };
 
-  const duplicateService = (id: number) => {
-    const serviceToDuplicate = services.find(service => service.idServiceItem === id);
+  const duplicateService = (idServiceItem: number) => {
+    const serviceToDuplicate = services.find(service => service.idServiceItem === idServiceItem);
     if (serviceToDuplicate) {
-      const newService = { ...serviceToDuplicate, id: Date.now() };
+      const newService = { ...serviceToDuplicate, idServiceItem: services.length + 1 };
       setServices([...services, newService]);
     }
   };
@@ -672,7 +667,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const updateShipment =(idServiceItem: number, idShipment: number,  field: keyof Shipment, value: any) => {
     setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
       ...service,
-      shipments: service.shipments.map(shipment => shipment.idShipment=== idShipment ? {
+      shipments: service.shipments.map(shipment => shipment.idShipment === idShipment ? {
         ...shipment,
         [field]: value
       }: shipment)
@@ -708,7 +703,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     console.log('destination', value, 'id shipment: ', idShipment, 'services', services );
     setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
       ...service,
-      shipments: service.shipments.map(shipment => shipment.idShipment=== idShipment ? {
+      shipments: service.shipments.map(shipment => shipment.idShipment === idShipment ? {
         ...shipment,
         destination : {
           ...shipment.destination,
@@ -748,6 +743,20 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     })
     }: service));
   }
+
+  const handleIncotermChange = (idServiceItem: number, idShipment: number, value: number, text: string) => {
+    console.log('ANTES', JSON.stringify(services, null, 2));
+
+    setServices(prevServices => 
+      prevServices.map(service => service.idServiceItem === idServiceItem ? {
+      ...service,
+      shipments: service.shipments.map(shipment => shipment.idShipment === idShipment ? {
+        ...shipment,
+        idIncoterm: value,
+        incoterm: text
+      }: shipment)
+    }: service));
+  };
 
   const handleStatusUpdate = async (statusId: number, statusName: string) => {
     try {
@@ -837,6 +846,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const selectedCustomer = customers.find(c => c._id === formData.customerId);
       const selectedRequestType = requestTypes.find(r => r._id as number === 1);
       const hasAssignedExecutives = executives.length > 0;      
+      console.log('DESPUES',JSON.stringify(services, null, 2));
 
       const quotationData = {
         referenceRequest: formData.referenceRequest,
@@ -845,7 +855,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         dateRequest: new Date(formData.created),
         dateDeadline: formData.responseDeadline ? new Date(formData.responseDeadline) : null,
         idRequestType:  formData.requestTypeId,
-        typeRequest:selectedRequestType.request_type_name,
+        typeRequest: formData.requestType,
         priority: formData.isPriority ? 1 : 0,
         licitation: formData.isQuote ? 1: 0, 
         dateCreated: new Date().toISOString(),
@@ -865,12 +875,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           nameEmployee: exec.nameEmployee,
           idUser: exec.idUser
           //control_number: 'SN',
-        })),        
-       
+        })),       
+         
+               
         services: services.map((service, idx) => {      
                                                          
           const shipmentsInService = service.shipments.map((shipment, index) => {
-            
+           
             const servicesAssociated: any[] = [];
 
             if(shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Seguro')){              
@@ -946,15 +957,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               typeShipment: shipment.typeShipment,
               idTypeOperation: shipment.idTypeOperation,
               typeOperation: shipment.typeOperation,
-              idInconterm: shipment.idInconterm,
+              idIncoterm: shipment.idIncoterm,
               incoterm: shipment.incoterm,
               departureDateAproximate: shipment.departureDateAproximate ? new Date(shipment.departureDateAproximate): null,
-              projectionShipment: {
-                frecuency:  'semanal',
-                idTypeMesurementFrecuency: 1,
-                measurementFrecuency:  "toneladas",
-                number: 1,
-              },
+              projectionShipment:shipment.projectionShipment ? projectionShipment : null,
               comments: shipment.comments,
               ...(servicesAssociated.length > 0 && { servicesAsociated: servicesAssociated }),
               
@@ -977,7 +983,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   height : parseInt(unitMerch.height),
                   weight : parseInt(unitMerch.weight),
                   idUnitCargo : parseInt(unitMerch.idUnitCargo) || 1,
-                  unitCargo : unitMerch.unitCargo || 'Caja',
+                  unitCargo : unitMerch.unitCargo,
                 }))
               })), 
             }
@@ -1367,17 +1373,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         <h2 className={styles.sectionTitle}>{t('quote.services')}</h2>
 
         {services.map((service, index) => (
-          <div key={service.idService} className={styles.serviceCard}>
+          <div key={service.idServiceItem} className={styles.serviceCard}>
             <div className={styles.serviceHeader}>
               <div className={styles.serviceNumber}>{index + 1}</div>
               <div className={styles.serviceActions}>
-                <button type="button" className={styles.iconButton} onClick={() => duplicateService(service.idService)} disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                <button type="button" className={styles.iconButton} onClick={() => duplicateService(service.idServiceItem)} disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <Copy size={18} />
                 </button>
                 <button
                     type="button" 
                     className={`${styles.iconButton} ${styles.danger}`}
-                    onClick={() => removeService(service.idService)}
+                    onClick={() => removeService(service.idServiceItem)}
                     disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                     <X size={18} />
                 </button>               
@@ -1461,14 +1467,21 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   {t('quote.incoterm')}
                 </label>
                 <select
-                  value={service.shipments[0].incoterm}
-                  onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'incoterm', e.target.value)}
+                  value={service.shipments[0].idIncoterm || ''}
+                  onChange={(e) => //updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'incoterm', e.target.value)}
+                  handleIncotermChange(
+                      service.idServiceItem,
+                      service.shipments[0].idShipment,
+                      Number(e.target.value),
+                      e.target.options[e.target.selectedIndex].text
+                    )
+                  }
                   className={styles.select}
                   disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
                   required>
                   <option value="">{t('quote.select')}</option>
                   {incoterms.map((inc) => (
-                    <option key={inc._id} value={inc.incoterm}>
+                    <option key={inc._id} value={inc._id}>
                       {inc.incoterm}
                     </option>
                   ))}
@@ -2016,7 +2029,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       <tbody>
                         {currentPackages.map((pkg) => (
                           <tr key={pkg.id}>
-                            <td>{pkg.type}</td>
+                            <td>{pkg.unitCargo}</td>
                             <td>{pkg.quantity}</td>
                             <td>{pkg.length}</td>
                             <td>{pkg.height}</td>
@@ -2130,12 +2143,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   defaultValue=""
                 >
                   <option value="">{t('quote.selectOption')}</option>
-                  <option>{t('quote.box')}</option>
-                  <option>{t('quote.bundle')}</option>
-                  <option>{t('quote.pallet')}</option>
-                  <option>{t('quote.container')}</option>
-                  <option>{t('quote.drum')}</option>
-                  <option>{t('quote.sack')}</option>
+                  <option value={4}>{t('quote.box')}</option>
+                  <option value={9}>{t('quote.bundle')}</option>
+                  <option value={18}>{t('quote.pallet')}</option>
+                  <option value={6}>{t('quote.container')}</option>
+                  <option value={17}>{t('quote.drum')}</option>
+                  <option value={15}>{t('quote.sack')}</option>
                 </select>
               </div>
               <div className={styles.formGroup}>
@@ -2202,16 +2215,20 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <button
                 className={styles.saveModalButton}
                 onClick={() => {
-                  const type = (document.getElementById('package-type') as HTMLSelectElement).value;
+                  const selectElement = document.getElementById('package-type') as HTMLSelectElement;
+
+                  const UnitCargo = selectElement.options[selectElement.selectedIndex].text;
                   const quantity = (document.getElementById('package-quantity') as HTMLInputElement).value;
                   const length = (document.getElementById('package-length') as HTMLInputElement).value;
                   const height = (document.getElementById('package-height') as HTMLInputElement).value;
                   const width = (document.getElementById('package-width') as HTMLInputElement).value;
-                  const weight = (document.getElementById('package-weight') as HTMLInputElement).value;
+                  const weight = (document.getElementById('package-weight') as HTMLInputElement).value;                
 
-                  if (type && quantity && length && height && width && weight) {
+                  console.log('CARGO: ', selectElement.value, UnitCargo )
+                  if (UnitCargo && quantity && length && height && width && weight) {
                     addPackage({
-                      type,
+                      idUnitCargo : parseInt(selectElement.value),
+                      unitCargo: UnitCargo,
                       quantity: parseInt(quantity),
                       length: length,
                       height: height,

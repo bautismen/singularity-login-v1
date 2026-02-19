@@ -37,7 +37,7 @@ export interface Shipment{
   typeShipment: string;
   idTypeOperation: number;
   typeOperation: string;
-  idInconterm: number;
+  idIncoterm: number;
   incoterm: string;
   departureDateAproximate?: string;
   projectionShipment?: any; 
