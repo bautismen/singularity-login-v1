@@ -154,7 +154,9 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const addSupplier = () => {  
     
-    if (suppliersCombo?.supplier_associated_name ===t('ctrlpricing.select') || suppliersCombo?.supplier_associated_name === undefined || suppliersCombo?.supplier_associated_name === '') {
+    if (suppliersCombo?.idsuplier ==='' || 
+    suppliersCombo?.idsuplier === undefined || 
+    suppliersCombo?.supplier_associated_name === '0') {
       showError(t('ctrlpricing.selectprov'));
       return;
     }    
@@ -168,6 +170,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       Idsuplier: suppliersCombo?.idsuplier,
       Supplier_associated_name: suppliersCombo?.supplier_associated_name
     }]);
+    
   };
 
   const removeSupplier = (id: number) => {
