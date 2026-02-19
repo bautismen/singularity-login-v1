@@ -12,7 +12,9 @@ const headers = {
 //Obtener clientes
 export async function getCustomers(includeArchived = false): Promise<Customer[]> {
   try {
-    const url = `${SUPABASE_URL}/functions/v1/customers?includeArchived=${includeArchived}`;
+    console.log(SUPABASE_URL);
+    const url = `${SUPABASE_URL}/functions/v1/customers?includeArchived=${true}`;
+    console.log(url);
     const response = await fetch(url, { headers });
 
     if (!response.ok) {

@@ -148,6 +148,72 @@
   color: white;
 }
 
+.catalogsSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.catalogsButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: #d1d5db;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.catalogsButton:hover {
+  background-color: #1e3548;
+  color: white;
+}
+
+.catalogsButton span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.submenu {
+  display: flex;
+  flex-direction: column;
+  padding-left: 2.5rem;
+  margin-top: 0.25rem;
+}
+
+.submenuButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  border: none;
+  border-radius: 0.375rem;
+  color: #9ca3af;
+  font-size: 0.8125rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.submenuButton:hover {
+  background-color: #1e3548;
+  color: #d1d5db;
+}
+
+.submenuButton.active {
+  background-color: #14b8a6;
+  color: white;
+}
+
 .footerButton span {
   overflow: hidden;
   text-overflow: ellipsis;

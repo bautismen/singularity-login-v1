@@ -19,15 +19,7 @@ export function Header() {
     <header className={styles.header}>
       <div className={styles.headerContent}>
         <div className={styles.leftSection}>
-          <img src="/logo_png_small 1.png" alt="Singularity" className={styles.logo} />
-          <div className={styles.searchWrapper}>
-            <Search className={styles.searchIcon} size={18} />
-            <input
-              type="text"
-              placeholder={t('header.search')}
-              className={styles.searchInput}
-            />
-          </div>
+          <img src="/logo_png_small_1.png" alt="Singularity" className={styles.logo} />
         </div>
 
         <div className={styles.rightSection}>

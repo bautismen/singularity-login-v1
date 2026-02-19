@@ -19,7 +19,7 @@ export interface Company {
   _id?: string;
   business_name: string;
   rfc_taxid: string;
-  nationality: 'nacional' | 'extranjero';
+  nationality: string;
   country: string;
   state: string;
   status: 'activo' | 'inactivo' | 'eliminado';
@@ -76,7 +76,12 @@ export interface Customer {
   company_id?: string;
   person_id?: string;
   nationality: 'nacional' | 'extranjero';
+  is_national?: boolean;        
+  is_persona_fisica?: boolean;  
+  curp?: string;               
   datastate: number;
+  client_level?: 'oro' | 'plata' | 'bronce';
+  client_level_id?: 1 | 2 | 3;
   fiscal_data: {
     business_name: string;
     taxid: string;

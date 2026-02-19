@@ -1,26 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Save, RotateCcw, Trash2, ChevronDown, Plus, Edit, Search, X } from 'lucide-react';
+import { Save, RotateCcw, Trash2, Plus, Edit2, Search, X, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Executive, ExecutiveFormData, DEPARTMENTS } from '../types/executive';
-import {
-  getExecutives,
-  createExecutive,
-  updateExecutive,
-  deleteExecutive,
-  checkNominaExists,
-} from '../services/executiveService';
+import { getExecutives, createExecutive, updateExecutive, deleteExecutive, checkNominaExists } from '../services/executiveService';
 import styles from './Executives.module.css';
+import { useNotification } from '../contexts/NotificationContext';
+import { Modal } from '../components/Modal';
+
+const USERS_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/users`;
+const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function Executives() {
   const { t } = useLanguage();
+  const catalogName = t('quote.executive');
+  const {showError } = useNotification();
   const [executives, setExecutives] = useState<Executive[]>([]);
   const [filteredExecutives, setFilteredExecutives] = useState<Executive[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false); 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('active');
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const [users, setUsers] = useState<any[]>([]);
 
   const [formData, setFormData] = useState<ExecutiveFormData>({
     nombre: '',
@@ -31,6 +35,21 @@ export function Executives() {
     email: '',
     departamento: '',
     activo: true,
+    _iduser: '',
+  });
+
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+    showCancel?: boolean;
+  }>({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: ''
   });
 
   useEffect(() => {
@@ -38,11 +57,13 @@ export function Executives() {
   }, []);
 
   useEffect(() => {
+    loadUsers();
     filterExecutives();
   }, [executives, searchTerm, filter]);
 
   const loadExecutives = async () => {
     try {
+      console.log(saving);
       setLoading(true);
       const data = await getExecutives(true);
       setExecutives(data);
@@ -97,9 +118,10 @@ export function Executives() {
       !formData.numero_nomina ||
       !formData.fecha_ingreso ||
       !formData.email ||
-      !formData.departamento
+      !formData.departamento ||
+      !formData._iduser
     ) {
-      showNotification('error', t('exec.requiredFields'));
+      showNotification('error', t('catalog.requiredFields'));
       return false;
     }
 
@@ -117,9 +139,15 @@ export function Executives() {
     return true;
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
     const isValid = await validateForm();
-    if (!isValid) return;
+
+    if (!isValid) {
+      setSaving(false); 
+      return;
+    } 
 
     try {
       if (editingId) {
@@ -129,16 +157,17 @@ export function Executives() {
         await createExecutive(formData);
         showNotification('success', t('exec.successSave'));
       }
-
       resetForm();
       await loadExecutives();
       setShowForm(false);
     } catch (error) {
       showNotification('error', t('exec.errorSave'));
+    }finally {
+      setSaving(false);
     }
   };
 
-  const handleEdit = (executive: Executive) => {
+  const handleEdit = (executive: Executive) => {    
     setFormData({
       nombre: executive.nombre,
       apellido_paterno: executive.apellido_paterno,
@@ -148,23 +177,30 @@ export function Executives() {
       email: executive.email,
       departamento: executive.departamento,
       activo: executive.activo,
+      _iduser: executive._iduser || '',
     });
     setEditingId(executive._id || null);
     setShowForm(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm(t('exec.confirmDelete'))) {
-      return;
-    }
-
-    try {
-      await deleteExecutive(id);
-      showNotification('success', t('exec.successDelete'));
-      await loadExecutives();
-    } catch (error) {
-      showNotification('error', t('exec.errorDelete'));
-    }
+    
+    setModalState({
+      isOpen: true,
+      type: 'confirm',
+      title: t('modal.title').replace('{name}', catalogName.toLowerCase()),
+      message: t('modal.message'),
+      showCancel: true,
+      onConfirm: async () => {
+        try {
+          await deleteExecutive(id);
+          showNotification('success', t('exec.successDelete'));
+          await loadExecutives();
+        } catch (error) {
+          showNotification('error', t('exec.errorDelete'));
+        }
+      }
+    });
   };
 
   const resetForm = () => {
@@ -177,6 +213,7 @@ export function Executives() {
       email: '',
       departamento: '',
       activo: true,
+      _iduser: '',
     });
     setEditingId(null);
   };
@@ -191,10 +228,31 @@ export function Executives() {
     setShowForm(true);
   };
 
+  const loadUsers = async () => {
+    try {
+      const response = await fetch(USERS_API_URL, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al cargar ejecutivos');
+      }
+
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+  };
+
   if (loading) {
     return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Cargando...</div>
+      <div className={styles.loading}>
+          <div className={styles.spinner}></div>
       </div>
     );
   }
@@ -207,13 +265,33 @@ export function Executives() {
         </div>
       )}
 
-      <div className={styles.header}>
-        <h1 className={styles.title}>{t('exec.title')}</h1>
-        {!showForm && (
-          <button className={styles.newButton} onClick={handleNewExecutive}>
-            <Plus size={18} />
-            <span>{t('exec.newExecutive')}</span>
-          </button>
+      <div className={styles.header}>                                
+        {!showForm ? (
+          <>
+           <h1 className={styles.title}>{t('exec.title')}</h1>
+           <div className={styles.buttonGroup}>
+              <button className={styles.headerButton} onClick={handleNewExecutive}>
+                <Plus size={20} />
+              </button>
+              <button onClick={loadExecutives} className={styles.headerButton} disabled={loading}>
+                <RefreshCw size={20} />
+              </button>
+           </div>
+          </>          
+        ): (
+          <div style={{ display: 'flex', alignItems: 'left', gap: '1rem' }}>          
+            <div className={styles.actionBar}>
+              <button
+                onClick={handleCancel}
+                className={styles.actionBarResetButton}
+                title="Volver a lista">
+                <ArrowLeft size={18} />
+              </button>              
+            </div>  
+            <h2 className={styles.formTitle}>
+              {editingId ? t('exec.editExecutive') : t('exec.newExecutive')}
+            </h2>      
+        </div>
         )}
       </div>
 
@@ -267,12 +345,9 @@ export function Executives() {
                   <thead>
                     <tr>
                       <th>{t('exec.numeroNomina')}</th>
-                      <th>{t('exec.nombre')}</th>
-                      <th>{t('exec.apellidoPaterno')}</th>
-                      <th>{t('exec.apellidoMaterno')}</th>
+                      <th>{t('exec.nombre')}</th>                     
                       <th>{t('exec.email')}</th>
                       <th>{t('exec.departamento')}</th>
-                      <th>{t('exec.fechaIngreso')}</th>
                       <th>{t('exec.activo')}</th>
                       <th>{t('exec.actions')}</th>
                     </tr>
@@ -281,12 +356,9 @@ export function Executives() {
                     {filteredExecutives.map((executive) => (
                       <tr key={executive._id}>
                         <td className={styles.nominaCell}>{executive.numero_nomina}</td>
-                        <td>{executive.nombre}</td>
-                        <td>{executive.apellido_paterno}</td>
-                        <td>{executive.apellido_materno}</td>
+                        <td>{executive.nombre} {executive.apellido_paterno} {executive.apellido_materno}</td>
                         <td>{executive.email}</td>
                         <td>{executive.departamento}</td>
-                        <td>{executive.fecha_ingreso}</td>
                         <td>
                           <span
                             className={`${styles.statusBadge} ${
@@ -299,11 +371,11 @@ export function Executives() {
                         <td>
                           <div className={styles.actionButtons}>
                             <button
-                              className={styles.actionButton}
+                              className={`${styles.actionButton} ${styles.edit}`}
                               onClick={() => handleEdit(executive)}
                               title="Editar"
                             >
-                              <Edit size={16} />
+                              <Edit2 size={16} />
                             </button>
                             <button
                               className={`${styles.actionButton} ${styles.danger}`}
@@ -323,34 +395,24 @@ export function Executives() {
           </div>
         </>
       ) : (
-        <div className={styles.section}>
-          <div className={styles.formHeader}>
-            <h2 className={styles.sectionTitle}>
-              {editingId ? t('exec.editExecutive') : t('exec.newExecutive')}
-            </h2>
+        <form onSubmit={handleSave} className={styles.section}>
+          <div className={styles.formHeader}>                        
             <div className={styles.actionBar}>
-              <button className={styles.actionBarSaveButton} onClick={handleSave}>
+              <button type='submit' className={styles.actionBarSaveButton} disabled={saving}>
                 <Save size={18} />
                 <span>{t('exec.save')}</span>
               </button>
-              <button className={styles.actionBarResetButton} onClick={resetForm}>
+              <button type="button" className={styles.actionBarResetButton} onClick={resetForm} disabled={saving}>
                 <RotateCcw size={18} />
               </button>
               {editingId && (
-                <button
-                  className={styles.actionBarDeleteButton}
-                  onClick={() => handleDelete(editingId)}
-                >
+                <button type="button" className={styles.actionBarDeleteButton} disabled={saving}
+                  onClick={() => handleDelete(editingId)}>
                   <Trash2 size={18} />
                 </button>
               )}
-              <button className={styles.actionBarCancelButton} onClick={handleCancel}>
-                <X size={18} />
-                <span>{t('exec.cancel')}</span>
-              </button>
             </div>
           </div>
-
           <div className={styles.formGrid}>
             <div className={styles.formGroup}>
               <label className={styles.label}>
@@ -362,12 +424,12 @@ export function Executives() {
                 value={formData.nombre}
                 onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                 className={styles.input}
+                required
               />
             </div>
-
             <div className={styles.formGroup}>
               <label className={styles.label}>
-                <span className={styles.required}>*</span>
+                <span className={styles.required}>* </span>
                 {t('exec.apellidoPaterno')}
               </label>
               <input
@@ -375,9 +437,9 @@ export function Executives() {
                 value={formData.apellido_paterno}
                 onChange={(e) => setFormData({ ...formData, apellido_paterno: e.target.value })}
                 className={styles.input}
+                required
               />
             </div>
-
             <div className={styles.formGroup}>
               <label className={styles.label}>
                 <span className={styles.required}>*</span>
@@ -388,9 +450,9 @@ export function Executives() {
                 value={formData.apellido_materno}
                 onChange={(e) => setFormData({ ...formData, apellido_materno: e.target.value })}
                 className={styles.input}
+                required
               />
             </div>
-
             <div className={styles.formGroup}>
               <label className={styles.label}>
                 <span className={styles.required}>*</span>
@@ -401,9 +463,9 @@ export function Executives() {
                 value={formData.numero_nomina}
                 onChange={(e) => setFormData({ ...formData, numero_nomina: e.target.value })}
                 className={styles.input}
+                required
               />
             </div>
-
             <div className={styles.formGroup}>
               <label className={styles.label}>
                 <span className={styles.required}>*</span>
@@ -414,9 +476,9 @@ export function Executives() {
                 value={formData.fecha_ingreso}
                 onChange={(e) => setFormData({ ...formData, fecha_ingreso: e.target.value })}
                 className={styles.input}
+                required
               />
             </div>
-
             <div className={styles.formGroup}>
               <label className={styles.label}>
                 <span className={styles.required}>*</span>
@@ -427,9 +489,9 @@ export function Executives() {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className={styles.input}
+                required
               />
             </div>
-
             <div className={styles.formGroup}>
               <label className={styles.label}>
                 <span className={styles.required}>*</span>
@@ -439,7 +501,7 @@ export function Executives() {
                 value={formData.departamento}
                 onChange={(e) => setFormData({ ...formData, departamento: e.target.value })}
                 className={styles.select}
-              >
+                required>
                 <option value="">Seleccionar...</option>
                 {DEPARTMENTS.map((dept) => (
                   <option key={dept} value={dept}>
@@ -448,22 +510,51 @@ export function Executives() {
                 ))}
               </select>
             </div>
-
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
+                <span className={styles.required}>*</span>
+                {t('exec.user')}
+              </label>
+              <select
+                value={formData._iduser}
+                onChange={(e) => setFormData({ ...formData, _iduser: e.target.value })}
+                className={styles.select}
+                required>
+                <option value="">Seleccionar...</option>
+                {users.map((user) => (
+                  <option key={user._id} value={user._id}>
+                    {user.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className={styles.formGroup}>
               <label className={styles.label}>{t('exec.activo')}</label>
               <div className={styles.toggleItem}>
                 <label className={styles.label}>{t('exec.disponible')}</label>
                 <div
                   className={`${styles.toggle} ${formData.activo ? styles.active : ''}`}
-                  onClick={() => setFormData({ ...formData, activo: !formData.activo })}
-                >
+                  onClick={() => setFormData({ ...formData, activo: !formData.activo })}>
                   <div className={styles.toggleThumb}></div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </form>
       )}
+
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        showCancel={modalState.showCancel}
+        confirmText={t('catalog.continue')}
+        cancelText={t('catalog.cancel')}
+      />
+
     </div>
   );
 }

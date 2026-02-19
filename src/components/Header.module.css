@@ -219,16 +219,49 @@
   border-top-color: #374151;
 }
 
+@media (max-width: 768px) {
+  .headerContent {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+  }
+
+  .leftSection {
+    flex-wrap: wrap;
+  }
+
+  .searchWrapper {
+    flex: 1 1 100%;
+    max-width: 100%;
+    order: 3;
+  }
+
+  .rightSection {
+    gap: 0.75rem;
+  }
+
+  .controls {
+    gap: 0.5rem;
+  }
+
+  .languageText {
+    display: none;
+  }
+
+  .divider {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
   .headerContent {
     padding: 0.75rem 1rem;
   }
 
-  .searchWrapper {
-    max-width: 100%;
-  }
-
   .userName {
     display: none;
+  }
+
+  .logo {
+    height: 2rem;
   }
 }

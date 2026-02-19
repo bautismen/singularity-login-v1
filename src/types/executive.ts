@@ -12,6 +12,7 @@ export interface Executive {
   estado: number;
   created_at?: Date;
   updated_at?: Date;
+  _iduser?: string;
 }
 
 export interface ExecutiveFormData {
@@ -23,6 +24,7 @@ export interface ExecutiveFormData {
   email: string;
   departamento: string;
   activo: boolean;
+  _iduser?: string;
 }
 
 export const DEPARTMENTS = [
@@ -35,4 +37,5 @@ export const DEPARTMENTS = [
   'Logística',
   'Comercial',
   'Servicio al Cliente',
+  'Pricing',
 ] as const;
