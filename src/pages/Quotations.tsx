@@ -472,7 +472,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     if (!currentServiceId) return;
 
     if (!merchandiseForm?.merchandiseName.trim()) {
-      showWarning('Por favor ingresa el nombre de la mercancía');
+      showWarning(t('quote.warnings.merchandiseName'));
       return;
     }
     const { totalVolume, totalWeight } = calculateTotals();
@@ -751,7 +751,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }
     } catch (error) {
       console.error('Error updating quotation status:', error);
-      showError('Error al actualizar el estado de la cotización');
+      showError(t('quote.errors.updateStatus'));
     } finally {
       setSaving(false);
     }
@@ -1000,7 +1000,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
     } catch (error) {
       console.error('Error saving quotation:', error);
-      showError('Error al guardar la cotización');
+      showError(t('quote.errors.saveQuotation'));
     } finally {
       setSaving(false);
     }
@@ -1014,12 +1014,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         console.log('UPDATE: ', JSON.stringify(quotationData, null, 2))
         const result = await quotationService.update(quotationData);
         //console.log('Update result:', result);
-        showSuccess('Cotización actualizada exitosamente');
+        showSuccess(t('quote.success.updated'));
       } else {
          console.log('create: ', JSON.stringify(quotationData, null, 2))
         const result = await quotationService.create(quotationData);
         console.log('Create result:', result);
-        showSuccess('Cotización creada exitosamente');
+        showSuccess(t('quote.success.created'));
       }
 
       if (onBack) {
@@ -1027,7 +1027,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }
     } catch (error) {
       console.error('Error in performSave:', error);
-      showError('Error al guardar la cotización');
+      showError(t('quote.errors.saveQuotation'));
     } finally {
       setSaving(false);
     }
@@ -1397,7 +1397,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       Consolidado
                     </option>  
                     <option key='Full' value='Full'>
-                      Full
+                      Lleno
                     </option>                   
                 </select>
               </div>

@@ -71,7 +71,7 @@ export function ControlsPricing() {
     try {
       setLoading(true);
       const data = await controlsPricingService.getAll();
-      if (data.message === 'No hay solicitudes disponibles') {
+      if (data.message ===  t('ctrlpricing.norequests')) {
         showInfo(data.message);
         return;
       }
@@ -80,7 +80,8 @@ export function ControlsPricing() {
         "maria.cervantes@kromlogistica.com",
         "estela.guerrero@kromlogistica.com",
         "magali.tamayo@kromlogistica.com",
-        "erick.barrientos@kromlogistica.com"        
+        "erick.barrientos@kromlogistica.com",
+        "guadalupe.dimas@kromlogistica.com"        
       ];
 
       if (!excludedEmails.includes(user.email)) {
@@ -179,7 +180,7 @@ export function ControlsPricing() {
       );     
     }
 
-    if (executiveFilter === 'seleccionar' && selectedExecutive) {
+    if (executiveFilter === t('ctrlpricing.select') && selectedExecutive) {
       filtered = filtered.filter(r =>
           r.assignedTo?.some(a => a.idExecutive === selectedExecutive)
         );      
@@ -372,12 +373,12 @@ export function ControlsPricing() {
                   type="radio"
                   name="executiveFilter"
                   value="seleccionar"
-                  checked={executiveFilter === 'seleccionar'}
+                  checked={executiveFilter === t('ctrlpricing.select')}
                   onChange={(e) => setExecutiveFilter(e.target.value)}
                 />
                 <span>{t('ctrlpricing.select')}</span>
               </label>
-              {executiveFilter === 'seleccionar' && (
+              {executiveFilter === t('ctrlpricing.select') && (
                 <select
                   className={styles.executiveSelect}
                   value={selectedExecutive}
@@ -398,13 +399,13 @@ export function ControlsPricing() {
               className={styles.resetButton}
               onClick={handleResetFilters}
             >
-              Restaurar
+              {t('filter.restore')}
             </button>
             <button
               className={styles.applyButton}
               onClick={() => setShowAdvancedFilters(false)}
             >
-              Hecho
+              {t('filter.done')}
             </button>
           </div>
         </div>
@@ -541,7 +542,7 @@ export function ControlsPricing() {
                           title="Ver documentos"
                         >
                           <FileText size={16} />
-                          Documentos
+                          {t('ctrlpricing.documents')}
                         </button>
                       )}
                       {attendedServices}/{totalServices} {t('ctrlpricing.servicesattended')}
