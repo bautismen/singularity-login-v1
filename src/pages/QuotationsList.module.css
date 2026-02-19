@@ -638,6 +638,12 @@
   margin-bottom: 2rem;
 }
 
+.headerRow {
+  display: flex;
+  align-items: center;      /* 🔥 Los alinea a la misma altura */
+  justify-content: space-between; /* Opcional: separa título y botón */
+}
+
 @media (max-width: 768px) {
   .cardsGrid {
     grid-template-columns: 1fr;

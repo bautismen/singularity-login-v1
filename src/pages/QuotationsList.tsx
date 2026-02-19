@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Plus, Edit2, Search, RefreshCw, ChevronDown, FileText, Clock, Filter, FilterXIcon  } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Plus, Edit2, Search, RefreshCw, ChevronDown, FileText, Clock, Filter, FilterXIcon, ChevronUp  } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -37,6 +37,16 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
   const [selectedExecutive, setSelectedExecutive] = useState<string>('');
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [requestTypeFilters, setRequestTypeFilters] = useState<number[]>([]);
+
+  const [isOpenStatus, setIsOpenStatus] = useState(false);
+  const [isOpenEjecutivo, setIsOpenEjecutivo] = useState(false);
+  const contentRefStatus = useRef(null);
+  const contentRefEjecutivo = useRef(null);
+
+   const [isOpenFecha, setIsOpenFecha] = useState(false);
+    const [isOpenTipoSol, setIsOpenTipoSol] = useState(false);
+    const contentRefFecha = useRef(null);
+    const contentRefTipoSol = useRef(null);
 
   const [users, setUsers] = useState<any[]>([]);
   const [requestTypes, setRequestTypes] = useState<any[]>([]);
@@ -151,11 +161,11 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
     }
 
     if (executiveFilter === 'solo_yo' && user) {
-      filtered = filtered.filter(q => q.createdBy?.idEmployee === user._id);
+      filtered = filtered.filter(q => q.createdBy?.idUser === user._id);
     }
 
     if (executiveFilter === 'seleccionar' && selectedExecutive) {
-      filtered = filtered.filter(q => q.createdBy?.idEmployee === selectedExecutive);
+      filtered = filtered.filter(q => q.createdBy?.idUser === selectedExecutive);
     }
 
     if (dateFilter !== 'all') {
@@ -269,185 +279,249 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           </div>
 
           <div className={styles.filterSection}>
-            <h4 className={styles.filterTitle}>{t('quote.statusSearch')}</h4>
-            <label className={styles.radioLabel}>
-              <input
-                type="checkbox"
-                value="1"
-                checked={statusFilter.includes('1')}
-                onChange={(e) => handleRequesStatus(e.target.value)}
-              />
-              <span>{t('quote.creada')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="checkbox"
-                value="2"
-                checked={statusFilter.includes('2')}
-                onChange={(e) => handleRequesStatus(e.target.value)}
-              />
-              <span>{t('quote.sent')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="checkbox"
-                value="3"
-                checked={statusFilter.includes('3')}
-                onChange={(e) => handleRequesStatus(e.target.value)}
-              />
-              <span>{t('quote.assigned')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="checkbox"
-                value="5"
-                checked={statusFilter.includes('5')}
-                onChange={(e) => handleRequesStatus(e.target.value)}
-              />
-              <span>{t('quote.quoted')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="checkbox"
-                value="6"
-                checked={statusFilter.includes('6')}
-                onChange={(e) => handleRequesStatus(e.target.value)}
-              />
-              <span>{t('quote.declined')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="checkbox"
-                value="10"
-                checked={statusFilter.includes('10')}
-                onChange={(e) => handleRequesStatus(e.target.value)}
-              />
-              <span>{t('quote.cancelled')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="checkbox"
-                value="7"
-                checked={statusFilter.includes('7')}
-                onChange={(e) => handleRequesStatus(e.target.value)}
-              />
-              <span>{t('quote.expired')}</span>
-            </label>
-          </div>
-
-          <div className={styles.filterSection}>
-            <h4 className={styles.filterTitle}>{t('quote.requestingExecutive')}</h4>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="executiveFilter"
-                value="todos"
-                checked={executiveFilter === 'todos'}
-                onChange={(e) => setExecutiveFilter(e.target.value)}
-              />
-              <span>{t('quote.all')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="executiveFilter"
-                value="solo_yo"
-                checked={executiveFilter === 'solo_yo'}
-                onChange={(e) => setExecutiveFilter(e.target.value)}
-              />
-              <span>{t('quote.onlyMe')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="executiveFilter"
-                value="seleccionar"
-                checked={executiveFilter === 'seleccionar'}
-                onChange={(e) => setExecutiveFilter(e.target.value)}
-              />
-              <span>{t('quote.selectOption')}</span>
-            </label>
-            {executiveFilter === 'seleccionar' && (
-              <select
-                className={styles.executiveSelect}
-                value={selectedExecutive}
-                onChange={(e) => setSelectedExecutive(e.target.value)}>
-                <option value="">{t('quote.selectExecutive')}</option>
-                {users.map((user) => (
-                  <option key={user._id} value={user._id}>
-                    {user.name}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          <div className={styles.filterSection}>
-            <h4 className={styles.filterTitle}>{t('quote.creationDate')}</h4>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="dateFilter"
-                value="hoy"
-                checked={dateFilter === 'hoy'}
-                onChange={(e) => setDateFilter(e.target.value)}
-              />
-              <span>{t('quote.today')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="dateFilter"
-                value="ayer"
-                checked={dateFilter === 'ayer'}
-                onChange={(e) => setDateFilter(e.target.value)}
-              />
-              <span>{t('quote.yesterday')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="dateFilter"
-                value="menos5"
-                checked={dateFilter === 'menos5'}
-                onChange={(e) => setDateFilter(e.target.value)}
-              />
-              <span>{t('quote.lessThan5Days')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="dateFilter"
-                value="menos30"
-                checked={dateFilter === 'menos30'}
-                onChange={(e) => setDateFilter(e.target.value)}
-              />
-              <span>{t('quote.lessThan30Days')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="dateFilter"
-                value="menos365"
-                checked={dateFilter === 'menos365'}
-                onChange={(e) => setDateFilter(e.target.value)}
-              />
-              <span>{t('quote.lessThan365Days')}</span>
-            </label>
-          </div>
-
-          <div className={styles.filterSection}>
-            <h4 className={styles.filterTitle}>{t('quote.requestType')}</h4>
-            {requestTypes.map((type) => (
-              <label key={type._id} className={styles.checkboxLabel}>
+            <div className={styles.headerRow}>
+              <h4 className={styles.filterTitle}>{t('quote.statusSearch')}</h4>
+              <button onClick={() => setIsOpenStatus(!isOpenStatus)} className={styles.iconbutonlucide}>
+              {isOpenStatus ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+            </div>
+             <div
+              ref={contentRefStatus}
+              style={{
+                maxHeight: isOpenStatus
+                  ? contentRefStatus.current?.scrollHeight + "px"
+                  : "0px",
+                overflow: "hidden",
+                transition: "max-height 0.3s ease",
+              }}
+            >     
+              <label className={styles.radioLabel}>
                 <input
                   type="checkbox"
-                  checked={requestTypeFilters.includes(type._id)}
-                  onChange={() => handleRequestTypeToggle(type._id)}
+                  value="1"
+                  checked={statusFilter.includes('1')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
                 />
-                <span>{type.request_type_name.toUpperCase()}</span>
+                <span>{t('quote.creada')}</span>
               </label>
-            ))}
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="2"
+                  checked={statusFilter.includes('2')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.sent')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="3"
+                  checked={statusFilter.includes('3')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.assigned')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="5"
+                  checked={statusFilter.includes('5')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.quoted')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="6"
+                  checked={statusFilter.includes('6')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.declined')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="10"
+                  checked={statusFilter.includes('10')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.cancelled')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="7"
+                  checked={statusFilter.includes('7')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.expired')}</span>
+              </label>
+            </div>
+          </div>
+
+          <div className={styles.filterSection}>
+            <div className={styles.headerRow}>
+              <h4 className={styles.filterTitle}>{t('quote.requestingExecutive')}</h4>
+              <button onClick={() => setIsOpenEjecutivo(!isOpenEjecutivo)} className={styles.iconbutonlucide}>
+                {isOpenEjecutivo ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+            </div>
+             <div
+              ref={contentRefEjecutivo}
+              style={{
+                maxHeight: isOpenEjecutivo
+                  ? contentRefEjecutivo.current?.scrollHeight + "px"
+                  : "0px",
+                overflow: "hidden",
+                transition: "max-height 0.3s ease",
+              }}
+            >   
+                <label className={styles.radioLabel}>
+                  <input
+                    type="radio"
+                    name="executiveFilter"
+                    value="todos"
+                    checked={executiveFilter === 'todos'}
+                    onChange={(e) => setExecutiveFilter(e.target.value)}
+                  />
+                  <span>{t('quote.all')}</span>
+                </label>
+                <label className={styles.radioLabel}>
+                  <input
+                    type="radio"
+                    name="executiveFilter"
+                    value="solo_yo"
+                    checked={executiveFilter === 'solo_yo'}
+                    onChange={(e) => setExecutiveFilter(e.target.value)}
+                  />
+                  <span>{t('quote.onlyMe')}</span>
+                </label>
+                <label className={styles.radioLabel}>
+                  <input
+                    type="radio"
+                    name="executiveFilter"
+                    value="seleccionar"
+                    checked={executiveFilter === 'seleccionar'}
+                    onChange={(e) => setExecutiveFilter(e.target.value)}
+                  />
+                  <span>{t('quote.selectOption')}</span>
+                </label>
+                {executiveFilter === 'seleccionar' && (
+                  <select
+                    className={styles.executiveSelect}
+                    value={selectedExecutive}
+                    onChange={(e) => setSelectedExecutive(e.target.value)}>
+                    <option value="">{t('quote.selectExecutive')}</option>
+                    {users.map((user) => (
+                      <option key={user._id} value={user._id}>
+                        {user.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+            </div>
+          </div>
+
+          <div className={styles.filterSection}>
+            <div className={styles.headerRow}>
+              <h4 className={styles.filterTitle}>{t('quote.creationDate')}</h4>
+              <button onClick={() => setIsOpenFecha(!isOpenFecha)} className={styles.iconbutonlucide}>
+              {isOpenFecha ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+            </div>
+            <div
+              ref={contentRefFecha}
+              style={{
+                maxHeight: isOpenFecha
+                  ? contentRefFecha.current?.scrollHeight + "px"
+                  : "0px",
+                overflow: "hidden",
+                transition: "max-height 0.3s ease",
+              }}
+            >
+              <label className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="dateFilter"
+                  value="hoy"
+                  checked={dateFilter === 'hoy'}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                />
+                <span>{t('quote.today')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="dateFilter"
+                  value="ayer"
+                  checked={dateFilter === 'ayer'}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                />
+                <span>{t('quote.yesterday')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="dateFilter"
+                  value="menos5"
+                  checked={dateFilter === 'menos5'}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                />
+                <span>{t('quote.lessThan5Days')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="dateFilter"
+                  value="menos30"
+                  checked={dateFilter === 'menos30'}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                />
+                <span>{t('quote.lessThan30Days')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="dateFilter"
+                  value="menos365"
+                  checked={dateFilter === 'menos365'}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                />
+                <span>{t('quote.lessThan365Days')}</span>
+              </label>
+            </div>
+          </div>
+
+          <div className={styles.filterSection}>
+            <div className={styles.headerRow}>
+              <h4 className={styles.filterTitle}>{t('quote.requestType')}</h4>
+              <button onClick={() => setIsOpenTipoSol(!isOpenTipoSol)} className={styles.iconbutonlucide}>
+              {isOpenTipoSol ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+            </div>
+             <div
+              ref={contentRefTipoSol}
+              style={{
+                maxHeight: isOpenTipoSol
+                  ? contentRefTipoSol.current?.scrollHeight + "px"
+                  : "0px",
+                overflow: "hidden",
+                transition: "max-height 0.3s ease",
+              }}
+            > 
+              {requestTypes.map((type) => (
+                <label key={type._id} className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={requestTypeFilters.includes(type._id)}
+                    onChange={() => handleRequestTypeToggle(type._id)}
+                  />
+                  <span>{type.request_type_name.toUpperCase()}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
           <div className={styles.filterActions}>
