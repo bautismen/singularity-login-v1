@@ -372,7 +372,7 @@ export function ControlsPricing() {
                 <input
                   type="radio"
                   name="executiveFilter"
-                  value="seleccionar"
+                  value={t('ctrlpricing.select')}
                   checked={executiveFilter === t('ctrlpricing.select')}
                   onChange={(e) => setExecutiveFilter(e.target.value)}
                 />
