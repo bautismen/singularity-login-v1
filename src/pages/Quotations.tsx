@@ -90,7 +90,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     isPriority: false,
     isQuote: false,
     customerCategory: 1,
-    requestTypeId: 1,
+    requestTypeId: 0,
     requestType: '',
     created: new Date().toISOString().split('T')[0],
     responseDeadline: '',
@@ -102,55 +102,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         "maria.cervantes@kromlogistica.com",
         "estela.guerrero@kromlogistica.com",
         "magali.tamayo@kromlogistica.com",
-        "erick.barrientos@kromlogistica.com"        
+        "erick.barrientos@kromlogistica.com",
+        "elsa.caicero@kromlogistica.com"        
   ];
-
-  const generateReferenceNumber = async () => {
-    try {
-      const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
-
-      const response = await fetch(`${BASE_URL}/functions/v1/quotation-requests`, {
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const quotations = await response.json();
-      const currentYear = new Date().getFullYear().toString().slice(-2);
-      const yearPrefix = `SC${currentYear}-`;
-      const currentYearQuotations = quotations.filter((q: any) =>
-        q.reference_request?.startsWith(yearPrefix)
-      );
-
-      let nextSequence = 1;
-      if (currentYearQuotations.length > 0) {
-        const sequences = currentYearQuotations
-          .map((q: any) => {
-            const parts = q.reference_request?.split('-');
-            return parts && parts.length > 1 ? parseInt(parts[1]) : 0;
-          })
-          .filter((n: number) => !isNaN(n));
-
-        if (sequences.length > 0) {
-          nextSequence = Math.max(...sequences) + 1;
-        }
-      }
-
-      const referenceNumber = `${yearPrefix}${nextSequence.toString().padStart(4, '0')}`;
-
-      setFormData(prev => ({ ...prev, referenceRequest: referenceNumber }));
-    } catch (error) {
-      console.error('Error generating reference number:', error);
-    }
-  };
 
   useEffect(() => {
     loadCatalogs();
-    if (mode === 'create') {
-      generateReferenceNumber();
-    }
   }, []);
 
   useEffect(() => {
@@ -158,19 +115,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       loadQuotation(quotationId);
     }
   }, [mode, quotationId]);
-
-  /*useEffect(() => {
-    if(showMerchandiseModal){
-
-      setClassificationMerchFlags({
-       showDangerouseMerch : false,
-       showRefrigeratedMerch : false,
-       showOversizedMerch: false,
-       showBulkClassMerch: false,
-      });
-
-    }
-  }, [showMerchandiseModal])*/
 
   const loadCatalogs = async () => {
     try {
@@ -858,9 +802,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       e.preventDefault();
       setSaving(true);
       const selectedCustomer = customers.find(c => c._id === formData.customerId);
-      const selectedRequestType = requestTypes.find(r => r._id as number === 1);
       const hasAssignedExecutives = executives.length > 0;      
-      console.log('DESPUES',JSON.stringify(services, null, 2));
 
       const quotationData = {
         referenceRequest: formData.referenceRequest,
@@ -890,10 +832,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           idUser: exec.idUser
           //control_number: 'SN',
         })),       
-         
-               
-        services: services.map((service, idx) => {      
-                                                         
+                        
+        services: services.map((service, idx) => {                                                               
+          
           const shipmentsInService = service.shipments.map((shipment, index) => {
            
             const servicesAssociated: any[] = [];
@@ -937,8 +878,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 serviceAsociatedName: 'Despacho aduanal'
               });
             }
-
-            const frequencyMap: { [key: string]: number } = { 'semanal': 1, 'mensual': 2, 'anual': 3 };
 
             const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
 
@@ -1019,6 +958,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       console.log('=== QUOTATION DATA TO SAVE ===');
       console.log(JSON.stringify(quotationData, null, 2));
      
+      if(quotationData.dateDeadline !== null && quotationData.dateRequest )
+
       if(quotationData.services.length == 0 ){
         setModalState({
           isOpen : true,
@@ -1089,7 +1030,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 Codigo Postal Origen
               </label>
             <input
-              type="text"
+              type="number"
               value={service.shipments[0].origin.zipCode}
               onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
               className={styles.input}
@@ -1102,7 +1043,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               {t('quote.destinationZip')}
             </label>
             <input
-              type="text"
+              type="number"
               value={service.shipments[0].destination.zipCode}
               onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
               className={styles.input}
@@ -1118,7 +1059,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               Codigo Postal Origen
             </label>
             <input
-              type="text"
+              type="number"
               value={service.shipments[0].origin.zipCode}
               onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
               className={styles.input}
@@ -1137,7 +1078,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               {t('quote.destinationZip')}
             </label>
             <input
-              type="text"
+              type="number"
               value={service.shipments[0].destination.zipCode}
               onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
               className={styles.input}
@@ -1292,6 +1233,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <label className={styles.label}>{t('quote.responseDeadline')}</label>
             <input
               type="date"
+              min={new Date().toISOString().split("T")[0]}
               value={formData.responseDeadline}
               onChange={(e) => setFormData({ ...formData, responseDeadline: e.target.value })}
               className={styles.input}
@@ -1306,6 +1248,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="date"
+              max={new Date().toISOString().split("T")[0]}
               value={formData.created}
               onChange={(e) => setFormData({ ...formData, created: e.target.value })}
               className={styles.input}
@@ -1433,7 +1376,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   Tipo Carga
                 </label>
                 <select
-                  value={service.nameService === "Maritimo FCL" || service.nameService === "Terrestre FTL"  ? 'Full' : 'Consolidado' }
+                  value={service.nameService === "Maritimo FCL" || service.nameService === "Terrestre FTL" || service.nameService === "Terrestre FCL"  ? 'Full' : 'Consolidado' }
                   //onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                   className={styles.select}
                   disabled
@@ -1530,6 +1473,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <label className={styles.label}>{t('quote.expectedDeparture')}</label>
                 <input
                   type="date"
+                  min={new Date().toISOString().split("T")[0]}
                   value={formatDateForInput(service.shipments[0].departureDateAproximate || '') }
                   onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'departureDateAproximate', e.target.value)}
                   className={styles.input}
@@ -1789,7 +1733,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       </form>
 
       {showMerchandiseModal && (
-        <div className={styles.modalOverlay} >
+        <div className={styles.modalOverlay} onClick={closeMerchandiseModal}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>{t('quote.merchandiseModal')}</h2>
@@ -1971,7 +1915,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           <div className={styles.formGroup}>
                             <label className={styles.label}>{t('quote.un')}</label>
                             <input
-                              type="text"
+                              type="number"
                               placeholder="19"
                               className={styles.input}
                               style={{ width: '80px' }}
@@ -1995,7 +1939,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           <label className={styles.label}>{t('quote.temperature')}</label>
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <input
-                              type="text"
+                              type="number"
                               placeholder="80"
                               className={styles.input}
                               style={{width: '100px' }}
