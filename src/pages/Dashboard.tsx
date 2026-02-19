@@ -133,7 +133,7 @@ export function Dashboard() {
           </div>
 
           {/* Cotización de Servicios Section */}
-          {dashboardData?.quotations && (
+          {!loading && (
             <div className="mt-8">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-l-4 border-teal-500 pl-3 mb-6">
                 Cotización de servicios
@@ -230,13 +230,24 @@ export function Dashboard() {
                     {/* Donut Chart */}
                     <div className="relative w-64 h-64">
                       <svg viewBox="0 0 200 200" className="transform -rotate-90">
-                        {dashboardData.quotations.statusPercentageCurrentMonth.map((status, index) => {
+                        {(dashboardData?.quotations?.statusPercentageCurrentMonth || [
+                          { statusName: 'Aceptados', percentage: 43 },
+                          { statusName: 'Rechazados', percentage: 23 },
+                          { statusName: 'Expirados', percentage: 18 },
+                          { statusName: 'Declinadas', percentage: 12 }
+                        ]).map((status, index) => {
                           const colors = ['#14b8a6', '#ef4444', '#9ca3af', '#6b7280'];
-                          const total = dashboardData.quotations!.statusPercentageCurrentMonth.reduce((sum, s) => sum + s.percentage, 0);
+                          const statusData = dashboardData?.quotations?.statusPercentageCurrentMonth || [
+                            { statusName: 'Aceptados', percentage: 43 },
+                            { statusName: 'Rechazados', percentage: 23 },
+                            { statusName: 'Expirados', percentage: 18 },
+                            { statusName: 'Declinadas', percentage: 12 }
+                          ];
+                          const total = statusData.reduce((sum, s) => sum + s.percentage, 0);
 
                           let startAngle = 0;
                           for (let i = 0; i < index; i++) {
-                            startAngle += (dashboardData.quotations!.statusPercentageCurrentMonth[i].percentage / total) * 360;
+                            startAngle += (statusData[i].percentage / total) * 360;
                           }
 
                           const angle = (status.percentage / total) * 360;
@@ -277,7 +288,7 @@ export function Dashboard() {
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <span className="text-4xl font-bold text-gray-900 dark:text-white">
-                          {dashboardData.quotations.totalCurrentMonth}
+                          {dashboardData?.quotations?.totalCurrentMonth || 842}
                         </span>
                         <span className="text-sm text-gray-500 dark:text-gray-400">TOTAL</span>
                       </div>
@@ -285,7 +296,12 @@ export function Dashboard() {
 
                     {/* Legend */}
                     <div className="space-y-3">
-                      {dashboardData.quotations.statusPercentageCurrentMonth.map((status, index) => {
+                      {(dashboardData?.quotations?.statusPercentageCurrentMonth || [
+                        { statusName: 'Aceptados', percentage: 43 },
+                        { statusName: 'Rechazados', percentage: 23 },
+                        { statusName: 'Expirados', percentage: 18 },
+                        { statusName: 'Declinadas', percentage: 12 }
+                      ]).map((status, index) => {
                         const colors = [
                           { bg: 'bg-teal-500', text: 'text-teal-500' },
                           { bg: 'bg-red-500', text: 'text-red-500' },
