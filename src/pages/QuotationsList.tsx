@@ -265,11 +265,11 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       {showAdvancedFilters && (
         <div className={styles.filtersPanel}>
           <div className={styles.filtersPanelHeader}>
-            <h3>Refina tu búsqueda</h3>
+            <h3>{t('quote.refineSearch')}</h3>
           </div>
 
           <div className={styles.filterSection}>
-            <h4 className={styles.filterTitle}>Estados de Solicitud de Cotización</h4>
+            <h4 className={styles.filterTitle}>{t('quote.statusSearch')}</h4>
             <label className={styles.radioLabel}>
               <input
                 type="checkbox"
@@ -277,7 +277,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={statusFilter.includes('1')}
                 onChange={(e) => handleRequesStatus(e.target.value)}
               />
-              <span>CREADA</span>
+              <span>{t('quote.creada')}</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -286,7 +286,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={statusFilter.includes('2')}
                 onChange={(e) => handleRequesStatus(e.target.value)}
               />
-              <span>ENVIADA</span>
+              <span>{t('quote.sent')}</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -295,7 +295,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={statusFilter.includes('3')}
                 onChange={(e) => handleRequesStatus(e.target.value)}
               />
-              <span>ASIGNADA</span>
+              <span>{t('quote.assigned')}</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -304,7 +304,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={statusFilter.includes('5')}
                 onChange={(e) => handleRequesStatus(e.target.value)}
               />
-              <span>COTIZADA</span>
+              <span>{t('quote.quoted')}</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -313,7 +313,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={statusFilter.includes('6')}
                 onChange={(e) => handleRequesStatus(e.target.value)}
               />
-              <span>DECLINADA</span>
+              <span>{t('quote.declined')}</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -322,7 +322,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={statusFilter.includes('10')}
                 onChange={(e) => handleRequesStatus(e.target.value)}
               />
-              <span>CANCELADA</span>
+              <span>{t('quote.cancelled')}</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -331,12 +331,12 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={statusFilter.includes('7')}
                 onChange={(e) => handleRequesStatus(e.target.value)}
               />
-              <span>EXPIRADA</span>
+              <span>{t('quote.expired')}</span>
             </label>
           </div>
 
           <div className={styles.filterSection}>
-            <h4 className={styles.filterTitle}>Ejecutivo solicitante</h4>
+            <h4 className={styles.filterTitle}>{t('quote.requestingExecutive')}</h4>
             <label className={styles.radioLabel}>
               <input
                 type="radio"
@@ -345,7 +345,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={executiveFilter === 'todos'}
                 onChange={(e) => setExecutiveFilter(e.target.value)}
               />
-              <span>TODOS</span>
+              <span>{t('quote.all')}</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -355,7 +355,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={executiveFilter === 'solo_yo'}
                 onChange={(e) => setExecutiveFilter(e.target.value)}
               />
-              <span>SOLO YO</span>
+              <span>{t('quote.onlyMe')}</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -365,14 +365,14 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={executiveFilter === 'seleccionar'}
                 onChange={(e) => setExecutiveFilter(e.target.value)}
               />
-              <span>SELECCIONAR</span>
+              <span>{t('quote.selectOption')}</span>
             </label>
             {executiveFilter === 'seleccionar' && (
               <select
                 className={styles.executiveSelect}
                 value={selectedExecutive}
                 onChange={(e) => setSelectedExecutive(e.target.value)}>
-                <option value="">Seleccionar ejecutivo...</option>
+                <option value="">{t('quote.selectExecutive')}</option>
                 {users.map((user) => (
                   <option key={user._id} value={user._id}>
                     {user.name}
@@ -383,7 +383,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           </div>
 
           <div className={styles.filterSection}>
-            <h4 className={styles.filterTitle}>Fecha de creación</h4>
+            <h4 className={styles.filterTitle}>{t('quote.creationDate')}</h4>
             <label className={styles.radioLabel}>
               <input
                 type="radio"
@@ -392,7 +392,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={dateFilter === 'hoy'}
                 onChange={(e) => setDateFilter(e.target.value)}
               />
-              <span>HOY</span>
+              <span>{t('quote.today')}</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -402,7 +402,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={dateFilter === 'ayer'}
                 onChange={(e) => setDateFilter(e.target.value)}
               />
-              <span>AYER</span>
+              <span>{t('quote.yesterday')}</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -412,7 +412,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={dateFilter === 'menos5'}
                 onChange={(e) => setDateFilter(e.target.value)}
               />
-              <span>HACE AL MENOS 5 DÍAS</span>
+              <span>{t('quote.lessThan5Days')}</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -422,7 +422,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={dateFilter === 'menos30'}
                 onChange={(e) => setDateFilter(e.target.value)}
               />
-              <span>HACE AL MENOS DE 30 DÍAS</span>
+              <span>{t('quote.lessThan30Days')}</span>
             </label>
             <label className={styles.radioLabel}>
               <input
@@ -432,12 +432,12 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                 checked={dateFilter === 'menos365'}
                 onChange={(e) => setDateFilter(e.target.value)}
               />
-              <span>HACE AL MENOS DE 365 DÍAS</span>
+              <span>{t('quote.lessThan365Days')}</span>
             </label>
           </div>
 
           <div className={styles.filterSection}>
-            <h4 className={styles.filterTitle}>Tipo solicitud</h4>
+            <h4 className={styles.filterTitle}>{t('quote.requestType')}</h4>
             {requestTypes.map((type) => (
               <label key={type._id} className={styles.checkboxLabel}>
                 <input
@@ -455,13 +455,13 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
               className={styles.resetButton}
               onClick={handleResetFilters}
             >
-              Restaurar
+              {t('quote.restore')}
             </button>
             <button
               className={styles.applyButton}
               onClick={() => setShowAdvancedFilters(false)}
             >
-              Hecho
+              {t('quote.done')}
             </button>
           </div>
         </div>
@@ -470,37 +470,37 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       <div className={styles.container}>
         <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>Solicitud de cotizaciones</h1>
+          <h1 className={styles.title}>{t('quote.quotationRequest')}</h1>
         </div>
         <div className={styles.buttonGroup}>
           <button
             className={styles.buttonGroupItem}
             onClick={onCreateNew}
             disabled={loading}
-            title="Nueva solicitud">
+            title={t('quote.newRequest')}>
             <Plus size={20} />
           </button>
           <button
             className={styles.buttonGroupItem}
             onClick={loadQuotationsRequests}
             disabled={loading}
-            title="Actualizar">
+            title={t('quote.refresh')}>
             <RefreshCw size={20} />
           </button>
           <button
             className={` ${styles.buttonGroupItem} ${!showAdvancedFilters ?  styles.filterDisabled: ''}`}
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
             disabled={loading}
-            title="Filtros avanzados">            
+            title={t('quote.advancedFilters')}>            
             {!showAdvancedFilters ? 
             <Filter size={20} /> : <FilterXIcon size={20} />}
           </button>
           <button
             className={styles.buttonGroupItemLast}
             disabled
-            title="Acciones"
+            title={t('quote.actions')}
           >
-            Acciones
+            {t('quote.actions')}
             <ChevronDown size={18} />
           </button>
         </div>
@@ -511,7 +511,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           <Search size={20} className={styles.searchIcon} />
           <input
             type="text"
-            placeholder="Buscar por Referencia, Cliente o Tipo de Solicitud"
+            placeholder={t('quote.search')}
             className={styles.searchInput}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -607,12 +607,12 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                           <circle cx="12" cy="7" r="4"></circle>
                         </svg>
-                        <span>{quotation.createdBy?.nameEmployee || 'Sin asignar'}</span>
+                        <span>{quotation.createdBy?.nameEmployee || t('quote.unassigned')}</span>
                       </div>
 
                       {totalServices > 0 && (
                         <div className={styles.servicesCounter}>
-                          {attendedServices}/{totalServices} Servicios atendidos
+                          {attendedServices}/{totalServices} {t('quote.servicesAttended')}
                         </div>
                       )}
                     </div>
