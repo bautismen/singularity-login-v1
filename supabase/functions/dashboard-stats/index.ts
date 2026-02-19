@@ -59,9 +59,11 @@ Deno.serve(async (req: Request) => {
   try {
     const client = await getMongoClient();
     const db = client.db(MONGODB_DATABASE!);
-    const view = db.collection("custumer_sumary_level");
+    const customerView = db.collection("custumer_sumary_level");
+    const quotationView = db.collection("VT018QuotationRequests_Dashboard");
 
-    const levelData = await view.find({}).toArray();
+    const levelData = await customerView.find({}).toArray();
+    const quotationData = await quotationView.find({}).toArray();
 
     console.log("Total documents found:", levelData.length);
     console.log("Raw data:", JSON.stringify(levelData, null, 2));
@@ -98,6 +100,16 @@ Deno.serve(async (req: Request) => {
     const silverPercentage = stats.total > 0 ? ((stats.silver / stats.total) * 100).toFixed(1) : "0.0";
     const bronzePercentage = stats.total > 0 ? ((stats.bronze / stats.total) * 100).toFixed(1) : "0.0";
 
+    // Process quotation data
+    let quotations = null;
+    if (quotationData.length > 0) {
+      const quotationDoc = quotationData[0];
+      quotations = {
+        totalCurrentMonth: quotationDoc.totalCurrentMonth || 0,
+        statusPercentageCurrentMonth: quotationDoc.statusPercentageCurrentMonth || []
+      };
+    }
+
     return new Response(
       JSON.stringify({
         stats,
@@ -106,6 +118,7 @@ Deno.serve(async (req: Request) => {
           silver: silverPercentage,
           bronze: bronzePercentage,
         },
+        quotations,
       }),
       {
         status: 200,

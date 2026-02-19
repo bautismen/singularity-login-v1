@@ -1,3 +1,8 @@
+interface StatusPercentage {
+  statusName: string;
+  percentage: number;
+}
+
 interface DashboardStats {
   stats: {
     gold: number;
@@ -9,6 +14,10 @@ interface DashboardStats {
     gold: string;
     silver: string;
     bronze: string;
+  };
+  quotations?: {
+    totalCurrentMonth: number;
+    statusPercentageCurrentMonth: StatusPercentage[];
   };
 }
 
