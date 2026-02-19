@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-const MONGODB_URI = 'mongodb+srv://fox1:modelotx30@arcobitscluster0.w6meunj.mongodb.net/?retryWrites=true&w=majority&appName=ArcobitsCluster0';
+const MONGODB_URI = 'mongodb+srv://singularityatlas:yHAuUQlpYrD16JkL@cluster0.m2t3c.mongodb.net/';
 const MONGODB_DATABASE = 'singulatiry_sandbox';
 
 let cachedClient: MongoClient | null = null;

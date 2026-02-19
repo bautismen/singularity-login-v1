@@ -133,8 +133,7 @@ export function Dashboard() {
           </div>
 
           {/* Cotización de Servicios Section */}
-          {!loading && (
-            <div className="mt-8">
+          <div className="mt-8">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-l-4 border-teal-500 pl-3 mb-6">
                 Cotización de servicios
               </h2>
@@ -327,7 +326,6 @@ export function Dashboard() {
                 </div>
               </div>
             </div>
-          )}
         </div>
       )}
       {currentPage === 'quotations' && <Quotations />}
