@@ -154,8 +154,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const addSupplier = () => {  
     
-    if (suppliersCombo?.supplier_associated_name ===t('ctrlpricing.select') || suppliersCombo?.supplier_associated_name === undefined || suppliersCombo?.supplier_associated_name === '') {
-      showError(t('ctrlpricing.selectprov'));
+    if (suppliersCombo?.supplier_associated_name ==='Seleccionar' || suppliersCombo?.supplier_associated_name === undefined || suppliersCombo?.supplier_associated_name === '') {
+      showError('Debe seleccionar un proveedor');
       return;
     }    
 
@@ -315,10 +315,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const handleMarkAsQuoted = async () => {
     if (!controlId) return;
-    if (suppliers.length ===0) {
-      showError(t('ctrlpricing.selectprov'));
-      return;
-    }  
+
     try {
       setLoading(true);
       await pricingControlService.QuoteControl({
@@ -456,7 +453,6 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             <div className={styles.actionsMenuContainer} ref={actionsMenuRef}>
               <button type="button"
                 className={styles.headerButtonAction}
-                hidden
                 onClick={() => setShowActionsMenu(!showActionsMenu)}
                 disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
               >
@@ -575,7 +571,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                       })
                     }                    
                   >
-                    <option value="">{t('ctrlpricing.select')}</option>
+                    <option value="">Seleccionar</option>
                     {selectsuppliers.map((suppliers) => (
                       <option key={suppliers._id} value={suppliers._id}>
                         {suppliers.fiscal_data?.business_name}

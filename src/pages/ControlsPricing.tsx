@@ -145,10 +145,7 @@ export function ControlsPricing() {
     if (dateFilter !== 'all') {
       const now = new Date();
       filtered = filtered.filter(q => {
-        //const requestDate = new Date(q.dateRequest);
-        const requestDate = new Date(q.dateRequest.substring(0, 10)+ "T00:00:00");
-        now.setHours(0, 0, 0, 0);
-        requestDate.setHours(0, 0, 0, 0);
+        const requestDate = new Date(q.dateRequest);
         const diffDays = Math.ceil((now.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
         console.log('Filter days: ' , q.referenceRequest , q.dateRequest, diffDays)
 
@@ -350,7 +347,7 @@ export function ControlsPricing() {
                 <option value="">{t('ctrlpricing.selectexecutive')}</option>
                 {users.map((user) => (
                   <option key={user._id} value={user._id}>
-                    {user.nombre + ' ' + user.apellido_paterno + ' ' + user.apellido_materno}
+                    {user.nombre + '' + user.apellido_paterno + ' ' + user.apellido_materno}
                   </option>
                 ))}
               </select>
@@ -396,7 +393,6 @@ export function ControlsPricing() {
             <button
               className={styles.headerButtonAction}
               disabled
-              hidden
               title={t('ctrlpricing.actions')}
             >
               {t('ctrlpricing.actions')}
@@ -532,7 +528,7 @@ export function ControlsPricing() {
                               <circle cx="12" cy="12" r="10" strokeDasharray="2,2"></circle>
                               <circle cx="12" cy="12" r="3"></circle>
                             </svg>
-                            <span className={styles.assignedName}>{assigned.fullName}</span>
+                            <span className={styles.assignedName}>{assigned.full_name}</span>
                           </div>
                           <div className={styles.controlNumberCenter}>
                             {assigned.pricingControlNumbers.map((control, controlIndex) => (
