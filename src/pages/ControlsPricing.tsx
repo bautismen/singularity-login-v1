@@ -532,7 +532,7 @@ export function ControlsPricing() {
                               <circle cx="12" cy="12" r="10" strokeDasharray="2,2"></circle>
                               <circle cx="12" cy="12" r="3"></circle>
                             </svg>
-                            <span className={styles.assignedName}>{assigned.full_name}</span>
+                            <span className={styles.assignedName}>{assigned.fullName}</span>
                           </div>
                           <div className={styles.controlNumberCenter}>
                             {assigned.pricingControlNumbers.map((control, controlIndex) => (
