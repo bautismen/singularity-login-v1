@@ -684,7 +684,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             <div className={styles.formGroup}>
               <label><span className={styles.required}>*</span> {t('ctrlpricing.unitprofit')}</label>
               <input required
-                type="text"
+                type="number"
                 value={generalData.unit_profit}
                 onChange={(e) => setGeneralData({...generalData, unit_profit: e.target.value})}
                 className={styles.formInput}
@@ -694,7 +694,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
              <div className={styles.formGroup}>
               <label><span className={styles.required}>*</span> {t('ctrlpricing.volume')}</label>
               <input required
-                type="text"
+                type="number"
                 value={generalData.volume}
                 onChange={(e) => setGeneralData({...generalData, volume: e.target.value})}
                 className={styles.formInput}                
@@ -704,7 +704,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             <div className={styles.formGroup}>
               <label><span className={styles.required}>*</span> {t('ctrlpricing.generalprofit')}</label>
               <input required
-                type="text"
+                type="number"
                 value={calculateProfit_general()}
                 onChange={(e) => setGeneralData({...generalData, general_profit: e.target.value})}
                 className={styles.formInput}

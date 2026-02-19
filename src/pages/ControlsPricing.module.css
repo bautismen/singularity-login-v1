@@ -1867,6 +1867,12 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
+.headerRow {
+  display: flex;
+  align-items: center;      /* 🔥 Los alinea a la misma altura */
+  justify-content: space-between; /* Opcional: separa título y botón */
+}
+
 .radioLabel {
   display: flex;
   align-items: center;

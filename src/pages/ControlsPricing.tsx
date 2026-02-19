@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { RefreshCw, Filter, ChevronDown, Search, Clock, Plus, FilterXIcon, FileText } from 'lucide-react';
+import { useState, useEffect, useRef  } from 'react';
+import { RefreshCw, Filter, ChevronDown, Search, Clock, Plus, FilterXIcon, FileText, ChevronUp  } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { controlsPricingService } from '../services/controlsPricingService';
@@ -21,6 +21,10 @@ export function ControlsPricing() {
   const [selectedControlId, setSelectedControlId] = useState<string | null>(null);
   const { user } = useAuth();
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [isOpenFecha, setIsOpenFecha] = useState(false);
+  const [isOpenEjecutivo, setIsOpenEjecutivo] = useState(false);
+  const contentRefFecha = useRef(null);
+  const contentRefEjecutivo = useRef(null);
 
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [executiveFilter, setExecutiveFilter] = useState<string>('todos');
@@ -257,104 +261,136 @@ export function ControlsPricing() {
           </div>          
 
           <div className={styles.filterSection}>
-            <h4 className={styles.filterTitle}>{t('ctrlpricing.requestdate')}</h4>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="dateFilter"
-                value="hoy"
-                checked={dateFilter === 'hoy'}
-                onChange={(e) => setDateFilter(e.target.value)}
-              />
-              <span>{t('ctrlpricing.today')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="dateFilter"
-                value="ayer"
-                checked={dateFilter === 'ayer'}
-                onChange={(e) => setDateFilter(e.target.value)}
-              />
-              <span>{t('ctrlpricing.yesterday')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="dateFilter"
-                value="menos5"
-                checked={dateFilter === 'menos5'}
-                onChange={(e) => setDateFilter(e.target.value)}
-              />
-              <span>{t('ctrlpricing.less5days')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="dateFilter"
-                value="menos30"
-                checked={dateFilter === 'menos30'}
-                onChange={(e) => setDateFilter(e.target.value)}
-              />
-              <span>{t('ctrlpricing.less30days')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="dateFilter"
-                value="menos365"
-                checked={dateFilter === 'menos365'}
-                onChange={(e) => setDateFilter(e.target.value)}
-              />
-              <span>{t('ctrlpricing.less365days')}</span>
-            </label>
+            <div className={styles.headerRow}>
+              <h4 className={styles.filterTitle}>{t('ctrlpricing.requestdate')}</h4>
+              <button onClick={() => setIsOpenFecha(!isOpenFecha)} className={styles.iconbutonlucide}>
+              {isOpenFecha ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+            </div>
+            <div
+              ref={contentRefFecha}
+              style={{
+                maxHeight: isOpenFecha
+                  ? contentRefFecha.current?.scrollHeight + "px"
+                  : "0px",
+                overflow: "hidden",
+                transition: "max-height 0.3s ease",
+              }}
+            >            
+                <label className={styles.radioLabel}>
+                  <input
+                    type="radio"
+                    name="dateFilter"
+                    value="hoy"
+                    checked={dateFilter === 'hoy'}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                  />
+                  <span>{t('ctrlpricing.today')}</span>
+                </label>
+                <label className={styles.radioLabel}>
+                  <input
+                    type="radio"
+                    name="dateFilter"
+                    value="ayer"
+                    checked={dateFilter === 'ayer'}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                  />
+                  <span>{t('ctrlpricing.yesterday')}</span>
+                </label>
+                <label className={styles.radioLabel}>
+                  <input
+                    type="radio"
+                    name="dateFilter"
+                    value="menos5"
+                    checked={dateFilter === 'menos5'}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                  />
+                  <span>{t('ctrlpricing.less5days')}</span>
+                </label>
+                <label className={styles.radioLabel}>
+                  <input
+                    type="radio"
+                    name="dateFilter"
+                    value="menos30"
+                    checked={dateFilter === 'menos30'}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                  />
+                  <span>{t('ctrlpricing.less30days')}</span>
+                </label>
+                <label className={styles.radioLabel}>
+                  <input
+                    type="radio"
+                    name="dateFilter"
+                    value="menos365"
+                    checked={dateFilter === 'menos365'}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                  />
+                  <span>{t('ctrlpricing.less365days')}</span>
+                </label>
+            </div>
           </div>
 
-              <div className={styles.filterSection}>
-            <h4 className={styles.filterTitle}>{t('ctrlpricing.assignedexecutive')}</h4>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="executiveFilter"
-                value="todos"
-                checked={executiveFilter === 'todos'}
-                onChange={(e) => setExecutiveFilter(e.target.value)}
-              />
-              <span>{t('ctrlpricing.all')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="executiveFilter"
-                value="solo_yo"
-                checked={executiveFilter === 'solo_yo'}
-                onChange={(e) => setExecutiveFilter(e.target.value)}
-              />
-              <span>{t('ctrlpricing.onlyme')}</span>
-            </label>
-            <label className={styles.radioLabel}>
-              <input
-                type="radio"
-                name="executiveFilter"
-                value="seleccionar"
-                checked={executiveFilter === 'seleccionar'}
-                onChange={(e) => setExecutiveFilter(e.target.value)}
-              />
-              <span>{t('ctrlpricing.select')}</span>
-            </label>
-            {executiveFilter === 'seleccionar' && (
-              <select
-                className={styles.executiveSelect}
-                value={selectedExecutive}
-                onChange={(e) => setSelectedExecutive(e.target.value)}>
-                <option value="">{t('ctrlpricing.selectexecutive')}</option>
-                {users.map((user) => (
-                  <option key={user._id} value={user._id}>
-                    {user.nombre + ' ' + user.apellido_paterno + ' ' + user.apellido_materno}
-                  </option>
-                ))}
-              </select>
-            )}
+            <div className={styles.filterSection}>
+            <div className={styles.headerRow}>
+              <h4 className={styles.filterTitle}>{t('ctrlpricing.assignedexecutive')}</h4>
+               <button onClick={() => setIsOpenEjecutivo(!isOpenEjecutivo)} className={styles.iconbutonlucide}>
+                {isOpenEjecutivo ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+            </div>
+            <div
+              ref={contentRefEjecutivo}
+              style={{
+                maxHeight: isOpenEjecutivo
+                  ? contentRefEjecutivo.current?.scrollHeight + "px"
+                  : "0px",
+                overflow: "hidden",
+                transition: "max-height 0.3s ease",
+              }}
+            >   
+              <label className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="executiveFilter"
+                  value="todos"
+                  checked={executiveFilter === 'todos'}
+                  onChange={(e) => setExecutiveFilter(e.target.value)}
+                />
+                <span>{t('ctrlpricing.all')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="executiveFilter"
+                  value="solo_yo"
+                  checked={executiveFilter === 'solo_yo'}
+                  onChange={(e) => setExecutiveFilter(e.target.value)}
+                />
+                <span>{t('ctrlpricing.onlyme')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="executiveFilter"
+                  value="seleccionar"
+                  checked={executiveFilter === 'seleccionar'}
+                  onChange={(e) => setExecutiveFilter(e.target.value)}
+                />
+                <span>{t('ctrlpricing.select')}</span>
+              </label>
+              {executiveFilter === 'seleccionar' && (
+                <select
+                  className={styles.executiveSelect}
+                  value={selectedExecutive}
+                  onChange={(e) => setSelectedExecutive(e.target.value)}>
+                  <option value="">{t('ctrlpricing.selectexecutive')}</option>
+                  {users.map((user) => (
+                    <option key={user._id} value={user._id}>
+                      {user.nombre + ' ' + user.apellido_paterno + ' ' + user.apellido_materno}
+                    </option>
+                  ))}
+                </select>
+              )}
+              </div>
           </div>          
 
           <div className={styles.filterActions}>
@@ -393,15 +429,14 @@ export function ControlsPricing() {
             title={t('ctrlpricing.filtro')}>            
             {!showAdvancedFilters ? <Filter size={20} /> : <FilterXIcon className='text-slate-400' size={20} />}
           </button>           
-            <button
+            {/*<button
               className={styles.headerButtonAction}
-              disabled
-              hidden
+              disabled             
               title={t('ctrlpricing.actions')}
             >
               {t('ctrlpricing.actions')}
               <ChevronDown size={18} />
-            </button>
+            </button>*/}
           </div>
         </div>
 
