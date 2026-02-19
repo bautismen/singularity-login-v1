@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Layout } from '../components/Layout';
 import { useLanguage } from '../contexts/LanguageContext';
 import { fetchDashboardStats } from '../services/dashboardService';
+import { QuotationServices } from '../components/QuotationServices';
 import Quotations from './Quotations';
 import Executives from './Executives';
 import Customers from './Customers';
@@ -122,6 +123,8 @@ export function Dashboard() {
               </div>
             )}
           </div>
+
+          <QuotationServices />
         </div>
       )}
       {currentPage === 'quotations' && <Quotations />}
