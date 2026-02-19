@@ -1165,7 +1165,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           <button type="button" className={styles.actionBarResetButton}>
             <RotateCcw size={18} />
           </button>
-           <button type="button" className={styles.actionBarResetButton} onClick={handleAsignateto} hidden={formData.idStatusRequest <= 1} >
+           <button type="button" className={styles.actionBarResetButton} onClick={handleAsignateto} hidden={formData.idStatusRequest <= 1}  disabled={saving || mode === 'view'} >
             <User size={18} />
             <span>{'Agregar'}</span>
           </button>
