@@ -23,7 +23,7 @@
 
 .backButton {
   padding: 0.75rem 1rem;
-  background-color: #03A678;
+  background-color: #038C7F;
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -59,7 +59,7 @@
 
 .actionBarSaveButton {
   padding: 0.75rem 1.25rem;
-  background-color: #03A678;
+  background-color: #038C7F;
   color: white;
   border: none;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
@@ -85,7 +85,7 @@
 
 .actionBarResetButton {
   padding: 0.75rem 1rem;
-  background-color: #03A678;
+  background-color: #038C7F;
   color: white;
   border: none;
   border-right: 1px solid rgba(255, 255, 255, 0.2);

@@ -82,9 +82,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     showOversizedMerch: false,
     showBulkClassMerch: false,
   })
-
   const [formData, setFormData] = useState({
-    referenceRequest: '',
+    referenceRequest: 'QR250901-0001',
     customerId: '',
     client: '',
     isPriority: false,
@@ -115,6 +114,24 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       loadQuotation(quotationId);
     }
   }, [mode, quotationId]);
+
+  const resetForm = () => {
+    setFormData({
+      referenceRequest: '',
+      customerId: '',
+      client: '',
+      isPriority: false,
+      isQuote: false,
+      customerCategory: 1,
+      requestTypeId: 0,
+      requestType: '',
+      created: new Date().toISOString().split('T')[0],
+      responseDeadline: '',
+      statuscomments: null,
+      idStatusRequest: 1,
+    });
+    setServices([]);
+  }
 
   const loadCatalogs = async () => {
     try {
@@ -148,9 +165,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const incotermsData = await incotermsRes.json();
       const countriesData = await countriesRes.json();
       const imoData = await imoRes.json();
-
-      console.log('customer: ', customersData);
-      console.log('services: ', services)
 
       setCustomers(customersData.filter((c: any) => c.status === 'activo' || c.datastate === 1));
       setRequestTypes(requestTypesData.filter((r: any) => r.status === 1));
@@ -1123,18 +1137,15 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <Save size={18} />
             <span>{saving ? 'Guardando...' : t('quote.save')}</span>
           </button>
-          <button type="button" className={styles.actionBarResetButton}>
-            <RotateCcw size={18} />
-          </button>
+          {mode === 'create' && (
+            <button type="button" className={styles.actionBarResetButton} onClick={resetForm}>
+              <RotateCcw size={18} />
+            </button>
+          )}          
            <button type="button" className={styles.actionBarResetButton} onClick={handleAsignateto} hidden={formData.idStatusRequest <= 1}  disabled={saving || mode === 'view'} >
             <User size={18} />
             <span>{'Agregar'}</span>
           </button>
-          {/*<button type="button" className={styles.actionBarDropdownButton}>
-            <span>{t('quote.actions')}</span>
-            <ChevronDown size={16} />
-          </button>
-          </button>*/}
         </div>
       </div>
 
@@ -1177,7 +1188,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   customerCategory: customer?.client_level_id
                 });
               }}
-              className={styles.select}
+              className={styles.select}              
               disabled={loading || mode === 'view' || mode === 'edit' || formData.idStatusRequest >= 2}
               required>
               <option value="">{t('quote.selectClient')}</option>
