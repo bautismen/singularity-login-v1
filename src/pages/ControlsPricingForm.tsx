@@ -421,11 +421,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   return (
     <form onSubmit={handleSave}> 
     <div className={styles.container}>
-      {loading ? (
-          <div className={styles.loading}>
-            <div className={styles.spinner}></div>
-          </div>
-          ) : <div className={styles.header}>
+      <div className={styles.header}>
         <div className={styles.formHeaderLeft}>
           <button type="button" onClick={onBack} className={styles.backButton} disabled={loading}>
             <ArrowLeft size={20} />
@@ -473,8 +469,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             </div>
           </div>
         </div>
-      </div>
-      }
+      </div>      
       {loading ? (
           <div className={styles.loading}>
             <div className={styles.spinner}></div>
