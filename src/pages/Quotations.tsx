@@ -1035,8 +1035,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
 
   const renderZipCodesOriginDestination =  (service : Service) => {
-    switch(service.shipments[0].typeShipment){
-      case 'Door to Door': return (
+    switch(service.shipments[0].idTypeShipment){
+      case 1 : return (
         <div className={styles.formGrid}>
           <div className={styles.formGroup}>
             <label className={styles.label}>
@@ -1065,7 +1065,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               required/>
           </div>    
         </div>);
-      case 'Door to Port' : return (
+      case 3 : return (
         <div className={styles.formGrid}>
           <div className={styles.formGroup}>
             <label className={styles.label}>
@@ -1081,9 +1081,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               required/>
           </div>  
           <div className={styles.formGroup}></div>                   
-        </div>);
-      
-      case 'Port to Door' : return( 
+        </div>);      
+      case 4: return( 
         <div className={styles.formGrid}>   
           <div className={styles.formGroup}></div>              
           <div className={styles.formGroup}>
