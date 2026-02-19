@@ -93,6 +93,7 @@ Deno.serve(async (req: Request) => {
 
       const newCompany = {
         ...body,
+        rfc_taxid: String(body.rfc_taxid),
         status: body.status || "activo",
         archivado: body.archivado !== undefined ? body.archivado : false,
         datastate: body.datastate !== undefined ? body.datastate : 1,
