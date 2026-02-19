@@ -623,7 +623,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                   <button
                     className={`${styles.actionButton} ${styles.editButton}`}
                     onClick={()=> { 
-                      if (quotation.idStatusRequest === 10) {
+                      if (quotation.idStatusRequest === 10 || quotation.idStatusRequest === 6) {
                         onView(quotation.id)
                       }
                       else {   

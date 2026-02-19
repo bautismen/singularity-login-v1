@@ -315,7 +315,10 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const handleMarkAsQuoted = async () => {
     if (!controlId) return;
-
+    if (suppliers.length ===0) {
+      showError(t('ctrlpricing.selectprov'));
+      return;
+    }  
     try {
       setLoading(true);
       await pricingControlService.QuoteControl({
