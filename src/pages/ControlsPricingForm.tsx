@@ -90,13 +90,13 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
    async function loadSuppliers() {
     try {
-      setLoading(true);
+      //setLoading(true);
       const data = await getSuppliers();
       setSelectsuppliers(data);
     } catch (error) {
       console.error('Error loading suppliers:', error);
     } finally {
-      setLoading(false);
+      //setLoading(false);
     }
   }
 
