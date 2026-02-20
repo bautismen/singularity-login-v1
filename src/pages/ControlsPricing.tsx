@@ -14,7 +14,7 @@ export function ControlsPricing() {
   const { showInfo, showError, showWarning} = useNotification();
   const [requests, setRequests] = useState<ResquetQuote[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<ResquetQuote[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
@@ -44,7 +44,7 @@ export function ControlsPricing() {
 
   const loadUsers = async () => {
     try {
-       setLoading(true);
+       //setLoading(true);
        const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
       const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
       const [ executivesRes] = await Promise.all([       
@@ -63,7 +63,7 @@ export function ControlsPricing() {
       console.error('Error loading users:', error);
     }
     finally {
-      setLoading(false);
+      //setLoading(false);
     }
   };
 
