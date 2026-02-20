@@ -13,15 +13,15 @@ const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 export function Executives() {
   const { t } = useLanguage();
   const catalogName = t('quote.executive');
-  const {showError } = useNotification();
+  const { showError } = useNotification();
   const [executives, setExecutives] = useState<Executive[]>([]);
   const [filteredExecutives, setFilteredExecutives] = useState<Executive[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false); 
+  const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('active');
+  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const [users, setUsers] = useState<any[]>([]);
@@ -145,9 +145,9 @@ export function Executives() {
     const isValid = await validateForm();
 
     if (!isValid) {
-      setSaving(false); 
+      setSaving(false);
       return;
-    } 
+    }
 
     try {
       if (editingId) {
@@ -162,12 +162,12 @@ export function Executives() {
       setShowForm(false);
     } catch (error) {
       showNotification('error', t('exec.errorSave'));
-    }finally {
+    } finally {
       setSaving(false);
     }
   };
 
-  const handleEdit = (executive: Executive) => {    
+  const handleEdit = (executive: Executive) => {
     setFormData({
       nombre: executive.nombre,
       apellido_paterno: executive.apellido_paterno,
@@ -184,7 +184,7 @@ export function Executives() {
   };
 
   const handleDelete = async (id: string) => {
-    
+
     setModalState({
       isOpen: true,
       type: 'confirm',
@@ -249,298 +249,337 @@ export function Executives() {
     }
   };
 
-  if (loading) {
+  if (showForm) {
     return (
-      <div className={styles.loading}>
-          <div className={styles.spinner}></div>
-      </div>
+      <form onSubmit={handleSave} className={styles.formContainer}>
+
+        <div className={styles.formHeaderRow}>
+
+          <div className={styles.header}>
+            <button
+              onClick={handleCancel}
+              className={styles.backButton}
+              title="Volver a lista">
+              <ArrowLeft size={18} />
+            </button>
+            <h2 className={styles.formTitle}> {editingId ? t('exec.editExecutive') : t('exec.newExecutive')}</h2>
+          </div>
+
+          <div className={styles.actionBar}>
+            <button type='submit' className={styles.actionBarSaveButton} disabled={saving}>
+              <Save size={18} />
+              <span>{t('exec.save')}</span>
+            </button>
+            <button type="button" className={styles.actionBarResetButton} onClick={resetForm} disabled={saving}>
+              <RotateCcw size={18} />
+            </button>
+            {/* {editingId && (
+              <button type="button" className={styles.actionBarDeleteButton} disabled={saving}
+                onClick={() => handleDelete(editingId)}>
+                <Trash2 size={18} />
+              </button>
+            )} */}
+          </div>
+
+        </div>
+
+        <div className={styles.formGrid}>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+              {t('exec.nombre')}
+            </label>
+            <input
+              type="text"
+              value={formData.nombre}
+              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+              className={styles.input}
+              required
+              onInvalid={(e) =>
+                e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+              }
+              onInput={(e) =>
+                e.currentTarget.setCustomValidity('')
+              }
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>* </span>
+              {t('exec.apellidoPaterno')}
+            </label>
+            <input
+              type="text"
+              value={formData.apellido_paterno}
+              onChange={(e) => setFormData({ ...formData, apellido_paterno: e.target.value })}
+              className={styles.input}
+              required
+              onInvalid={(e) =>
+                e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+              }
+              onInput={(e) =>
+                e.currentTarget.setCustomValidity('')
+              }
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              {/* <span className={styles.required}>*</span> */}
+              {t('exec.apellidoMaterno')}
+            </label>
+            <input
+              type="text"
+              value={formData.apellido_materno}
+              onChange={(e) => setFormData({ ...formData, apellido_materno: e.target.value })}
+              className={styles.input}
+            // required
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+              {t('exec.numeroNomina')}
+            </label>
+            <input
+              type="text"
+              value={formData.numero_nomina}
+              onChange={(e) => setFormData({ ...formData, numero_nomina: e.target.value })}
+              className={styles.input}
+              required
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+              {t('exec.fechaIngreso')}
+            </label>
+            <input
+              type="date"
+              value={formData.fecha_ingreso}
+              onChange={(e) => setFormData({ ...formData, fecha_ingreso: e.target.value })}
+              className={styles.input}
+              required
+              onInvalid={(e) => 
+                e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+              }
+              onInput={(e) =>
+                e.currentTarget.setCustomValidity('')
+              }
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+              {t('exec.email')}
+            </label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className={styles.input}
+              required
+              onInvalid={(e) => 
+                e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+              }
+              onInput={(e) =>
+                e.currentTarget.setCustomValidity('')
+              }
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+              {t('exec.departamento')}
+            </label>
+            <select
+              value={formData.departamento}
+              onChange={(e) => setFormData({ ...formData, departamento: e.target.value })}
+              className={styles.select}
+              required
+              onInvalid={(e) => 
+                e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+              }
+              onInput={(e) =>
+                e.currentTarget.setCustomValidity('')
+              }
+              >
+              <option value="">Seleccionar...</option>
+              {DEPARTMENTS.map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+              {t('exec.user')}
+            </label>
+            <select
+              value={formData._iduser}
+              onChange={(e) => setFormData({ ...formData, _iduser: e.target.value })}
+              className={styles.select}
+              required
+              onInvalid={(e) => 
+                e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+              }
+              onInput={(e) =>
+                e.currentTarget.setCustomValidity('')
+              }
+              >
+              <option value="">Seleccionar...</option>
+              {users.map((user) => (
+                <option key={user._id} value={user._id}>
+                  {user.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>{t('exec.activo')}</label>
+            <div className={styles.toggleItem}>
+              <label className={styles.label}>{t('exec.disponible')}</label>
+              <div
+                className={`${styles.toggle} ${formData.activo ? styles.active : ''}`}
+                onClick={() => setFormData({ ...formData, activo: !formData.activo })}>
+                <div className={styles.toggleThumb}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
     );
   }
 
   return (
     <div className={styles.container}>
-      {notification && (
+      {/* {notification && (
         <div className={`${styles.notification} ${styles[notification.type]}`}>
           {notification.message}
         </div>
-      )}
-
-      <div className={styles.header}>                                
-        {!showForm ? (
-          <>
-           <h1 className={styles.title}>{t('exec.title')}</h1>
-           <div className={styles.buttonGroup}>
-              <button className={styles.headerButton} onClick={handleNewExecutive}>
-                <Plus size={20} />
-              </button>
-              <button onClick={loadExecutives} className={styles.headerButton} disabled={loading}>
-                <RefreshCw size={20} />
-              </button>
-           </div>
-          </>          
-        ): (
-          <div style={{ display: 'flex', alignItems: 'left', gap: '1rem' }}>          
-            <div className={styles.actionBar}>
-              <button
-                onClick={handleCancel}
-                className={styles.actionBarResetButton}
-                title="Volver a lista">
-                <ArrowLeft size={18} />
-              </button>              
-            </div>  
-            <h2 className={styles.formTitle}>
-              {editingId ? t('exec.editExecutive') : t('exec.newExecutive')}
-            </h2>      
+      )} */}
+      <div className={styles.header}>
+        <h1 className={styles.title}>{t('exec.title')}</h1>
+        <div className={styles.buttonGroup}>
+          <button onClick={handleNewExecutive} className={styles.headerButton}>
+            <Plus size={20} />
+          </button>
+          <button onClick={loadExecutives} className={styles.headerButton} disabled={loading}>
+            <RefreshCw size={20} />
+          </button>
         </div>
-        )}
       </div>
 
-      {!showForm ? (
-        <>
-          <div className={styles.controls}>
-            <div className={styles.searchBar}>
-              <Search className={styles.searchIcon} size={18} />
-              <input
-                type="text"
-                placeholder={t('exec.search')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={styles.searchInput}
-              />
-              {searchTerm && (
-                <button className={styles.clearSearch} onClick={() => setSearchTerm('')}>
-                  <X size={16} />
-                </button>
-              )}
-            </div>
+      <div className={styles.controls}>
+        <div className={styles.searchBar}>
+          <Search className={styles.searchIcon} size={20} />
+          <input
+            type="text"
+            placeholder={t('exec.search')}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={styles.searchInput}
+          />
+          {searchTerm && (
+            <button className={styles.clearSearch} onClick={() => setSearchTerm('')}>
+              <X size={20} />
+            </button>
+          )}
+        </div>
 
-            <div className={styles.filters}>
-              <button
-                className={`${styles.filterButton} ${filter === 'all' ? styles.active : ''}`}
-                onClick={() => setFilter('all')}
-              >
-                {t('exec.filterAll')}
-              </button>
-              <button
-                className={`${styles.filterButton} ${filter === 'active' ? styles.active : ''}`}
-                onClick={() => setFilter('active')}
-              >
-                {t('exec.filterActive')}
-              </button>
-              <button
-                className={`${styles.filterButton} ${filter === 'inactive' ? styles.active : ''}`}
-                onClick={() => setFilter('inactive')}
-              >
-                {t('exec.filterInactive')}
-              </button>
-            </div>
-          </div>
+        <div className={styles.filters}>
+          <button
+            className={`${styles.filterButton} ${filter === 'all' ? styles.active : ''}`}
+            onClick={() => setFilter('all')}
+          >
+            {t('exec.filterAll')}
+          </button>
+          <button
+            className={`${styles.filterButton} ${filter === 'active' ? styles.active : ''}`}
+            onClick={() => setFilter('active')}
+          >
+            {t('exec.filterActive')}
+          </button>
+          <button
+            className={`${styles.filterButton} ${filter === 'inactive' ? styles.active : ''}`}
+            onClick={() => setFilter('inactive')}
+          >
+            {t('exec.filterInactive')}
+          </button>
+        </div>
+      </div>
 
-          <div className={styles.section}>
-            {filteredExecutives.length === 0 ? (
-              <div className={styles.noResults}>{t('exec.noResults')}</div>
-            ) : (
-              <div className={styles.tableContainer}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>{t('exec.numeroNomina')}</th>
-                      <th>{t('exec.nombre')}</th>                     
-                      <th>{t('exec.email')}</th>
-                      <th>{t('exec.departamento')}</th>
-                      <th>{t('exec.activo')}</th>
-                      <th>{t('exec.actions')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredExecutives.map((executive) => (
-                      <tr key={executive._id}>
-                        <td className={styles.nominaCell}>{executive.numero_nomina}</td>
-                        <td>{executive.nombre} {executive.apellido_paterno} {executive.apellido_materno}</td>
-                        <td>{executive.email}</td>
-                        <td>{executive.departamento}</td>
-                        <td>
-                          <span
-                            className={`${styles.statusBadge} ${
-                              executive.activo ? styles.statusActive : styles.statusInactive
-                            }`}
-                          >
-                            {executive.activo ? t('exec.disponible') : t('exec.noDisponible')}
-                          </span>
-                        </td>
-                        <td>
-                          <div className={styles.actionButtons}>
-                            <button
-                              className={`${styles.actionButton} ${styles.edit}`}
-                              onClick={() => handleEdit(executive)}
-                              title="Editar"
-                            >
-                              <Edit2 size={16} />
-                            </button>
-                            <button
-                              className={`${styles.actionButton} ${styles.danger}`}
-                              onClick={() => handleDelete(executive._id!)}
-                              title="Eliminar"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </>
+      {loading ? (
+        <div className={styles.loading}>
+          <div className={styles.spinner}></div>
+        </div>
+      ) : filteredExecutives.length > 0 ? (
+        <div className={styles.tableContainer}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>{t('exec.numeroNomina')}</th>
+                <th>{t('exec.nombre')}</th>
+                <th>{t('exec.email')}</th>
+                <th>{t('exec.departamento')}</th>
+                <th>{t('exec.activo')}</th>
+                <th>{t('exec.actions')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredExecutives.map((executive) => (
+                <tr key={executive._id}>
+                  <td className={styles.nominaCell}>
+                    {executive.numero_nomina}
+                  </td>
+                  <td>
+                    {executive.nombre} {" "}
+                    {executive.apellido_paterno} {" "}
+                    {executive.apellido_materno}
+                  </td>
+                  <td>
+                    {executive.email}
+                  </td>
+                  <td>
+                    {executive.departamento}</td>
+                  <td>
+                    <span className={`${styles.statusBadge} 
+                      ${executive.activo
+                        ? styles.statusActive
+                        : styles.statusInactive
+                      }`}>
+                      {executive.activo ? t('exec.disponible') : t('exec.noDisponible')}
+                    </span>
+                  </td>
+                  <td>
+                    <div className={styles.actionButtons}>
+                      <button
+                        className={`${styles.actionButton} ${styles.edit}`}
+                        onClick={() => handleEdit(executive)}
+                        title="Editar"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        className={`${styles.actionButton} ${styles.danger}`}
+                        onClick={() => handleDelete(executive._id!)}
+                        title="Eliminar"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
-        <form onSubmit={handleSave} className={styles.section}>
-          <div className={styles.formHeader}>                        
-            <div className={styles.actionBar}>
-              <button type='submit' className={styles.actionBarSaveButton} disabled={saving}>
-                <Save size={18} />
-                <span>{t('exec.save')}</span>
-              </button>
-              <button type="button" className={styles.actionBarResetButton} onClick={resetForm} disabled={saving}>
-                <RotateCcw size={18} />
-              </button>
-              {editingId && (
-                <button type="button" className={styles.actionBarDeleteButton} disabled={saving}
-                  onClick={() => handleDelete(editingId)}>
-                  <Trash2 size={18} />
-                </button>
-              )}
-            </div>
-          </div>
-          <div className={styles.formGrid}>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                {t('exec.nombre')}
-              </label>
-              <input
-                type="text"
-                value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                className={styles.input}
-                required
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>* </span>
-                {t('exec.apellidoPaterno')}
-              </label>
-              <input
-                type="text"
-                value={formData.apellido_paterno}
-                onChange={(e) => setFormData({ ...formData, apellido_paterno: e.target.value })}
-                className={styles.input}
-                required
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                {t('exec.apellidoMaterno')}
-              </label>
-              <input
-                type="text"
-                value={formData.apellido_materno}
-                onChange={(e) => setFormData({ ...formData, apellido_materno: e.target.value })}
-                className={styles.input}
-                required
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                {t('exec.numeroNomina')}
-              </label>
-              <input
-                type="text"
-                value={formData.numero_nomina}
-                onChange={(e) => setFormData({ ...formData, numero_nomina: e.target.value })}
-                className={styles.input}
-                required
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                {t('exec.fechaIngreso')}
-              </label>
-              <input
-                type="date"
-                value={formData.fecha_ingreso}
-                onChange={(e) => setFormData({ ...formData, fecha_ingreso: e.target.value })}
-                className={styles.input}
-                required
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                {t('exec.email')}
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className={styles.input}
-                required
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                {t('exec.departamento')}
-              </label>
-              <select
-                value={formData.departamento}
-                onChange={(e) => setFormData({ ...formData, departamento: e.target.value })}
-                className={styles.select}
-                required>
-                <option value="">Seleccionar...</option>
-                {DEPARTMENTS.map((dept) => (
-                  <option key={dept} value={dept}>
-                    {dept}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                {t('exec.user')}
-              </label>
-              <select
-                value={formData._iduser}
-                onChange={(e) => setFormData({ ...formData, _iduser: e.target.value })}
-                className={styles.select}
-                required>
-                <option value="">Seleccionar...</option>
-                {users.map((user) => (
-                  <option key={user._id} value={user._id}>
-                    {user.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>{t('exec.activo')}</label>
-              <div className={styles.toggleItem}>
-                <label className={styles.label}>{t('exec.disponible')}</label>
-                <div
-                  className={`${styles.toggle} ${formData.activo ? styles.active : ''}`}
-                  onClick={() => setFormData({ ...formData, activo: !formData.activo })}>
-                  <div className={styles.toggleThumb}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>
+        <div className={styles.emptyState}>
+          <p className={styles.noResults}>{t('supp.noResults')}</p>
+        </div>
       )}
 
       <Modal
