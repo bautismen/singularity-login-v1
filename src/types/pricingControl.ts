@@ -117,6 +117,7 @@ export interface QuotedControlRequest {
   idcontrol_: string;
   idresqued_?: string;  
   reason_for_cancellation?: string;  
+  Suppliers?: any[];
 }
 
 export interface ResquetQuote {

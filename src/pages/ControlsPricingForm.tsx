@@ -326,7 +326,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       setLoading(true);
       await pricingControlService.QuoteControl({
           idcontrol_: controlId,
-          idresqued_: requestData.id
+          idresqued_: requestData.id,
+          Suppliers: suppliersAPI
         });
       setStatusControl({
         _id_status_control: 5,
