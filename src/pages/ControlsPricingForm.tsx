@@ -333,14 +333,9 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     }
   };
 
-  const handleMarkAsDecline = async () => {    
-    if (!controlId) return;
-
-    if (reasoncancellation.length === 0) {
-      showError('Debe capturar un motivo');
-      return;
-    }  
-
+  const handleMarkAsDecline = async (e: React.FormEvent) => {  
+     e.preventDefault();  
+    if (!controlId) return;     
     try {
       setLoading(true);
       await pricingControlService.DeclineControl({
@@ -414,626 +409,629 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const medalSrc = getCategoryMedal(requestData.customer?.customerCategory);
 
   return (
+    <>
     <form onSubmit={handleSave}> 
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <div className={styles.formHeaderLeft}>
-          <button type="button" onClick={onBack} className={styles.backButton} disabled={loading}>
-            <ArrowLeft size={20} />
-          </button>
-          <div>
-            <h1 className={styles.title}>{t('ctrlpricing.title')}</h1>
-            <p className={styles.formSubtitle}>
-              {controlId ? t('ctrlpricing.editcontrolnumber') : t('ctrlpricing.newcontrolnumber')}
-            </p>
-          </div>
-        </div>
-        <div className={styles.formHeaderRight}>
-          <div className={styles.buttonGroup}>
-            <button type="submit" className={styles.headerButton} disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}>
-              <Save size={18} />
-              {t('ctrlpricing.save')}
-            </button>
-            <button type="button" className={styles.headerButtonRefresh} onClick={loadData} disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}>
-              <RefreshCw size={18} />
-            </button>
-            {/*<button
-              className={styles.buttonGroupItem}
-              onClick={handleDelete}
-              disabled={loading || !controlId}
-            >
-              <Trash2 size={18} />
-            </button>*/}
-            <div className={styles.actionsMenuContainer} ref={actionsMenuRef}>
-              <button type="button"
-                className={styles.headerButtonAction}
-                hidden
-                onClick={() => setShowActionsMenu(!showActionsMenu)}
-                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
-              >
-                {t('ctrlpricing.actions')}
-                <ChevronDown size={16} />
-              </button>
-              {showActionsMenu && (
-                <div className={styles.actionsDropdown}>
-                  <button className={styles.dropdownItem}>{t('ctrlpricing.export')}</button>
-                  <button className={styles.dropdownItem}>{t('ctrlpricing.duplicate')}</button>
-                  <button className={styles.dropdownItem}>{t('ctrlpricing.historical')}</button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>      
-      {loading ? (
-          <div className={styles.loading}>
-            <div className={styles.spinner}></div>
-          </div>
-          ) :
       <div className={styles.container}>
-        <div className={styles.topCardsContainer}>
-          <div className={styles.clientSection}>
-            <div className={styles.clientHeader}>
-              <div className={styles.clientInfo}>
-                {medalSrc && (
-                  <img src={medalSrc} alt="Medal" className={styles.clientMedal} />
-                )}
-                <div>
-                  <h2 className={styles.clientName}>
-                    {requestData.customer?.customerName}
-                    {priority && (
-                      <img src="/prioridad.png" alt="Prioridad" className={styles.priorityIcon} style={{width: '20px', height: '20px', marginLeft: '8px'}} />
-                    )}
-                  </h2>
-                  <div className={styles.clientDetails}>
-                    <span className={styles.clientId}>
-                      Ref: {requestData.referenceRequest}
-                    </span>
-                    <span className={styles.clientExecutive}>
-                      {requestData.createdBy?.fullName}
-                    </span>
-                  </div>
-                  <div className={styles.clientToggles}>
-                    <div className={styles.switchContainer}>
-                      <label className={styles.switch}>
-                        <input
-                          type="checkbox"
-                          checked={priority}
-                          onChange={(e) => setPriority(e.target.checked)}
-                          disabled
-                        />
-                        <span className={styles.switchSlider}></span>
-                      </label>
-                      <span className={styles.switchLabel}>{t('ctrlpricing.priority')}</span>
-                    </div>
-                    <div className={styles.switchContainer}>
-                      <label className={styles.switch}>
-                        <input
-                          type="checkbox"
-                          checked={bidding}
-                          onChange={(e) => setBidding(e.target.checked)}
-                          disabled
-                        />
-                        <span className={styles.switchSlider}></span>
-                      </label>
-                      <span className={styles.switchLabel}>{t('ctrlpricing.bidding')}</span>
-                    </div>
-                  </div>
-                  {controlData && (
-                    <div className={styles.clientControl}>
-                      <span className={styles.controlLabel}>Control</span>
-                      <span className={styles.controlBadge}>{controlData.control}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className={styles.clientMeta}>
-                <div className={styles.clientType}>{requestData.requestType}</div>
-              </div>
-            </div>
-            <div className={styles.clientActions}>
-              <button type="button"
-              className={styles.btnDecline} 
-              disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
-              onClick={openModal}
-              hidden={controlId ? false : true}
-              >
-                {t('ctrlpricing.decline')}
-                
-              </button>
-              <button type="button"
-                className={styles.btnQuote}
-                onClick={handleMarkAsQuoted}
-                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
-                hidden={controlId ? false : true}
-              >
-                {t('ctrlpricing.quoted')}
-              </button>
-            </div>
-          </div>
-
-          <div className={styles.suppliersSection}>
-            <h3 className={styles.sectionTitle}> {t('ctrlpricing.supplierassignment')}</h3>
-            <span className={styles.supplierLabel}>{t('ctrlpricing.supplier')}</span>
-                   <select                                       
-                    className={styles.selectInput}
-                    onChange={(e) => 
-                      setSuppliersCombo({ 
-                        ...suppliersCombo, 
-                        idsuplier: e.target.value,
-                        supplier_associated_name: e.target.options[e.target.selectedIndex].text
-                      })
-                    }                    
-                  >
-                    <option value="">{t('ctrlpricing.select')}</option>
-                    {selectsuppliers.map((suppliers) => (
-                      <option key={suppliers._id} value={suppliers._id}>
-                        {suppliers.fiscal_data?.business_name}
-                      </option>
-                    ))
-                    }
-                  </select>         
-            <button type="button"
-              className={styles.btnAddSupplier}
-              onClick={addSupplier}
-              disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
-            >
-              <Plus size={16} />
-              {t('ctrlpricing.addsupplier')}
+        <div className={styles.header}>
+          <div className={styles.formHeaderLeft}>
+            <button type="button" onClick={onBack} className={styles.backButton} disabled={loading}>
+              <ArrowLeft size={20} />
             </button>
-            <div className={styles.suppliersList}>
-              {suppliers.map((supplier) => (
-                <div key={supplier.idsuplier} className={styles.supplierItem}>
-                  <span className={styles.supplierLabel}>{t('ctrlpricing.supplier')}</span>                 
-                  <input
-                    type="text"
-                    value={supplier.supplier_associated_name}                    
-                    className={styles.supplierInput}
-                    placeholder={t('ctrlpricing.suppliername')}
-                    disabled
-                  />
-                  <button type="button"
-                    className={styles.btnRemoveSupplier}
-                    onClick={() => removeSupplier(supplier.idsuplier)}
-                    disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              ))}
+            <div>
+              <h1 className={styles.title}>{t('ctrlpricing.title')}</h1>
+              <p className={styles.formSubtitle}>
+                {controlId ? t('ctrlpricing.editcontrolnumber') : t('ctrlpricing.newcontrolnumber')}
+              </p>
             </div>
           </div>
-        </div>
-
-        <div className={styles.generalSection}>
-          <h3 className={styles.sectionTitle}>General</h3>
-          <div className={styles.formGrid}>
-            <div className={styles.formGroup}>
-              <label><span className={styles.required}>*</span> {t('ctrlpricing.status')}</label>
-              <select required
-                value={statusControl.status_control_name}
-                onChange={(e) => {
-                  const statusMap: any = {
-                    'Asignada': { id_status_control: 3, status_control_name: 'Asignada' },                    
-                    'Cotizada': { id_status_control: 5, status_control_name: 'Cotizada' },
-                    'Declinada': { id_status_control: 6, status_control_name: 'Declinada' }
-                  };
-                  setStatusControl(statusMap[e.target.value] || statusControl);
-                }}
-                className={styles.formSelect}
-                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
-              >                
-                <option>Asignada</option>
-                <option>Cotizada</option>
-                <option>Declinada</option>
-              </select>
-            </div>
-            <div className={styles.formGroup}>
-              <label><span className={styles.required}>*</span> {t('ctrlpricing.network')}</label>
-              <select required
-                value={generalData.network}
-                onChange={(e) => setGeneralData({...generalData, network: e.target.value})}
-                className={styles.formSelect}
-                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+          <div className={styles.formHeaderRight}>
+            <div className={styles.buttonGroup}>
+              <button type="submit" className={styles.headerButton} disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}>
+                <Save size={18} />
+                {t('ctrlpricing.save')}
+              </button>
+              <button type="button" className={styles.headerButtonRefresh} onClick={loadData} disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}>
+                <RefreshCw size={18} />
+              </button>
+              {/*<button
+                className={styles.buttonGroupItem}
+                onClick={handleDelete}
+                disabled={loading || !controlId}
               >
-                <option>WCA</option>
-                <option>JC TRANS</option>
-                <option>GLA FAMILY</option>
-                <option>N/A</option>
-                <option>WTC Alliance</option>
-                <option>DF Alliance</option>
-              </select>
-            </div>
-            <div className={styles.formGroup}>
-              <label><span className={styles.required}>*</span> {t('ctrlpricing.complexity')}</label>
-              <select required
-                value={generalData.complexity}
-                onChange={(e) => setGeneralData({...generalData, complexity: e.target.value})}
-                className={styles.formSelect}
-                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
-              >
-                <option>Baja</option>
-                <option>Media</option>
-                <option>Alta</option>
-              </select>
-            </div>
-            <div className={styles.formGroup}>
-              <label><span className={styles.required}>*</span> {t('ctrlpricing.currency')}</label>
-              <select required
-                value={generalData.currency}
-                onChange={(e) => setGeneralData({...generalData, currency: e.target.value})}
-                className={styles.formSelect}
-                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
-              >
-                <option>USD</option>
-                <option>MXN</option>
-                <option>EUR</option>
-              </select>
-            </div>
-            <div className={styles.formGroup}>
-              <label><span className={styles.required}>*</span> {t('ctrlpricing.unitprofit')}</label>
-              <input required
-                type="number"
-                value={generalData.unit_profit}
-                onChange={(e) => setGeneralData({...generalData, unit_profit: e.target.value})}
-                className={styles.formInput}
-                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}                
-              />
-            </div>
-             <div className={styles.formGroup}>
-              <label><span className={styles.required}>*</span> {t('ctrlpricing.volume')}</label>
-              <input required
-                type="number"
-                value={generalData.volume}
-                onChange={(e) => setGeneralData({...generalData, volume: e.target.value})}
-                className={styles.formInput}                
-                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label><span className={styles.required}>*</span> {t('ctrlpricing.generalprofit')}</label>
-              <input required
-                type="number"
-                value={calculateProfit_general()}
-                onChange={(e) => setGeneralData({...generalData, general_profit: e.target.value})}
-                className={styles.formInput}
-                disabled={true}
-              />
-            </div>
-              <div className={styles.formGroup}>
-              <label><span className={styles.required}>*</span> Key TD</label>
-              <select required
-                value={generalData.key_td}
-                onChange={(e) => setGeneralData({...generalData, key_td: e.target.value})}
-                className={styles.formSelect}
-                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
-              >
-                <option value="CI" >CI Complementar información</option>
-                <option value="RFQ" >RFQ Licitación</option>
-                <option value="FS" >FS Fin de semana</option>
-                <option value="DP" >DP Desarrollo de proveedor</option>
-                <option value="MS" >MS MultiServicios + 10 rutas +3 proveedores</option>
-                <option value="DH" >DH Diferencia de horario</option>
-                <option value="DC" >DC Dependencia corresponsal / Dependencia consolidador</option>
-                <option value="AR" >AR Actualización de rutas</option>
-                <option value="OWOS" >OWOS Proyectos sobredimensionados</option>
-                <option value="IP" >IP Interno pricing</option>
-              </select>
-            </div>
-          </div>
-          <div className={styles.formGroup}>
-            <label>{t('ctrlpricing.comments')}</label>
-            <textarea
-              value={generalData.comments_general}
-              onChange={(e) => setGeneralData({...generalData, comments_general: e.target.value})}
-              className={styles.formTextarea}
-              rows={3}
-              disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
-            />
-          </div>
-        </div>
-
-        <div className={styles.servicesSection}>
-          <h3 className={styles.sectionTitle}>{t('ctrlpricing.services')}</h3>
-          {requestData.services && requestData.services.length > 0 ? (
-            requestData.services.map((service: any, index: number) => {
-              const serviceId = service.idServiceItem || service._id;
-              const isSelected = selectedServices.some(s => s.idServiceItem === serviceId);
-              const isUsed = (service.used && controlId === null) || (service.used && (statusControl.id_status_control === 5 || statusControl.id_status_control === 6)) ;
-              const isExpanded = expandedServices.has(serviceId);
-
-              const shipment = service.shipments && service.shipments.length > 0 ? service.shipments[0] : {};
-
-              return (
-                <div
-                  key={serviceId}
-                  className={styles.serviceCard}
-                  style={{
-                    opacity: isUsed ? 0.5 : 1,
-                    border: isSelected ? '2px solid #14b8a6' : '1px solid #e5e7eb'
-                  }}
+                <Trash2 size={18} />
+              </button>*/}
+              <div className={styles.actionsMenuContainer} ref={actionsMenuRef}>
+                <button type="button"
+                  className={styles.headerButtonAction}
+                  hidden
+                  onClick={() => setShowActionsMenu(!showActionsMenu)}
+                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
                 >
-                  <div className={styles.serviceHeader}>
-                    <div className={styles.serviceNumber}>{index + 1}</div>
-                    <div style={{flex: 1}}>
+                  {t('ctrlpricing.actions')}
+                  <ChevronDown size={16} />
+                </button>
+                {showActionsMenu && (
+                  <div className={styles.actionsDropdown}>
+                    <button className={styles.dropdownItem}>{t('ctrlpricing.export')}</button>
+                    <button className={styles.dropdownItem}>{t('ctrlpricing.duplicate')}</button>
+                    <button className={styles.dropdownItem}>{t('ctrlpricing.historical')}</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>      
+        {loading ? (
+            <div className={styles.loading}>
+              <div className={styles.spinner}></div>
+            </div>
+            ) :
+        <div className={styles.container}>
+          <div className={styles.topCardsContainer}>
+            <div className={styles.clientSection}>
+              <div className={styles.clientHeader}>
+                <div className={styles.clientInfo}>
+                  {medalSrc && (
+                    <img src={medalSrc} alt="Medal" className={styles.clientMedal} />
+                  )}
+                  <div>
+                    <h2 className={styles.clientName}>
+                      {requestData.customer?.customerName}
+                      {priority && (
+                        <img src="/prioridad.png" alt="Prioridad" className={styles.priorityIcon} style={{width: '20px', height: '20px', marginLeft: '8px'}} />
+                      )}
+                    </h2>
+                    <div className={styles.clientDetails}>
+                      <span className={styles.clientId}>
+                        Ref: {requestData.referenceRequest}
+                      </span>
+                      <span className={styles.clientExecutive}>
+                        {requestData.createdBy?.fullName}
+                      </span>
+                    </div>
+                    <div className={styles.clientToggles}>
                       <div className={styles.switchContainer}>
                         <label className={styles.switch}>
                           <input
                             type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleService(serviceId)}
-                            disabled={isUsed || loading}
+                            checked={priority}
+                            onChange={(e) => setPriority(e.target.checked)}
+                            disabled
                           />
                           <span className={styles.switchSlider}></span>
                         </label>
-                        <span className={styles.switchLabel} style={{fontWeight: 600}}>
-                          {isSelected ? t('ctrlpricing.serviceincluded') : isUsed ? t('ctrlpricing.alreadyused') : t('ctrlpricing.includeservice')}
-                        </span>
+                        <span className={styles.switchLabel}>{t('ctrlpricing.priority')}</span>
                       </div>
-                    </div>
-                    <button type="button"
-                      className={styles.btnServiceAction}
-                      onClick={() => toggleServiceExpanded(serviceId)}
-                      disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
-                    >
-                      {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    </button>
-                    <button type="button"
-                      className={styles.btnServiceAction}
-                      onClick={() => toggleService(serviceId)}
-                      disabled={isUsed || loading}
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-
-                  {isExpanded && (
-                    <>
-                      <div className={styles.serviceGrid}>
-                        <div className={styles.formGroup}>
-                          <label><span className={styles.required}>*</span> {t('ctrlpricing.service')}</label>
-                          <input
-                            type="text"
-                            value={service.nameService || ''}
-                            className={styles.formInput}
-                            disabled
-                          />
-                        </div>
-                        <div className={styles.formGroup}>
-                          <label><span className={styles.required}>*</span> {t('ctrlpricing.operation')}</label>
-                          <input
-                            type="text"
-                            value={shipment.typeOperation || ''}
-                            className={styles.formInput}
-                            disabled
-                          />
-                        </div>
-                        <div className={styles.formGroup}>
-                          <label><span className={styles.required}>*</span> Incoterm</label>
-                          <input
-                            type="text"
-                            value={shipment.incoterm_name || shipment.incoterm || ''}
-                            className={styles.formInput}
-                            disabled
-                          />
-                        </div>
-                        <div className={styles.formGroup}>
-                          <label>{t('ctrlpricing.expecteddeparture')}</label>
-                          <input
-                            type="date"
-                            value={shipment.departureDateAproximate ? new Date(shipment.departureDateAproximate.$date || shipment.departureDateAproximate).toISOString().split('T')[0] : ''}
-                            className={styles.formInput}
-                            disabled
-                          />
-                        </div>
-                        <div className={styles.formGroup}>
-                          <label><span className={styles.required}>*</span> {t('ctrlpricing.origin')}</label>
-                          <input
-                            type="text"
-                            value={(() => {
-                              const countryCode = shipment.origin_country_name || shipment.origin?.countryCode || shipment.origin?.zipCode || '';
-                              const country = countries.find(c => c.country_code === countryCode);
-                              return country ? `(${country.country_code}) ${country.name_country}` : countryCode;
-                            })()}
-                            className={styles.formInput}
-                            disabled
-                          />
-                        </div>
-                        <div className={styles.formGroup}>
-                          <label><span className={styles.required}>*</span> {t('ctrlpricing.cpo')}</label>
-                          <input
-                            type="text"
-                            value={shipment.origin?.zipCode || ''}
-                            className={styles.formInput}
-                            disabled
-                          />
-                        </div>
-                        <div className={styles.formGroup}>
-                          <label><span className={styles.required}>*</span> {t('ctrlpricing.destination')}</label>
-                          <input
-                            type="text"
-                            value={(() => {
-                              const countryCode = shipment.destination_country_name || shipment.destination?.countryCode || shipment.destination?.zipCode || '';
-                              const country = countries.find(c => c.country_code === countryCode);
-                              return country ? `(${country.country_code}) ${country.name_country}` : countryCode;
-                            })()}
-                            className={styles.formInput}
-                            disabled
-                          />
-                        </div>
-                        <div className={styles.formGroup}>
-                          <label><span className={styles.required}>*</span> {t('ctrlpricing.cpd')}</label>
-                          <input
-                            type="text"
-                            value={shipment.destination?.zipCode || ''}
-                            className={styles.formInput}
-                            disabled
-                          />
-                        </div>
-                        <div className={styles.formGroup}>
-                          <label><span className={styles.required}>*</span> {t('ctrlpricing.shippingtype')}</label>
-                          <input
-                            type="text"
-                            value={shipment.typeShipment || ''}
-                            className={styles.formInput}
-                            disabled
-                          />
-                        </div>
-                      </div>
-
-                      <div className={styles.associatedServices}>
-                        <label>{t('ctrlpricing.associatedServices')}</label>
-                        <div className={styles.servicesChips}>
-                          {(shipment.servicesAsociated || shipment.services_asociated) && (shipment.servicesAsociated || shipment.services_asociated).length > 0 ? (
-                            (shipment.servicesAsociated || shipment.services_asociated).map((assocService: any, idx: number) => (
-                              <span key={assocService.idServiceAsociated?.$oid || idx} className={`${styles.serviceChip} ${styles.serviceChipActive}`}>
-                                {assocService.serviceAsociatedName || 'Servicio'}
-                              </span>
-                            ))
-                          ) : (
-                            <span style={{color: '#9ca3af', fontSize: '14px'}}>{t('ctrlpricing.noassociatedservices')}</span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className={styles.formGroup}>
-                        <label>{t('ctrlpricing.comments')}</label>
-                        <textarea
-                          value={shipment.comment || shipment.comments || ''}
-                          className={styles.formTextarea}
-                          rows={2}
-                          disabled
-                          placeholder={t('ctrlpricing.nocomments')}
-                        />
-                      </div>
-
-                      <div className={styles.frequencySection}>
-                        <label className={styles.checkboxLabel}>
+                      <div className={styles.switchContainer}>
+                        <label className={styles.switch}>
                           <input
                             type="checkbox"
-                            checked={!!shipment.projectionShipment}
+                            checked={bidding}
+                            onChange={(e) => setBidding(e.target.checked)}
                             disabled
                           />
-                          {t('ctrlpricing.programFrequency')}
+                          <span className={styles.switchSlider}></span>
                         </label>
-                        {shipment.projectionShipment && (
-                          <div className={styles.frequencyGrid}>
-                            <div className={styles.formGroup}>
-                              <label>{t('ctrlpricing.frequency')}</label>
-                              <input
-                                type="text"
-                                value={shipment.projectionShipment.frecuency || ''}
-                                className={styles.formInput}
-                                disabled
-                              />
-                            </div>
-                            <div className={styles.formGroup}>
-                              <label>{t('ctrlpricing.quantity')}</label>
-                              <input
-                                type="number"
-                                value={shipment.projectionShipment.number || 0}
-                                className={styles.formInput}
-                                disabled
-                              />
-                            </div>
-                            <div className={styles.formGroup}>
-                              <label>{t('ctrlpricing.unit')}</label>
-                              <input
-                                type="text"
-                                value={shipment.projectionShipment.measurementFrecuency || ''}
-                                className={styles.formInput}
-                                disabled
-                              />
-                            </div>
-                          </div>
-                        )}
+                        <span className={styles.switchLabel}>{t('ctrlpricing.bidding')}</span>
                       </div>
-
-                      <div className={styles.merchandiseSection}>
-                        <h4 className={styles.merchandiseTitle}>{t('ctrlpricing.commodity')}</h4>
-                        {shipment.cargo && shipment.cargo.length > 0 ? (
-                          <div className={styles.merchandiseTable}>
-                            <table className={styles.simpleTable}>
-                              <thead>
-                                <tr>
-                                  <th>{t('ctrlpricing.commodity')}</th>
-                                  <th>{t('ctrlpricing.dangerous')}</th>
-                                  <th>{t('ctrlpricing.classification')}</th>
-                                  <th>{t('ctrlpricing.stackable')}</th>
-                                  <th>{t('ctrlpricing.totalVolume')}</th>
-                                  <th>{t('ctrlpricing.totalWeight')}</th>                            
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {shipment.cargo.map((carg: any) => (
-                                  <tr key={carg.name}>
-                                    <td>{carg.name}</td>
-                                    <td>{carg.classification.idClassificationMerchandise === 5 ? 'Sí' : 'No'}</td>
-                                    <td>{carg.classification.idClassificationMerchandise === 4 ? 'Refrigerada' : 'General'}</td>
-                                    <td>{carg.stowable ? 'Sí' : 'No'}</td>
-                                    <td>{carg.volumeTotal ? `${carg.volumeTotal} ${carg.unitMeasurement || ''}` : '0'} KG</td>
-                                    <td>{carg.weigthTotal ? `${carg.weigthTotal} ${carg.unitWeight   || ''}` : '0'} KG</td>                        
-                                  </tr>
-                                ))}                                
-                              </tbody>
-                            </table>
-                          </div>
-                        ) : (
-                          <p style={{color: '#9ca3af', fontSize: '14px', marginTop: '8px'}}>Sin mercancía registrada</p>
-                        )}
+                    </div>
+                    {controlData && (
+                      <div className={styles.clientControl}>
+                        <span className={styles.controlLabel}>Control</span>
+                        <span className={styles.controlBadge}>{controlData.control}</span>
                       </div>
-                    </>
-                  )}
+                    )}
+                  </div>
                 </div>
-              );
-            })
-          ) : (
-            <div className={styles.emptyState}>
-              <p>No hay servicios disponibles en esta solicitud</p>
-            </div>
-          )}
-        </div>
-      </div>
-      }
-      
-      {showModal && (                  
-        <div className={styles.modalOverlay} onClick={closeModal}>          
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>
-               Declinar Solicitud
-              </h2>
-              <button className={styles.closeButton} onClick={closeModal}>
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className={styles.modalBody}>             
-              <div className={styles.formGroup}>
-                <label className={styles.label}><span className={styles.required}>*</span> Motivo</label>
-                <textarea
-                  className={styles.textarea}
-                  value={reasoncancellation}
-                onChange={(e) => setreasoncancellation(e.target.value)}
-                  disabled={loading}
-                  required
-                />
-              </div>              
+                <div className={styles.clientMeta}>
+                  <div className={styles.clientType}>{requestData.requestType}</div>
+                </div>
+              </div>
+              <div className={styles.clientActions}>
+                <button type="button"
+                className={styles.btnDecline} 
+                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                onClick={openModal}
+                hidden={controlId ? false : true}
+                >
+                  {t('ctrlpricing.decline')}
+                  
+                </button>
+                <button type="button"
+                  className={styles.btnQuote}
+                  onClick={handleMarkAsQuoted}
+                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                  hidden={controlId ? false : true}
+                >
+                  {t('ctrlpricing.quoted')}
+                </button>
+              </div>
             </div>
 
-            <div className={styles.modalFooter}>
-              <button type="button" className={styles.cancelButton} onClick={closeModal} disabled={loading}>
-                {t('catalog.cancel')}
+            <div className={styles.suppliersSection}>
+              <h3 className={styles.sectionTitle}> {t('ctrlpricing.supplierassignment')}</h3>
+              <span className={styles.supplierLabel}>{t('ctrlpricing.supplier')}</span>
+                    <select                                       
+                      className={styles.selectInput}
+                      onChange={(e) => 
+                        setSuppliersCombo({ 
+                          ...suppliersCombo, 
+                          idsuplier: e.target.value,
+                          supplier_associated_name: e.target.options[e.target.selectedIndex].text
+                        })
+                      }                    
+                    >
+                      <option value="">{t('ctrlpricing.select')}</option>
+                      {selectsuppliers.map((suppliers) => (
+                        <option key={suppliers._id} value={suppliers._id}>
+                          {suppliers.fiscal_data?.business_name}
+                        </option>
+                      ))
+                      }
+                    </select>         
+              <button type="button"
+                className={styles.btnAddSupplier}
+                onClick={addSupplier}
+                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+              >
+                <Plus size={16} />
+                {t('ctrlpricing.addsupplier')}
               </button>
-              <button type="button" onClick={handleMarkAsDecline} className={styles.saveButton} disabled={loading}>
-                {loading ? 'Guardando...' : t('catalog.save')}
-              </button>
+              <div className={styles.suppliersList}>
+                {suppliers.map((supplier) => (
+                  <div key={supplier.idsuplier} className={styles.supplierItem}>
+                    <span className={styles.supplierLabel}>{t('ctrlpricing.supplier')}</span>                 
+                    <input
+                      type="text"
+                      value={supplier.supplier_associated_name}                    
+                      className={styles.supplierInput}
+                      placeholder={t('ctrlpricing.suppliername')}
+                      disabled
+                    />
+                    <button type="button"
+                      className={styles.btnRemoveSupplier}
+                      onClick={() => removeSupplier(supplier.idsuplier)}
+                      disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>        
-      )}
 
-    </div>
+          <div className={styles.generalSection}>
+            <h3 className={styles.sectionTitle}>General</h3>
+            <div className={styles.formGrid}>
+              <div className={styles.formGroup}>
+                <label><span className={styles.required}>*</span> {t('ctrlpricing.status')}</label>
+                <select required
+                  value={statusControl.status_control_name}
+                  onChange={(e) => {
+                    const statusMap: any = {
+                      'Asignada': { id_status_control: 3, status_control_name: 'Asignada' },                    
+                      'Cotizada': { id_status_control: 5, status_control_name: 'Cotizada' },
+                      'Declinada': { id_status_control: 6, status_control_name: 'Declinada' }
+                    };
+                    setStatusControl(statusMap[e.target.value] || statusControl);
+                  }}
+                  className={styles.formSelect}
+                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                >                
+                  <option>Asignada</option>
+                  <option>Cotizada</option>
+                  <option>Declinada</option>
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label><span className={styles.required}>*</span> {t('ctrlpricing.network')}</label>
+                <select required
+                  value={generalData.network}
+                  onChange={(e) => setGeneralData({...generalData, network: e.target.value})}
+                  className={styles.formSelect}
+                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                >
+                  <option>WCA</option>
+                  <option>JC TRANS</option>
+                  <option>GLA FAMILY</option>
+                  <option>N/A</option>
+                  <option>WTC Alliance</option>
+                  <option>DF Alliance</option>
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label><span className={styles.required}>*</span> {t('ctrlpricing.complexity')}</label>
+                <select required
+                  value={generalData.complexity}
+                  onChange={(e) => setGeneralData({...generalData, complexity: e.target.value})}
+                  className={styles.formSelect}
+                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                >
+                  <option>Baja</option>
+                  <option>Media</option>
+                  <option>Alta</option>
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label><span className={styles.required}>*</span> {t('ctrlpricing.currency')}</label>
+                <select required
+                  value={generalData.currency}
+                  onChange={(e) => setGeneralData({...generalData, currency: e.target.value})}
+                  className={styles.formSelect}
+                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                >
+                  <option>USD</option>
+                  <option>MXN</option>
+                  <option>EUR</option>
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label><span className={styles.required}>*</span> {t('ctrlpricing.unitprofit')}</label>
+                <input required
+                  type="number"
+                  value={generalData.unit_profit}
+                  onChange={(e) => setGeneralData({...generalData, unit_profit: e.target.value})}
+                  className={styles.formInput}
+                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}                
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label><span className={styles.required}>*</span> {t('ctrlpricing.volume')}</label>
+                <input required
+                  type="number"
+                  value={generalData.volume}
+                  onChange={(e) => setGeneralData({...generalData, volume: e.target.value})}
+                  className={styles.formInput}                
+                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label><span className={styles.required}>*</span> {t('ctrlpricing.generalprofit')}</label>
+                <input required
+                  type="number"
+                  value={calculateProfit_general()}
+                  onChange={(e) => setGeneralData({...generalData, general_profit: e.target.value})}
+                  className={styles.formInput}
+                  disabled={true}
+                />
+              </div>
+                <div className={styles.formGroup}>
+                <label><span className={styles.required}>*</span> Key TD</label>
+                <select required
+                  value={generalData.key_td}
+                  onChange={(e) => setGeneralData({...generalData, key_td: e.target.value})}
+                  className={styles.formSelect}
+                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                >
+                  <option value="CI" >CI Complementar información</option>
+                  <option value="RFQ" >RFQ Licitación</option>
+                  <option value="FS" >FS Fin de semana</option>
+                  <option value="DP" >DP Desarrollo de proveedor</option>
+                  <option value="MS" >MS MultiServicios + 10 rutas +3 proveedores</option>
+                  <option value="DH" >DH Diferencia de horario</option>
+                  <option value="DC" >DC Dependencia corresponsal / Dependencia consolidador</option>
+                  <option value="AR" >AR Actualización de rutas</option>
+                  <option value="OWOS" >OWOS Proyectos sobredimensionados</option>
+                  <option value="IP" >IP Interno pricing</option>
+                </select>
+              </div>
+            </div>
+            <div className={styles.formGroup}>
+              <label>{t('ctrlpricing.comments')}</label>
+              <textarea
+                value={generalData.comments_general}
+                onChange={(e) => setGeneralData({...generalData, comments_general: e.target.value})}
+                className={styles.formTextarea}
+                rows={3}
+                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+              />
+            </div>
+          </div>
+
+          <div className={styles.servicesSection}>
+            <h3 className={styles.sectionTitle}>{t('ctrlpricing.services')}</h3>
+            {requestData.services && requestData.services.length > 0 ? (
+              requestData.services.map((service: any, index: number) => {
+                const serviceId = service.idServiceItem || service._id;
+                const isSelected = selectedServices.some(s => s.idServiceItem === serviceId);
+                const isUsed = (service.used && controlId === null) || (service.used && (statusControl.id_status_control === 5 || statusControl.id_status_control === 6)) ;
+                const isExpanded = expandedServices.has(serviceId);
+
+                const shipment = service.shipments && service.shipments.length > 0 ? service.shipments[0] : {};
+
+                return (
+                  <div
+                    key={serviceId}
+                    className={styles.serviceCard}
+                    style={{
+                      opacity: isUsed ? 0.5 : 1,
+                      border: isSelected ? '2px solid #14b8a6' : '1px solid #e5e7eb'
+                    }}
+                  >
+                    <div className={styles.serviceHeader}>
+                      <div className={styles.serviceNumber}>{index + 1}</div>
+                      <div style={{flex: 1}}>
+                        <div className={styles.switchContainer}>
+                          <label className={styles.switch}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleService(serviceId)}
+                              disabled={isUsed || loading}
+                            />
+                            <span className={styles.switchSlider}></span>
+                          </label>
+                          <span className={styles.switchLabel} style={{fontWeight: 600}}>
+                            {isSelected ? t('ctrlpricing.serviceincluded') : isUsed ? t('ctrlpricing.alreadyused') : t('ctrlpricing.includeservice')}
+                          </span>
+                        </div>
+                      </div>
+                      <button type="button"
+                        className={styles.btnServiceAction}
+                        onClick={() => toggleServiceExpanded(serviceId)}
+                        disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                      >
+                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </button>
+                      <button type="button"
+                        className={styles.btnServiceAction}
+                        onClick={() => toggleService(serviceId)}
+                        disabled={isUsed || loading}
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+
+                    {isExpanded && (
+                      <>
+                        <div className={styles.serviceGrid}>
+                          <div className={styles.formGroup}>
+                            <label><span className={styles.required}>*</span> {t('ctrlpricing.service')}</label>
+                            <input
+                              type="text"
+                              value={service.nameService || ''}
+                              className={styles.formInput}
+                              disabled
+                            />
+                          </div>
+                          <div className={styles.formGroup}>
+                            <label><span className={styles.required}>*</span> {t('ctrlpricing.operation')}</label>
+                            <input
+                              type="text"
+                              value={shipment.typeOperation || ''}
+                              className={styles.formInput}
+                              disabled
+                            />
+                          </div>
+                          <div className={styles.formGroup}>
+                            <label><span className={styles.required}>*</span> Incoterm</label>
+                            <input
+                              type="text"
+                              value={shipment.incoterm_name || shipment.incoterm || ''}
+                              className={styles.formInput}
+                              disabled
+                            />
+                          </div>
+                          <div className={styles.formGroup}>
+                            <label>{t('ctrlpricing.expecteddeparture')}</label>
+                            <input
+                              type="date"
+                              value={shipment.departureDateAproximate ? new Date(shipment.departureDateAproximate.$date || shipment.departureDateAproximate).toISOString().split('T')[0] : ''}
+                              className={styles.formInput}
+                              disabled
+                            />
+                          </div>
+                          <div className={styles.formGroup}>
+                            <label><span className={styles.required}>*</span> {t('ctrlpricing.origin')}</label>
+                            <input
+                              type="text"
+                              value={(() => {
+                                const countryCode = shipment.origin_country_name || shipment.origin?.countryCode || shipment.origin?.zipCode || '';
+                                const country = countries.find(c => c.country_code === countryCode);
+                                return country ? `(${country.country_code}) ${country.name_country}` : countryCode;
+                              })()}
+                              className={styles.formInput}
+                              disabled
+                            />
+                          </div>
+                          <div className={styles.formGroup}>
+                            <label><span className={styles.required}>*</span> {t('ctrlpricing.cpo')}</label>
+                            <input
+                              type="text"
+                              value={shipment.origin?.zipCode || ''}
+                              className={styles.formInput}
+                              disabled
+                            />
+                          </div>
+                          <div className={styles.formGroup}>
+                            <label><span className={styles.required}>*</span> {t('ctrlpricing.destination')}</label>
+                            <input
+                              type="text"
+                              value={(() => {
+                                const countryCode = shipment.destination_country_name || shipment.destination?.countryCode || shipment.destination?.zipCode || '';
+                                const country = countries.find(c => c.country_code === countryCode);
+                                return country ? `(${country.country_code}) ${country.name_country}` : countryCode;
+                              })()}
+                              className={styles.formInput}
+                              disabled
+                            />
+                          </div>
+                          <div className={styles.formGroup}>
+                            <label><span className={styles.required}>*</span> {t('ctrlpricing.cpd')}</label>
+                            <input
+                              type="text"
+                              value={shipment.destination?.zipCode || ''}
+                              className={styles.formInput}
+                              disabled
+                            />
+                          </div>
+                          <div className={styles.formGroup}>
+                            <label><span className={styles.required}>*</span> {t('ctrlpricing.shippingtype')}</label>
+                            <input
+                              type="text"
+                              value={shipment.typeShipment || ''}
+                              className={styles.formInput}
+                              disabled
+                            />
+                          </div>
+                        </div>
+
+                        <div className={styles.associatedServices}>
+                          <label>{t('ctrlpricing.associatedServices')}</label>
+                          <div className={styles.servicesChips}>
+                            {(shipment.servicesAsociated || shipment.services_asociated) && (shipment.servicesAsociated || shipment.services_asociated).length > 0 ? (
+                              (shipment.servicesAsociated || shipment.services_asociated).map((assocService: any, idx: number) => (
+                                <span key={assocService.idServiceAsociated?.$oid || idx} className={`${styles.serviceChip} ${styles.serviceChipActive}`}>
+                                  {assocService.serviceAsociatedName || 'Servicio'}
+                                </span>
+                              ))
+                            ) : (
+                              <span style={{color: '#9ca3af', fontSize: '14px'}}>{t('ctrlpricing.noassociatedservices')}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                          <label>{t('ctrlpricing.comments')}</label>
+                          <textarea
+                            value={shipment.comment || shipment.comments || ''}
+                            className={styles.formTextarea}
+                            rows={2}
+                            disabled
+                            placeholder={t('ctrlpricing.nocomments')}
+                          />
+                        </div>
+
+                        <div className={styles.frequencySection}>
+                          <label className={styles.checkboxLabel}>
+                            <input
+                              type="checkbox"
+                              checked={!!shipment.projectionShipment}
+                              disabled
+                            />
+                            {t('ctrlpricing.programFrequency')}
+                          </label>
+                          {shipment.projectionShipment && (
+                            <div className={styles.frequencyGrid}>
+                              <div className={styles.formGroup}>
+                                <label>{t('ctrlpricing.frequency')}</label>
+                                <input
+                                  type="text"
+                                  value={shipment.projectionShipment.frecuency || ''}
+                                  className={styles.formInput}
+                                  disabled
+                                />
+                              </div>
+                              <div className={styles.formGroup}>
+                                <label>{t('ctrlpricing.quantity')}</label>
+                                <input
+                                  type="number"
+                                  value={shipment.projectionShipment.number || 0}
+                                  className={styles.formInput}
+                                  disabled
+                                />
+                              </div>
+                              <div className={styles.formGroup}>
+                                <label>{t('ctrlpricing.unit')}</label>
+                                <input
+                                  type="text"
+                                  value={shipment.projectionShipment.measurementFrecuency || ''}
+                                  className={styles.formInput}
+                                  disabled
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className={styles.merchandiseSection}>
+                          <h4 className={styles.merchandiseTitle}>{t('ctrlpricing.commodity')}</h4>
+                          {shipment.cargo && shipment.cargo.length > 0 ? (
+                            <div className={styles.merchandiseTable}>
+                              <table className={styles.simpleTable}>
+                                <thead>
+                                  <tr>
+                                    <th>{t('ctrlpricing.commodity')}</th>
+                                    <th>{t('ctrlpricing.dangerous')}</th>
+                                    <th>{t('ctrlpricing.classification')}</th>
+                                    <th>{t('ctrlpricing.stackable')}</th>
+                                    <th>{t('ctrlpricing.totalVolume')}</th>
+                                    <th>{t('ctrlpricing.totalWeight')}</th>                            
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {shipment.cargo.map((carg: any) => (
+                                    <tr key={carg.name}>
+                                      <td>{carg.name}</td>
+                                      <td>{carg.classification.idClassificationMerchandise === 5 ? 'Sí' : 'No'}</td>
+                                      <td>{carg.classification.idClassificationMerchandise === 4 ? 'Refrigerada' : 'General'}</td>
+                                      <td>{carg.stowable ? 'Sí' : 'No'}</td>
+                                      <td>{carg.volumeTotal ? `${carg.volumeTotal} ${carg.unitMeasurement || ''}` : '0'} KG</td>
+                                      <td>{carg.weigthTotal ? `${carg.weigthTotal} ${carg.unitWeight   || ''}` : '0'} KG</td>                        
+                                    </tr>
+                                  ))}                                
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : (
+                            <p style={{color: '#9ca3af', fontSize: '14px', marginTop: '8px'}}>Sin mercancía registrada</p>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <div className={styles.emptyState}>
+                <p>No hay servicios disponibles en esta solicitud</p>
+              </div>
+            )}
+          </div>
+        </div>
+        }         
+
+      </div>
     </form>
+     {showModal && (   
+        <form onSubmit={handleMarkAsDecline}>               
+          <div className={styles.modalOverlay} onClick={closeModal}>          
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h2 className={styles.modalTitle}>
+                Declinar Solicitud
+                </h2>
+                <button className={styles.closeButton} onClick={closeModal}>
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className={styles.modalBody}>             
+                <div className={styles.formGroup}>
+                  <label className={styles.label}><span className={styles.required}>*</span> Motivo</label>
+                  <textarea
+                    className={styles.textarea}
+                    value={reasoncancellation}
+                  onChange={(e) => setreasoncancellation(e.target.value)}
+                    disabled={loading}
+                    required
+                  />
+                </div>              
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button type="button" className={styles.cancelButton} onClick={closeModal} disabled={loading}>
+                  {t('catalog.cancel')}
+                </button>
+                <button type="submit" className={styles.saveButton} disabled={loading}>
+                  {loading ? 'Guardando...' : t('catalog.save')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      )}
+    </>
   );
 }
