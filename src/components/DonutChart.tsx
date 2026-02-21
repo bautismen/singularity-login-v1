@@ -35,8 +35,10 @@ export function DonutChart({ data, total }: DonutChartProps) {
 
     let currentAngle = -Math.PI / 2;
 
+    const totalValue = data.reduce((sum, item) => sum + item.percentage, 0);
+
     data.forEach((item) => {
-      const sliceAngle = (item.percentage / 100) * 2 * Math.PI;
+      const sliceAngle = (item.percentage / totalValue) * 2 * Math.PI;
       const color = STATUS_COLORS[item.statusId] || '#94A3B8';
 
       ctx.beginPath();

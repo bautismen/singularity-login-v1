@@ -26,7 +26,7 @@ export interface QuotationStats {
   upcomingDeadlines: UpcomingDeadline[];
 }
 
-interface DashboardStats {
+export interface DashboardStats {
   stats: {
     gold: number;
     silver: number;

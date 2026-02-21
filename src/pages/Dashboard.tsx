@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Layout } from '../components/Layout';
 import { useLanguage } from '../contexts/LanguageContext';
-import { fetchDashboardStats, type QuotationStats } from '../services/dashboardService';
+import { fetchDashboardStats, type DashboardStats } from '../services/dashboardService';
 import { DonutChart } from '../components/DonutChart';
 import Quotations from './Quotations';
 import Executives from './Executives';
@@ -9,25 +9,10 @@ import Customers from './Customers';
 
 type Page = 'dashboard' | 'quotations' | 'executives' | 'customers';
 
-interface DashboardData {
-  stats: {
-    gold: number;
-    silver: number;
-    bronze: number;
-    total: number;
-  };
-  percentages: {
-    gold: string;
-    silver: string;
-    bronze: string;
-  };
-  quotations: QuotationStats;
-}
-
 export function Dashboard() {
   const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -125,7 +110,7 @@ export function Dashboard() {
             )}
           </div>
 
-          {!loading && dashboardData?.quotations && (
+          {!loading && dashboardData && (
             <>
               <div className="mt-8 mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -146,24 +131,30 @@ export function Dashboard() {
                   </span>
                 </div>
 
-                {dashboardData.quotations.acceptedByChannel.map((channel) => (
-                  <div key={channel.requestTypeId} className="mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {channel.requestTypeName}
-                      </span>
-                      <span className="text-sm font-bold text-gray-900 dark:text-white">
-                        {channel.totalAccepted}
-                      </span>
+                {dashboardData.quotations?.acceptedByChannel && dashboardData.quotations.acceptedByChannel.length > 0 ? (
+                  dashboardData.quotations.acceptedByChannel.map((channel) => (
+                    <div key={channel.requestTypeId} className="mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">
+                          {channel.requestTypeName}
+                        </span>
+                        <span className="text-sm font-bold text-gray-900 dark:text-white">
+                          {channel.totalAccepted}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div
+                          className="bg-teal-500 h-2 rounded-full"
+                          style={{ width: `${Math.min((channel.totalAccepted / 300) * 100, 100)}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div
-                        className="bg-teal-500 h-2 rounded-full"
-                        style={{ width: `${Math.min((channel.totalAccepted / 300) * 100, 100)}%` }}
-                      />
-                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                    No hay datos de canales disponibles
                   </div>
-                ))}
+                )}
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -174,10 +165,10 @@ export function Dashboard() {
                     </h3>
                     <span className="text-sm text-gray-500 dark:text-gray-400">2026</span>
                   </div>
-                  {dashboardData.quotations.statusPercentageCurrentMonth.length > 0 ? (
+                  {dashboardData.quotations?.statusPercentageCurrentMonth && dashboardData.quotations.statusPercentageCurrentMonth.length > 0 ? (
                     <DonutChart
                       data={dashboardData.quotations.statusPercentageCurrentMonth}
-                      total={dashboardData.quotations.statusPercentageCurrentMonth.reduce((sum, item) => sum + item.percentage, 0)}
+                      total={Math.round(dashboardData.quotations.statusPercentageCurrentMonth.reduce((sum, item) => sum + item.percentage, 0))}
                     />
                   ) : (
                     <div className="text-center text-gray-500 dark:text-gray-400 py-8">
@@ -204,43 +195,51 @@ export function Dashboard() {
                       <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Acciones</span>
                     </div>
 
-                    {dashboardData.quotations.upcomingDeadlines.slice(0, 3).map((deadline, index) => {
-                      const isOverdue = new Date(deadline.deadlineDate) < new Date();
-                      const medalIcon = deadline.customer.customer_category === 1
-                        ? '/gold.png'
-                        : deadline.customer.customer_category === 2
-                        ? '/silver.png'
-                        : '/bronze.png';
+                    {dashboardData.quotations?.upcomingDeadlines && dashboardData.quotations.upcomingDeadlines.length > 0 ? (
+                      <>
+                        {dashboardData.quotations.upcomingDeadlines.slice(0, 3).map((deadline, index) => {
+                          const isOverdue = new Date(deadline.deadlineDate) < new Date();
+                          const medalIcon = deadline.customer.customer_category === 1
+                            ? '/gold.png'
+                            : deadline.customer.customer_category === 2
+                            ? '/silver.png'
+                            : '/bronze.png';
 
-                      return (
-                        <div key={index} className="grid grid-cols-4 gap-4 items-center py-3 border-b border-gray-100 dark:border-gray-700">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-teal-100 dark:bg-teal-900 flex items-center justify-center text-teal-600 dark:text-teal-400 text-xs font-medium">
-                              {deadline.customer.customer_name.charAt(0)}
+                          return (
+                            <div key={index} className="grid grid-cols-4 gap-4 items-center py-3 border-b border-gray-100 dark:border-gray-700">
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-full bg-teal-100 dark:bg-teal-900 flex items-center justify-center text-teal-600 dark:text-teal-400 text-xs font-medium">
+                                  {deadline.customer.customer_name.charAt(0)}
+                                </div>
+                                <span className="text-sm text-gray-900 dark:text-white truncate">
+                                  {deadline.customer.customer_name}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-center">
+                                <img src={medalIcon} alt="Category" className="w-8 h-8 object-contain" />
+                              </div>
+                              <div className="text-center">
+                                <span className={`text-sm ${isOverdue ? 'text-red-500 font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
+                                  {isOverdue ? '+ ' : ''}
+                                  {Math.abs(Math.floor((new Date(deadline.deadlineDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}d
+                                </span>
+                              </div>
+                              <div className="flex justify-center">
+                                <button className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 text-sm font-medium flex items-center gap-1">
+                                  👁 Ver Detalle
+                                </button>
+                              </div>
                             </div>
-                            <span className="text-sm text-gray-900 dark:text-white truncate">
-                              {deadline.customer.customer_name}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-center">
-                            <img src={medalIcon} alt="Category" className="w-8 h-8 object-contain" />
-                          </div>
-                          <div className="text-center">
-                            <span className={`text-sm ${isOverdue ? 'text-red-500 font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
-                              {isOverdue ? '+ ' : ''}
-                              {Math.abs(Math.floor((new Date(deadline.deadlineDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}d
-                            </span>
-                          </div>
-                          <div className="flex justify-center">
-                            <button className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 text-sm font-medium flex items-center gap-1">
-                              👁 Ver Detalle
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
+                          );
+                        })}
+                      </>
+                    ) : (
+                      <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                        No hay cotizaciones urgentes
+                      </div>
+                    )}
 
-                    {dashboardData.quotations.upcomingDeadlines.length > 3 && (
+                    {dashboardData.quotations?.upcomingDeadlines && dashboardData.quotations.upcomingDeadlines.length > 3 && (
                       <div className="flex items-center justify-between pt-4">
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                           Mostrando 3 de {dashboardData.quotations.upcomingDeadlines.length} registros
