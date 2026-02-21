@@ -207,7 +207,7 @@ export function ControlsPricing() {
     const statusClasses: Record<string, string> = {
       'Asignada': styles.statusAsignada,
       'Cotizada': styles.statusCotizada,
-      'Nueva': styles.statusNueva,
+      'Creada': styles.statusNueva,
       'Enviada': styles.statusEnviada,
       'Expirada': styles.statusExpirada,
       'En proceso': styles.statusEnProceso,
@@ -221,8 +221,10 @@ export function ControlsPricing() {
 
   const getDaysElapsed = (date: string) => {
      if (!date) return null;
-    const now = new Date();
-    const deadlineDate = new Date(date);
+    const now = new Date();    
+    const deadlineDate = new Date(date.substring(0, 10)+ "T00:00:00");
+    now.setHours(0, 0, 0, 0);
+    deadlineDate.setHours(0, 0, 0, 0);
     const diffTime = deadlineDate.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
