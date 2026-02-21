@@ -1,3 +1,31 @@
+export interface StatusPercentage {
+  statusId: number;
+  statusName: string;
+  percentage: number;
+}
+
+export interface AcceptedByChannel {
+  year: number;
+  requestTypeId: number;
+  requestTypeName: string;
+  totalAccepted: number;
+}
+
+export interface UpcomingDeadline {
+  customer: {
+    customer_name: string;
+    customer_category: number;
+  };
+  deadlineDate: string;
+  reference_request: string;
+}
+
+export interface QuotationStats {
+  statusPercentageCurrentMonth: StatusPercentage[];
+  acceptedByChannel: AcceptedByChannel[];
+  upcomingDeadlines: UpcomingDeadline[];
+}
+
 interface DashboardStats {
   stats: {
     gold: number;
@@ -10,6 +38,7 @@ interface DashboardStats {
     silver: string;
     bronze: string;
   };
+  quotations: QuotationStats;
 }
 
 export async function fetchDashboardStats(): Promise<DashboardStats> {
