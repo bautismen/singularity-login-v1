@@ -178,15 +178,6 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     setSuppliersAPI(suppliersAPI.filter(s => s.idsuplier !== id));
   };
 
-  const updateSupplier = (id: number, name: string) => {
-    setSuppliers(suppliers.map(s =>
-      s.idsuplier === id ? { ...s, supplier_associated_name: name } : s
-    ));
-    setSuppliersAPI(suppliersAPI.map(s =>
-      s.Idsuplier === id ? { ...s, Supplier_associated_name: name } : s
-    ));
-  };
-
   const toggleService = (serviceId: number) => {
     const service = requestData.services.find((s: any) =>
       (s.idServiceItem || s._id) === serviceId
@@ -235,7 +226,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         return serviceCopy;
       });
 
-      console.log('Saving control with data:', {
+      /*console.log('Saving control with data:', {
         _idrequest: requestId,
         suppliers,
         servicesCount: servicesData.length,
@@ -246,7 +237,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         volume: generalData.volume,
         _id_executive_pricing: generalData.id_executive_pricing,
         complete_name_pricing: generalData.complete_name_pricing
-      });
+      });*/
 
       const dataToSave = {
         Id:controlId,
@@ -596,8 +587,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   <span className={styles.supplierLabel}>{t('ctrlpricing.supplier')}</span>                 
                   <input
                     type="text"
-                    value={supplier.supplier_associated_name}
-                    onChange={(e) => updateSupplier(supplier.idsuplier, e.target.value)}
+                    value={supplier.supplier_associated_name}                    
                     className={styles.supplierInput}
                     placeholder={t('ctrlpricing.suppliername')}
                     disabled

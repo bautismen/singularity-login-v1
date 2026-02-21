@@ -155,7 +155,7 @@ export function ControlsPricing() {
         now.setHours(0, 0, 0, 0);
         requestDate.setHours(0, 0, 0, 0);
         const diffDays = Math.ceil((now.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
-        console.log('Filter days: ' , q.referenceRequest , q.dateRequest, diffDays)
+        //console.log('Filter days: ' , q.referenceRequest , q.dateRequest, diffDays)
 
         switch (dateFilter) {
           case 'hoy':
@@ -211,8 +211,10 @@ export function ControlsPricing() {
       'Enviada': styles.statusEnviada,
       'Expirada': styles.statusExpirada,
       'En proceso': styles.statusEnProceso,
-      'Rechazada': styles.statusRechazada,
-      'Cancelada': styles.statusCancelada,
+      'Rechazada': styles.statusExpirada,
+      'Cancelada': styles.statusExpirada,
+      'Declinada': styles.statusExpirada,
+      'Parcialmente Cotizada': styles.statusParcialmentecotizada
     };
     return statusClasses[status] || styles.statusNueva;
   };
@@ -466,8 +468,7 @@ export function ControlsPricing() {
               const operationType = getOperationType(request.services);
               const countries = getCountries(request.services);
               const totalServices = getTotalServicesCount(request.services);
-              const attendedServices = getAttendedServicesCount(request.services);
-              console.log(request.id);
+              const attendedServices = getAttendedServicesCount(request.services);              
               const assignedWithControls = request.assignedTo?.filter(
                 assigned => assigned.pricingControlNumbers && assigned.pricingControlNumbers.length > 0
               ) || [];

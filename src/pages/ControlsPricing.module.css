@@ -336,6 +336,11 @@
   color: #065f46;
   border-color: #6ee7b7;
 }
+.statusParcialmentecotizada {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #6ee7b7;
+}
 
 .statusExpirada {
   background: #fee2e2;
