@@ -118,6 +118,14 @@ export function Dashboard() {
             )}
           </div>
 
+          {/* Debug info */}
+          <div className="my-4 p-4 bg-yellow-100 dark:bg-yellow-900 rounded">
+            <p className="text-sm">Loading: {loading ? 'YES' : 'NO'}</p>
+            <p className="text-sm">Has dashboardData: {dashboardData ? 'YES' : 'NO'}</p>
+            <p className="text-sm">Has quotations: {dashboardData?.quotations ? 'YES' : 'NO'}</p>
+            <p className="text-sm">Condition result: {(!loading && dashboardData) ? 'TRUE - SHOULD SHOW' : 'FALSE - HIDDEN'}</p>
+          </div>
+
           {!loading && dashboardData && (
             <>
               <div className="mt-8 mb-6 flex items-center justify-between">
