@@ -20,8 +20,14 @@ export function Dashboard() {
       try {
         setLoading(true);
         const data = await fetchDashboardStats();
-        console.log('Dashboard data loaded:', data);
-        console.log('Quotations data:', data.quotations);
+        console.log('=== DASHBOARD DATA LOADED ===');
+        console.log('Full data:', JSON.stringify(data, null, 2));
+        console.log('Has quotations?', !!data.quotations);
+        console.log('Quotations object:', data.quotations);
+        console.log('acceptedByChannel length:', data.quotations?.acceptedByChannel?.length);
+        console.log('statusPercentageCurrentMonth length:', data.quotations?.statusPercentageCurrentMonth?.length);
+        console.log('upcomingDeadlines length:', data.quotations?.upcomingDeadlines?.length);
+        console.log('totalQuotationsCurrentMonth:', data.quotations?.totalQuotationsCurrentMonth);
         setDashboardData(data);
       } catch (error) {
         console.error('Error loading dashboard stats:', error);
