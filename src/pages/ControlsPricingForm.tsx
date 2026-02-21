@@ -40,7 +40,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const [expandedServices, setExpandedServices] = useState<Set<number>>(new Set());
   const { user } = useAuth();
   const [statusControl, setStatusControl] = useState({
-    _id_status_control: 3,
+    id_status_control: 3,
     status_control_name: 'Asignada'
   });
 
@@ -175,7 +175,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const removeSupplier = (id: number) => {
     setSuppliers(suppliers.filter(s => s.idsuplier !== id));
-    setSuppliersAPI(suppliersAPI.filter(s => s.Idsuplier !== id));
+    setSuppliersAPI(suppliersAPI.filter(s => s.idsuplier !== id));
   };
 
   const updateSupplier = (id: number, name: string) => {
@@ -261,7 +261,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         request_type_name: requestData.typeRequest,
         Id_customer: requestData.customer?.idCustomer || '',
         Customer_business_name: requestData.customer?.customerName || '',
-        Status_control: {Id_status_control: statusControl._id_status_control, Status_control_name: statusControl.status_control_name},
+        Status_control: {Id_status_control: statusControl.id_status_control, Status_control_name: statusControl.status_control_name},
         Suppliers: suppliersAPI,       
         Services: servicesData,       
         network: generalData.network,
@@ -330,7 +330,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           Suppliers: suppliersAPI
         });
       setStatusControl({
-        _id_status_control: 5,
+        id_status_control: 5,
         status_control_name: 'Cotizada'
       });
       showSuccess('Control marcado como cotizado');
@@ -358,7 +358,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           reason_for_cancellation:reasoncancellation
         });
       setStatusControl({
-        _id_status_control: 6,
+        id_status_control: 6,
         status_control_name: 'Declinada'
       });
       showSuccess('Control marcado como declinado');
@@ -624,9 +624,9 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 value={statusControl.status_control_name}
                 onChange={(e) => {
                   const statusMap: any = {
-                    'Asignada': { _id_status_control: 3, status_control_name: 'Asignada' },                    
-                    'Cotizada': { _id_status_control: 5, status_control_name: 'Cotizada' },
-                    'Declinada': { _id_status_control: 6, status_control_name: 'Declinada' }
+                    'Asignada': { id_status_control: 3, status_control_name: 'Asignada' },                    
+                    'Cotizada': { id_status_control: 5, status_control_name: 'Cotizada' },
+                    'Declinada': { id_status_control: 6, status_control_name: 'Declinada' }
                   };
                   setStatusControl(statusMap[e.target.value] || statusControl);
                 }}
@@ -853,7 +853,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label><span className={styles.required}>*</span> {t('ctrlpricing.cpo')}</label>
                           <input
                             type="text"
-                            value={shipment.origin?.countryCode || ''}
+                            value={shipment.origin?.zipCode || ''}
                             className={styles.formInput}
                             disabled
                           />
@@ -875,7 +875,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           <label><span className={styles.required}>*</span> {t('ctrlpricing.cpd')}</label>
                           <input
                             type="text"
-                            value={shipment.destination?.countryCode || ''}
+                            value={shipment.destination?.zipCode || ''}
                             className={styles.formInput}
                             disabled
                           />
