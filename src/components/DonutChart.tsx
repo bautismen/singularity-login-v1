@@ -10,10 +10,14 @@ interface DonutChartProps {
 }
 
 const STATUS_COLORS: Record<number, string> = {
-  1: '#14B8A6',
-  2: '#EF4444',
-  3: '#6B7280',
-  4: '#94A3B8',
+  1: '#14B8A6', // Nueva - Teal
+  2: '#3B82F6', // Enviada - Blue
+  3: '#8B5CF6', // Asignada - Purple
+  4: '#F59E0B', // Parcialmente Cotizada - Amber
+  5: '#10B981', // Completamente Cotizada - Green
+  6: '#EF4444', // Declinada - Red
+  7: '#6B7280', // Cancelada - Gray
+  8: '#06B6D4', // Aceptada - Cyan
 };
 
 export function DonutChart({ data, total }: DonutChartProps) {
@@ -83,7 +87,7 @@ export function DonutChart({ data, total }: DonutChartProps) {
               {item.statusName}
             </span>
             <span className="text-sm font-semibold text-gray-900 dark:text-white ml-auto">
-              {item.percentage}%
+              {item.percentage.toFixed(2)}%
             </span>
           </div>
         ))}

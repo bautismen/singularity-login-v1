@@ -106,14 +106,17 @@ Deno.serve(async (req: Request) => {
       statusPercentageCurrentMonth: [],
       acceptedByChannel: [],
       upcomingDeadlines: [],
+      totalQuotationsCurrentMonth: 0,
     };
 
     if (quotationData.length > 0) {
       const data = quotationData[0];
+      const newRequestsCount = data.newRequestsCurrentMonth?.length || 0;
       quotationStats = {
         statusPercentageCurrentMonth: data.statusPercentageCurrentMonth || [],
         acceptedByChannel: data.acceptedByChannel || [],
         upcomingDeadlines: data.upcomingDeadlines || [],
+        totalQuotationsCurrentMonth: newRequestsCount,
       };
       console.log("Quotation stats extracted:", quotationStats);
     }

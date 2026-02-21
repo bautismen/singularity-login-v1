@@ -170,7 +170,7 @@ export function Dashboard() {
                   {dashboardData.quotations?.statusPercentageCurrentMonth && dashboardData.quotations.statusPercentageCurrentMonth.length > 0 ? (
                     <DonutChart
                       data={dashboardData.quotations.statusPercentageCurrentMonth}
-                      total={Math.round(dashboardData.quotations.statusPercentageCurrentMonth.reduce((sum, item) => sum + item.percentage, 0))}
+                      total={dashboardData.quotations.totalQuotationsCurrentMonth || 0}
                     />
                   ) : (
                     <div className="text-center text-gray-500 dark:text-gray-400 py-8">

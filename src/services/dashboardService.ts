@@ -24,6 +24,7 @@ export interface QuotationStats {
   statusPercentageCurrentMonth: StatusPercentage[];
   acceptedByChannel: AcceptedByChannel[];
   upcomingDeadlines: UpcomingDeadline[];
+  totalQuotationsCurrentMonth: number;
 }
 
 export interface DashboardStats {
