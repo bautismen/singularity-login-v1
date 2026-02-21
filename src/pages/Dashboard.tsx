@@ -17,26 +17,27 @@ export function Dashboard() {
 
   useEffect(() => {
     const loadDashboardData = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
         const data = await fetchDashboardStats();
         console.log('=== DASHBOARD DATA LOADED ===');
-        console.log('Full data:', JSON.stringify(data, null, 2));
+        console.log('Full data:', data);
         console.log('Has quotations?', !!data.quotations);
-        console.log('Quotations object:', data.quotations);
-        console.log('acceptedByChannel length:', data.quotations?.acceptedByChannel?.length);
-        console.log('statusPercentageCurrentMonth length:', data.quotations?.statusPercentageCurrentMonth?.length);
-        console.log('upcomingDeadlines length:', data.quotations?.upcomingDeadlines?.length);
-        console.log('totalQuotationsCurrentMonth:', data.quotations?.totalQuotationsCurrentMonth);
+        console.log('Loading state before set:', loading);
         setDashboardData(data);
+        console.log('Data set successfully');
       } catch (error) {
-        console.error('Error loading dashboard stats:', error);
+        console.error('=== ERROR LOADING DASHBOARD ===');
+        console.error('Error details:', error);
+        console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
       } finally {
         setLoading(false);
+        console.log('Loading set to false');
       }
     };
 
     if (currentPage === 'dashboard') {
+      console.log('Loading dashboard data...');
       loadDashboardData();
     }
   }, [currentPage]);
