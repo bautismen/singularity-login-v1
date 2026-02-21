@@ -20,6 +20,8 @@ export function Dashboard() {
       try {
         setLoading(true);
         const data = await fetchDashboardStats();
+        console.log('Dashboard data loaded:', data);
+        console.log('Quotations data:', data.quotations);
         setDashboardData(data);
       } catch (error) {
         console.error('Error loading dashboard stats:', error);
