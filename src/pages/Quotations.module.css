@@ -1731,4 +1731,9 @@
   .modalTitle {
     font-size: 1.125rem;
   }
+
+  .inputUppercase {
+  text-transform: uppercase;
+  }
+
 }
