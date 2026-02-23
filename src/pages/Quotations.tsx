@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, ChevronDown, Plus, Copy, X, RotateCcw, Save, Eye, ArrowLeft, ShieldOff, User } from 'lucide-react';
+import { Trash2, Plus, Copy, X, RotateCcw, Save, Eye, ArrowLeft, ShieldOff, User } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -64,10 +64,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     classification: [],
     stowable: 0,
     shipmentTypeCargo: '', 
-    idUnitMeasurement: 0,
-    unitMeasurement: '',  
-    idUnitWeight: 0,
-    unitWeight: '',
+    idUnitMeasurement: 1,
+    unitMeasurement: 'cm',  
+    idUnitWeight: 1,
+    unitWeight: 'kg',
     volumeTotal: 0,
     weigthTotal: 0,
     units: []
@@ -81,7 +81,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     showRefrigeratedMerch : false,
     showOversizedMerch: false,
     showBulkClassMerch: false,
+    showGeneralMerch : false,
   })
+  const [byUnitsMerch, setByUnitsMerch] = useState(true);
+  const [isPort, setIsPort] = useState(false)
   const [formData, setFormData] = useState({
     referenceRequest: 'QR250901-0001',
     customerId: '',
@@ -186,8 +189,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const loadQuotation = async (id: string) => {
     try {
       setLoading(true);
+
       const data = await quotationService.getById(id);
-      console.log('Loading quotation:', data.data);
 
       setFormData({
         referenceRequest: data.data.referenceRequest || '',
@@ -204,84 +207,19 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         idStatusRequest: data.data.idStatusRequest || 1,
       });
 
-      console.log('FormData loaded: ', formData)
-
       if (data.data.services && data.data.services.length > 0) {
           const loadedServices = data.data.services.map((service: any, idx: number) => {
-          const shipment = service.shipments?.[0] || {};
-          const cargo = service.shipments[0].cargo?.[0] || {};
-          const servicesAssociated = shipment.servicesAsociated || [];
-          //const hasInsurance = servicesAssociated.some((s: any) => s.service_associated_name === 'Seguro');
-          //const hasManeuver = servicesAssociated.some((s: any) => s.service_associated_name === 'Maniobra');
-          //const hasCustody = servicesAssociated.some((s: any) => s.service_associated_name === 'Custodia');
-          //const hasInspection = servicesAssociated.some((s: any) => s.service_associated_name === 'Inspección');
-          //const hasCustomsClearance = servicesAssociated.some((s: any) => s.service_associated_name === 'Despacho aduanal');
-          
-          /*setShowProjectionShipment(shipment.projection_shipment? true : false);
-          setshowDangerouseMerch(shipment.cargo[0]?. true : false)
-          setShowRefrigeratedMerch()
-          setShowOversizedMerch()
-          setShowBulkClassMerch()*/
-
-          //const hasProjection = !!projection.num;
-          //const frequencyMap: { [key: number]: string } = { 1: 'semanal', 2: 'mensual', 3: 'anual' };
-          //const unitMap: { [key: number]: string } = { 1: 'Kilos', 2: 'Toneladas', 3: 'Contenedores' };
-
-          return {
-            idServiceItem: idx + 1,
-            idService : service.idService,
-            nameService: service.nameService || '',
-            used: service.used || false,
-            shipments : service.shipments,
-            /*tipoCarga: service.typeCarga || '',
-            operation: shipment.operation_type_name || '',
-            incoterm: shipment.incoterm || '',
-            origin: shipment.origin?.id_country || '',
-            originZip: shipment.origin?.location || '',
-            destination: shipment.destination?.id_country || '',
-            destinationZip: shipment.destination?.location || '',
-            expectedDeparture: shipment.departure_date_approximate?.$date ? new Date(shipment.departure_date_approximate.$date).toISOString().split('T')[0] : (shipment.departure_date_approximate ? new Date(shipment.departure_date_approximate).toISOString().split('T')[0] : ''),
-            insurance: hasInsurance,
-            maneuver: hasManeuver,
-            custody: hasCustody,
-            inspection: hasInspection,
-            customsClearance: hasCustomsClearance,
-            comments: shipment.comments || '',
-            shippingType: shipment.shippment_type_name || 'Door to Door',
-            programFrequency: hasProjection,
-            frequency: projection._id_frecuency ? frequencyMap[projection._id_frecuency] || '' : '',
-            quantity: projection.num ? String(projection.num) : '',
-            unit: projection._id_measurement_frecuency ? unitMap[projection._id_measurement_frecuency] || '' : '',
-            merchandise: shipment.cargo?.map((c: any, cIdx: number) => {
-              const classifications = c.merchandise_classification || [];
-              const dangerousClass = classifications.find((cl: any) => cl._id_merchandise_classification === 5);
-              const refrigeratedClass = classifications.find((cl: any) => cl._id_merchandise_classification === 3);
-              const grainClass = classifications.find((cl: any) => cl._id_merchandise_classification === 2);
-              const oversizedClass = classifications.find((cl: any) => cl._id_merchandise_classification === 4);
-
-              return {
-                id: cIdx + 1,
-                name: c.merchandise_name || '',
-                description: c.merchandise_description || '',
-                dangerous: !!dangerousClass,
-                refrigerated: !!refrigeratedClass,
-                oversized: !!oversizedClass,
-                imoClass: dangerousClass ? `${dangerousClass.imo} ${dangerousClass.description_imo}` : '',
-                un: dangerousClass ? String(dangerousClass.UN || '') : '',
-                temperature: refrigeratedClass ? (refrigeratedClass.temperature || 0) : 0,
-                tempUnit: refrigeratedClass ? (refrigeratedClass.unit_temperature || '°C') : '°C',
-                grain: !!grainClass,
-                stackable: c.stowable || false,
-                unitType: (c.unit_weight === 'KG' || c._id_unit_weigh === 1) ? 'kg' as const : 'lbs' as const,
-                totalVolume: c.volume_total || 0,
-                totalWeight: c.weigth_total || 0,
-                packages: c.unit || [],
-                merchandise_classification: classifications
-              };
-            }) || []*/
-          };
+            validatePortOrAirport(service.idService);
+            return {
+              idServiceItem: idx + 1,
+              idService : service.idService,
+              nameService: service.nameService || '',
+              used: service.used || false,
+              shipments : service.shipments,
+            };
         });
         setServices(loadedServices);
+        console.log('FormData loaded: ', formData)
         console.log('services: ', services)
       }
 
@@ -358,22 +296,28 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const openMerchandiseModal = (serviceId: number, cargo?: Cargo) => {    
+    console.log('OPEN CARGO: ' , cargo);
     setCurrentServiceId(serviceId);    
+    setByUnitsMerch(true);
     setEditingMerchandise(cargo || null);    
     setClassificationMerchFlags({
       showDangerouseMerch : false,
       showRefrigeratedMerch : false,
       showOversizedMerch: false,
       showBulkClassMerch: false,
+      showGeneralMerch : false
     })
 
-    if (cargo) {      
+    if (cargo) {  
+      
+      setByUnitsMerch(cargo?.units?.length === 0 ? false : true)
 
       setClassificationMerchFlags({
       showDangerouseMerch : cargo?.classification.some(classification => classification.idClassificationMerchandise === 7),
       showRefrigeratedMerch : cargo?.classification.some(classification => classification.idClassificationMerchandise === 10),
       showOversizedMerch: cargo?.classification.some(classification => classification.idClassificationMerchandise === 8),
       showBulkClassMerch: cargo?.classification.some(classification => classification.idClassificationMerchandise === 5),
+      showGeneralMerch: cargo?.classification.some(classification => classification.idClassificationMerchandise === 11),
       })
 
       setMerchandiseForm({
@@ -394,42 +338,39 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       setCurrentPackages(cargo.units || []);
 
     } else {
+
       setMerchandiseForm({
         merchandiseName: '',
         merchandiseDescription: '',
         classification: [],
         stowable: 0,
         shipmentTypeCargo: '', 
-        idUnitMeasurement: 0,
-        unitMeasurement: '',  
-        idUnitWeight: 0,
-        unitWeight: '',
+        idUnitMeasurement: 1,
+        unitMeasurement: 'cm',  
+        idUnitWeight: 1,
+        unitWeight: 'kg',
         volumeTotal: 0,
         weigthTotal: 0,
-        units: []
+        units: [] 
       });
+
       setCurrentPackages([]);
-      console.log('ELSE', merchandiseForm)
     }
     setShowMerchandiseModal(true);
-    console.log('OPEN MERCH. MerchForm:', merchandiseForm, 'packages', currentPackages)
   };
 
   const closeMerchandiseModal = () => {
-
     setShowMerchandiseModal(false);
-
+    setByUnitsMerch(true);
     setClassificationMerchFlags({
       showDangerouseMerch : false,
       showRefrigeratedMerch : false,
       showOversizedMerch: false,
       showBulkClassMerch: false,
+      showGeneralMerch : false,
     })
-
     setEditingMerchandise(null);
-
     setCurrentServiceId(null);
-
   };
 
   const openPackagingModal = () => {
@@ -468,80 +409,36 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const saveMerchandise = () => {
-
+   
     if (!currentServiceId) return;
 
     if (!merchandiseForm?.merchandiseName.trim()) {
       showWarning(t('quote.warnings.merchandiseName'));
       return;
     }
-    const { totalVolume, totalWeight } = calculateTotals();
-    const merchandiseClassifications: any[] = [];
-
-    //Dangerous merchandise
-    const dangerouseMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 7))
-    if (dangerouseMerchandise) {
-      const selectedImo = imoList.find(imo => imo._id === dangerouseMerchandise.imo);
-      merchandiseClassifications.push({
-        idClassificationMerchandise: 7,
-        classificationMerchandise: 'Peligrosa',
-        imo: dangerouseMerchandise?.imo || '',
-        imoDescription: dangerouseMerchandise?.imoDescription || '',
-        un: parseInt(dangerouseMerchandise.un) || 0
-      });
-    }
-
-    const refrigeratedMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 10))
-    if (refrigeratedMerchandise) {
-      merchandiseClassifications.push({
-        idClassificationMerchandise: 10,
-        classificationMerchandise: 'Refrigerada',
-        //_idunit_temperature: refrigeratedMerchandise.temperature === '°C' ? 1 : 2,
-        //unit_temperature: merchandiseForm.tempUnit,
-        temperature: refrigeratedMerchandise.temperature || ''
-      });
-    }
-
-    const grainMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 5))
-    if (grainMerchandise) {
-      merchandiseClassifications.push({
-        idClassificationMerchandise: 5,
-        classificationMerchandise: "Granel"
-      });
-    }
-
-    const oversizedMerchandise = merchandiseForm.classification?.find((classification => classification.idClassificationMerchandise === 8))
-    if (oversizedMerchandise) {
-      merchandiseClassifications.push({
-        idClassificationMerchandise: 8,
-        classificationMerchandise: 'Sobredimensionada'
-      });
-    }
-
-    if (merchandiseClassifications.length === 0) {
-      merchandiseClassifications.push({
-        idClassificationMerchandise: 11,
-        classificationMerchandise:'General'
-      });
-    }
-
+    if(byUnitsMerch && currentPackages.length === 0){
+       showWarning('Por favor ingresa las unidades de la mercancía');
+       return;
+    }    
+  
+    const {totalVolume = 0, totalWeight = 0 } = calculateTotals();      
+    
     const newMerchandise: Cargo = {
       //id: editingMerchandise?.id|| Date.now(),
       merchandiseName: merchandiseForm.merchandiseName,
-      merchandiseDescription: merchandiseForm.merchandiseDescription || '',       
+      merchandiseDescription: merchandiseForm.merchandiseDescription,       
       stowable: merchandiseForm.stowable,
       shipmentTypeCargo: merchandiseForm.shipmentTypeCargo,
-      idUnitMeasurement: merchandiseForm.idUnitMeasurement || 1,
-      unitMeasurement: merchandiseForm.unitMeasurement || 'cm', 
-      idUnitWeight: merchandiseForm.idUnitWeight || 1,
-      unitWeight: merchandiseForm.unitWeight || 'kg',
-      volumeTotal: totalVolume || 0,
-      weigthTotal: totalWeight || 0,
-      //packages: merchandiseForm.packages  
-      units: currentPackages?.map(pkg => ({
+      idUnitMeasurement: merchandiseForm.idUnitMeasurement,
+      unitMeasurement: merchandiseForm.unitMeasurement, 
+      idUnitWeight: merchandiseForm.idUnitWeight,
+      unitWeight: merchandiseForm.unitWeight,
+      volumeTotal: byUnitsMerch ? totalVolume : merchandiseForm.volumeTotal,
+      weigthTotal: byUnitsMerch ? totalWeight : merchandiseForm.weigthTotal,
+      ...(currentPackages && { units: currentPackages?.map(pkg => ({
         ...pkg
-      })),
-      classification: merchandiseClassifications
+      }))}),
+      classification: merchandiseForm.classification
     };
 
     setServices(services.map(service => {
@@ -586,10 +483,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       units: []
     });
 
-    console.log('SAVE MERCH. New merch ',newMerchandise, 'editing: ', editingMerchandise, 'Services', services, "Merch Form", merchandiseForm)
     closeMerchandiseModal();
   };
-
 
   const openExecutiveModal = () => {
     setShowExecutiveModal(true);
@@ -615,10 +510,18 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     }
   };
 
-  const updateService = (id: number, field: keyof Service, value: any) => {
+  const validatePortOrAirport = (idService: number) => {
+    if(idService === 5) {
+      setIsPort(false)
+    } else if (idService === 1 || idService === 2 ) {
+      setIsPort(true)
+    }   
+  }
+
+  const updateService = (id: number, changes: Record<any,any>) => {
     setServices(services.map(service => service.idServiceItem === id ? { 
       ...service,
-      [field]: value 
+      ...changes,
     } : service));
   };
 
@@ -643,29 +546,27 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     }: service));
   };
 
-  const updateOrigin = (idServiceItem: number, idShipment: number,  field: keyof any, value: any) => {
-    console.log('origin', value, 'id shipment: ', idShipment, 'services', services );
+  const updateOrigin = (idServiceItem: number, idShipment: number,  changes : Record<any, any>) => {
     setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
       ...service,
       shipments: service.shipments.map(shipment => shipment.idShipment=== idShipment ? {
         ...shipment,
         origin : {
           ...shipment.origin,
-          [field]: value,
+          ...changes,
         }        
       }: shipment)
     }: service));
   };
 
-   const updateDestination = (idServiceItem: number, idShipment: number,  field: keyof any, value: any) => {
-    console.log('destination', value, 'id shipment: ', idShipment, 'services', services );
+   const updateDestination = (idServiceItem: number, idShipment: number,  changes : Record<any, any>) => {
     setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
       ...service,
       shipments: service.shipments.map(shipment => shipment.idShipment === idShipment ? {
         ...shipment,
         destination : {
           ...shipment.destination,
-          [field]: value,
+          ...changes,
         }        
       }: shipment)
     }: service));
@@ -703,8 +604,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   }
 
   const handleIncotermChange = (idServiceItem: number, idShipment: number, value: number, text: string) => {
-    console.log('ANTES', JSON.stringify(services, null, 2));
-
     setServices(prevServices => 
       prevServices.map(service => service.idServiceItem === idServiceItem ? {
       ...service,
@@ -717,7 +616,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const handleTypeShipmentChange = (idServiceItem: number, idShipment: number, value: number, text: string) => {
-    console.log('ANTES', JSON.stringify(services, null, 2));
 
     setServices(prevServices => 
       prevServices.map(service => service.idServiceItem === idServiceItem ? {
@@ -821,7 +719,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const quotationData = {
         referenceRequest: formData.referenceRequest,
         idStatusRequest: hasAssignedExecutives ? 3 : 1,
-        statusRequest: hasAssignedExecutives ? 'Asignada' : 'Nueva', 
+        statusRequest: hasAssignedExecutives ? 'Asignada' : 'Creada', 
         dateRequest: new Date(formData.created),
         dateDeadline: formData.responseDeadline ? new Date(formData.responseDeadline) : null,
         idRequestType:  formData.requestTypeId,
@@ -851,9 +749,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           
           const shipmentsInService = service.shipments.map((shipment, index) => {
            
-            const servicesAssociated: any[] = [];
+            /*const servicesAssociated: any[] = [];
 
-            if(shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Seguro')){              
+            if(shipment.servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 12)){              
               const insuranceService = availableServices.find(s => s.service_name === 'Seguro');    
               servicesAssociated.push({
                 idServiceAsociated: insuranceService?._id || null,
@@ -891,7 +789,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 idServiceAsociated: customsClearanceService?._id || null,
                 serviceAsociatedName: 'Despacho aduanal'
               });
-            }
+            }*/
 
             const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
 
@@ -905,21 +803,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               number: shipment.projectionShipment?.number || 0,
             } : undefined;
 
-            const originCountry = countries.find(country => country._id === service.shipments[0].origin.idCountry);
-            const destinationCountry = countries.find(country => country._id === shipment.destination.idCountry);   
+            //const originCountry = countries.find(country => country._id === shipment.origin.idCountry);
+            //const destinationCountry = countries.find(country => country._id === shipment.destination.idCountry);   
 
             return {
               idShipment: index + 1,
-              origin: {
-                idCountry: originCountry._id,
-                countryCode: originCountry.country_code,
-                zipCode: shipment.destination.zipCode,
-              },
-              destination: {
-                idCountry: destinationCountry._id,
-                countryCode: destinationCountry.country_code,
-                zipCode: shipment.destination.zipCode,
-              },
+              origin:shipment.origin,
+              destination: shipment.destination,
               idTypeShipment: shipment.idTypeShipment,
               typeShipment: shipment.typeShipment,
               idTypeOperation: shipment.idTypeOperation,
@@ -929,8 +819,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               departureDateAproximate: shipment.departureDateAproximate ? new Date(shipment.departureDateAproximate): null,
               projectionShipment:shipment.projectionShipment ? projectionShipment : null,
               comments: shipment.comments,
-              ...(servicesAssociated.length > 0 && { servicesAsociated: servicesAssociated }),
-              
+              ...(shipment.servicesAsociated && { servicesAsociated: shipment.servicesAsociated }),              
               cargo : shipment.cargo.map(merchandise => ({
                 merchandiseName: merchandise.merchandiseName,
                 merchandiseDescription: merchandise.merchandiseDescription,
@@ -1035,8 +924,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
 
   const renderZipCodesOriginDestination =  (service : Service) => {
-    switch(service.shipments[0].idTypeShipment){
-      case 1 : return (
+    switch(true){
+      case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : return (
         <div className={styles.formGrid}>
           <div className={styles.formGroup}>
             <label className={styles.label}>
@@ -1046,7 +935,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <input
               type="number"
               value={service.shipments[0].origin.zipCode}
-              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
+              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment,  {zipCode : parseInt(e.target.value)})}
               className={styles.input}
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
@@ -1059,13 +948,45 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <input
               type="number"
               value={service.shipments[0].destination.zipCode}
-              onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
+              onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, {zipCode : parseInt(e.target.value)})}
               className={styles.input}
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
           </div>    
         </div>);
-      case 3 : return (
+      case service.shipments[0].idTypeShipment === 2: return (
+        <div className={styles.formGrid}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+              {isPort ? 'Puerto Origen' : 'Aeropuerto Origen'}
+            </label>
+            <input
+              className={`${styles.input} ${styles.inputUppercase}`}
+              type="text"
+              placeholder={isPort ? 'MXVER' : 'MXMEX'}
+              value={isPort ? service.shipments[0].origin.portCode : service.shipments[0].origin.airportCode }
+              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, isPort? {portCode: e.target.value } : {airportCode: e.target.value})}              
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
+              required />
+          </div>  
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+              {isPort ? 'Puerto Destino' : 'Aeropuerto Destino'}
+            </label>
+            <input
+              type="text"
+              placeholder={isPort ? 'MXVER' : 'MXMEX'}
+              value={isPort ? service.shipments[0].destination.portCode : service.shipments[0].destination.airportCode }
+              onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, isPort? {portCode: e.target.value } : {airportCode: e.target.value})}
+              className={styles.input}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
+              required/>
+          </div>                            
+        </div>
+      )
+      case service.shipments[0].idTypeShipment === 3 : return (
         <div className={styles.formGrid}>
           <div className={styles.formGroup}>
             <label className={styles.label}>
@@ -1075,16 +996,42 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <input
               type="number"
               value={service.shipments[0].origin.zipCode}
-              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
+              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, {zipCode: e.target.value})}
               className={styles.input}
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
           </div>  
-          <div className={styles.formGroup}></div>                   
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+              {isPort ? 'Puerto Destino' : 'Aeropuerto Destino'}
+            </label>
+            <input
+              type="text"
+              placeholder={isPort ? 'MXVER' : 'MXMEX'}
+              value={service.shipments[0].destination.zipCode}
+              onChange={isPort ? service.shipments[0].destination.portCode : service.shipments[0].destination.airportCode }
+              className={styles.input}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
+              required/>
+          </div>                            
         </div>);      
-      case 4: return( 
+      case service.shipments[0].idTypeShipment === 4: return( 
         <div className={styles.formGrid}>   
-          <div className={styles.formGroup}></div>              
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+              {isPort ? 'Puerto Origen' : 'Aeropuerto Origen'}
+            </label>
+            <input
+              type="text"
+              placeholder={isPort ? 'MXVER' : 'MXMEX'}
+              value={isPort ? service.shipments[0].origin.portCode : service.shipments[0].origin.airportCode }
+              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment,  isPort? {portCode: e.target.value } : {airportCode: e.target.value})}
+              className={styles.input}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
+              required />
+          </div>    
           <div className={styles.formGroup}>
             <label className={styles.label}>
               <span className={styles.required}>*</span>
@@ -1093,7 +1040,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <input
               type="number"
               value={service.shipments[0].destination.zipCode}
-              onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, 'zipCode', e.target.value)}
+              onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, {zipCode : parseInt(e.target.value)})}
               className={styles.input}
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
@@ -1215,8 +1162,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               }}
               className={styles.select}
               disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
-              required
-            >
+              required>
               <option value="">{t('quote.selectType')}</option>
               {requestTypes.map((type) => (
                 <option key={type._id} value={type._id}>
@@ -1365,21 +1311,27 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </label>
                 <select
                   value={service.nameService}
-                  onChange={(e) => 
-                    updateService(service.idServiceItem, 'nameService', e.target.value)}
+                  onChange={(e) => {
+                    updateService(
+                      service.idServiceItem, 
+                      {
+                        idService: parseInt(e.target.selectedOptions[0].dataset.serviceId!, 0) ,
+                        nameService: e.target.value
+                      }
+                    );
+                    validatePortOrAirport(parseInt(e.target.selectedOptions[0].dataset.serviceId!, 0));
+                  }}
                   className={styles.select}
                   disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
-                  required
-                >
+                  required>
                   <option value="">{t('quote.select')}</option>
                   {availableServices.filter((service) => service.status === 1 && service.category === 1).map((service_) => (
-                    <option key={service_._id} value={service_.service_name}>
+                    <option key={service_._id} value={service_.service_name} data-service-id={service_._id}>
                       {service_.service_name}
                     </option>
                   ))}
                 </select>
               </div>
-
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                   <span className={styles.required}>*</span>
@@ -1390,8 +1342,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   //onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
                   className={styles.select}
                   disabled
-                  required
-                >
+                  required>
                   <option value="">{t('quote.select')}</option>                
                     <option key='Consolidado' value='Consolidado'>
                       Consolidado
@@ -1401,7 +1352,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     </option>                   
                 </select>
               </div>
-
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                   <span className={styles.required}>*</span>
@@ -1427,7 +1377,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <option value={4}>{t('quote.localUSA')}</option>
                 </select>
               </div>  
-
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                   <span className={styles.required}>*</span>
@@ -1454,26 +1403,26 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   ))}
                 </select>
               </div>
-
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                   <span className={styles.required}>*</span>{t('quote.shippingType')}
                 </label>
                 <select
                   value={service.shipments[0].idTypeShipment}
-                  onChange={(e) => //updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'typeShipment', e.target.value)}
-                  handleTypeShipmentChange(
-                      service.idServiceItem,
-                      service.shipments[0].idShipment,
-                      Number(e.target.value),
-                      e.target.options[e.target.selectedIndex].text
-                    )
+                  onChange={(e) => {
+                    handleTypeShipmentChange(
+                        service.idServiceItem,
+                        service.shipments[0].idShipment,
+                        Number(e.target.value),
+                        e.target.options[e.target.selectedIndex].text
+                      )
+                    }
                   }
                   className={styles.select}
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <option value="">{t('quote.select')}</option>
                   <option value={1}>{t('quote.doorToDoor')}</option>
-                  <option value={2}>{t('quote.portToPort')}</option>
+                  <option disabled={[3, 4, 10, 11].includes(service.idService)} value={2}>{t('quote.portToPort')}</option>
                   <option value={3}>{t('quote.doorToPort')}</option>
                   <option value={4}>{t('quote.portToDoor')}</option>
                 </select>
@@ -1499,14 +1448,19 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </label>
                 <select
                   value={service.shipments[0].origin.idCountry}
-                  onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, 'idCountry', e.target.value)}
+                  onChange={(e) => {
+                    console.log('ORIGEN' ,  e.target.selectedOptions[0].dataset.shipmentOriginCountryName );
+                    updateOrigin(service.idServiceItem, service.shipments[0].idShipment, 
+                    {
+                      idCountry: e.target.value , 
+                      countryCode : e.target.selectedOptions[0].dataset.shipmentOriginCountryName
+                    })}}
                   className={styles.select}
                   disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
-                  required
-                >
+                  required >
                   <option value="">{t('quote.select')}</option>
                   {countries.map((country) => (
-                    <option key={country._id} value={country._id}>
+                    <option key={country._id} value={country._id} data-shipment-origin-country-name={country.country_code} >
                       {country.name_country} ({country.country_code})
                     </option>
                   ))}
@@ -1519,13 +1473,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </label>
                 <select
                   value={service.shipments[0].destination.idCountry}
-                  onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, 'idCountry', e.target.value)}
+                  onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, 
+                    {
+                      idCountry: e.target.value , 
+                      countryCode : e.target.selectedOptions[0].dataset.shipmentDestinationCountryName
+                    })}
                   className={styles.select}
                   disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
                   required>
                   <option value="">{t('quote.select')}</option>
                   {countries.map((country) => (
-                    <option key={country._id} value={country._id}>
+                    <option key={country._id} value={country._id} data-shipment-destination-country-name={country.country_code} >
                       {country.name_country} ({country.country_code})
                     </option>                    
                   ))}
@@ -1575,6 +1533,41 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment,  { idServiceAsociated: 7, serviceAsociatedName: 'Despacho' })}
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                   <span>{t('quote.customsClearance')}</span>
+                </button>
+                <button
+                  type="button" 
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 6)? styles.selected : ''}`}
+                  onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment,  { idServiceAsociated: 6, serviceAsociatedName: 'Almacén' })}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                  <span>Almacén</span>
+                </button>
+                <button
+                  type="button" 
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 8)? styles.selected : ''}`}
+                  onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment,  { idServiceAsociated: 8, serviceAsociatedName: 'Paquetería' })}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                  <span>Paquetería</span>
+                </button>
+                <button
+                  type="button" 
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 9)? styles.selected : ''}`}
+                  onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment,  { idServiceAsociated: 9, serviceAsociatedName: 'UVA' })}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                  <span>UVA</span>
+                </button>
+                <button
+                  type="button" 
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 16)? styles.selected : ''}`}
+                  onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment,  { idServiceAsociated: 16, serviceAsociatedName: 'Free Hand' })}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                  <span>Free Hand</span>
+                </button>
+                <button
+                  type="button" 
+                  className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 17)? styles.selected : ''}`}
+                  onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment,  { idServiceAsociated: 17, serviceAsociatedName: 'Previo en origen' })}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                  <span>Previo en origen</span>
                 </button>
               </div>
             </div>
@@ -1764,8 +1757,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     className={styles.input}
                     value={merchandiseForm?.merchandiseName}
                     onChange={(e) => setMerchandiseForm({ ...merchandiseForm, merchandiseName: e.target.value})}
-                    disabled={mode === 'view' || formData.idStatusRequest >= 2}
-                  />
+                    disabled={mode === 'view' || formData.idStatusRequest >= 2} />
                 </div>
                 <div className={styles.modalFieldSmall}>
                   <label className={styles.label}>{t('quote.isStackable')}</label>
@@ -1779,7 +1771,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   </div>
                 </div>
               </div>
-
               <div className={styles.formGroup}>
                 <label className={styles.label}>{t('quote.merchandiseDescription')}</label>
                 <textarea
@@ -1793,7 +1784,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   })}
                 ></textarea>
               </div>
-
               <div style={{ marginTop: '1.0rem' }}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
@@ -1838,12 +1828,20 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           checked={classificationMerchFlags.showRefrigeratedMerch}
                           onChange={(e) => {
                             setClassificationMerchFlags({...classificationMerchFlags, showRefrigeratedMerch:!classificationMerchFlags.showRefrigeratedMerch });                                                     
-                           
-                            merchandiseForm?.classification.push({
-                            idClassificationMerchandise: 10,
-                            classificationMerchandise: 'Refrigerada'
-                            })}
-                          }
+                            const currentClassifications =  merchandiseForm?.classification ?? [];
+                            const exists = currentClassifications.some(cl  => cl.idClassificationMerchandise === 10);
+
+                            setMerchandiseForm({
+                              ...merchandiseForm,
+                              classification : exists ? currentClassifications.filter(ccl => 
+                                ccl.idClassificationMerchandise === 10
+                              ) : [ ...currentClassifications,  
+                                    { idClassificationMerchandise: 10,
+                                      classificationMerchandise: 'Refrigerada'
+                                    } 
+                                  ]
+                            })
+                          }}
                           disabled={mode === 'view' || formData.idStatusRequest >= 2}
                         />
                         <label htmlFor="refrigerada" className={styles.classificationLabel}>
@@ -1858,11 +1856,20 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           checked={classificationMerchFlags.showOversizedMerch}
                           onChange={(e) => {
                             setClassificationMerchFlags({...classificationMerchFlags, showOversizedMerch: !classificationMerchFlags.showOversizedMerch });                         
-                            merchandiseForm?.classification.push({
-                            idClassificationMerchandise: 8,
-                            classificationMerchandise: 'Sobredimensionada',
-                            })}
-                          }
+                            const currentClassifications =  merchandiseForm?.classification ?? [];
+                            const exists = currentClassifications.some(cl  => cl.idClassificationMerchandise === 8)
+                            
+                            setMerchandiseForm({
+                              ...merchandiseForm,
+                              classification : exists ? currentClassifications.filter(ccl => 
+                                ccl.idClassificationMerchandise === 8
+                              ) : [ ...currentClassifications,  
+                                    { idClassificationMerchandise: 8,
+                                      classificationMerchandise: 'Sobredimensionada'
+                                    } 
+                                  ]
+                            })
+                          }}
                           disabled={mode === 'view' || formData.idStatusRequest >= 2}
                         />
                         <label htmlFor="sobredimensionada" className={styles.classificationLabel}>
@@ -1877,16 +1884,52 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           checked={classificationMerchFlags.showBulkClassMerch}
                            onChange={(e) => {
                             setClassificationMerchFlags({...classificationMerchFlags, showBulkClassMerch:!classificationMerchFlags.showBulkClassMerch });                         
-                            merchandiseForm?.classification.push({
-                            idClassificationMerchandise: 5,
-                            classificationMerchandise: 'Granel',
-                          })
-                           }
-                          }
+                            const currentClassifications =  merchandiseForm?.classification ?? [];
+                            const exists = currentClassifications.some(cl  => cl.idClassificationMerchandise === 5)
+                            
+                            setMerchandiseForm({
+                              ...merchandiseForm,
+                              classification : exists ? currentClassifications.filter(ccl => 
+                                ccl.idClassificationMerchandise === 5
+                              ) : [ ...currentClassifications,  
+                                    { idClassificationMerchandise: 5,
+                                      classificationMerchandise: 'Granel'
+                                    } 
+                                  ]
+                            })
+                          }}
                           disabled={mode === 'view' || formData.idStatusRequest >= 2}
                         />
                         <label htmlFor="granel" className={styles.classificationLabel}>
                           {t('quote.bulkClass')}
+                        </label>
+                      </div>
+                      <div className={styles.classificationCheckbox}>
+                        <input
+                          type="checkbox"
+                          id="general"
+                          className={styles.checkbox}
+                          checked={classificationMerchFlags.showGeneralMerch}
+                          onChange={(e) => {
+                            setClassificationMerchFlags({...classificationMerchFlags, showGeneralMerch:!classificationMerchFlags.showGeneralMerch }); 
+                            const currentClassifications =  merchandiseForm?.classification ?? [];
+                            const exists = currentClassifications.some(cl  => cl.idClassificationMerchandise === 11)
+                            
+                            setMerchandiseForm({
+                              ...merchandiseForm,
+                              classification : exists ? currentClassifications.filter(ccl => 
+                                ccl.idClassificationMerchandise === 11
+                              ) : [ ...currentClassifications,  
+                                    { idClassificationMerchandise: 11,
+                                      classificationMerchandise: 'General'
+                                    } 
+                                  ]
+                                }
+                              )
+                          }}
+                          disabled={mode === 'view' || formData.idStatusRequest >= 2} />
+                        <label htmlFor="general" className={styles.classificationLabel}>
+                          General
                         </label>
                       </div>
                     </div>
@@ -1900,9 +1943,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               value={merchandiseForm.classification?.find(classification => classification.idClassificationMerchandise === 7)?.imo }
                               onChange={(e) => {
                                 const selectedImo = imoList.find(imo_ => imo_.imo === e.target.value);                               
-                                const currentClassifications =  merchandiseForm?.classification ?? [];     
-                                console.log('IMO', selectedImo, e.target.value)
-                                 
+                                const currentClassifications =  merchandiseForm?.classification ?? [];                                      
                                 setMerchandiseForm({
                                   ...merchandiseForm,
                                   classification : currentClassifications.map(currentClas => currentClas.idClassificationMerchandise === 7 ? {
@@ -1910,8 +1951,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                                     imo: e.target.value,
                                     imoDescription :  selectedImo?.description
                                   } : currentClas)                                  
-                                })
-                                
+                                })                                
                               }}>
                               <option>{t('quote.selectOption')}</option>
                               {imoList.map((imoItem) => (
@@ -1921,7 +1961,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               ))}
                             </select>
                           </div>
-
                           <div className={styles.formGroup}>
                             <label className={styles.label}>{t('quote.un')}</label>
                             <input
@@ -1956,7 +1995,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               value={merchandiseForm?.classification?.find(classification => classification.idClassificationMerchandise === 10)?.temperature || ''}
                                onChange={(e) => {
                                 const currentClassifications =  merchandiseForm?.classification ?? [];                                                                 
-
                                 setMerchandiseForm({
                                   ...merchandiseForm,
                                   classification : currentClassifications.map(currentClas => currentClas.idClassificationMerchandise === 10 ? {
@@ -1982,78 +2020,114 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </div>
               </div>
 
-              <div style={{ marginTop: '1.5rem' }}>
-                <button className={styles.addPackageButtonIcon} onClick={openPackagingModal} disabled={mode === 'view' || formData.idStatusRequest >= 2}>
-                  <Plus size={18} />
-                  {t('quote.addPackaging')}
-                </button>
-                {currentPackages.length > 0 && (
-                  <div className={styles.packagesTable} style={{ marginTop: '1rem' }}>
-                    <table className={styles.simpleTable}>
-                      <thead>
-                        <tr>
-                          <th>{t('quote.packagingTable.packaging')}</th>
-                          <th>{t('quote.packagingTable.quantity')}</th>
-                          <th>{t('quote.packagingTable.length')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})</th>
-                          <th>{t('quote.packagingTable.height')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})</th>
-                          <th>{t('quote.packagingTable.width')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})</th>
-                          <th>{t('quote.packagingTable.weight')} ({useMetricSystem ? t('quote.kg') : t('quote.lbs')})</th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {currentPackages.map((pkg) => (
-                          <tr key={pkg.id}>
-                            <td>{pkg.unitCargo}</td>
-                            <td>{pkg.quantity}</td>
-                            <td>{pkg.length}</td>
-                            <td>{pkg.height}</td>
-                            <td>{pkg.width}</td>
-                            <td>{pkg.weight}</td>
-                            <td>
-                              <button
-                                className={styles.removeRowButton}
-                                onClick={() => removePackage(pkg.id)}
-                                disabled={mode === 'view' || formData.idStatusRequest >= 2}>
-                                <X size={14} />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+              <div style={{ marginTop: '1.0rem' }}>        
+                <input
+                    type="checkbox"                  
+                    checked={byUnitsMerch}                  
+                    onChange={(e) =>  setByUnitsMerch(!byUnitsMerch) }
+                    className={styles.checkbox}
+                    disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
+                  <label className={styles.checkboxLabel}>
+                    Por unidades
+                  </label>   
               </div>
 
-              {currentPackages.length > 0 && (
-                <div className={styles.modalFooterInfo}>
-                  <div className={styles.unitTypeToggle}>
-                    <span className={!useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.lbsInches')}</span>
-                    <button                     
-                      className={`${styles.toggleSwitch} ${useMetricSystem ? styles.active : ''}`}
-                      onClick={() => setUseMetricSystem(!useMetricSystem)}
-                      disabled={mode === 'view' || formData.idStatusRequest >= 2}>
-                      <div className={styles.toggleThumb}></div>
-                    </button>
-                    <span className={useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.kgCm')}</span>
+              {!byUnitsMerch ? (
+                <div className={styles.modalRow} style={{ marginTop: '1.0rem' }}>                
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Peso Total (kg) </label>
+                      <input
+                        type="number"
+                        value={merchandiseForm.weigthTotal}
+                        onChange={(e) => setMerchandiseForm({...merchandiseForm, weigthTotal: parseInt(e.target.value)})}                                           
+                        className={styles.input}
+                        placeholder="0"
+                        disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
                   </div>
-                  <div className={styles.totalsDisplay}>
-                    <div>
-                      <div className={styles.totalLabel}>{t('quote.totalVolume')}</div>
-                      <div className={styles.totalValue}>
-                        {calculateTotals().totalVolume.toFixed(2)} {useMetricSystem ? 'cm³' : 'plg³'}
-                      </div>
-                    </div>
-                    <div>
-                      <div className={styles.totalLabel}>{t('quote.totalWeight')}</div>
-                      <div className={styles.totalValue}>
-                        {calculateTotals().totalWeight.toFixed(2)} {useMetricSystem ? 'kg' : 'lbs'}
-                      </div>
-                    </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Volumen Total (cm)</label>
+                    <input
+                      type="number"
+                      value={merchandiseForm.volumeTotal}
+                      onChange={(e) => setMerchandiseForm({...merchandiseForm, volumeTotal: parseInt(e.target.value) })}
+                      className={styles.input}
+                      placeholder="0"
+                      disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
                   </div>
                 </div>
-              )}
+                ) : (
+                <div style={{ marginTop: '1.5rem' }}>
+                  <button className={styles.addPackageButtonIcon} onClick={openPackagingModal} disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                    <Plus size={18} />
+                    {t('quote.addPackaging')}
+                  </button>
+                  {currentPackages.length > 0 && (
+                    <div className={styles.packagesTable} style={{ marginTop: '1rem' }}>
+                      <table className={styles.simpleTable}>
+                        <thead>
+                          <tr>
+                            <th>{t('quote.packagingTable.packaging')}</th>
+                            <th>{t('quote.packagingTable.quantity')}</th>
+                            <th>{t('quote.packagingTable.length')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})</th>
+                            <th>{t('quote.packagingTable.height')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})</th>
+                            <th>{t('quote.packagingTable.width')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})</th>
+                            <th>{t('quote.packagingTable.weight')} ({useMetricSystem ? t('quote.kg') : t('quote.lbs')})</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {currentPackages.map((pkg) => (
+                            <tr key={pkg.id}>
+                              <td>{pkg.unitCargo}</td>
+                              <td>{pkg.quantity}</td>
+                              <td>{pkg.length}</td>
+                              <td>{pkg.height}</td>
+                              <td>{pkg.width}</td>
+                              <td>{pkg.weight}</td>
+                              <td>
+                                <button
+                                  className={styles.removeRowButton}
+                                  onClick={() => removePackage(pkg.id)}
+                                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                                  <X size={14} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  {currentPackages.length > 0 && (
+                  <div className={styles.modalFooterInfo}>
+                    <div className={styles.unitTypeToggle}>
+                      <span className={!useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.lbsInches')}</span>
+                      <button                     
+                        className={`${styles.toggleSwitch} ${useMetricSystem ? styles.active : ''}`}
+                        onClick={() => setUseMetricSystem(!useMetricSystem)}
+                        disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                        <div className={styles.toggleThumb}></div>
+                      </button>
+                      <span className={useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.kgCm')}</span>
+                    </div>
+                    <div className={styles.totalsDisplay}>
+                      <div>
+                        <div className={styles.totalLabel}>{t('quote.totalVolume')}</div>
+                        <div className={styles.totalValue}>
+                          {calculateTotals().totalVolume.toFixed(2)} {useMetricSystem ? 'cm³' : 'plg³'}
+                        </div>
+                      </div>
+                      <div>
+                        <div className={styles.totalLabel}>{t('quote.totalWeight')}</div>
+                        <div className={styles.totalValue}>
+                          {calculateTotals().totalWeight.toFixed(2)} {useMetricSystem ? 'kg' : 'lbs'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  )}
+                </div> )
+              }            
             </div>
             <div className={styles.modalFooter}>
               <button className={styles.saveModalButton} onClick={saveMerchandise} disabled={mode === 'view' || formData.idStatusRequest >= 2}>
