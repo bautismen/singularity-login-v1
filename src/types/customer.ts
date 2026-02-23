@@ -19,7 +19,7 @@ export interface Company {
   _id?: string;
   business_name: string;
   rfc_taxid: string;
-  nationality: string;
+  nationality: 'nacional' | 'extranjero';
   country: string;
   state: string;
   status: 'activo' | 'inactivo' | 'eliminado';

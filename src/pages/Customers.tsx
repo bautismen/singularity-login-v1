@@ -3,13 +3,13 @@ import { Search, Plus, Edit2, ChevronDown, ChevronUp, X, ArrowLeft } from 'lucid
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { Customer, Person, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES } from '../types/customer';
-import { getCustomers, createCustomer, updateCustomer, getPeople, getCompanies } from '../services/customerService';
+import { getCustomers, createCustomer, updateCustomer, getPeople, getCompanies, createCompany } from '../services/customerService';
 import styles from './Customers.module.css';
 import { useNavigate } from 'react-router-dom';
 
-export default function Customers({ onNavigate }: { onNavigate: (route: string) => void }) {
+export default function Customers() { //{ onNavigate }: { onNavigate: (route: string) => void }
   const { t } = useLanguage();
-  const {  showError, showWarning } = useNotification();
+  const { showError, showWarning } = useNotification();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -23,7 +23,9 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
     address: false,
     contacts: false,
   });
+
   const [showPersonForm, setShowPersonForm] = useState(false);
+  const [showCompanyForm, setShowCompanyForm] = useState(false);
 
   const CLIENT_LEVEL_MAP = {
     oro: 1,
@@ -31,9 +33,6 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
     bronce: 3,
   } as const;
 
-  {/* const [showCompanyForm, setShowCompanyForm] = useState(false);*/}
-
-  
   const [formData, setFormData] = useState({
     is_branch: false,
     branch_name: '',
@@ -80,25 +79,42 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
     archivado: false,
   });
 
-  {/* 
-      const [newCompany, setNewCompany] = useState<Partial<Company>>({
+  const [newCompany, setNewCompany] = useState<Partial<Company>>({
     business_name: '',
     rfc_taxid: '',
-    nationality: '',
+    nationality: 'nacional',
     country: 'MX',
     state: '',
     status: 'activo',
     archivado: false,
     datastate: 1,
   });
-  */}
 
-
+  const [countries, setCountries] = useState<any[]>([]);
+  const [saving, setSaving] = useState(false);
+  
   useEffect(() => {
     loadCustomers();
     loadPeople();
     loadCompanies();
+    loadCountries();
   }, []);
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowCompanyForm(false);
+      }
+    };
+
+    if (showCompanyForm) {
+      window.addEventListener("keydown", handleEsc);
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+    };
+  }, [showCompanyForm]);
 
   async function loadCustomers() {
     try {
@@ -129,6 +145,24 @@ export default function Customers({ onNavigate }: { onNavigate: (route: string) 
       console.error('Error loading companies:', error);
     }
   }
+
+  const loadCountries = async () => {
+    try {
+      const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${BASE_URL}/functions/v1/catalog-countries`, {
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const countriesData = await response.json();
+      setCountries(countriesData.filter((c: any) => c.status === 1));
+    } catch (error) {
+      console.error('Error loading countries:', error);
+    }
+  };
 
   function toggleSection(section: string) {
     setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -296,11 +330,12 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       console.error('Error creating person:', error);
       showError('Error al crear la persona: ' + (error instanceof Error ? error.message : 'Error desconocido'));
     }
-  }
-*/
-/*
-  async function handleCreateCompany() {
+  */
+
+  async function handleCreateCompany(e: React.FormEvent<HTMLFormElement>) {
     try {
+      e.preventDefault();
+
       const created = await createCompany(newCompany);
       console.log('Company created:', created);
       setCompanies([...companies, created]);
@@ -309,8 +344,8 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       setNewCompany({
         business_name: '',
         rfc_taxid: '',
-        nationality: 'nacional',
-        country: 'MX',
+        nationality: undefined,
+        country: '',
         state: '',
         status: 'activo',
         archivado: false,
@@ -321,7 +356,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       showError('Error al crear la empresa: ' + (error instanceof Error ? error.message : 'Error desconocido'));
     }
   }
-    */
+
 
   function addContact() {
     const newContact: Contact = {
@@ -386,11 +421,41 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
     return matchesSearch && matchesStatus;
   });
 
+  function handleCompanyChange(selectedCompanyId: string) {
+    const selectedCompany = companies.find(c => c._id === selectedCompanyId);
+
+    if (!selectedCompany) {
+      setFormData({
+        ...formData,
+        company_id: '',
+        is_national: false,
+        fiscal_data: {
+          business_name: '',
+          taxid: '',
+          country: 'MX',
+          state: '',
+        },
+      });
+      return;
+    }
+
+    setFormData({
+      ...formData,
+      company_id: selectedCompanyId,
+      is_national: selectedCompany.nationality === 'nacional' ? true : false,
+      fiscal_data: {
+        business_name: selectedCompany.business_name || '',
+        taxid: selectedCompany.rfc_taxid || '',
+        country: selectedCompany.country || 'MX',
+        state: selectedCompany.state || '',
+      },
+    });
+  }
+
   if (isFormOpen) {
     return (
-      <form
-        onSubmit={handleSaveCustomer} // <- aquí
-        className={styles.formContainer}>
+      <>
+        <form onSubmit={handleSaveCustomer} className={styles.formContainer}>
 
           <div className={styles.formHeaderRow}>
             <div className={styles.header}>
@@ -405,7 +470,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                 {editingCustomer ? t('cust.editCustomer') : t('cust.newCustomer')}
               </h2>
             </div>
-            
+
             <div className={styles.headerActions}>
               <button 
                 type="submit" // <-- importante
@@ -441,25 +506,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   <select
                     value={formData.company_id}
                     disabled={!!editingCustomer}
-                    onChange={(e) => {
-                      const selectedCompanyId = e.target.value;
-                      const selectedCompany = companies.find(c => c._id === selectedCompanyId);
-                      if (selectedCompany) {
-                        setFormData({
-                          ...formData,
-                          company_id: selectedCompanyId,
-                          nationality: selectedCompany.nationality === 'nacional' ? 'nacional' : 'extranjero', 
-                          is_national: selectedCompany.nationality === 'nacional',
-                          curp: selectedCompany.rfc_taxid,
-                          fiscal_data: {
-                            business_name: selectedCompany.business_name || '',
-                            taxid: selectedCompany.rfc_taxid || '',
-                            country: selectedCompany.country || 'MX',
-                            state: selectedCompany.state || '',
-                          },
-                        });
-                      }
-                    }}
+                    onChange={(e) => handleCompanyChange(e.target.value)}
                     className={styles.selectInput}
                     required  // <-- Aqui el "required"
                     onInvalid={(e) => 
@@ -480,7 +527,8 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
 
                 <button
                   type="button"
-                  onClick={() => onNavigate('catalogs/companies')}
+                  // onClick={() => onNavigate('catalogs/companies')}
+                  onClick={() => setShowCompanyForm(true)}
                   className={
                     editingCustomer
                       ? styles.fullWidthGrayButton
@@ -499,7 +547,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                     checked={formData.is_branch}
                     onChange={(e) => setFormData({ ...formData, is_branch: e.target.checked })}
                     className={styles.checkbox}
-                    disabled={!!editingCustomer}
+                    disabled={loading}
                   />
                   <label htmlFor="is_branch" className={styles.checkboxText}>{t('cust.isBranch')}</label>
                 </div>
@@ -666,7 +714,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                     className={styles.addDashedButton}
                   >
                   <Plus size={20} />
-                {t('cust.addContact')}
+                  {t('cust.addContact')}
                 </button>
                 {formData.contacts.map((contact, index) => (
                   <div key={index} className={styles.itemCard}>
@@ -777,6 +825,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                         />
                       </label>
                     </div>
+                    
                     <div className={styles.formRow}>
                       <label>
                         {t('cust.state')}
@@ -806,13 +855,162 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
               </div>
             )}
           </div>
-      </form>
+
+        </form>
+
+        {showCompanyForm && ( /* aqui guarda la empresa */
+          <div className={styles.modalOverlay} onClick={() => setShowCompanyForm(false)} >
+            <form onSubmit={handleCreateCompany} className={styles.modalContent}>
+              <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} >
+
+                <div className={styles.modalHeader}>
+                  <h3>{t('comp.TitleNew')} </h3>
+                  <button onClick={() => setShowCompanyForm(false)} className={styles.closeButton}>
+                    <X size={24} />
+                  </button>
+                </div> {/*modalHeader*/}
+
+                <div className={styles.modalBody}>
+
+                  <div className={styles.formRow}>
+                    <label>
+                      <span className="required">* </span>
+                      {t('cust.CompanyName')}
+                      <input
+                        type="text"
+                        value={newCompany.business_name}
+                        onChange={(e) => setNewCompany({ ...newCompany, business_name: e.target.value })}
+                        required
+                        onInvalid={(e) =>
+                          e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                        }
+                        onInput={(e) =>
+                          e.currentTarget.setCustomValidity('')
+                        }
+                      />
+                    </label>
+                  </div>{/*CompanyName*/}
+
+                  <div className={styles.formRow}>
+                    <label>
+                      <span className="required">* </span>
+                      RFC
+                      <input
+                        type="text"
+                        value={newCompany.rfc_taxid}
+                        onChange={(e) => setNewCompany({ ...newCompany, rfc_taxid: e.target.value })}
+                        required
+                        onInvalid={(e) =>
+                          e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                        }
+                        onInput={(e) =>
+                          e.currentTarget.setCustomValidity('')
+                        }
+                      />
+                    </label>
+                  </div>{/*RFC*/}
+
+                  <div className={styles.countryField}>
+                    <label>
+                      <span className="required">* </span>
+                      {t('cust.country')}
+                    </label>
+
+                  <div className={styles.countryControls}>
+                    <select
+                      value={newCompany.country}
+                      onChange={(e) => setNewCompany({
+                        ...newCompany,
+                        country: e.target.value,
+                        nationality: e.target.value === 'MX' ? 'nacional' : 'extranjero'
+                      })}
+                      className={styles.textInput}
+                      required
+                      onInvalid={(e) =>
+                        e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                      }
+                      onInput={(e) =>
+                        e.currentTarget.setCustomValidity('')
+                      }
+                    >
+                      <option value="">Seleccionar país</option>
+                      {countries.map((c) => {
+                        const code = c.country_code || c.code;
+                        return (
+                          <option key={code} value={code}>
+                            {c.name_country || c.name}
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                    <div className={styles.countryCheckbox} >
+                      <label className={styles.checkboxText}>
+                        <input
+                          type="checkbox"
+                          className="checkbox"
+                          checked={newCompany.country === 'MX' ? true : false}
+                          // onChange={(e) =>
+                          // setNewCompany({
+                          //   ...newCompany,
+                          //   nationality: e.target.value ? "extranjero" : 'nacional',
+                          //   country: e.target.checked ? 'MX' : '',
+                          // })
+                          // }
+                          disabled
+                        />
+                        {' '} {t('cust.Isnational')}
+                      </label>
+                    </div> {/*Nacional*/}
+                    </div>
+                  </div>{/*País*/}
+
+
+                  <div className={styles.formRow}>
+                    <label>
+                      {t('cust.state')}
+                      <input
+                        type="text"
+                        value={newCompany.state}
+                        onChange={(e) => setNewCompany({ ...newCompany, state: e.target.value })}
+                      />
+                      {/* <select
+                        value={newCompany.state}
+                        onChange={(e) => setNewCompany({ ...newCompany, state: e.target.value })}
+                      >
+                        <option value="">Seleccionar estado</option>
+                        {MEXICAN_STATES.map((state) => (
+                          <option key={state} value={state}>{state}</option>
+                        ))}
+                      </select> */}
+                    </label>
+                  </div> {/*state*/}
+
+                </div>
+
+                <div className={styles.modalActions}>
+                  <button type="button" onClick={() => setShowCompanyForm(false)} 
+                    className={styles.cancelButton}>
+                    {t('cust.cancel')}
+                  </button>
+                  <button 
+                    type="submit" 
+                    className={styles.saveButton}>
+                    {t('cust.save')}
+                  </button>
+                </div>
+
+              </div>
+            </form>
+          </div>
+        )}
+      </>
     );
   }
 
   return (
     <div className={styles.container}>
-      
+
       <div className={styles.header}>
         <h1 className={styles.title}>{t('cust.title')}</h1>
         <div className={styles.buttonGroup}>
@@ -826,7 +1024,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
           </button>
         </div>
       </div>
-      
+
       <div className={styles.searchContainer}>
         <div className={styles.searchBar}>
           <Search size={20} />
@@ -873,58 +1071,58 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
 
             return (
               <div key={customer._idcustomer} className={styles.customerCard}>
-                
+
                 <div className={styles.customerRow}>
                   <div className={styles.customerInfo}>
                     <div className={styles.customerNameWrapper}>
 
-                    {medalSrc && (
-                      <div className={styles.medalWrapper}>
-                        <img
-                          src={medalSrc}
-                          alt={customer.client_level}
-                          className={styles.medalImage}
-                        />
-                      </div>
-                    )}
+                      {medalSrc && (
+                        <div className={styles.medalWrapper}>
+                          <img
+                            src={medalSrc}
+                            alt={customer.client_level}
+                            className={styles.medalImage}
+                          />
+                        </div>
+                      )}
 
-                    <h3 className={styles.customerName}>
-                      {customer.fiscal_data.business_name}
-                    </h3>
-                    <p className={styles.customerType}>
+                      <h3 className={styles.customerName}>
+                        {customer.fiscal_data.business_name}
+                      </h3>
+                      <p className={styles.customerType}>
+                        <span className={styles.badge}>
+                          {customer.type === 'fisica'
+                            ? 'Persona física'
+                            : 'Persona moral'}
+                        </span>
+                      </p>
+                      <p>
+                        <span
+                          className={
+                            customer.status === 'activo'
+                              ? styles.statusActive
+                              : styles.statusInactive
+                          }
+                        >
+                          {customer.status}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={styles.customerMeta}>
+                    <p className={styles.taxId}>
+                      {customer.fiscal_data.taxid}
+                    </p>
+
+                    <p className={styles.customerNationality}>
                       <span className={styles.badge}>
-                        {customer.type === 'fisica'
-                          ? 'Persona física'
-                          : 'Persona moral'}
+                        {customer.nationality === 'nacional'
+                          ? 'Nacional'
+                          : 'Extranjero'}
                       </span>
                     </p>
-                    <p>
-                    <span
-                      className={
-                        customer.status === 'activo'
-                          ? styles.statusActive
-                          : styles.statusInactive
-                      }
-                    >
-                      {customer.status}
-                    </span>
-                  </p>
-                  </div>
-                </div>
-
-                <div className={styles.customerMeta}>
-                  <p className={styles.taxId}>
-                    {customer.fiscal_data.taxid}
-                  </p>
-
-                  <p className={styles.customerNationality}>
-                    <span className={styles.badge}>
-                      {customer.nationality === 'nacional'
-                        ? 'Nacional'
-                        : 'Extranjero'}
-                    </span>
-                  </p>
-                  <div className={styles.customerActions}>
+                    <div className={styles.customerActions}>
                       <button
                         onClick={() => handleEditCustomer(customer)}
                         className={styles.editButton}
@@ -932,7 +1130,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                         <Edit2 size={18} />
                       </button>
                     </div>
-                </div>
+                  </div>
 
                 </div>
 

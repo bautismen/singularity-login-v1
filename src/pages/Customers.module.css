@@ -1116,6 +1116,12 @@ grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));  gap: 1.25rem;
   border: 1px solid #bbf7d0;
 }
 
+.checkboxFieldGroup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .checkbox {
   width: 18px;
   height: 18px;
@@ -1172,25 +1178,26 @@ grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));  gap: 1.25rem;
 
 .modalOverlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1rem;
   z-index: 1000;
 }
 
 .modalContent {
   background: white;
   border-radius: 0.75rem;
-  width: 90%;
-  max-width: 600px;
+  width: min(95vw, 600px);
   max-height: 90vh;
-  overflow: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+  animation: modalFadeIn 0.25s ease-out;
 }
 
 .modalHeader {
@@ -1210,6 +1217,7 @@ grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));  gap: 1.25rem;
 
 .modalBody {
   padding: 1.5rem;
+  overflow-x: hidden;
 }
 
 .modalActions {
@@ -1409,3 +1417,70 @@ grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));  gap: 1.25rem;
 .emptyState p {
   margin-bottom: 2rem;
 } 
+
+.countryField {
+  margin-bottom: 1.25rem;
+}
+
+.countryControls {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.countryControls select {
+  flex: 1;
+  min-width: 0; /* 👈 evita overflow en flex */
+}
+
+.countryCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  user-select: none;
+  /* margin-bottom: 0.2rem; */
+}
+
+.countryCheckbox input {
+  appearance: none;
+  width: 40px;
+  height: 22px;
+  background: #cbd5e1;
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.countryCheckbox input::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.countryCheckbox input:checked {
+  background: #10b981;
+}
+
+.countryCheckbox input:checked::before {
+  transform: translateX(18px);
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
