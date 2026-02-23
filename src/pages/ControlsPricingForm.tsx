@@ -325,6 +325,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         status_control_name: 'Cotizada'
       });
       showSuccess('Control marcado como cotizado');
+      loadData();
     } catch (error) {
       console.error('Error marking as quoted:', error);
       showError('Error al marcar como cotizado');

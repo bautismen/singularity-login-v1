@@ -4,7 +4,7 @@ const API_KEYSL = import.meta.env.VITE_APIKEYSL;
 
 export const controlsPricingService = {
   async getAll() {
-    const response = await fetch(`${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/getresquets`, {
+    const response = await fetch(`${PRICING_API_URL}/operations/v1/kl/quotationrequests/view=1&skip=12`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${API_TOKENSL}`,

@@ -16,7 +16,7 @@ class PricingControlService {
   
   async getById(id: string): Promise<PricingControl> {
     const response = await fetch(
-      `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/getcontrolbyid?idcontrol_=${id}`,
+      `${PRICING_API_URL}/operations/v1/kl/controlnumbers/${id}`,
       {
         method: 'GET',
         headers: this.getHeaders2(),
@@ -32,7 +32,7 @@ class PricingControlService {
 
   async getResquetById(id: string): Promise<ResquetQuote> {
     const response = await fetch(
-      `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/getresquetbyid?idresquet_=${id}`,
+      `${PRICING_API_URL}/operations/v1/kl/quotationrequests/${id}`,
       {
         method: 'GET',
         headers: this.getHeaders2(),
@@ -46,10 +46,10 @@ class PricingControlService {
     return data.data[0];
   }
 
-  async create(data: CreatePricingControlAPI): Promise<PricingControl> {
+  async create(data: CreatePricingControlAPI): Promise<PricingControl> {    
     try {    
       const response = await fetch(
-        `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/add`,
+        `${PRICING_API_URL}/operations/v1/kl/quotationrequests/${data.Idrequest}/controlnumbers/add`,
         {
           method: 'POST',
           headers: this.getHeaders2(),
@@ -77,12 +77,12 @@ class PricingControlService {
     }
   }
 
-  async updatenew(data: CreatePricingControlAPI): Promise<PricingControl> {
+  async updatenew(data: CreatePricingControlAPI): Promise<PricingControl> {    
     try {    
       const response = await fetch(
-        `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/updatecontrol`,
+        `${PRICING_API_URL}/operations/v1/kl/controlnumbers/${data.Id}/updatecontrol`,
         {
-          method: 'POST',
+          method: 'PUT',
           headers: this.getHeaders2(),
           body: JSON.stringify(data),
         }
@@ -108,12 +108,12 @@ class PricingControlService {
     }
   }
 
-  async QuoteControl(data: QuotedControlRequest): Promise<PricingControl> {    
-     try {      
+  async QuoteControl(data: QuotedControlRequest): Promise<PricingControl> {        
+    try {      
         const response = await fetch(
-            `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/quotedcontrol`,
+            `${PRICING_API_URL}/operations/v1/kl/controlnumbers/${data.idcontrol_}/quotedcontrol`,
             {
-              method: 'POST',
+              method: 'PUT',
               headers: this.getHeaders2(),
               body: JSON.stringify(data),
             }
@@ -134,9 +134,9 @@ class PricingControlService {
    async DeclineControl(data: QuotedControlRequest): Promise<PricingControl> {    
      try {      
         const response = await fetch(
-            `${PRICING_API_URL}/kl/t/opertacion/v1/quotes/quote/declinerequest`,
+            `${PRICING_API_URL}/operations/v1/kl/controlnumbers/${data.idresqued_}/declinerequest`,
             {
-              method: 'POST',
+              method: 'PUT',
               headers: this.getHeaders2(),
               body: JSON.stringify(data),
             }
