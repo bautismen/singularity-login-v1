@@ -3,10 +3,10 @@ import { Search, Plus, Edit2, ChevronDown, ChevronUp, X, ArrowLeft, RefreshCw } 
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { Supplier, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES, SectorOfBusiness } from '../types/supplier';
-import { getSuppliers, createSupplier, updateSupplier, getCompanies, getSector } from '../services/supplierService';
+import { getSuppliers, createSupplier, updateSupplier, getCompanies, getSector, createCompany } from '../services/supplierService';
 import styles from './Suppliers.module.css';
 
-export default function Suppliers({ onNavigate }: { onNavigate: (route: string) => void }) {
+export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: string) => void }
   const { t } = useLanguage();
   const {showError } = useNotification();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -24,7 +24,7 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
     contacts: false,
   });
   //const [showPersonForm, setShowPersonForm] = useState(false);
-  //const [showCompanyForm, setShowCompanyForm] = useState(false);
+  const [showCompanyForm, setShowCompanyForm] = useState(false);
 
   const [formData, setFormData] = useState({
     is_persona_fisica: false,
@@ -56,23 +56,43 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
   //   archivado: false,
   // });
 
-  // const [newCompany, setNewCompany] = useState<Partial<Company>>({
-  //   business_name: '',
-  //   rfc_taxid: '',
-  //   nationality: 'nacional',
-  //   country: 'MX',
-  //   state: '',
-  //   status: 'activo',
-  //   archivado: false,
-  //   datastate: 1,
-  // });
+  const [newCompany, setNewCompany] = useState<Partial<Company>>({
+    business_name: '',
+    rfc_taxid: '',
+    nationality: 'nacional',
+    country: 'MX',
+    state: '',
+    status: 'activo',
+    archivado: false,
+    datastate: 1,
+  });
+
+  const [countries, setCountries] = useState<any[]>([]);
 
   useEffect(() => {
     loadSuppliers();
     //loadPeople();
     loadCompanies();
     loadSector();
+    loadCountries();
   }, []);
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowCompanyForm(false);
+      }
+    };
+
+    if (showCompanyForm) {
+      window.addEventListener("keydown", handleEsc);
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+    };
+  }, [showCompanyForm]);
+
 
   async function loadSuppliers() {
     try {
@@ -112,6 +132,24 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
       console.error('Error loading sector:', error);
     }
   }
+
+  const loadCountries = async () => {
+    try {
+      const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${BASE_URL}/functions/v1/catalog-countries`, {
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const countriesData = await response.json();
+      setCountries(countriesData.filter((c: any) => c.status === 1));
+    } catch (error) {
+      console.error('Error loading countries:', error);
+    }
+  };
 
   function toggleSection(section: string) {
     setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -253,28 +291,30 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
   //   }
   // }
 
-  // async function handleCreateCompany() {
-  //   try {
-  //     const created = await createCompany(newCompany);
-  //     console.log('Company created:', created);
-  //     setCompanies([...companies, created]);
-  //     setFormData({ ...formData, company_id: created._id! });
-  //     setShowCompanyForm(false);
-  //     setNewCompany({
-  //       business_name: '',
-  //       rfc_taxid: '',
-  //       nationality: 'nacional',
-  //       country: 'MX',
-  //       state: '',
-  //       status: 'activo',
-  //       archivado: false,
-  //       datastate: 1,
-  //     });
-  //   } catch (error) {
-  //     console.error('Error creating company:', error);
-  //     showError('Error al crear la empresa: ' + (error instanceof Error ? error.message : 'Error desconocido'));
-  //   }
-  // }
+  async function handleCreateCompany(e: React.FormEvent<HTMLFormElement>) {
+    try {
+      e.preventDefault();
+
+      const created = await createCompany(newCompany);
+      console.log('Company created:', created);
+      setCompanies([...companies, created]);
+      setFormData({ ...formData, company_id: created._id! });
+      setShowCompanyForm(false);
+      setNewCompany({
+        business_name: '',
+        rfc_taxid: '',
+        nationality: 'nacional',
+        country: 'MX',
+        state: '',
+        status: 'activo',
+        archivado: false,
+        datastate: 1,
+      });
+    } catch (error) {
+      console.error('Error creating company:', error);
+      showError('Error al crear la empresa: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+    }
+  }
 
   function handleCompanyChange(selectedCompanyId: string) {
     const selectedCompany = companies.find(c => c._id === selectedCompanyId);
@@ -372,356 +412,507 @@ export default function Suppliers({ onNavigate }: { onNavigate: (route: string) 
 
   if (isFormOpen) {
     return (
-      <form onSubmit={handleSaveSupplier} className={styles.formContainer}>
-            
-        <div className={styles.formHeaderRow}>
-
-          <div className={styles.header}>
-            <button
-              onClick={() => setIsFormOpen(false)} className={styles.backButton}
-              title="Volver a lista" >
-              <ArrowLeft size={18} />
-            </button> 
-            <h2 className={styles.formTitle}> {editingSupplier ? t('supp.editSupplier') : t('supp.newSupplier')}</h2>
-          </div> {/*End form header */}
+      <>
+        <form onSubmit={handleSaveSupplier} className={styles.formContainer}>
               
-          <div className={styles.headerActions}>
-            <button type="submit" className={styles.saveHeaderButton} disabled={loading}>
-              <Plus size={18} />
-              {t('supp.save')}
-            </button>
-          </div> {/*End header actions */}
+          <div className={styles.formHeaderRow}>
 
-        </div> {/*End form header row */}
+            <div className={styles.header}>
+              <button
+                onClick={() => setIsFormOpen(false)} className={styles.backButton}
+                title="Volver a lista" >
+                <ArrowLeft size={18} />
+              </button> 
+              <h2 className={styles.formTitle}> {editingSupplier ? t('supp.editSupplier') : t('supp.newSupplier')}</h2>
+            </div> {/*End form header */}
+                
+            <div className={styles.headerActions}>
+              <button type="submit" className={styles.saveHeaderButton} disabled={loading}>
+                <Plus size={18} />
+                {t('supp.save')}
+              </button>
+            </div> {/*End header actions */}
 
-          <div className={styles.sectionCard}>
+          </div> {/*End form header row */}
 
-            <div className={styles.sectionTitle}>
-              {t('supp.generalData')}
-            </div> {/*End section title */}
+            <div className={styles.sectionCard}>
 
-            <div className={styles.twoColumnGrid}>
-              
-              <div className={styles.leftColumn}>
-                <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>
-                    <span className={styles.required}>* </span>{t('supp.selectCompany')}
-                  </label>
-                  <select
-                    value={formData.company_id}
-                    onChange={(e) => handleCompanyChange(e.target.value)}
-                    className={styles.selectInput}
-                    required
-                    onInvalid={(e) => 
-                      e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
-                    }
-                    onInput={(e) =>
-                      e.currentTarget.setCustomValidity('')
+              <div className={styles.sectionTitle}>
+                {t('supp.generalData')}
+              </div> {/*End section title */}
+
+              <div className={styles.twoColumnGrid}>
+                
+                <div className={styles.leftColumn}>
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.fieldLabel}>
+                      <span className={styles.required}>* </span>{t('supp.selectCompany')}
+                    </label>
+                    <select
+                      value={formData.company_id}
+                      onChange={(e) => handleCompanyChange(e.target.value)}
+                      className={styles.selectInput}
+                      required
+                      onInvalid={(e) => 
+                        e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                      }
+                      onInput={(e) =>
+                        e.currentTarget.setCustomValidity('')
+                      }
+                      disabled = {editingSupplier ? true : false}
+                      >
+                      <option value="">{t('supp.selectCompany')}</option>
+                      {companies.map((company) => (
+                        <option key={company._id} value={company._id}>
+                          {company.business_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    type="button"
+                    //onClick={() => onNavigate('catalogs/companies')}
+                    onClick={() => setShowCompanyForm(true)}
+                    className={
+                      editingSupplier
+                        ? styles.fullWidthGrayButton
+                        : styles.fullWidthGreenButton
                     }
                     disabled = {editingSupplier ? true : false}
-                    >
-                    <option value="">{t('supp.selectCompany')}</option>
-                    {companies.map((company) => (
-                      <option key={company._id} value={company._id}>
-                        {company.business_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => onNavigate('catalogs/companies')}
-                  className={
-                    editingSupplier
-                      ? styles.fullWidthGrayButton
-                      : styles.fullWidthGreenButton
-                  }
-                  disabled = {editingSupplier ? true : false}
-                >
-                  <Plus size={16} />
-                  {t('supp.newCompany')}
-                </button>
-
-                <div className={styles.checkboxField}>
-                  <input
-                    type="checkbox"
-                    id="is_national"
-                    checked={formData.is_national}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      is_national: e.target.checked,
-                      is_persona_fisica: false,
-                      curp: ''
-                    })}
-                    className={styles.checkbox}
-                    disabled
-                  />
-                  <label htmlFor="is_national" className={styles.checkboxText}>{t('supp.IsNational')}</label>
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>
-                    <span className={styles.required}>* </span>{t('supp.selectSector')}
-                    </label>
-                  <select
-                    value={formData.serctor_id}
-                    onChange={(e) => 
-                      setFormData({ 
-                        ...formData, 
-                        serctor_id: e.target.value,
-                        sector: e.target.options[e.target.selectedIndex].text
-                      })
-                    }
-                    className={styles.selectInput}
-                    required
-                    onInvalid={(e) => 
-                      e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
-                    }
-                    onInput={(e) =>
-                      e.currentTarget.setCustomValidity('')
-                    }
                   >
-                    <option value="">{t('supp.selectSector')}</option>
-                    {sector.map((sector) => (
-                      <option key={sector._id} value={sector._id}>
-                        {sector.name}
-                      </option>
-                    ))
-                    }
-                  </select>
-                </div>
+                    <Plus size={16} />
+                    {t('supp.newCompany')}
+                  </button>
 
-              </div>  {/*End left column */}
-
-              <div className={styles.rightColumn}>
-                <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>
-                    <span className={styles.required}>* </span>RFC/TAXID</label>
-                  <input
-                    type="text"
-                    value={formData.fiscal_data.rfc_taxid}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      fiscal_data: { ...formData.fiscal_data, rfc_taxid: e.target.value }
-                    })}
-                    className={styles.textInput}
-                    placeholder="RFC/TAXID"
-                    disabled
-                  />
-                </div>
-
-                <div className={styles.statusField}>
-                  <span className={styles.statusText}>{t('supp.activo')}</span>
-                  <label className={styles.switch}>
-                    <input
-                      type="checkbox"
-                      checked={formData.status === 'activo'}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        status: e.target.checked ? 'activo' : 'inactivo'
-                      })}
-                    />
-                    <span className={styles.slider}></span>
-                  </label>
-                </div>
-
-                {formData.is_national && (
                   <div className={styles.checkboxField}>
                     <input
                       type="checkbox"
-                      id="is_persona_fisica"
-                      checked={formData.is_persona_fisica}
+                      id="is_national"
+                      checked={formData.is_national}
                       onChange={(e) => setFormData({
                         ...formData,
-                        is_persona_fisica: e.target.checked,
-                        curp: e.target.checked ? formData.curp : ''
+                        is_national: e.target.checked,
+                        is_persona_fisica: false,
+                        curp: ''
                       })}
                       className={styles.checkbox}
-                      disabled = {editingSupplier ? true : false}
+                      disabled
                     />
-                    <label htmlFor="is_persona_fisica" className={styles.checkboxText}>
-                      {t('supp.IsPersonFisica')}
-                    </label>
+                    <label htmlFor="is_national" className={styles.checkboxText}>{t('supp.IsNational')}</label>
                   </div>
-                )}
 
-                {formData.is_national && formData.is_persona_fisica && (
                   <div className={styles.fieldGroup}>
                     <label className={styles.fieldLabel}>
-                      <span className={styles.required}></span>CURP</label>
+                      <span className={styles.required}>* </span>{t('supp.selectSector')}
+                      </label>
+                    <select
+                      value={formData.serctor_id}
+                      onChange={(e) => 
+                        setFormData({ 
+                          ...formData, 
+                          serctor_id: e.target.value,
+                          sector: e.target.options[e.target.selectedIndex].text
+                        })
+                      }
+                      className={styles.selectInput}
+                      required
+                      onInvalid={(e) => 
+                        e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                      }
+                      onInput={(e) =>
+                        e.currentTarget.setCustomValidity('')
+                      }
+                    >
+                      <option value="">{t('supp.selectSector')}</option>
+                      {sector.map((sector) => (
+                        <option key={sector._id} value={sector._id}>
+                          {sector.name}
+                        </option>
+                      ))
+                      }
+                    </select>
+                  </div>
+
+                </div>  {/*End left column */}
+
+                <div className={styles.rightColumn}>
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.fieldLabel}>
+                      <span className={styles.required}>* </span>RFC/TAXID</label>
                     <input
                       type="text"
-                      value={formData.curp}
-                      onChange={(e) => setFormData({ ...formData, curp: e.target.value })}
+                      value={formData.fiscal_data.rfc_taxid}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        fiscal_data: { ...formData.fiscal_data, rfc_taxid: e.target.value }
+                      })}
                       className={styles.textInput}
-                      placeholder="CURP"
-                      disabled = {editingSupplier ? true : false}
+                      placeholder="RFC/TAXID"
+                      disabled
                     />
                   </div>
-                )}
-              </div> {/*End right column */}
 
-            </div> {/*End two column grid */}
-
-          </div> {/*End general data sectionCard */}
-
-          <div className={styles.sectionCard}>
-            <div className={styles.sectionTitleCollapsible}
-              onClick={() => toggleSection('contacts')}>
-              <div className={styles.sectionTitleWithDot}>
-                <span className={styles.greenDot}></span>
-                <span>{t('supp.contacts')}</span>
-              </div>
-              {collapsedSections.contacts ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
-            </div>
-
-            {!collapsedSections.contacts && (
-              <div className={styles.sectionContent}>
-                <button  
-                  type="button"
-                  onClick={addContact} className={styles.addDashedButton}>
-                  <Plus size={20} />
-                  {t('supp.addContact')}
-                </button>
-                {formData.contacts.map((contact, index) => (
-                  <div key={index} className={styles.itemCard}>
-                    <div className={styles.itemHeader}>
-                      <h4>{t('supp.contact')} {index + 1}</h4>
-                      <button 
-                        type="button" 
-                        onClick={() => removeContact(index)} className={styles.removeButton}>
-                        <X size={18} />
-                      </button>
-                    </div>
-                    <div className={styles.formRow}>
-                      <label>
-                        {t('supp.TypeContact')}
-                        <select
-                          value={contact.type}
-                          onChange={(e) => updateContact(index, 'type', e.target.value)}
-                        >
-                          {CONTACT_TYPES.map((type) => (
-                            <option key={type} value={type}>{type}</option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-                    <div className={styles.formRow}>
-                      <label>
-                        {t('supp.contactName')}
-                        <input
-                          type="text"
-                          value={contact.name}
-                          onChange={(e) => updateContact(index, 'name', e.target.value)}
-                        />
-                      </label>
-                    </div>
-                    <div className={styles.formRow}>
-                      <label>
-                        {t('supp.contactEmail')}
-                        <input
-                          type="email"
-                          value={contact.email}
-                          onChange={(e) => updateContact(index, 'email', e.target.value)}
-                        />
-                      </label>
-                    </div>
-                    <div className={styles.formRow}>
-                      <label>
-                        {t('supp.contactPhone')}
-                        <input
-                          type="text"
-                          value={contact.phone}
-                          onChange={(e) => updateContact(index, 'phone', e.target.value)}
-                        />
-                      </label>
-                    </div>
+                  <div className={styles.statusField}>
+                    <span className={styles.statusText}>{t('supp.activo')}</span>
+                    <label className={styles.switch}>
+                      <input
+                        type="checkbox"
+                        checked={formData.status === 'activo'}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          status: e.target.checked ? 'activo' : 'inactivo'
+                        })}
+                      />
+                      <span className={styles.slider}></span>
+                    </label>
                   </div>
-                ))}
-              </div>
-            )}
-          </div> {/*End contacts section */}
 
-          <div className={styles.sectionCard}>
-            <div className={styles.sectionTitleCollapsible}
-              onClick={() => toggleSection('address')}>
-              <div className={styles.sectionTitleWithDot}>
-                <span className={styles.greenDot}></span>
-                <span>{t('supp.addresses')}</span>
-              </div>
-              {collapsedSections.address ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
-            </div>
+                  {formData.is_national && (
+                    <div className={styles.checkboxField}>
+                      <input
+                        type="checkbox"
+                        id="is_persona_fisica"
+                        checked={formData.is_persona_fisica}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          is_persona_fisica: e.target.checked,
+                          curp: e.target.checked ? formData.curp : ''
+                        })}
+                        className={styles.checkbox}
+                        disabled = {editingSupplier ? true : false}
+                      />
+                      <label htmlFor="is_persona_fisica" className={styles.checkboxText}>
+                        {t('supp.IsPersonFisica')}
+                      </label>
+                    </div>
+                  )}
 
-            {!collapsedSections.address && (
-              <div className={styles.sectionContent}>
-                <button 
-                  type="button" 
-                  onClick={addAddress} className={styles.addDashedButton}>
-                  <Plus size={20} />
-                  {t('supp.addAddress')}
-                </button>
-                {formData.addresses.map((address, index) => (
-                  <div key={index} className={styles.itemCard}>
-                    <div className={styles.itemHeader}>
-                      <h4>{t('supp.address')} {index + 1}</h4>
-                      <button 
-                        type="button" 
-                        onClick={() => removeAddress(index)} className={styles.removeButton}>
-                        <X size={18} />
-                      </button>
+                  {formData.is_national && formData.is_persona_fisica && (
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        <span className={styles.required}></span>CURP</label>
+                      <input
+                        type="text"
+                        value={formData.curp}
+                        onChange={(e) => setFormData({ ...formData, curp: e.target.value })}
+                        className={styles.textInput}
+                        placeholder="CURP"
+                        disabled = {editingSupplier ? true : false}
+                      />
                     </div>
-                    <div className={styles.formRow}>
-                      <label>
-                        {t('supp.street')}
-                        <input
-                          type="text"
-                          value={address.street}
-                          onChange={(e) => updateAddress(index, 'street', e.target.value)}
-                        />
-                      </label>
-                    </div>
-                    <div className={styles.formRow}>
-                      <label>
-                        {t('supp.city')}
-                        <input
-                          type="text"
-                          value={address.city}
-                          onChange={(e) => updateAddress(index, 'city', e.target.value)}
-                        />
-                      </label>
-                    </div>
-                    <div className={styles.formRow}>
-                      <label>
-                        {t('supp.state')}
-                        <select
-                          value={address.state}
-                          onChange={(e) => updateAddress(index, 'state', e.target.value)}
-                        >
-                          <option value="">Seleccionar estado</option>
-                          {MEXICAN_STATES.map((state) => (
-                            <option key={state} value={state}>{state}</option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-                    <div className={styles.formRow}>
-                      <label>
-                        {t('supp.postalCode')}
-                        <input
-                          type="number" 
-                          value={address.postal_code}
-                          onChange={(e) => updateAddress(index, 'postal_code', e.target.value)}
-                        />
-                      </label>
-                    </div>
-                  </div>
-                ))}
+                  )}
+                </div> {/*End right column */}
+
+              </div> {/*End two column grid */}
+
+            </div> {/*End general data sectionCard */}
+
+            <div className={styles.sectionCard}>
+              <div className={styles.sectionTitleCollapsible}
+                onClick={() => toggleSection('contacts')}>
+                <div className={styles.sectionTitleWithDot}>
+                  <span className={styles.greenDot}></span>
+                  <span>{t('supp.contacts')}</span>
+                </div>
+                {collapsedSections.contacts ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
               </div>
-            )}
-          </div> {/*End addresses section */}
-      
-      </form>
+
+              {!collapsedSections.contacts && (
+                <div className={styles.sectionContent}>
+                  <button  
+                    type="button"
+                    onClick={addContact} className={styles.addDashedButton}>
+                    <Plus size={20} />
+                    {t('supp.addContact')}
+                  </button>
+                  {formData.contacts.map((contact, index) => (
+                    <div key={index} className={styles.itemCard}>
+                      <div className={styles.itemHeader}>
+                        <h4>{t('supp.contact')} {index + 1}</h4>
+                        <button 
+                          type="button" 
+                          onClick={() => removeContact(index)} className={styles.removeButton}>
+                          <X size={18} />
+                        </button>
+                      </div>
+                      <div className={styles.formRow}>
+                        <label>
+                          {t('supp.TypeContact')}
+                          <select
+                            value={contact.type}
+                            onChange={(e) => updateContact(index, 'type', e.target.value)}
+                          >
+                            {CONTACT_TYPES.map((type) => (
+                              <option key={type} value={type}>{type}</option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+                      <div className={styles.formRow}>
+                        <label>
+                          {t('supp.contactName')}
+                          <input
+                            type="text"
+                            value={contact.name}
+                            onChange={(e) => updateContact(index, 'name', e.target.value)}
+                          />
+                        </label>
+                      </div>
+                      <div className={styles.formRow}>
+                        <label>
+                          {t('supp.contactEmail')}
+                          <input
+                            type="email"
+                            value={contact.email}
+                            onChange={(e) => updateContact(index, 'email', e.target.value)}
+                          />
+                        </label>
+                      </div>
+                      <div className={styles.formRow}>
+                        <label>
+                          {t('supp.contactPhone')}
+                          <input
+                            type="text"
+                            value={contact.phone}
+                            onChange={(e) => updateContact(index, 'phone', e.target.value)}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div> {/*End contacts section */}
+
+            <div className={styles.sectionCard}>
+              <div className={styles.sectionTitleCollapsible}
+                onClick={() => toggleSection('address')}>
+                <div className={styles.sectionTitleWithDot}>
+                  <span className={styles.greenDot}></span>
+                  <span>{t('supp.addresses')}</span>
+                </div>
+                {collapsedSections.address ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+              </div>
+
+              {!collapsedSections.address && (
+                <div className={styles.sectionContent}>
+                  <button 
+                    type="button" 
+                    onClick={addAddress} className={styles.addDashedButton}>
+                    <Plus size={20} />
+                    {t('supp.addAddress')}
+                  </button>
+                  {formData.addresses.map((address, index) => (
+                    <div key={index} className={styles.itemCard}>
+                      <div className={styles.itemHeader}>
+                        <h4>{t('supp.address')} {index + 1}</h4>
+                        <button 
+                          type="button" 
+                          onClick={() => removeAddress(index)} className={styles.removeButton}>
+                          <X size={18} />
+                        </button>
+                      </div>
+                      <div className={styles.formRow}>
+                        <label>
+                          {t('supp.street')}
+                          <input
+                            type="text"
+                            value={address.street}
+                            onChange={(e) => updateAddress(index, 'street', e.target.value)}
+                          />
+                        </label>
+                      </div>
+                      <div className={styles.formRow}>
+                        <label>
+                          {t('supp.city')}
+                          <input
+                            type="text"
+                            value={address.city}
+                            onChange={(e) => updateAddress(index, 'city', e.target.value)}
+                          />
+                        </label>
+                      </div>
+                      <div className={styles.formRow}>
+                        <label>
+                          {t('supp.state')}
+                          <select
+                            value={address.state}
+                            onChange={(e) => updateAddress(index, 'state', e.target.value)}
+                          >
+                            <option value="">Seleccionar estado</option>
+                            {MEXICAN_STATES.map((state) => (
+                              <option key={state} value={state}>{state}</option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+                      <div className={styles.formRow}>
+                        <label>
+                          {t('supp.postalCode')}
+                          <input
+                            type="number" 
+                            value={address.postal_code}
+                            onChange={(e) => updateAddress(index, 'postal_code', e.target.value)}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div> {/*End addresses section */}
+        
+        </form>
+
+        {showCompanyForm && ( /* aqui guarda la empresa */
+          <div className={styles.modalOverlay} onClick={() => setShowCompanyForm(false)} >
+            <form onSubmit={handleCreateCompany} className={styles.modalContent}>
+              <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} >
+
+                <div className={styles.modalHeader}>
+                  <h3>{t('comp.TitleNew')} </h3>
+                  <button onClick={() => setShowCompanyForm(false)} className={styles.closeButton}>
+                    <X size={24} />
+                  </button>
+                </div> {/*modalHeader*/}
+
+                <div className={styles.modalBody}>
+
+                  <div className={styles.formRow}>
+                    <label>
+                      <span className="required">* </span>
+                      {t('cust.CompanyName')}
+                      <input
+                        type="text"
+                        value={newCompany.business_name}
+                        onChange={(e) => setNewCompany({ ...newCompany, business_name: e.target.value })}
+                        required
+                        onInvalid={(e) =>
+                          e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                        }
+                        onInput={(e) =>
+                          e.currentTarget.setCustomValidity('')
+                        }
+                      />
+                    </label>
+                  </div>{/*CompanyName*/}
+
+                  <div className={styles.formRow}>
+                    <label>
+                      <span className="required">* </span>
+                      RFC
+                      <input
+                        type="text"
+                        value={newCompany.rfc_taxid}
+                        onChange={(e) => setNewCompany({ ...newCompany, rfc_taxid: e.target.value })}
+                        required
+                        onInvalid={(e) =>
+                          e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                        }
+                        onInput={(e) =>
+                          e.currentTarget.setCustomValidity('')
+                        }
+                      />
+                    </label>
+                  </div>{/*RFC*/}
+
+                  <div className={styles.countryField}>
+                    <label>
+                      <span className="required">* </span>
+                      {t('cust.country')}
+                    </label>
+
+                  <div className={styles.countryControls}>
+                    <select
+                      value={newCompany.country}
+                      onChange={(e) => setNewCompany({
+                        ...newCompany,
+                        country: e.target.value,
+                        nationality: e.target.value === 'MX' ? 'nacional' : 'extranjero'
+                      })}
+                      className={styles.textInput}
+                      required
+                      onInvalid={(e) =>
+                        e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                      }
+                      onInput={(e) =>
+                        e.currentTarget.setCustomValidity('')
+                      }
+                    >
+                      <option value="">Seleccionar país</option>
+                      {countries.map((c) => {
+                        const code = c.country_code || c.code;
+                        return (
+                          <option key={code} value={code}>
+                            {c.name_country || c.name}
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                    <div className={styles.countryCheckbox} >
+                      <label className={styles.checkboxText}>
+                        <input
+                          type="checkbox"
+                          className="checkbox"
+                          checked={newCompany.country === 'MX' ? true : false}
+                          // onChange={(e) =>
+                          // setNewCompany({
+                          //   ...newCompany,
+                          //   nationality: e.target.value ? "extranjero" : 'nacional',
+                          //   country: e.target.checked ? 'MX' : '',
+                          // })
+                          // }
+                          disabled
+                        />
+                        {' '} {t('cust.Isnational')}
+                      </label>
+                    </div> {/*Nacional*/}
+                    </div>
+                  </div>{/*País*/}
+
+
+                  <div className={styles.formRow}>
+                    <label>
+                      {t('cust.state')}
+                      <input
+                        type="text"
+                        value={newCompany.state}
+                        onChange={(e) => setNewCompany({ ...newCompany, state: e.target.value })}
+                      />
+                      {/* <select
+                        value={newCompany.state}
+                        onChange={(e) => setNewCompany({ ...newCompany, state: e.target.value })}
+                      >
+                        <option value="">Seleccionar estado</option>
+                        {MEXICAN_STATES.map((state) => (
+                          <option key={state} value={state}>{state}</option>
+                        ))}
+                      </select> */}
+                    </label>
+                  </div> {/*state*/}
+
+                </div>
+
+                <div className={styles.modalActions}>
+                  <button type="button" onClick={() => setShowCompanyForm(false)} 
+                    className={styles.cancelButton}>
+                    {t('cust.cancel')}
+                  </button>
+                  <button 
+                    type="submit" 
+                    className={styles.saveButton}>
+                    {t('cust.save')}
+                  </button>
+                </div>
+
+              </div>
+            </form>
+          </div>
+        )}
+        
+      </>
     );
   }
 

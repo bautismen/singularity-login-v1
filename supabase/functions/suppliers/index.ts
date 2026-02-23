@@ -91,7 +91,7 @@ Deno.serve(async (req: Request) => {
 
       const maxIdDoc = await collection
         .find()
-        .sort({ idsupplier: -1 })
+        .sort({ _idsupplier: -1 })
         .limit(1)
         .toArray();
 
