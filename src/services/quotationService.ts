@@ -1,14 +1,15 @@
 import {AsignateToRequest, ChangeStatusRequest, QuotationRequest} from '../types/requestQuotation';
 
-const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
+//const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
 const API_REQUESTQUOTATION = import.meta.env.VITE_REQUESTQUOTATION;
 const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 const API_KEYSL = import.meta.env.VITE_APIKEYSL;
 
 
 export const quotationService = {
-  async getAll() {
-    const response = await fetch(API_URL, {
+
+  async getRecentQuotations() {
+    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/api/quotationrequest/getRecentRequestQuotations?limit_=100`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${API_TOKENSL}`,
@@ -16,12 +17,14 @@ export const quotationService = {
         'x-api-key': API_KEYSL,
       },
     });
-
     if (!response.ok) {
-      throw new Error('Error al cargar las cotizaciones');
+        throw new Error('Error al cargar las cotizaciones');
     }
-
-    return response.json();
+    if (response.status === 204) {
+        throw new Error('No hay solicitudes disponibles');        
+    }
+    const data = await response.json()
+    return {data: data.data || []};
   },
 
   async getById(id: string) {
@@ -37,7 +40,6 @@ export const quotationService = {
     if (!response.ok) {
       throw new Error('Error al cargar la cotización');
     }
-
     return response.json();
   },
 

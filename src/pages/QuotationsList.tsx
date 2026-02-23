@@ -5,6 +5,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import styles from './QuotationsList.module.css';
 import {QuotationRequest} from '../types/requestQuotation';
+import { quotationService } from '../services/quotationService';
+
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
 //const EXECUTIVES_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/executives`;
@@ -64,27 +66,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
   const loadQuotationsRequests = async () => {
     try {
       setLoading(true);      
-      const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/api/quotationrequest/getRecentRequestQuotations?limit=10`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${API_TOKENSL}`,
-          'Content-Type': 'application/json',
-          'x-api-key': API_KEYSL,
-        },
-
-      });
-      if (!response.ok) {
-        throw new Error('Error al cargar las cotizaciones');
-      }
-
-       if (response.status === 204) {
-        showInfo('No hay solicitudes disponibles');        
-        return;
-      }
-      
-      const data = await response.json();
-      console.log(data.data);
-
+      const data = await quotationService.getRecentQuotations();
       const sortdata = [...data.data].sort((a, b) => {
         if(a.idStatusRequest === 10 && b.idStatusRequest !== 10) return 1; // a va despues de b
         if(a.idStatusRequest !== 10 && b.idStatusRequest === 10) return -1; // a va antes de b
@@ -93,11 +75,10 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
         const b_deadline = b.dateDeadline ? new Date(b.dateDeadline).getTime() : Infinity;
         return a_deadline -  b_deadline; //fecha mas antigua va primero 
       }); 
-
       setQuotations(sortdata);
     } catch (error) {
       console.error('Error loading quotations:', error);
-      showError('Error al cargar las cotizaciones' );
+      showError('Error al cargar las cotizaciones');
     } finally {
       setLoading(false);
     }
@@ -132,12 +113,11 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
           'Authorization': `Bearer ${API_KEY}`,
           'Content-Type': 'application/json',
         },
-      });
+      });      
 
       if (!response.ok) {
         throw new Error('Error al cargar tipos de solicitud');
       }
-
       const data = await response.json();
       setRequestTypes(data);
     } catch (error) {
