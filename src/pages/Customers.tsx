@@ -103,7 +103,7 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setShowCompanyForm(false);
+        handleCloseModal();
       }
     };
 
@@ -340,7 +340,15 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       console.log('Company created:', created);
       setCompanies([...companies, created]);
       setFormData({ ...formData, company_id: created._id! });
-      setShowCompanyForm(false);
+      handleCloseModal()
+    } catch (error) {
+      console.error('Error creating company:', error);
+      showError('Error al crear la empresa: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+    }
+  }
+
+  function handleCloseModal(){
+    setShowCompanyForm(false);
       setNewCompany({
         business_name: '',
         rfc_taxid: '',
@@ -351,12 +359,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
         archivado: false,
         datastate: 1,
       });
-    } catch (error) {
-      console.error('Error creating company:', error);
-      showError('Error al crear la empresa: ' + (error instanceof Error ? error.message : 'Error desconocido'));
-    }
   }
-
 
   function addContact() {
     const newContact: Contact = {
@@ -859,13 +862,13 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
         </form>
 
         {showCompanyForm && ( /* aqui guarda la empresa */
-          <div className={styles.modalOverlay} onClick={() => setShowCompanyForm(false)} >
+          <div className={styles.modalOverlay} onClick={() => handleCloseModal()} >
             <form onSubmit={handleCreateCompany} className={styles.modalContent}>
               <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} >
 
                 <div className={styles.modalHeader}>
                   <h3>{t('comp.TitleNew')} </h3>
-                  <button onClick={() => setShowCompanyForm(false)} className={styles.closeButton}>
+                  <button onClick={() => handleCloseModal()} className={styles.closeButton}>
                     <X size={24} />
                   </button>
                 </div> {/*modalHeader*/}
@@ -989,7 +992,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                 </div>
 
                 <div className={styles.modalActions}>
-                  <button type="button" onClick={() => setShowCompanyForm(false)} 
+                  <button type="button" onClick={() => handleCloseModal()} 
                     className={styles.cancelButton}>
                     {t('cust.cancel')}
                   </button>

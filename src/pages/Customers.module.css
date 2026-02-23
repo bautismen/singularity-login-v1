@@ -1116,12 +1116,6 @@ grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));  gap: 1.25rem;
   border: 1px solid #bbf7d0;
 }
 
-.checkboxFieldGroup {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 .checkbox {
   width: 18px;
   height: 18px;
