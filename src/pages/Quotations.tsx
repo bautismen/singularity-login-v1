@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Plus, Copy, X, RotateCcw, Save, Eye, ArrowLeft, ShieldOff, User } from 'lucide-react';
+import { Trash2, Plus, Copy, X, RotateCcw, Save, Eye, ArrowLeft, User, ZapIcon } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -8,9 +8,9 @@ import { quotationService } from '../services/quotationService';
 import { getCustomers} from '../services/customerService';
 import { getExecutivesByDepartment} from '../services/executiveService';
 import styles from './Quotations.module.css';
-import {QuotationRequest, Service, Executive, Shipment, Cargo, MerchandisePackage} from '../types/requestQuotation';
+import {QuotationRequest, Service, Executive, Shipment, Cargo} from '../types/requestQuotation';
 
-/**
+/*
  * CLASIFICACION MERCANCIAS
  *  7 - PELIGROSA
  * 10 - REFRIGERADO
@@ -84,7 +84,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     showGeneralMerch : false,
   })
   const [byUnitsMerch, setByUnitsMerch] = useState(true);
-  const [isPort, setIsPort] = useState(false)
+  //const [isPort, setIsPort] = useState(false)
   const [formData, setFormData] = useState({
     referenceRequest: 'QR250901-0001',
     customerId: '',
@@ -209,7 +209,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
       if (data.data.services && data.data.services.length > 0) {
           const loadedServices = data.data.services.map((service: any, idx: number) => {
-            validatePortOrAirport(service.idService);
             return {
               idServiceItem: idx + 1,
               idService : service.idService,
@@ -510,14 +509,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     }
   };
 
-  const validatePortOrAirport = (idService: number) => {
-    if(idService === 5) {
-      setIsPort(false)
-    } else if (idService === 1 || idService === 2 ) {
-      setIsPort(true)
-    }   
-  }
-
   const updateService = (id: number, changes: Record<any,any>) => {
     setServices(services.map(service => service.idServiceItem === id ? { 
       ...service,
@@ -748,49 +739,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         services: services.map((service, idx) => {                                                               
           
           const shipmentsInService = service.shipments.map((shipment, index) => {
-           
-            /*const servicesAssociated: any[] = [];
-
-            if(shipment.servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 12)){              
-              const insuranceService = availableServices.find(s => s.service_name === 'Seguro');    
-              servicesAssociated.push({
-                idServiceAsociated: insuranceService?._id || null,
-                serviceAsociatedName: 'Seguro'
-              });
-            }       
-            
-            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Maniobra')) {
-              const maneuverService = availableServices.find(s => s.service_name === 'Maniobra');
-              servicesAssociated.push({
-                idServiceAsociated: maneuverService?._id || null,
-                serviceAsociatedName: 'Maniobra'
-              });
-            }   
-            
-            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Custodia')) {
-              const custodyService = availableServices.find(s => s.service_name === 'Custodia');
-              servicesAssociated.push({
-                idServiceAsociated: custodyService?._id || null,
-                serviceAsociatedName: 'Custodia'
-              });
-            }
-
-            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Inspección')) {
-              const inspectionService = availableServices.find(s => s.service_name === 'Inspección');
-              servicesAssociated.push({
-                idServiceAsociated: inspectionService?._id || null,
-                serviceAsociatedName: 'Inspección'
-              });
-            }
-
-            if (shipment.servicesAsociated?.some(servAsociated => servAsociated.serviceAsociatedName ==='Despacho aduanal')) {
-              const customsClearanceService = availableServices.find(s => s.service_name === 'Despacho aduanal');
-              servicesAssociated.push({
-                idServiceAsociated: customsClearanceService?._id || null,
-                serviceAsociatedName: 'Despacho aduanal'
-              });
-            }*/
-
+                       
             const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
 
             const projectionShipment = shipment.projectionShipment?.frecuency && 
@@ -802,14 +751,23 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               measurementFrecuency: shipment.projectionShipment?.measurementFrecuency || "Semanal",
               number: shipment.projectionShipment?.number || 0,
             } : undefined;
-
-            //const originCountry = countries.find(country => country._id === shipment.origin.idCountry);
-            //const destinationCountry = countries.find(country => country._id === shipment.destination.idCountry);   
-
+         
             return {
               idShipment: index + 1,
-              origin:shipment.origin,
-              destination: shipment.destination,
+              origin: {
+                idCountry : shipment.origin.idCountry,
+                countryCode: shipment.origin.countryCode, 
+                ...((shipment.origin.zipCode && [1, 3].includes(shipment.idTypeShipment)) && {zipCode : shipment.origin.zipCode}) ,
+                ...((shipment.origin.portCode && [2, 4].includes(shipment.idTypeShipment) && [1, 2].includes(service.idService)) && {portCode : shipment.origin.portCode}),
+                ...((shipment.origin.airportCode && [2, 4].includes(shipment.idTypeShipment) && [5].includes(service.idService)) && {airportCode : shipment.origin.airportCode})                 
+              } ,
+              destination: {
+                idCountry: shipment.destination.idCountry,
+                countryCode: shipment.destination.countryCode,
+                ...((shipment.destination.zipCode && [1, 4].includes(shipment.idTypeShipment)) && {zipCode : shipment.destination.zipCode}) ,
+                ...((shipment.destination.portCode && [2, 3].includes(shipment.idTypeShipment) && [1, 2].includes(service.idService)) && {portCode : shipment.destination.portCode}),
+                ...((shipment.destination.airportCode && [2, 3].includes(shipment.idTypeShipment) && [5].includes(service.idService)) && {airportCode : shipment.destination.airportCode})
+              },
               idTypeShipment: shipment.idTypeShipment,
               typeShipment: shipment.typeShipment,
               idTypeOperation: shipment.idTypeOperation,
@@ -922,15 +880,15 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     }
   };
 
-
   const renderZipCodesOriginDestination =  (service : Service) => {
+    const isPort = [1, 2].includes(service.idService);
     switch(true){
       case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : return (
         <div className={styles.formGrid}>
           <div className={styles.formGroup}>
             <label className={styles.label}>
               <span className={styles.required}>*</span>
-                Codigo Postal Origen
+                {t('quote.originZip')}
               </label>
             <input
               type="number"
@@ -959,27 +917,27 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           <div className={styles.formGroup}>
             <label className={styles.label}>
               <span className={styles.required}>*</span>
-              {isPort ? 'Puerto Origen' : 'Aeropuerto Origen'}
+              {isPort ? t('quote.originPort') : t('quote.originAirport')}
             </label>
             <input
-              className={`${styles.input} ${styles.inputUppercase}`}
+              className={`${styles.input}`}
               type="text"
               placeholder={isPort ? 'MXVER' : 'MXMEX'}
-              value={isPort ? service.shipments[0].origin.portCode : service.shipments[0].origin.airportCode }
-              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, isPort? {portCode: e.target.value } : {airportCode: e.target.value})}              
+              value={isPort ? service.shipments[0].origin.portCode ?? '' : service.shipments[0].origin.airportCode ?? '' }
+              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()})}              
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required />
           </div>  
           <div className={styles.formGroup}>
             <label className={styles.label}>
               <span className={styles.required}>*</span>
-              {isPort ? 'Puerto Destino' : 'Aeropuerto Destino'}
+              {isPort ?  t('quote.destinationPort') : t('quote.destinationAirport')}
             </label>
             <input
               type="text"
               placeholder={isPort ? 'MXVER' : 'MXMEX'}
-              value={isPort ? service.shipments[0].destination.portCode : service.shipments[0].destination.airportCode }
-              onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, isPort? {portCode: e.target.value } : {airportCode: e.target.value})}
+              value={isPort ? service.shipments[0].destination.portCode ?? '' : service.shipments[0].destination.airportCode ?? '' }
+              onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()})}
               className={styles.input}
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
@@ -991,7 +949,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           <div className={styles.formGroup}>
             <label className={styles.label}>
               <span className={styles.required}>*</span>
-              Codigo Postal Origen
+              {t('quote.originZip')}
             </label>
             <input
               type="number"
@@ -1004,13 +962,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           <div className={styles.formGroup}>
             <label className={styles.label}>
               <span className={styles.required}>*</span>
-              {isPort ? 'Puerto Destino' : 'Aeropuerto Destino'}
+              {isPort ? t('quote.destinationPort') : t('quote.destinationAirport')}
             </label>
             <input
               type="text"
               placeholder={isPort ? 'MXVER' : 'MXMEX'}
-              value={service.shipments[0].destination.zipCode}
-              onChange={isPort ? service.shipments[0].destination.portCode : service.shipments[0].destination.airportCode }
+              value={isPort ? service.shipments[0].destination.portCode ?? '' : service.shipments[0].destination.airportCode ?? '' }
+              onChange={(e) => 
+                updateDestination(service.idServiceItem, 
+                service.shipments[0].idShipment, 
+                isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()}) }
               className={styles.input}
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
@@ -1021,13 +982,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           <div className={styles.formGroup}>
             <label className={styles.label}>
               <span className={styles.required}>*</span>
-              {isPort ? 'Puerto Origen' : 'Aeropuerto Origen'}
+              {isPort ? t('quote.originPort') : t('quote.originAirport')}
             </label>
             <input
               type="text"
               placeholder={isPort ? 'MXVER' : 'MXMEX'}
-              value={isPort ? service.shipments[0].origin.portCode : service.shipments[0].origin.airportCode }
-              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment,  isPort? {portCode: e.target.value } : {airportCode: e.target.value})}
+              value={isPort ? service.shipments[0].origin.portCode ?? '' : service.shipments[0].origin.airportCode ?? '' }
+              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment,  isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()})}
               className={styles.input}
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required />
@@ -1319,7 +1280,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         nameService: e.target.value
                       }
                     );
-                    validatePortOrAirport(parseInt(e.target.selectedOptions[0].dataset.serviceId!, 0));
                   }}
                   className={styles.select}
                   disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
@@ -1348,7 +1308,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       Consolidado
                     </option>  
                     <option key='Full' value='Full'>
-                      Lleno
+                      Full
                     </option>                   
                 </select>
               </div>
@@ -1449,7 +1409,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <select
                   value={service.shipments[0].origin.idCountry}
                   onChange={(e) => {
-                    console.log('ORIGEN' ,  e.target.selectedOptions[0].dataset.shipmentOriginCountryName );
                     updateOrigin(service.idServiceItem, service.shipments[0].idShipment, 
                     {
                       idCountry: e.target.value , 
