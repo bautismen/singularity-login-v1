@@ -80,7 +80,7 @@ class PricingControlService {
   async updatenew(data: CreatePricingControlAPI): Promise<PricingControl> {    
     try {    
       const response = await fetch(
-        `${PRICING_API_URL}/operations/v1/kl/controlnumbers/${data.Id}/updatecontrol`,
+        `${PRICING_API_URL}/operations/v1/kl/controlnumbers/${data.Id}/update`,
         {
           method: 'PUT',
           headers: this.getHeaders2(),
@@ -111,7 +111,7 @@ class PricingControlService {
   async QuoteControl(data: QuotedControlRequest): Promise<PricingControl> {        
     try {      
         const response = await fetch(
-            `${PRICING_API_URL}/operations/v1/kl/controlnumbers/${data.idcontrol_}/quotedcontrol`,
+            `${PRICING_API_URL}/operations/v1/kl/controlnumbers/${data.idcontrol_}/quoted`,
             {
               method: 'PUT',
               headers: this.getHeaders2(),
@@ -134,7 +134,7 @@ class PricingControlService {
    async DeclineControl(data: QuotedControlRequest): Promise<PricingControl> {    
      try {      
         const response = await fetch(
-            `${PRICING_API_URL}/operations/v1/kl/controlnumbers/${data.idresqued_}/declinerequest`,
+            `${PRICING_API_URL}/operations/v1/kl/controlnumbers/${data.idresqued_}/decline`,
             {
               method: 'PUT',
               headers: this.getHeaders2(),
