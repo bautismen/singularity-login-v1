@@ -76,7 +76,7 @@ function App() {
         case 'catalogs/sector-of-business':
           return <CatalogSectorOfBusiness />;
         case 'dashboard':
-          return <DashboardStats />;
+          return <DashboardStats onNavigate={handleNavigate} />;
         default:
           return (
             <div className="p-8">
