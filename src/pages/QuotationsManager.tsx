@@ -7,6 +7,7 @@ type ViewMode = 'list' | 'create' | 'edit' | 'view';
 export function QuotationsManager() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
 
   const handleCreateNew = () => {
     setSelectedQuotationId(null);
@@ -23,7 +24,11 @@ export function QuotationsManager() {
     setViewMode('view');
   };
 
-  const handleBack = () => {
+  const handleBack = (newId? : string) => {
+    console.log('BACK',newId);
+    if (newId) {
+    setHighlightId(newId);
+    }
     setSelectedQuotationId(null);
     setViewMode('list');
   };
@@ -34,6 +39,7 @@ export function QuotationsManager() {
         onCreateNew={handleCreateNew}
         onEdit={handleEdit}
         onView={handleView}
+        highlightId={highlightId}
       />
     );
   }

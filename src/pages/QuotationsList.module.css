@@ -644,6 +644,18 @@
   justify-content: space-between; /* Opcional: separa título y botón */
 }
 
+.highlightRow {
+  background: #2c7df7c2;
+  animation: fadeOutHighlight 10s ease forwards;
+
+}
+
+  @keyframes fadeOutHighlight {
+    from { background-color: #2c7df7c2; }
+    to { background-color: transparent; }
+  }
+
+
 @media (max-width: 768px) {
   .cardsGrid {
     grid-template-columns: 1fr;
@@ -661,4 +673,5 @@
   .actionButtons {
     margin-left: 0;
   }
+  
 }

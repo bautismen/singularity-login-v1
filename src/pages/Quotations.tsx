@@ -22,7 +22,7 @@ import {QuotationRequest, Service, Executive, Shipment, Cargo} from '../types/re
 interface QuotationsProps {
   mode?: 'create' | 'edit' | 'view';
   quotationId?: string | null;
-  onBack?: () => void;
+  onBack?: (newId? : string) => void;
 }
 
 export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsProps) {
@@ -817,12 +817,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           };
         }),
       };
-
-      console.log('=== QUOTATION DATA TO SAVE ===');
-      console.log(JSON.stringify(quotationData, null, 2));
      
-      if(quotationData.dateDeadline !== null && quotationData.dateRequest )
-
       if(quotationData.services.length == 0 ){
         setModalState({
           isOpen : true,
@@ -844,7 +839,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         setSaving(false);
         return;
       }      
-
       await performSave(quotationData);
 
     } catch (error) {
@@ -856,22 +850,26 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const performSave = async (quotationData: QuotationRequest) => {
-    try {
+    try {      
+      let result : any;
+      let newId : string;
       setSaving(true);
       if (mode === 'edit' && quotationId) {
         quotationData.id = quotationId;
         console.log('UPDATE: ', JSON.stringify(quotationData, null, 2))
-        const result = await quotationService.update(quotationData);
-        //console.log('Update result:', result);
+        const res = await quotationService.update(quotationData);
+        console.log('Result:', res);
         showSuccess(t('quote.success.updated'));
       } else {
-         console.log('create: ', JSON.stringify(quotationData, null, 2))
-        const result = await quotationService.create(quotationData);
+        console.log('create: ', JSON.stringify(quotationData, null, 2))
+        result = await quotationService.create(quotationData);
         console.log('Create result:', result);
         showSuccess(t('quote.success.created'));
       }
 
-      if (onBack) {
+      if (onBack && mode === 'create' ) {
+        onBack(result.atrribute?.value);
+      } else {        
         onBack();
       }
     } catch (error) {

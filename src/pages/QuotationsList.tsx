@@ -7,28 +7,21 @@ import styles from './QuotationsList.module.css';
 import {QuotationRequest} from '../types/requestQuotation';
 import { quotationService } from '../services/quotationService';
 
-
-const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
-//const EXECUTIVES_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/executives`;
 const USERS_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/users`;
 const REQUEST_TYPES_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-request-types`;
 const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const PRICING_API_URL = import.meta.env.VITE_PRICING_API_URL;
-const API_REQUESTQUOTATION = import.meta.env.VITE_REQUESTQUOTATION;
-const API_TOKENSL = import.meta.env.VITE_TOKENSL;
-const API_KEYSL = import.meta.env.VITE_APIKEYSL;
-
 
 interface QuotationsListProps {
   onCreateNew: () => void;
   onEdit: (id: string) => void;
   onView: (id: string) => void;
+  highlightId?: string | null;
 }
 
-export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListProps) {
+export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: QuotationsListProps) {
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { showInfo, showError } = useNotification();
+  const {showInfo, showError } = useNotification();
   const [quotations, setQuotations] = useState<QuotationRequest[]>([]);
   const [filteredQuotations, setFilteredQuotations] = useState<QuotationRequest[]>([]);
   const [loading, setLoading] = useState(false);
@@ -45,10 +38,11 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
   const contentRefStatus = useRef(null);
   const contentRefEjecutivo = useRef(null);
 
-   const [isOpenFecha, setIsOpenFecha] = useState(false);
-    const [isOpenTipoSol, setIsOpenTipoSol] = useState(false);
-    const contentRefFecha = useRef(null);
-    const contentRefTipoSol = useRef(null);
+  const [isOpenFecha, setIsOpenFecha] = useState(false);
+  const [isOpenTipoSol, setIsOpenTipoSol] = useState(false);
+  const contentRefFecha = useRef(null);
+  const contentRefTipoSol = useRef(null);
+  const rowRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   const [users, setUsers] = useState<any[]>([]);
   const [requestTypes, setRequestTypes] = useState<any[]>([]);
@@ -61,7 +55,16 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
 
   useEffect(() => {
     filterQuotations();
-  }, [quotations, searchQuery, statusFilter, executiveFilter, selectedExecutive, dateFilter, requestTypeFilters]);
+  }, [quotations, searchQuery, statusFilter, executiveFilter, selectedExecutive, dateFilter, requestTypeFilters,  ]);
+
+  useEffect(() => {
+    if(highlightId && rowRefs.current[highlightId]){
+      rowRefs.current[highlightId]?.scrollIntoView({
+        behavior: 'smooth',
+        block:"center"
+      });
+    }
+  }, [highlightId, quotations])
   
   const loadQuotationsRequests = async () => {
     try {
@@ -229,16 +232,6 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
       'Cancelada': styles.statusCancelada,
     };
     return statusClasses[status] || styles.statusNueva;
-  };
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-MX', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
   };
 
   const getDaysRemaining = (deadline: string) => {
@@ -587,7 +580,14 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
             const attendedServices = quotation.services?.filter(s => s.used === true).length || 0;
 
             return (
-              <div key={quotation.id} className={styles.card}>
+              <div 
+              key={quotation.id} 
+              ref={(el) => {
+                if (highlightId && quotation.id === highlightId) {
+                  rowRefs.current[quotation.id] = el;
+                }
+              }}
+              className={`${styles.card} ${ quotation.id === highlightId ? styles.highlightRow  : '' }`}>
                 <div className={styles.cardTop}>
                   <div className={styles.cardLeft}>
                     {medalSrc && (
@@ -656,8 +656,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                           stroke="currentColor"
                           strokeWidth="2"
                           strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
+                          strokeLinejoin="round">
                           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                           <circle cx="12" cy="7" r="4"></circle>
                         </svg>
@@ -683,21 +682,9 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
                       else {   
                         onEdit(quotation.id)
                       }}}
-                    title={t('quote.edit')}
-                  >
+                    title={t('quote.edit')}>
                     <Edit2 size={18} />
-                  </button>
-                  {/*<button
-                    className={`${styles.actionButton} ${styles.deleteButton}`}
-                    onClick={() => {
-                      if (confirm(t('quote.confirmDelete'))) {
-                        console.log('eliminar')
-                      }
-                    }}
-                    title={t('quote.delete')}
-                  >
-                    <Trash2 size={18} />
-                  </button>*/}
+                  </button>                 
                 </div>
               </div>
             );
@@ -710,8 +697,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView }: QuotationsListPr
             {searchQuery
               ? t('quote.noResultsFilters')
               : t('quote.startNewQuotation')}
-          </p>
-          
+          </p>          
         </div>
       )}
       </div>

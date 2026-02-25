@@ -9,7 +9,7 @@ const API_KEYSL = import.meta.env.VITE_APIKEYSL;
 export const quotationService = {
 
   async getRecentQuotations() {
-    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/api/quotationrequest/getRecentRequestQuotations?limit_=100`, {
+    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/api/quotationrequest/getRecentRequestQuotations?limit_=200`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${API_TOKENSL}`,
