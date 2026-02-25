@@ -326,9 +326,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         stowable: cargo.stowable,
         shipmentTypeCargo: cargo.shipmentTypeCargo,
         idUnitMeasurement: cargo.idUnitMeasurement ||  useMetricSystem ? 1 : 2,
-        unitMeasurement: cargo.unitMeasurement ||  useMetricSystem ? "cm" : "plg" ,                 
+        unitMeasurement: cargo.unitMeasurement ||  useMetricSystem ? "cm" : "in" ,                 
         idUnitWeight: cargo.idUnitWeight ||  useMetricSystem ? 1 : 2,
-        unitWeight: cargo.unitWeight ||  useMetricSystem ? "kg" : "lbs",
+        unitWeight: cargo.unitWeight ||  useMetricSystem ? "kg" : "lb",
         volumeTotal: cargo.volumeTotal ,
         weigthTotal: cargo.weigthTotal,
         units: cargo.units        
@@ -383,8 +383,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const addPackage = (pkg: any) => {
     setCurrentPackages([...currentPackages, {
       ...pkg,
-      id: Date.now(),
-      unit: useMetricSystem ? 'metric' : 'imperial'
+      id: Date.now()
+      //unit: useMetricSystem ? 'metric' : 'imperial'
     }]);
     closePackagingModal();
   };
@@ -428,10 +428,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       merchandiseDescription: merchandiseForm.merchandiseDescription,       
       stowable: merchandiseForm.stowable,
       shipmentTypeCargo: merchandiseForm.shipmentTypeCargo,
-      idUnitMeasurement: merchandiseForm.idUnitMeasurement,
-      unitMeasurement: merchandiseForm.unitMeasurement, 
-      idUnitWeight: merchandiseForm.idUnitWeight,
-      unitWeight: merchandiseForm.unitWeight,
+      idUnitMeasurement:  useMetricSystem ? 1 : 2 ,
+      unitMeasurement: useMetricSystem ? 'cm' : 'in', 
+      idUnitWeight: useMetricSystem ? 1 : 2,
+      unitWeight: useMetricSystem ? 'kg' : 'lb',
       volumeTotal: byUnitsMerch ? totalVolume : merchandiseForm.volumeTotal,
       weigthTotal: byUnitsMerch ? totalWeight : merchandiseForm.weigthTotal,
       ...(currentPackages && { units: currentPackages?.map(pkg => ({
@@ -439,6 +439,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }))}),
       classification: merchandiseForm.classification
     };
+
+    console.log('New Merch: ', newMerchandise)
 
     setServices(services.map(service => {
       if (service.idServiceItem === currentServiceId) {
@@ -783,7 +785,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 merchandiseDescription: merchandise.merchandiseDescription,
                 classification: merchandise.classification || [],
                 stowable: merchandise.stowable,
-                shipmentTypeCargo: merchandise.shipmentTypeCargo || 'Suelta',
+                shipmentTypeCargo:  [2, 3, 10].includes(service.idService) ?  'Contenerizada' : 'Suelta',
                 idUnitMeasurement: merchandise.idUnitMeasurement, 
                 unitMeasurement: merchandise.unitMeasurement,
                 idUnitWeight: merchandise.idUnitWeight, 
@@ -796,7 +798,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   width : parseInt(unitMerch.width),
                   height : parseInt(unitMerch.height),
                   weight : parseInt(unitMerch.weight),
-                  idUnitCargo : parseInt(unitMerch.idUnitCargo) || 1,
+                  idUnitCargo : parseInt(unitMerch.idUnitCargo),
                   unitCargo : unitMerch.unitCargo,
                 }))
               })), 
@@ -1498,14 +1500,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 6)? styles.selected : ''}`}
                   onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment,  { idServiceAsociated: 6, serviceAsociatedName: 'Almacén' })}
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}>
-                  <span>Almacén</span>
+                  <span>{t('quote.warehouse')}</span>
                 </button>
                 <button
                   type="button" 
                   className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 8)? styles.selected : ''}`}
                   onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment,  { idServiceAsociated: 8, serviceAsociatedName: 'Paquetería' })}
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}>
-                  <span>Paquetería</span>
+                  <span>{t('quote.parcelService')}</span>
                 </button>
                 <button
                   type="button" 
@@ -1526,7 +1528,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   className={`${styles.serviceChip} ${service.shipments[0].servicesAsociated?.some(servAsociated => servAsociated.idServiceAsociated === 17)? styles.selected : ''}`}
                   onClick={() => updateServicesAssociated(service.idServiceItem, service.shipments[0].idShipment,  { idServiceAsociated: 17, serviceAsociatedName: 'Previo en origen' })}
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}>
-                  <span>Previo en origen</span>
+                  <span>{t('quote.PreInspectionOrigin')}</span>
                 </button>
               </div>
             </div>
@@ -1965,9 +1967,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             <select
                               className={styles.select}
                               style={{ width: '80px' }}
-                              //value={merchandiseForm.tempUnit}
-                              //onChange={(e) => setMerchandiseForm({ ...merchandiseForm, tempUnit: e.target.value })}
-                            >
+                              value={merchandiseForm?.classification?.find(classification => classification.idClassificationMerchandise === 10)?.tempUnit || ''}
+                              onChange={(e) => {
+                                const currentClassifications =  merchandiseForm?.classification ?? [];                                                                 
+                                setMerchandiseForm({
+                                  ...merchandiseForm,
+                                  classification : currentClassifications.map(currentClas => currentClas.idClassificationMerchandise === 10 ? {
+                                    ...currentClas,
+                                    tempUnit:  e.target.value
+                                  } : currentClas)                                  
+                                })  
+                              }}>
                               <option>°C</option>
                               <option>°F</option>
                             </select>
@@ -1979,32 +1989,34 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </div>
               </div>
 
-              <div style={{ marginTop: '1.0rem' }}>        
-                <input
-                    type="checkbox"                  
-                    checked={byUnitsMerch}                  
-                    onChange={(e) =>  setByUnitsMerch(!byUnitsMerch) }
-                    className={styles.checkbox}
-                    disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
-                  <label className={styles.checkboxLabel}>
-                    Por unidades
-                  </label>   
+              <div className={styles.modalRow} style={{ marginTop: '1.0rem' }}>        
+                <div>                    
+                  <input
+                      type="checkbox"                  
+                      checked={byUnitsMerch}                  
+                      onChange={(e) =>  setByUnitsMerch(!byUnitsMerch) }
+                      className={styles.checkbox}
+                      disabled={mode === 'view' || formData.idStatusRequest >= 2}/> 
+                  <label className={styles.checkboxLabel}> Por unidades </label>                  
+                </div>
+                  <div className={styles.formGroup}>
+                    <div className={styles.unitTypeToggle}>
+                      <span className={!useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.lbsInches')}</span>
+                      <button                     
+                        className={`${styles.toggleSwitch} ${useMetricSystem ? styles.active : ''}`}
+                        onClick={() => setUseMetricSystem(!useMetricSystem)}
+                        disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                        <div className={styles.toggleThumb}></div>
+                      </button>
+                      <span className={useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.kgCm')}</span>
+                    </div>
+                  </div>
               </div>
 
               {!byUnitsMerch ? (
-                <div className={styles.modalRow} style={{ marginTop: '1.0rem' }}>                
+                <div className={styles.modalRow} style={{ marginTop: '1.0rem' }}>
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>Peso Total (kg) </label>
-                      <input
-                        type="number"
-                        value={merchandiseForm.weigthTotal}
-                        onChange={(e) => setMerchandiseForm({...merchandiseForm, weigthTotal: parseInt(e.target.value)})}                                           
-                        className={styles.input}
-                        placeholder="0"
-                        disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
-                  </div>
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>Volumen Total (cm)</label>
+                    <label className={styles.label}>{t('quote.totalVolume')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})  </label>
                     <input
                       type="number"
                       value={merchandiseForm.volumeTotal}
@@ -2012,7 +2024,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       className={styles.input}
                       placeholder="0"
                       disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
-                  </div>
+                  </div>                
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>{t('quote.totalWeight')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')}) </label>
+                      <input
+                        type="number"
+                        value={merchandiseForm.weigthTotal}
+                        onChange={(e) => setMerchandiseForm({...merchandiseForm, weigthTotal: parseInt(e.target.value)})}                                           
+                        className={styles.input}
+                        placeholder="0"
+                        disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
+                  </div>                  
                 </div>
                 ) : (
                 <div style={{ marginTop: '1.5rem' }}>
@@ -2058,17 +2080,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     </div>
                   )}
                   {currentPackages.length > 0 && (
-                  <div className={styles.modalFooterInfo}>
-                    <div className={styles.unitTypeToggle}>
-                      <span className={!useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.lbsInches')}</span>
-                      <button                     
-                        className={`${styles.toggleSwitch} ${useMetricSystem ? styles.active : ''}`}
-                        onClick={() => setUseMetricSystem(!useMetricSystem)}
-                        disabled={mode === 'view' || formData.idStatusRequest >= 2}>
-                        <div className={styles.toggleThumb}></div>
-                      </button>
-                      <span className={useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.kgCm')}</span>
-                    </div>
+                  <div className={styles.modalFooterInfo}>                    
                     <div className={styles.totalsDisplay}>
                       <div>
                         <div className={styles.totalLabel}>{t('quote.totalVolume')}</div>
@@ -2148,14 +2160,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <select
                   className={styles.select}
                   id="package-type"
-                  defaultValue=""
-                >
+                  defaultValue="">
                   <option value="">{t('quote.selectOption')}</option>
-                  <option value={4}>{t('quote.box')}</option>
-                  <option value={9}>{t('quote.bundle')}</option>
+                  <option value={4}>{t('quote.box')}</option>                  
                   <option value={18}>{t('quote.pallet')}</option>
-                  <option value={6}>{t('quote.container')}</option>
-                  <option value={17}>{t('quote.drum')}</option>
                   <option value={15}>{t('quote.sack')}</option>
                 </select>
               </div>
@@ -2167,8 +2175,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   type="number"
                   className={styles.input}
                   placeholder="50"
-                  id="package-quantity"
-                />
+                  id="package-quantity"/>
               </div>
               <div className={styles.formGrid}>
                 <div className={styles.formGroup}>
@@ -2179,8 +2186,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     type="number"
                     step="any"
                     className={styles.input}
-                    id="package-length"
-                  />
+                    id="package-length"/>
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
@@ -2190,8 +2196,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     type="number"
                     step="any"
                     className={styles.input}
-                    id="package-height"
-                  />
+                    id="package-height"/>
                 </div>
               </div>
               <div className={styles.formGrid}>
@@ -2224,15 +2229,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 className={styles.saveModalButton}
                 onClick={() => {
                   const selectElement = document.getElementById('package-type') as HTMLSelectElement;
-
                   const UnitCargo = selectElement.options[selectElement.selectedIndex].text;
                   const quantity = (document.getElementById('package-quantity') as HTMLInputElement).value;
                   const length = (document.getElementById('package-length') as HTMLInputElement).value;
                   const height = (document.getElementById('package-height') as HTMLInputElement).value;
                   const width = (document.getElementById('package-width') as HTMLInputElement).value;
                   const weight = (document.getElementById('package-weight') as HTMLInputElement).value;                
-
-                  console.log('CARGO: ', selectElement.value, UnitCargo )
                   if (UnitCargo && quantity && length && height && width && weight) {
                     addPackage({
                       idUnitCargo : parseInt(selectElement.value),
