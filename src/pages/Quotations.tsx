@@ -189,9 +189,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const loadQuotation = async (id: string) => {
     try {
       setLoading(true);
-
       const data = await quotationService.getById(id);
-
       setFormData({
         referenceRequest: data.data.referenceRequest || '',
         customerId: data.data.customer.idCustomer || '',
@@ -218,8 +216,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             };
         });
         setServices(loadedServices);
-        console.log('FormData loaded: ', formData)
-        console.log('services: ', services)
       }
 
       if (data.data.assignedTo && data.data.assignedTo.length > 0) {
@@ -310,7 +306,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     if (cargo) {  
       
       setByUnitsMerch(cargo?.units?.length === 0 ? false : true)
-
+      setUseMetricSystem(cargo?.idUnitMeasurement === 1 ? true : false);
       setClassificationMerchFlags({
       showDangerouseMerch : cargo?.classification.some(classification => classification.idClassificationMerchandise === 7),
       showRefrigeratedMerch : cargo?.classification.some(classification => classification.idClassificationMerchandise === 10),
@@ -565,13 +561,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     }: service));
   };
 
-  const updateProjectionShipment = (idServiceItem: number, idShipment: number,  field: keyof any, value: any) => {
+  const updateProjectionShipment = (idServiceItem: number, idShipment: number,  changes : Record<any, any>) => {
     setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
       ...service,
       shipments: service.shipments.map(shipment => shipment.idShipment=== idShipment ? {
         ...shipment,
         projectionShipment : {
-          [field]: value,
+          ...shipment.projectionShipment,
+          ...changes,
         }        
       }: shipment)
     }: service));
@@ -743,7 +740,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           const shipmentsInService = service.shipments.map((shipment, index) => {
                        
             const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
-
+            console.log('PROJECT SHIPMENT ',shipment.projectionShipment)
             const projectionShipment = shipment.projectionShipment?.frecuency && 
                                        shipment.projectionShipment?.idTypeMesurementFrecuency && 
                                        shipment.projectionShipment?.measurementFrecuency && 
@@ -789,7 +786,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 idUnitMeasurement: merchandise.idUnitMeasurement, 
                 unitMeasurement: merchandise.unitMeasurement,
                 idUnitWeight: merchandise.idUnitWeight, 
-                unitWeight: merchandise.unitMeasurement,
+                unitWeight: merchandise.unitWeight,
                 volumeTotal: merchandise.volumeTotal,
                 weigthTotal: merchandise.weigthTotal,
                 units: merchandise.units?.map(unitMerch => ({
@@ -852,7 +849,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const performSave = async (quotationData: QuotationRequest) => {
     try {      
       let result : any;
-      let newId : string;
       setSaving(true);
       if (mode === 'edit' && quotationId) {
         quotationData.id = quotationId;
@@ -1563,10 +1559,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <label className={styles.label}>{t('quote.frequencyPeriod')}</label>
                     <select
                       value={service.shipments[0].projectionShipment?.frecuency}
-                      onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, 'frecuency', e.target.value)}
+                      onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, {frecuency: e.target.value})}
                       className={styles.select}
-                      disabled={mode === 'view' || formData.idStatusRequest >= 2}
-                    >
+                      disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                       <option value="">{t('quote.select')}</option>
                       <option value="Semanal">{t('quote.weekly')}</option>
                       <option value="Mensual">{t('quote.monthly')}</option>
@@ -1578,7 +1573,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <input
                       type="number"
                       value={service.shipments[0].projectionShipment?.number}
-                      onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, 'number', e.target.value)}
+                      onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, {number: parseInt(e.target.value)})}
                       className={styles.input}
                       placeholder="0"
                       disabled={mode === 'view' || formData.idStatusRequest >= 2}
@@ -1587,14 +1582,18 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <div className={styles.formGroup}>
                     <label className={styles.label}>{t('quote.unit')}</label>
                     <select
-                      value={service.shipments[0].projectionShipment?.measurementFrecuency}
-                      onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, 'measurementFrecuency', e.target.value)}
+                      value={service.shipments[0].projectionShipment?.idTypeMesurementFrecuency}
+                      onChange={(e) => 
+                        updateProjectionShipment(
+                          service.idServiceItem, 
+                          service.shipments[0].idShipment, 
+                          {idTypeMesurementFrecuency: e.target.value, measurementFrecuency : e.target.options[e.target.selectedIndex].text })}
                       className={styles.select}
                       disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                       <option value="">{t('quote.select')}</option>
-                      <option value="Kilos">{t('quote.kilos')}</option>
-                      <option value="Toneladas">{t('quote.tons')}</option>
-                      <option value="Contenedores">{t('quote.containers')}</option>
+                      <option value={1}>{t('quote.kilos')}</option>
+                      <option value={2}>{t('quote.tons')}</option>
+                      <option value={3}>{t('quote.containers')}</option>
                     </select>
                   </div>
                 </div>
@@ -1623,8 +1622,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         <td>{merch.classification?.some(clas => clas.idClassificationMerchandise === 7) ? 'Si' : 'No'}</td>
                         <td>{merch.classification?.some(clas => clas.idClassificationMerchandise === 10) ? 'Si' : 'No'}</td>
                         <td>{merch.stackable ? 'Si' : 'No'}</td>
-                        <td>{merch.volumeTotal} KG</td>
-                        <td>{merch.weigthTotal} KG</td>
+                        <td>{merch.volumeTotal} {merch.unitMeasurement} </td>
+                        <td>{merch.weigthTotal} {merch.unitWeight}</td>
                         <td>
                           <div className={styles.tableActions}>
                             <button
@@ -2014,7 +2013,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               {!byUnitsMerch ? (
                 <div className={styles.modalRow} style={{ marginTop: '1.0rem' }}>
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>{t('quote.totalVolume')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})  </label>
+                    <label className={styles.label}>{t('quote.totalVolume')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})  </label>
                     <input
                       type="number"
                       value={merchandiseForm.volumeTotal}
@@ -2024,7 +2023,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
                   </div>                
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>{t('quote.totalWeight')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')}) </label>
+                    <label className={styles.label}>{t('quote.totalWeight')} ({useMetricSystem ? t('quote.cm') : t('quote.in')}) </label>
                       <input
                         type="number"
                         value={merchandiseForm.weigthTotal}
@@ -2047,9 +2046,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           <tr>
                             <th>{t('quote.packagingTable.packaging')}</th>
                             <th>{t('quote.packagingTable.quantity')}</th>
-                            <th>{t('quote.packagingTable.length')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})</th>
-                            <th>{t('quote.packagingTable.height')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})</th>
-                            <th>{t('quote.packagingTable.width')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})</th>
+                            <th>{t('quote.packagingTable.length')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})</th>
+                            <th>{t('quote.packagingTable.height')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})</th>
+                            <th>{t('quote.packagingTable.width')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})</th>
                             <th>{t('quote.packagingTable.weight')} ({useMetricSystem ? t('quote.kg') : t('quote.lbs')})</th>
                             <th></th>
                           </tr>
@@ -2083,7 +2082,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       <div>
                         <div className={styles.totalLabel}>{t('quote.totalVolume')}</div>
                         <div className={styles.totalValue}>
-                          {calculateTotals().totalVolume.toFixed(2)} {useMetricSystem ? 'cm³' : 'plg³'}
+                          {calculateTotals().totalVolume.toFixed(2)} {useMetricSystem ? 'cm³' : 'in³'}
                         </div>
                       </div>
                       <div>
@@ -2178,7 +2177,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.formGrid}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>{t('quote.length')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})
+                    <span className={styles.required}>*</span>{t('quote.length')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})
                   </label>
                   <input
                     type="number"
@@ -2188,7 +2187,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>{t('quote.height')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})
+                    <span className={styles.required}>*</span>{t('quote.height')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})
                   </label>
                   <input
                     type="number"
@@ -2200,7 +2199,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.formGrid}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>{t('quote.width')} ({useMetricSystem ? t('quote.cm') : t('quote.plg')})
+                    <span className={styles.required}>*</span>{t('quote.width')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})
                   </label>
                   <input
                     type="number"

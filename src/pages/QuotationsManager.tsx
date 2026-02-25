@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { QuotationsList } from './QuotationsList';
 import { Quotations } from './Quotations';
 
@@ -8,6 +8,15 @@ export function QuotationsManager() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if(highlightId) {
+      const timer = setTimeout(() => {
+        setHighlightId(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightId])
 
   const handleCreateNew = () => {
     setSelectedQuotationId(null);
