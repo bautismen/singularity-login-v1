@@ -249,7 +249,7 @@ if (isFormOpen) {
                   e.currentTarget.setCustomValidity('') /* se limpia msj si ya se capturo */
                 }
               />
-            </div>
+            </div> {/* CompanyName */}
 
             {/* Nacionalidad */}
             <div className={styles.fieldGroup}>
@@ -275,6 +275,31 @@ if (isFormOpen) {
             </div>
 
             <div className={styles.fieldGroup}>
+              <label className={styles.fieldLabel}>{t('comp.state')}</label>
+              <input
+                type="text"
+                // required
+                // onInvalid={(e) => 
+                //   e.currentTarget.setCustomValidity(t('comp.stateRequired')) /* si todavia no tiene capturado */
+                // }
+                // onInput={(e) =>
+                //   e.currentTarget.setCustomValidity('') /* se limpia msj si ya se capturo */
+                // }
+                value={formData.state}
+                onChange={(e) =>
+                  setFormData({ ...formData, state: e.target.value })
+                }
+                className={styles.textInput}
+                placeholder={t('comp.state')}
+              />
+            </div> {/* State */}
+            
+          </div>
+
+          {/* Columna derecha */}
+          <div className={styles.rightColumn}>
+            
+            <div className={styles.fieldGroup}>
               <label className={styles.fieldLabel}>RFC / TAXID</label>
               <input
                 type="text"
@@ -292,30 +317,7 @@ if (isFormOpen) {
                   e.currentTarget.setCustomValidity('') /* se limpia msj si ya se capturo */
                 }
               />
-            </div>
-          </div>
-
-          {/* Columna derecha */}
-          <div className={styles.rightColumn}>
-            <div className={styles.fieldGroup}>
-              <label className={styles.fieldLabel}>{t('comp.state')}</label>
-              <input
-                type="text"
-                required
-                onInvalid={(e) => 
-                  e.currentTarget.setCustomValidity(t('comp.stateRequired')) /* si todavia no tiene capturado */
-                }
-                onInput={(e) =>
-                  e.currentTarget.setCustomValidity('') /* se limpia msj si ya se capturo */
-                }
-                value={formData.state}
-                onChange={(e) =>
-                  setFormData({ ...formData, state: e.target.value })
-                }
-                className={styles.textInput}
-                placeholder={t('comp.state')}
-              />
-            </div>
+            </div> {/* RFC / TAXID */}
 
             <div className={styles.fieldGroup}>
               <label className={styles.fieldLabel}>{t('comp.Country')}</label>
@@ -338,7 +340,7 @@ if (isFormOpen) {
                   );
                 })}
               </select>
-            </div>
+            </div> {/* Country */}
 
             <div className={styles.fieldGroup}>
               <label className={styles.fieldLabel}>{t('comp.status')}</label>
