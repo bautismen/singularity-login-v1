@@ -31,7 +31,7 @@ export interface UpcomingDeadline {
   reference_request: string;
 }
 
-export interface NewRequest {
+export interface NewRequestCurrentMonth {
   customer: {
     _id_customer: {
       $oid: string;
@@ -54,7 +54,7 @@ export interface QuotationStats {
   statusPercentageCurrentMonth: StatusPercentage[];
   acceptedByChannel: AcceptedByChannel[];
   upcomingDeadlines: UpcomingDeadline[];
-  newRequestsCurrentMonth: NewRequest[];
+  newRequestsCurrentMonth: NewRequestCurrentMonth[];
   totalQuotationsCurrentMonth: number;
 }
 
