@@ -75,7 +75,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const [showPackagingModal, setShowPackagingModal] = useState(false);
   const [currentPackages, setCurrentPackages] = useState<any[]>([]);
   const [useMetricSystem, setUseMetricSystem] = useState(true);
-  const [showProjectionShipment, setShowProjectionShipment] = useState(false);
+  const [projectionShipmentState, setProjectionShipmentState] = useState<{[key: number] : boolean}>({});
   const [classificationMerchFlags, setClassificationMerchFlags] = useState({
     showDangerouseMerch : false,
     showRefrigeratedMerch : false,
@@ -416,7 +416,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
        return;
     }    
   
-    const {totalVolume = 0, totalWeight = 0 } = calculateTotals();      
+    const {totalVolume = 0, totalWeight = 0 } = calculateTotals();   
+    
+    if (merchandiseForm.classification.length === 0) {
+      merchandiseForm.classification.push({
+        idClassificationMerchandise: 11,
+        classificationMerchandise:'General'
+      });
+    }
     
     const newMerchandise: Cargo = {
       //id: editingMerchandise?.id|| Date.now(),
@@ -447,9 +454,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               ...shipment,
               cargo: shipment.cargo.map(merch => merch === editingMerchandise ? newMerchandise : merch )
             }: shipment)
-            /*merchandise: service.shipments[0].cargo.map(merchandise =>
-              merchandise.merchandiseName === editingMerchandise.merchandiseName ? newMerchandise : merchandise
-            )*/
           };
         } else {
           return {
@@ -458,7 +462,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               ...shipment,
               cargo:  [...service.shipments[0].cargo, newMerchandise]
             }: shipment)
-            //merchandise: [...service.shipments[0].cargo, newMerchandise]
           };
         }
       }
@@ -618,9 +621,15 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     }: service));
   };
 
+  const handleProjectionShipmentState = (idServiceItem : number) => {
+    setProjectionShipmentState(prev => ({
+      ...prev,
+      [idServiceItem] : !prev[idServiceItem]
+    }));
+  }
+
   const handleStatusUpdate = async (statusId: number, statusName: string) => {
-    try {
-      
+    try {      
       const quotationData = {
         IdRequest: quotationId,       
         IdStatusRequest: statusId,
@@ -738,17 +747,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         services: services.map((service, idx) => {                                                               
           
           const shipmentsInService = service.shipments.map((shipment, index) => {
-                       
-            const unitMap: { [key: string]: number } = { 'Kilos': 1, 'Toneladas': 2, 'Contenedores': 3 };
-            console.log('PROJECT SHIPMENT ',shipment.projectionShipment)
-            const projectionShipment = shipment.projectionShipment?.frecuency && 
+
+            const projectionShipment = projectionShipmentState[service.idServiceItem] === true &&
+                                       shipment.projectionShipment?.frecuency && 
                                        shipment.projectionShipment?.idTypeMesurementFrecuency && 
                                        shipment.projectionShipment?.measurementFrecuency && 
                                        shipment.projectionShipment?.number ? {
               frecuency: shipment.projectionShipment?.frecuency || 1,
-              idTypeMesurementFrecuency: unitMap[shipment.projectionShipment?.idTypeMesurementFrecuency] || 0,
-              measurementFrecuency: shipment.projectionShipment?.measurementFrecuency || "Semanal",
-              number: shipment.projectionShipment?.number || 0,
+              idTypeMesurementFrecuency: shipment.projectionShipment?.idTypeMesurementFrecuency,
+              measurementFrecuency: shipment.projectionShipment?.measurementFrecuency,
+              number: shipment.projectionShipment?.number,
             } : undefined;
          
             return {
@@ -1242,7 +1250,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>{t('quote.services')}</h2>
 
-        {services.map((service, index) => (
+        {services.map((service, index) => {  
+          const showProjection = projectionShipmentState[service.idServiceItem] ?? service.shipments[0].projectionShipment ;
+
+          return (
           <div key={service.idServiceItem} className={styles.serviceCard}>
             <div className={styles.serviceHeader}>
               <div className={styles.serviceNumber}>{index + 1}</div>
@@ -1259,7 +1270,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </button>               
               </div>
             </div>
-
             <div className={styles.formGrid}>
               <div className={styles.formGroup}>
                 <label className={styles.label}>
@@ -1383,7 +1393,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <option value={4}>{t('quote.portToDoor')}</option>
                 </select>
               </div>    
-
               <div className={styles.formGroup}>
                 <label className={styles.label}>{t('quote.expectedDeparture')}</label>
                 <input
@@ -1395,7 +1404,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
               </div>         
             </div>
-
             <div className={styles.formGrid} style={{ marginTop: '1.25rem' }}>              
               <div className={styles.formGroup}>
                 <label className={styles.label}>
@@ -1445,11 +1453,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </select>
               </div>
             </div>
-
             <div style={{ marginTop: '1.25rem' }}>
               {renderZipCodesOriginDestination(service)}
-            </div>
-                                                         
+            </div>                                                         
             <div style={{ marginTop: '1.25rem' }}>
               <label className={styles.label}>{t('quote.associatedServices')}</label>
               <div className={styles.associatedServices}>
@@ -1526,7 +1532,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </button>
               </div>
             </div>
-
             <div className={styles.formGroup} style={{ marginTop: '1.25rem' }}>
               <label className={styles.label}>{t('quote.comments')}</label>
               <textarea
@@ -1544,16 +1549,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <input
                   type="checkbox"
                   id={`freq-${service.idService}`}
-                  checked={showProjectionShipment}
-                  onChange={(e) =>  setShowProjectionShipment(!showProjectionShipment) }
+                  checked={showProjection}
+                  onChange={() => { handleProjectionShipmentState(service.idServiceItem) }}
                   className={styles.checkbox}
-                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
-                />
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2} />
                 <label htmlFor={`freq-${service.idService}`} className={styles.checkboxLabel}>
                   {t('quote.programFrequency')}
                 </label>
               </div>
-              {showProjectionShipment && (
+              { 
+              showProjection && (
                 <div className={styles.frequencyGrid}>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>{t('quote.frequencyPeriod')}</label>
@@ -1587,7 +1592,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         updateProjectionShipment(
                           service.idServiceItem, 
                           service.shipments[0].idShipment, 
-                          {idTypeMesurementFrecuency: e.target.value, measurementFrecuency : e.target.options[e.target.selectedIndex].text })}
+                          { idTypeMesurementFrecuency: parseInt(e.target.value), 
+                            measurementFrecuency : e.target.options[e.target.selectedIndex].text })}
                       className={styles.select}
                       disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                       <option value="">{t('quote.select')}</option>
@@ -1658,7 +1664,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               </button>
             </div>
           </div>
-        ))}
+        )}
+        )}
 
         <button type="button" className={styles.addServiceButton} onClick={addService} disabled={mode === 'view' || formData.idStatusRequest >= 2}>
           <Plus size={20} />
