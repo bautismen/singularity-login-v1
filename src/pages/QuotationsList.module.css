@@ -645,13 +645,13 @@
 }
 
 .highlightRow {
-  background: #1b95a892;
+  background: #1b95a87f;
   animation: fadeOutHighlight 10s ease forwards;
 
 }
 
   @keyframes fadeOutHighlight {
-    from { background-color: #1b95a892; }
+    from { background-color: #1b95a87f; }
     to { background-color: transparent; }
   }
 

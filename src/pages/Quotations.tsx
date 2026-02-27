@@ -303,8 +303,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       showGeneralMerch : false
     })
 
-    if (cargo) {  
-      
+    if (cargo) {        
       setByUnitsMerch(cargo?.units?.length === 0 ? false : true)
       setUseMetricSystem(cargo?.idUnitMeasurement === 1 ? true : false);
       setClassificationMerchFlags({
@@ -385,8 +384,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     closePackagingModal();
   };
 
-  const removePackage = (packageId: number) => {
-    setCurrentPackages(currentPackages.filter(p => p.id !== packageId));
+  const removePackage = (packageId: any) => {
+    setCurrentPackages(currentPackages.filter(p => p !== packageId));
   };
 
   const calculateTotals = () => {
@@ -404,7 +403,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const saveMerchandise = () => {
-   
+  
     if (!currentServiceId) return;
 
     if (!merchandiseForm?.merchandiseName.trim()) {
@@ -414,7 +413,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     if(byUnitsMerch && currentPackages.length === 0){
        showWarning('Por favor ingresa las unidades de la mercancía');
        return;
-    }    
+    }      
   
     const {totalVolume = 0, totalWeight = 0 } = calculateTotals();   
     
@@ -426,7 +425,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     }
     
     const newMerchandise: Cargo = {
-      //id: editingMerchandise?.id|| Date.now(),
       merchandiseName: merchandiseForm.merchandiseName,
       merchandiseDescription: merchandiseForm.merchandiseDescription,       
       stowable: merchandiseForm.stowable,
@@ -442,8 +440,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }))}),
       classification: merchandiseForm.classification
     };
-
-    console.log('New Merch: ', newMerchandise)
 
     setServices(services.map(service => {
       if (service.idServiceItem === currentServiceId) {
@@ -798,12 +794,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 volumeTotal: merchandise.volumeTotal,
                 weigthTotal: merchandise.weigthTotal,
                 units: merchandise.units?.map(unitMerch => ({
-                  quantity : unitMerch.quantity,
-                  length: parseInt(unitMerch.length),
-                  width : parseInt(unitMerch.width),
-                  height : parseInt(unitMerch.height),
-                  weight : parseInt(unitMerch.weight),
-                  idUnitCargo : parseInt(unitMerch.idUnitCargo),
+                  quantity : parseInt(unitMerch.quantity),
+                  length: unitMerch.length,
+                  width : unitMerch.width,
+                  height : unitMerch.height,
+                  weight : unitMerch.weight,
+                  idUnitCargo : unitMerch.idUnitCargo,
                   unitCargo : unitMerch.unitCargo,
                 }))
               })), 
@@ -896,6 +892,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               </label>
             <input
               type="number"
+              onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.slice(0, 9);
+              }}
               value={service.shipments[0].origin.zipCode}
               onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment,  {zipCode : parseInt(e.target.value)})}
               className={styles.input}
@@ -909,6 +908,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="number"
+               onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.slice(0, 9);
+              }}
               value={service.shipments[0].destination.zipCode}
               onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, {zipCode : parseInt(e.target.value)})}
               className={styles.input}
@@ -957,6 +959,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="number"
+              onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.slice(0, 9);
+              }}
               value={service.shipments[0].origin.zipCode}
               onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, {zipCode: e.target.value})}
               className={styles.input}
@@ -1004,6 +1009,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="number"
+               onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.slice(0, 9);
+              }}
               value={service.shipments[0].destination.zipCode}
               onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, {zipCode : parseInt(e.target.value)})}
               className={styles.input}
@@ -1154,7 +1162,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <label className={styles.label}>{t('quote.responseDeadline')}</label>
             <input
               type="date"
-              min={new Date().toISOString().split("T")[0]}
+              min= {mode === 'create' ? new Date().toISOString().split("T")[0] : undefined}
               value={formData.responseDeadline}
               onChange={(e) => setFormData({ ...formData, responseDeadline: e.target.value })}
               className={styles.input}
@@ -1169,7 +1177,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="date"
-              max={new Date().toISOString().split("T")[0]}
+              max={mode === 'create'  ? new Date().toISOString().split("T")[0] : undefined}
               value={formData.created}
               onChange={(e) => setFormData({ ...formData, created: e.target.value })}
               className={styles.input}
@@ -1397,7 +1405,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <label className={styles.label}>{t('quote.expectedDeparture')}</label>
                 <input
                   type="date"
-                  min={new Date().toISOString().split("T")[0]}
+                  min={mode === 'create' ? new Date().toISOString().split("T")[0] : undefined}
                   value={formatDateForInput(service.shipments[0].departureDateAproximate || '') }
                   onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'departureDateAproximate', e.target.value)}
                   className={styles.input}
@@ -1770,7 +1778,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             setMerchandiseForm({
                               ...merchandiseForm,
                               classification : exists ? currentClassifications.filter(ccl => 
-                                ccl.idClassificationMerchandise === 7
+                                ccl.idClassificationMerchandise !== 7
                               ) : [ ...currentClassifications,  
                                     { idClassificationMerchandise: 7,
                                       classificationMerchandise: 'Peligrosa'
@@ -1799,7 +1807,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             setMerchandiseForm({
                               ...merchandiseForm,
                               classification : exists ? currentClassifications.filter(ccl => 
-                                ccl.idClassificationMerchandise === 10
+                                ccl.idClassificationMerchandise !== 10
                               ) : [ ...currentClassifications,  
                                     { idClassificationMerchandise: 10,
                                       classificationMerchandise: 'Refrigerada'
@@ -1827,7 +1835,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             setMerchandiseForm({
                               ...merchandiseForm,
                               classification : exists ? currentClassifications.filter(ccl => 
-                                ccl.idClassificationMerchandise === 8
+                                ccl.idClassificationMerchandise !== 8
                               ) : [ ...currentClassifications,  
                                     { idClassificationMerchandise: 8,
                                       classificationMerchandise: 'Sobredimensionada'
@@ -1855,7 +1863,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             setMerchandiseForm({
                               ...merchandiseForm,
                               classification : exists ? currentClassifications.filter(ccl => 
-                                ccl.idClassificationMerchandise === 5
+                                ccl.idClassificationMerchandise !== 5
                               ) : [ ...currentClassifications,  
                                     { idClassificationMerchandise: 5,
                                       classificationMerchandise: 'Granel'
@@ -1883,7 +1891,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             setMerchandiseForm({
                               ...merchandiseForm,
                               classification : exists ? currentClassifications.filter(ccl => 
-                                ccl.idClassificationMerchandise === 11
+                                ccl.idClassificationMerchandise !== 11
                               ) : [ ...currentClassifications,  
                                     { idClassificationMerchandise: 11,
                                       classificationMerchandise: 'General'
@@ -1950,7 +1958,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       )}
                       {classificationMerchFlags.showRefrigeratedMerch && (
                         <div className={styles.formGroup}>
-                          <label className={styles.label}>{t('quote.temperature')}</label>
+                          <label className={styles.label}>* {t('quote.temperature')}</label>
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <input
                               type="number"
@@ -2061,8 +2069,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           </tr>
                         </thead>
                         <tbody>
-                          {currentPackages.map((pkg) => (
-                            <tr key={pkg.id}>
+                          {currentPackages.map((pkg, index = 0) => (
+                            <tr key={index + 1}>
                               <td>{pkg.unitCargo}</td>
                               <td>{pkg.quantity}</td>
                               <td>{pkg.length}</td>
@@ -2072,7 +2080,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               <td>
                                 <button
                                   className={styles.removeRowButton}
-                                  onClick={() => removePackage(pkg.id)}
+                                  onClick={() => removePackage(pkg)}
                                   disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                                   <X size={14} />
                                 </button>
@@ -2150,111 +2158,126 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       {showPackagingModal && (
         <div className={styles.modalOverlay} onClick={closePackagingModal}>
           <div className={styles.modalContentSmall} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>{t('quote.addPackagingModal')}</h2>
-              <button className={styles.closeButton} onClick={closePackagingModal}>
-                <X size={24} />
-              </button>
-            </div>
-            <div className={styles.modalBody}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <span className={styles.required}>*</span>{t('quote.packagingType')}
-                </label>
-                <select
-                  className={styles.select}
-                  id="package-type"
-                  defaultValue="">
-                  <option value="">{t('quote.selectOption')}</option>
-                  <option value={4}>{t('quote.box')}</option>                  
-                  <option value={18}>{t('quote.pallet')}</option>
-                  <option value={15}>{t('quote.sack')}</option>
-                </select>
+            <form onSubmit={(e) => {               
+              e.preventDefault();               
+              if(e.currentTarget.checkValidity()){
+                e.currentTarget.reportValidity();
+                return;
+              }              
+              const selectElement = document.getElementById('package-type') as HTMLSelectElement;
+              const UnitCargo = selectElement.options[selectElement.selectedIndex].text;
+              const quantity = (document.getElementById('package-quantity') as HTMLInputElement).value;
+              const length = (document.getElementById('package-length') as HTMLInputElement).value;
+              const height = (document.getElementById('package-height') as HTMLInputElement).value;
+              const width = (document.getElementById('package-width') as HTMLInputElement).value;
+              const weight = (document.getElementById('package-weight') as HTMLInputElement).value;                
+              if (UnitCargo && quantity && length && height && width && weight) {
+                addPackage({
+                  idUnitCargo : parseInt(selectElement.value),
+                  unitCargo: UnitCargo,
+                  quantity: parseInt(quantity),
+                  length: length,
+                  height: height,
+                  width: width,
+                  weight: weight,
+                });
+              }
+              }}>
+              <div className={styles.modalHeader}>
+                <h2 className={styles.modalTitle}>{t('quote.addPackagingModal')}</h2>
+                <button className={styles.closeButton} onClick={closePackagingModal}>
+                  <X size={24} />
+                </button>
               </div>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <span className={styles.required}>*</span>{t('quote.quantity')}
-                </label>
-                <input
-                  type="number"
-                  className={styles.input}
-                  placeholder="50"
-                  id="package-quantity"/>
-              </div>
-              <div className={styles.formGrid}>
+              <div className={styles.modalBody}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>{t('quote.length')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})
+                    <span className={styles.required}>*</span>{t('quote.packagingType')}
                   </label>
-                  <input
-                    type="number"
-                    step="any"
-                    className={styles.input}
-                    id="package-length"/>
+                  <select                    
+                    className={styles.select}
+                    id="package-type"
+                    required>
+                    <option value="">{t('quote.selectOption')}</option>
+                    <option value={4}>{t('quote.box')}</option>                  
+                    <option value={18}>{t('quote.pallet')}</option>
+                    <option value={15}>{t('quote.sack')}</option>
+                  </select>
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    <span className={styles.required}>*</span>{t('quote.height')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})
+                    <span className={styles.required}>*</span>{t('quote.quantity')}
                   </label>
                   <input
-                    type="number"
-                    step="any"
+                    type="number"                    
                     className={styles.input}
-                    id="package-height"/>
+                    placeholder="50"
+                    id="package-quantity"
+                    required/>
+                </div>
+                <div className={styles.formGrid}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      <span className={styles.required}>*</span>{t('quote.length')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      className={styles.input}
+                      id="package-length"
+                      required/>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      <span className={styles.required}>*</span>{t('quote.height')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      className={styles.input}
+                      id="package-height"
+                      required/>
+                  </div>
+                </div>
+                <div className={styles.formGrid}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      <span className={styles.required}>*</span>{t('quote.width')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      className={styles.input}
+                      id="package-width"
+                      required
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      <span className={styles.required}>*</span>{t('quote.weight')} ({useMetricSystem ? t('quote.kg') : t('quote.lbs')})
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      className={styles.input}
+                      id="package-weight"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
-              <div className={styles.formGrid}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    <span className={styles.required}>*</span>{t('quote.width')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    className={styles.input}
-                    id="package-width"
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    <span className={styles.required}>*</span>{t('quote.weight')} ({useMetricSystem ? t('quote.kg') : t('quote.lbs')})
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    className={styles.input}
-                    id="package-weight"
-                  />
-                </div>
+              <div className={styles.modalFooter}>
+                <button
+                  type='submit'
+                  className={styles.saveModalButton}
+                  onClick={() => {
+                    
+                  }}
+                >
+                  {t('quote.add')}
+                </button>
               </div>
-            </div>
-            <div className={styles.modalFooter}>
-              <button
-                className={styles.saveModalButton}
-                onClick={() => {
-                  const selectElement = document.getElementById('package-type') as HTMLSelectElement;
-                  const UnitCargo = selectElement.options[selectElement.selectedIndex].text;
-                  const quantity = (document.getElementById('package-quantity') as HTMLInputElement).value;
-                  const length = (document.getElementById('package-length') as HTMLInputElement).value;
-                  const height = (document.getElementById('package-height') as HTMLInputElement).value;
-                  const width = (document.getElementById('package-width') as HTMLInputElement).value;
-                  const weight = (document.getElementById('package-weight') as HTMLInputElement).value;                
-                  if (UnitCargo && quantity && length && height && width && weight) {
-                    addPackage({
-                      idUnitCargo : parseInt(selectElement.value),
-                      unitCargo: UnitCargo,
-                      quantity: parseInt(quantity),
-                      length: length,
-                      height: height,
-                      width: width,
-                      weight: weight,
-                    });
-                  }
-                }}
-              >
-                {t('quote.add')}
-              </button>
-            </div>
+            </form>
           </div>
         </div>
       )}
