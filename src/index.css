@@ -1,4 +1,5 @@
 @import 'pages/Catalogs.module.css'; 
+@import 'components/Layout.module.css';
 
 @tailwind base;
 @tailwind components;

@@ -1,3 +1,6 @@
+@tailwind components;
+@layer components{
+
 .layout {
   display: flex;
   height: 100vh;
@@ -62,4 +65,6 @@
   .mainContainer {
     margin-left: 0 !important;
   }
+}
+
 }

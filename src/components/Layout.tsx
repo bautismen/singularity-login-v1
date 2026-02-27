@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
-import styles from './Layout.module.css';
+//import styles from './Layout.module.css';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,11 +13,11 @@ export function Layout({ children, currentRoute, onNavigate }: LayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className={styles.layout}>
+    <div className="layout">
       <Sidebar onCollapsedChange={setCollapsed} currentRoute={currentRoute} onNavigate={onNavigate} />
-      <div className={`${styles.mainContainer} ${collapsed ? styles.collapsed : styles.expanded}`}>
+      <div className={`mainContainer ${collapsed ? "collapsed" : "expanded"}`}>
         <Header />
-        <main className={styles.content}>
+        <main className="content">
           {children}
         </main>
       </div>
