@@ -13,10 +13,40 @@ export interface AcceptedByChannel {
 
 export interface UpcomingDeadline {
   customer: {
+    _id_customer: {
+      $oid: string;
+    };
     customer_name: string;
     customer_category: number;
   };
-  deadlineDate: string;
+  daysRemaining: {
+    $numberLong: string;
+  };
+  _id: {
+    $oid: string;
+  };
+  deadlineDate: {
+    $date: string;
+  };
+  reference_request: string;
+}
+
+export interface NewRequest {
+  customer: {
+    _id_customer: {
+      $oid: string;
+    };
+    customer_name: string;
+    customer_category: number;
+  };
+  _id: {
+    $oid: string;
+  };
+  statusId: number;
+  statusName: string;
+  createdAt: {
+    $date: string;
+  };
   reference_request: string;
 }
 
@@ -24,6 +54,7 @@ export interface QuotationStats {
   statusPercentageCurrentMonth: StatusPercentage[];
   acceptedByChannel: AcceptedByChannel[];
   upcomingDeadlines: UpcomingDeadline[];
+  newRequestsCurrentMonth: NewRequest[];
   totalQuotationsCurrentMonth: number;
 }
 

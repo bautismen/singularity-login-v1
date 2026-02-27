@@ -215,7 +215,12 @@ export function Dashboard() {
                     {dashboardData.quotations?.upcomingDeadlines && dashboardData.quotations.upcomingDeadlines.length > 0 ? (
                       <>
                         {dashboardData.quotations.upcomingDeadlines.slice(0, 3).map((deadline, index) => {
-                          const isOverdue = new Date(deadline.deadlineDate) < new Date();
+                          const deadlineDate = deadline.deadlineDate?.$date || deadline.deadlineDate;
+                          const isOverdue = new Date(deadlineDate) < new Date();
+                          const daysRemaining = deadline.daysRemaining?.$numberLong
+                            ? parseInt(deadline.daysRemaining.$numberLong)
+                            : Math.abs(Math.floor((new Date(deadlineDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
+
                           const medalIcon = deadline.customer.customer_category === 1
                             ? '/gold.png'
                             : deadline.customer.customer_category === 2
@@ -223,7 +228,7 @@ export function Dashboard() {
                             : '/bronze.png';
 
                           return (
-                            <div key={index} className="grid grid-cols-4 gap-4 items-center py-3 border-b border-gray-100 dark:border-gray-700">
+                            <div key={deadline._id?.$oid || index} className="grid grid-cols-4 gap-4 items-center py-3 border-b border-gray-100 dark:border-gray-700">
                               <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 rounded-full bg-teal-100 dark:bg-teal-900 flex items-center justify-center text-teal-600 dark:text-teal-400 text-xs font-medium">
                                   {deadline.customer.customer_name.charAt(0)}
@@ -238,7 +243,7 @@ export function Dashboard() {
                               <div className="text-center">
                                 <span className={`text-sm ${isOverdue ? 'text-red-500 font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
                                   {isOverdue ? '+ ' : ''}
-                                  {Math.abs(Math.floor((new Date(deadline.deadlineDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}d
+                                  {daysRemaining}d
                                 </span>
                               </div>
                               <div className="flex justify-center">

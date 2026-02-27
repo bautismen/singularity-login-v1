@@ -106,6 +106,7 @@ Deno.serve(async (req: Request) => {
       statusPercentageCurrentMonth: [],
       acceptedByChannel: [],
       upcomingDeadlines: [],
+      newRequestsCurrentMonth: [],
       totalQuotationsCurrentMonth: 0,
     };
 
@@ -116,6 +117,7 @@ Deno.serve(async (req: Request) => {
         statusPercentageCurrentMonth: data.statusPercentageCurrentMonth || [],
         acceptedByChannel: data.acceptedByChannel || [],
         upcomingDeadlines: data.upcomingDeadlines || [],
+        newRequestsCurrentMonth: data.newRequestsCurrentMonth || [],
         totalQuotationsCurrentMonth: newRequestsCount,
       };
       console.log("Quotation stats extracted:", quotationStats);
