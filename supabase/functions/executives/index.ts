@@ -6,10 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-//const MONGODB_URI = Deno.env.get("MONGODB_URI");
-//const MONGODB_DATABASE = Deno.env.get("MONGODB_DATABASE");
-const MONGODB_URI = 'mongodb+srv://fox1:modelotx30@arcobitscluster0.w6meunj.mongodb.net/?retryWrites=true&w=majority&appName=ArcobitsCluster0';
-const MONGODB_DATABASE = 'singulatiry_sandbox';
+const MONGODB_URI = Deno.env.get("MONGODB_URI");
+const MONGODB_DATABASE = Deno.env.get("MONGODB_DATABASE");
 
 let cachedClient: MongoClient | null = null;
 
