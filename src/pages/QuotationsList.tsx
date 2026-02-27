@@ -32,6 +32,8 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
   const [selectedExecutive, setSelectedExecutive] = useState<string>('');
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [requestTypeFilters, setRequestTypeFilters] = useState<number[]>([]);
+  const [orderBy, setOrderBy] = useState<string>('');
+
 
   const [isOpenStatus, setIsOpenStatus] = useState(false);
   const [isOpenEjecutivo, setIsOpenEjecutivo] = useState(false);
@@ -40,8 +42,11 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
 
   const [isOpenFecha, setIsOpenFecha] = useState(false);
   const [isOpenTipoSol, setIsOpenTipoSol] = useState(false);
+  const [isOpenOrderBy, setIsOpenOrderBy] = useState(false);
+
   const contentRefFecha = useRef(null);
   const contentRefTipoSol = useRef(null);
+  const contentRefOrderBy = useRef(null);
   const rowRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   const [users, setUsers] = useState<any[]>([]);
@@ -55,7 +60,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
 
   useEffect(() => {
     filterQuotations();
-  }, [quotations, searchQuery, statusFilter, executiveFilter, selectedExecutive, dateFilter, requestTypeFilters,  ]);
+  }, [quotations, searchQuery, statusFilter, executiveFilter, selectedExecutive, dateFilter, requestTypeFilters, orderBy  ]);
 
   useEffect(() => {
     if(highlightId && rowRefs.current[highlightId]){
@@ -180,8 +185,12 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
 
     if (requestTypeFilters.length > 0) {
       filtered = filtered.filter(q => requestTypeFilters.includes(q.idRequestType));
+    }  
+    
+    if(orderBy === "desc"){
+      filtered = filtered.sort((a, b) => b.id.localeCompare(a.id));
     }
-      
+
     setFilteredQuotations(filtered);
   };
 
@@ -191,6 +200,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
     setSelectedExecutive('');
     setDateFilter('all');
     setRequestTypeFilters([]);
+    setOrderBy('');
   };
 
   const handleRequestTypeToggle = (typeId: number) => {
@@ -337,7 +347,9 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
           <div className={styles.filterSection}>
             <div className={styles.headerRow}>
               <h4 className={styles.filterTitle}>{t('quote.requestingExecutive')}</h4>
-              <button onClick={() => setIsOpenEjecutivo(!isOpenEjecutivo)} className={styles.iconbutonlucide}>
+              <button 
+              onClick={() => setIsOpenEjecutivo(!isOpenEjecutivo)} 
+              className={styles.iconbutonlucide}>
                 {isOpenEjecutivo ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
               </button>
             </div>
@@ -349,8 +361,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
                   : "0px",
                 overflow: "hidden",
                 transition: "max-height 0.3s ease",
-              }}
-            >   
+              }}>   
                 <label className={styles.radioLabel}>
                   <input
                     type="radio"
@@ -482,8 +493,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
                   : "0px",
                 overflow: "hidden",
                 transition: "max-height 0.3s ease",
-              }}
-            > 
+              }}> 
               {requestTypes.map((type) => (
                 <label key={type._id} className={styles.checkboxLabel}>
                   <input
@@ -494,6 +504,34 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
                   <span>{type.request_type_name.toUpperCase()}</span>
                 </label>
               ))}
+            </div>
+          </div>
+
+          <div className={styles.filterSection}>
+            <div className={styles.headerRow}>
+              <h4 className={styles.filterTitle}>{t('quote.orderBy')}</h4>
+              <button     
+              onClick={() => setIsOpenOrderBy(!isOpenOrderBy)}          
+              className={styles.iconbutonlucide}>
+              {isOpenOrderBy ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+            </div>
+            <div ref={contentRefOrderBy}
+              style={{
+                maxHeight: isOpenOrderBy ? contentRefOrderBy.current?.scrollHeight + "px" : "0px",
+                overflow:"hidden",
+                transition:  "max-height 0.3s ease"
+              }} >
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="radio"    
+                  value="desc" 
+                  checked={orderBy === 'desc'}            
+                  onChange={(e) => setOrderBy(e.target.value)}
+                />
+               <span>{t('quote.orderDesc')}</span>
+              </label>
+            
             </div>
           </div>
 
@@ -511,6 +549,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
               {t('quote.done')}
             </button>
           </div>
+          
         </div>
       )}
 
@@ -545,8 +584,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
           <button
             className={styles.buttonGroupItemLast}
             disabled
-            title={t('quote.actions')}
-          >
+            title={t('quote.actions')}>
             {t('quote.actions')}
             <ChevronDown size={18} />
           </button>
