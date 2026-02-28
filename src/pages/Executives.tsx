@@ -474,7 +474,7 @@ export function Executives() {
 
       <div className={styles.controls}>
         <div className={styles.searchBar}>
-          <Search className={styles.searchIcon} size={20} />
+          <Search size={20} />
           <input
             type="text"
             placeholder={t('exec.search')}
@@ -483,7 +483,7 @@ export function Executives() {
             className={styles.searchInput}
           />
           {searchTerm && (
-            <button className={styles.clearSearch} onClick={() => setSearchTerm('')}>
+            <button onClick={() => setSearchTerm('')}>
               <X size={20} />
             </button>
           )}
