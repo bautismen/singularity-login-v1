@@ -1,8 +1,7 @@
 .container {
   padding: 1.5rem 2rem;
-  background-color: var(--background);
-  max-width: 100%;
-  margin: 0;
+  background: var(--background);
+  width: 100%;
 }
 
 .required {
@@ -943,7 +942,7 @@
   color: var(--text-primary);
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--hover);
 }
 
 .sectionTitleCollapsible {
@@ -1377,12 +1376,8 @@
 }
 
 .loading {
-  min-height: 61vh; /* o 100vh si quieres pantalla completa */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--background);
-  animation: fadeIn 0.2s ease;
+  text-align: center;
+  padding: 3rem;
 }
 
 @keyframes fadeIn {
@@ -1408,7 +1403,7 @@
 
 .emptyState {
   text-align: center;
-  padding: 8rem 2rem;
+  padding: 4rem 2rem;
   color: #6b7280;
 }
 

@@ -4,8 +4,8 @@
 /* src/pages/Companies.module.css */
 .container {
   padding: 24px;
-  background-color: var(--background);
-  min-height: 100%;
+  background: var(--background);
+  width: 100%;
 }
 
 
@@ -479,7 +479,7 @@
   color: var(--text-primary);
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--border);
 }
 
 .sectionTitleCollapsible {

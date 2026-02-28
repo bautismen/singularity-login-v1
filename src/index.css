@@ -38,6 +38,27 @@
   transition: background-color 9999s ease-in-out 0s;
 }
 
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+}
+/* 
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+*/
+.content {
+  flex: 1;
+  background: var(--background);
+  /* padding: 1.5rem 2rem; */
+} 
+
 @media (max-width: 768px) {
   body {
     overflow-x: hidden;
