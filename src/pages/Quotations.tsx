@@ -86,7 +86,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const [byUnitsMerch, setByUnitsMerch] = useState(true);
   //const [isPort, setIsPort] = useState(false)
   const [formData, setFormData] = useState({
-    referenceRequest: 'QR250901-0001',
+    referenceRequest: 'QR...',
     customerId: '',
     client: '',
     isPriority: false,
@@ -291,7 +291,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const openMerchandiseModal = (serviceId: number, cargo?: Cargo) => {    
-    console.log('OPEN CARGO: ' , cargo);
+    console.log('OPEN CARGO: ' , cargo, formData, services);
     setCurrentServiceId(serviceId);    
     setByUnitsMerch(true);
     setEditingMerchandise(cargo || null);    
@@ -376,6 +376,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const addPackage = (pkg: any) => {
+    console.log(pkg);
     setCurrentPackages([...currentPackages, {
       ...pkg,
       id: Date.now()
@@ -880,6 +881,34 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     }
   };
 
+  const handleSavePackage = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("1")        
+    /*if(e.currentTarget.checkValidity()){
+                e.currentTarget.reportValidity();
+                console.log("2", e.currentTarget)
+                return;
+              }     */ 
+    const selectElement = document.getElementById('package-type') as HTMLSelectElement;
+    const UnitCargo = selectElement.options[selectElement.selectedIndex].text;
+    const quantity = (document.getElementById('package-quantity') as HTMLInputElement).value;
+    const length = (document.getElementById('package-length') as HTMLInputElement).value;
+    const height = (document.getElementById('package-height') as HTMLInputElement).value;
+    const width = (document.getElementById('package-width') as HTMLInputElement).value;
+    const weight = (document.getElementById('package-weight') as HTMLInputElement).value;                
+    if (UnitCargo && quantity && length && height && width && weight) {
+      addPackage({
+        idUnitCargo : parseInt(selectElement.value),
+        unitCargo: UnitCargo,
+        quantity: parseInt(quantity),
+        length: length,
+        height: height,
+        width: width,
+        weight: weight,
+      });
+    } 
+  }
+
   const renderZipCodesOriginDestination =  (service : Service) => {
     const isPort = [1, 2].includes(service.idService);
     switch(true){
@@ -1028,7 +1057,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   if (!date) return "";
   return date.split("T")[0];
 };
-
 
   return (
     <div className={styles.container}>
@@ -2158,31 +2186,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       {showPackagingModal && (
         <div className={styles.modalOverlay} onClick={closePackagingModal}>
           <div className={styles.modalContentSmall} onClick={(e) => e.stopPropagation()}>
-            <form onSubmit={(e) => {               
-              e.preventDefault();               
-              if(e.currentTarget.checkValidity()){
-                e.currentTarget.reportValidity();
-                return;
-              }              
-              const selectElement = document.getElementById('package-type') as HTMLSelectElement;
-              const UnitCargo = selectElement.options[selectElement.selectedIndex].text;
-              const quantity = (document.getElementById('package-quantity') as HTMLInputElement).value;
-              const length = (document.getElementById('package-length') as HTMLInputElement).value;
-              const height = (document.getElementById('package-height') as HTMLInputElement).value;
-              const width = (document.getElementById('package-width') as HTMLInputElement).value;
-              const weight = (document.getElementById('package-weight') as HTMLInputElement).value;                
-              if (UnitCargo && quantity && length && height && width && weight) {
-                addPackage({
-                  idUnitCargo : parseInt(selectElement.value),
-                  unitCargo: UnitCargo,
-                  quantity: parseInt(quantity),
-                  length: length,
-                  height: height,
-                  width: width,
-                  weight: weight,
-                });
-              }
-              }}>
+            <form onSubmit={handleSavePackage}>
               <div className={styles.modalHeader}>
                 <h2 className={styles.modalTitle}>{t('quote.addPackagingModal')}</h2>
                 <button className={styles.closeButton} onClick={closePackagingModal}>
