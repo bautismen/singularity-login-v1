@@ -414,8 +414,23 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     if(byUnitsMerch && currentPackages.length === 0){
        showWarning('Por favor ingresa las unidades de la mercancía');
        return;
-    }      
-  
+    }
+
+    const dangerous = merchandiseForm.classification?.find(c => c.idClassificationMerchandise === 7);
+
+    if(dangerous && 
+      ((dangerous?.imo == null || dangerous?.imoDescription == undefined ) || 
+      (dangerous?.un == null || dangerous?.un == '' ))) {
+      showWarning('Por favor ingresa IMO y UN');
+       return;
+    }
+
+    const refrigerated = merchandiseForm.classification?.find(c => c.idClassificationMerchandise === 10);
+    if(refrigerated && (refrigerated?.temperature == null )) {
+      showWarning('Por favor ingresa los grados de temperatura');
+       return;
+    }
+
     const {totalVolume = 0, totalWeight = 0 } = calculateTotals();   
     
     if (merchandiseForm.classification.length === 0) {
@@ -441,6 +456,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }))}),
       classification: merchandiseForm.classification
     };
+    console.log(newMerchandise)
 
     setServices(services.map(service => {
       if (service.idServiceItem === currentServiceId) {
@@ -1421,7 +1437,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     }
                   }
                   className={styles.select}
-                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
+                  required>
                   <option value="">{t('quote.select')}</option>
                   <option value={1}>{t('quote.doorToDoor')}</option>
                   <option disabled={[3, 4, 10, 11].includes(service.idService)} value={2}>{t('quote.portToPort')}</option>
@@ -1938,7 +1955,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       {classificationMerchFlags.showDangerouseMerch && (
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <div className={styles.formGroup}>
-                            <label className={styles.label}>{t('quote.imo')}</label>
+                            <label className={styles.label}>*{t('quote.imo')}</label>
                             <select
                               className={styles.select}
                               value={merchandiseForm.classification?.find(classification => classification.idClassificationMerchandise === 7)?.imo }
@@ -1963,7 +1980,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             </select>
                           </div>
                           <div className={styles.formGroup}>
-                            <label className={styles.label}>{t('quote.un')}</label>
+                            <label className={styles.label}>*{t('quote.un')}</label>
                             <input
                               type="number"
                               placeholder="19"
@@ -2034,7 +2051,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <input
                       type="checkbox"                  
                       checked={byUnitsMerch}                  
-                      onChange={(e) =>  setByUnitsMerch(!byUnitsMerch) }
+                      onChange={(e) => { 
+                        setByUnitsMerch(!byUnitsMerch)
+                        if(byUnitsMerch === false) {
+                          setCurrentPackages([]);
+                        }}}
                       className={styles.checkbox}
                       disabled={mode === 'view' || formData.idStatusRequest >= 2}/> 
                   <label className={styles.checkboxLabel}> Por unidades </label>                  
@@ -2215,7 +2236,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <input
                     type="number"                    
                     className={styles.input}
-                    placeholder="50"
+                    placeholder="5"
                     id="package-quantity"
                     required/>
                 </div>
