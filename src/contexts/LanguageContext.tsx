@@ -5,7 +5,13 @@ type Language = 'es' | 'en';
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (
+    key: string,
+    params?: {
+      values?: Record<string, string | number>;
+      upper?: boolean;
+    }
+  ) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -550,6 +556,24 @@ const translations = {
     'modal.title': 'Está a punto de eliminar este {name}.',
     'filter.restore': 'Restaurar',
     'filter.done': 'Hecho',
+    'dash.title': 'Panel',
+    'dash.subtitle': 'Monitoreo de rendimiento de clientes y estados de cotización.',
+    'dash.CustomerCategorization':'Categorización de Clientes',
+    'dash.CustomerCategorization.total': 'Total {count} clientes',
+    'dash.quotationrequest': 'Solicitar cotización',
+    'dash.statementofContributions': 'Estado de Cotizaciones',
+    'dash.quotes.urgent': 'Cotizaciones Urgentes',
+    'dash.quotes.recent': 'Cotizaciones Recientes',
+    'dash.quotes.records': 'Mostrando {record} de {records} registros',
+    'dash.table.col.client': 'Cliente',
+    'dash.table.col.type': 'Tipo',
+    'dash.table.col.expiration': 'Vencimiento',
+    'dash.table.col.status':'Estado',
+    'dash.table.col.actions': 'Acciones',
+    'dash.table.viewDetail': 'Detalle',
+    'dash.performanceperchannel.title':'Rendimiento por canal',
+    'dash.performanceperchannel.subtitle':'Solicitudes Aceptadas',
+	  'dash.performanceperchannel.adress':'Dirección'
   },
   en: {
     'app.title': 'Singularity',
@@ -1090,6 +1114,24 @@ const translations = {
     'modal.message': 'Do you wish to continue with the removal?',
     'filter.restore': 'Restore',
     'filter.done': 'Done',
+	  'dash.title': 'Dashboard',
+	  'dash.subtitle': 'Monitoring customer performance and quote statuses.',
+	  'dash.CustomerCategorization':'Customer Categorization',
+	  'dash.CustomerCategorization.total': 'Total {count} customer ',
+	  'dash.quotationrequest': 'Quotation request',
+	  'dash.statementofContributions': 'Statement of Contributions',
+	  'dash.quotes.urgent': 'Urgent Quotes',
+	  'dash.quotes.recent': 'Recent Quotes',
+	  'dash.quotes.records': 'Showing {record} of {records} records',
+	  'dash.table.col.client': 'Client',
+	  'dash.table.col.type': 'Type',
+	  'dash.table.col.expiration': 'Expiration',
+    'dash.table.col.status':'Status',
+	  'dash.table.col.actions': 'Actions',
+	  'dash.table.viewDetail': 'Detail',
+	  'dash.performanceperchannel.title':'Performance by channel',
+	  'dash.performanceperchannel.subtitle':'Applications Accepted',
+	  'dash.performanceperchannel.adress':'Address',    
   },
 };
 
@@ -1110,8 +1152,32 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('language', lang);
   };
 
-  const t = (key: string): string => {
-    return translations[language][key as keyof typeof translations['es']] || key;
+  const t = (key: string,
+     params?: {
+      values?: Record<string, string | number>;
+      upper?: boolean;
+    }
+  ): string => {
+    //return translations[language][key as keyof typeof translations['es']] || key;
+    let text =
+      translations[language][
+        key as keyof typeof translations['es']
+      ] || key;
+
+    if (params?.values) {
+      Object.keys(params.values).forEach((variable) => {
+        text = text.replace(
+          new RegExp(`{${variable}}`, 'g'),
+          String(params.values?.[variable])
+        );
+      });
+    }
+
+    if (params?.upper) {
+      text = text.toUpperCase();
+    }
+
+    return text;
   };
 
   if (!mounted) return <>{children}</>;

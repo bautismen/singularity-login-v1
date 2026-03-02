@@ -42,6 +42,27 @@ export function QuotationsManager() {
     setViewMode('list');
   };
 
+  /* Al cargar la página, verificamos si hay una cotización específica que se deba abrir
+  * esto se puede establecer desde otras partes de la aplicación al guardar el ID de la cotización en sessionStorage 
+  * con la clave 'quotationToOpen'. Si se encuentra un ID, se cambia el modo de vista a 'view'
+  * para mostrar esa cotización directamente. Después de intentar abrir la cotización,
+  * se limpia el valor de sessionStorage para evitar comportamientos inesperados en futuras visitas a esta página.
+  * un ejemplo cuando se invoca desde el dashboard al hacer click ver mas en una cotización urgente o reciente
+  */
+  useEffect(() => {
+    try {
+      const ref_id = sessionStorage.getItem('quotationToOpen');
+      if (ref_id) {
+        setSelectedQuotationId(ref_id);
+        setViewMode('view');
+      }
+    } catch {
+      // Ignorado intencionalmente: este error no afecta la UI
+    } finally {
+      try {sessionStorage.removeItem('quotationToOpen'); } catch { /** ignorado */ }
+    }
+  }, []);
+
   if (viewMode === 'list') {
     return (
       <QuotationsList
