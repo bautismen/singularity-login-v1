@@ -499,7 +499,7 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  color: #000000;
+  color: var(--text-secondary);
   font-size: 1.2rem;
 }
 
