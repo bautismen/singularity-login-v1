@@ -14,12 +14,12 @@
 .title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
 }
 
-.dark .title {
+/* .dark .title {
   color: #6b7280;
-}
+} */
 
 .backButton {
   padding: 0.75rem 1rem;
@@ -140,30 +140,30 @@
 }
 
 .section {
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 0.75rem;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.dark .section {
+/* .dark .section {
   background-color: #1f2937;
-}
+} */
 
 .sectionTitle {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--border);
 }
 
-.dark .sectionTitle {
+/* .dark .sectionTitle {
   color: #d1d5db;
   border-bottom-color: #374151;
-}
+} */
 
 .formGrid {
   display: grid;
@@ -180,12 +180,12 @@
 .label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-secondary);
 }
 
-.dark .label {
+/* .dark .label {
   color: #d1d5db;
-}
+} */
 
 .labelInfoRed {
   display: flex;
@@ -206,10 +206,11 @@
 
 .input {
   padding: 0.625rem 0.875rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  color: #1f2937;
+  color: var(--text-primary);
+  background: var(--surface);
   transition: all 0.15s ease;
 }
 
@@ -219,11 +220,11 @@
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
-.dark .input {
+/* .dark .input {
   background-color: #374151;
   border-color: #4b5563;
   color: white;
-}
+} */
 
 .dark .input:focus {
   border-color: #14b8a6;
@@ -231,11 +232,11 @@
 
 .select {
   padding: 0.625rem 0.875rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  color: #1f2937;
-  background-color: white;
+  color: var(--text-primary);
+  background: var(--surface);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -312,7 +313,7 @@
 .checkbox {
   width: 1.125rem;
   height: 1.125rem;
-  border: 2px solid #d1d5db;
+  border: 2px solid var(--border);
   border-radius: 0.25rem;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -323,15 +324,15 @@
   border-color: #14b8a6;
 }
 
-.dark .checkbox {
+/* .dark .checkbox {
   border-color: #4b5563;
   background-color: #374151;
-}
+} */
 
-.dark .checkbox:checked {
+/* .dark .checkbox:checked {
   background-color: #14b8a6;
   border-color: #14b8a6;
-}
+} */
 
 .toggle {
   position: relative;
@@ -364,8 +365,8 @@
 }
 
 .serviceCard {
-  background-color: #f9fafb;
-  border: 2px solid #e5e7eb;
+  background-color: var(--surface);
+  border: 2px solid var(--border);
   border-radius: 0.75rem;
   padding: 1.5rem;
   margin-bottom: 1rem;
@@ -465,18 +466,18 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background-color: white;
-  border: 1.5px solid #e5e7eb;
+  background-color: var(--hover);
+  border: 1.5px solid var(--border);
   border-radius: 9999px;
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .serviceChip:hover {
   border-color: #14b8a6;
-  background-color: #f0fdfa;
+  background-color: var(--background);
 }
 
 .serviceChip.selected {
@@ -503,10 +504,11 @@
 
 .textarea {
   padding: 0.625rem 0.875rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  color: #1f2937;
+  color: var(--text-secondary);
+  background: var(--surface);
   resize: vertical;
   min-height: 80px;
   font-family: inherit;
@@ -532,15 +534,15 @@
 }
 
 .merchandiseSection {
-  background-color: #f9fafb;
+  background-color: var(--surface);
   border-radius: 0.5rem;
   padding: 1rem;
   margin-top: 1rem;
 }
 
-.dark .merchandiseSection {
+/* .dark .merchandiseSection {
   background-color: #111827;
-}
+} */
 
 .merchandiseHeader {
   display: flex;
@@ -572,8 +574,8 @@
 .addServiceButton {
   width: 100%;
   padding: 0.75rem;
-  background-color: white;
-  border: 2px dashed #d1d5db;
+  background-color: var(--surface);
+  border: 2px dashed var(--border);
   border-radius: 0.75rem;
   color: #14b8a6;
   font-weight: 500;
@@ -586,14 +588,14 @@
 }
 
 .addServiceButton:hover {
-  background-color: #f0fdfa;
+  background-color: var(--hover);
   border-color: #14b8a6;
 }
 
-.dark .addServiceButton {
+/* .dark .addServiceButton {
   background-color: #111827;
   border-color: #4b5563;
-}
+} */
 
 .dark .addServiceButton:hover {
   background-color: #1f2937;
@@ -603,7 +605,7 @@
 .subsectionTitle {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--text-secondary);
   letter-spacing: 0.05em;
   margin: 0 0 1rem 0;
   text-transform: uppercase;
@@ -868,7 +870,7 @@
 }
 
 .modalContent {
-  background: white;
+  background: var(--background);
   border-radius: 0.75rem;
   max-width: 900px;
   width: 100%;
@@ -886,7 +888,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
 }
 
 .dark .modalHeader {
@@ -896,13 +898,13 @@
 .modalTitle {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   margin: 0;
 }
 
-.dark .modalTitle {
+/* .dark .modalTitle {
   color: white;
-}
+} */
 
 .closeButton {
   padding: 0.5rem;
@@ -944,7 +946,7 @@
 
 .saveModalButton {
   padding: 0.75rem 2rem;
-  background: #14b8a6;
+  background: #038C7F;
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -955,7 +957,7 @@
 }
 
 .saveModalButton:hover {
-  background: #0f9d8f;
+  background: #03738C;
 }
 
 .addPackageButton {
@@ -990,14 +992,15 @@
   position: relative;
   width: 48px;
   height: 24px;
-  background: #e5e7eb;
+  background: #b5b5b6;
   border-radius: 12px;
   cursor: pointer;
   transition: background-color 0.2s;
+  border: 1px solid var(--border);
 }
 
 .toggleSwitch.active {
-  background: #10b981;
+  background: #038C7F;
 }
 
 .toggleThumb {
@@ -1024,13 +1027,13 @@
 
 .checkboxLabel {
   font-size: 0.9375rem;
-  color: #1f2937;
+  color: var(--text-secondary);
   cursor: pointer;
 }
 
-.dark .checkboxLabel {
+/* .dark .checkboxLabel {
   color: white;
-}
+} */
 
 .simpleTable {
   width: 100%;
@@ -1040,18 +1043,18 @@
 
 .simpleTable thead {
   background: transparent;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
 }
 
-.dark .simpleTable thead {
+/* .dark .simpleTable thead {
   border-bottom-color: #374151;
-}
+} */
 
 .simpleTable th {
   padding: 0.625rem 0.75rem;
   text-align: left;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--text-tertiary);
   font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1139,7 +1142,7 @@
 }
 
 .addItemButton:hover {
-  background: #f0fdfa;
+  background: var(--background);
   border-style: solid;
 }
 
@@ -1266,7 +1269,7 @@
   gap: 1.5rem;
   margin-top: 1rem;
   padding: 1.5rem;
-  background: #f9fafb;
+  background: var(--surface);
   border-radius: 0.5rem;
 }
 
@@ -1285,8 +1288,8 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--background);
+  border: 1px solid var(--border);
   border-radius: 0.375rem;
   cursor: pointer;
   transition: all 0.15s;
@@ -1309,24 +1312,24 @@
 
 .classificationLabel {
   font-size: 0.875rem;
-  color: #1f2937;
+  color: var(--text-secondary);
   cursor: pointer;
   flex: 1;
 }
 
-.dark .classificationLabel {
+/* .dark .classificationLabel {
   color: white;
-}
+} */
 
 .addPackageButtonIcon {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: #038C7F;
+  color: white;
+  border: 1px solid var(--border);
   border-radius: 0.375rem;
-  color: #14b8a6;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -1334,19 +1337,18 @@
 }
 
 .addPackageButtonIcon:hover {
-  background: #f0fdfa;
-  border-color: #14b8a6;
+  background-color: #03738C;
 }
 
-.dark .addPackageButtonIcon {
+/* .dark .addPackageButtonIcon {
   background: #374151;
   border-color: #4b5563;
-}
+} */
 
-.dark .addPackageButtonIcon:hover {
+/* .dark .addPackageButtonIcon:hover {
   background: rgba(20, 184, 166, 0.1);
   border-color: #14b8a6;
-}
+} */
 
 .modalFooterInfo {
   display: flex;
@@ -1477,7 +1479,7 @@
 }
 
 .modalContentSmall {
-  background: white;
+  background: var(--background);
   border-radius: 0.75rem;
   max-width: 500px;
   width: 90%;
