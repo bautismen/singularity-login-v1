@@ -104,7 +104,7 @@
 }
 
 .navButton.active {
-  background-color: #14b8a6;
+  background-color: var(--backcolor);
   color: white;
 }
 
@@ -144,7 +144,7 @@
 }
 
 .footerButton.active {
-  background-color: #14b8a6;
+  background-color: var(--backcolor);
   color: white;
 }
 
@@ -205,12 +205,12 @@
 }
 
 .submenuButton:hover {
-  background-color: #1e3548;
+  background-color: var(--backcolor);
   color: #d1d5db;
 }
 
 .submenuButton.active {
-  background-color: #14b8a6;
+  background-color: var(--backcolor);
   color: white;
 }
 

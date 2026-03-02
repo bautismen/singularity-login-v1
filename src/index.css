@@ -13,6 +13,7 @@
   --text-primary: #111827;
   --text-secondary: #6b7280;
   --text-tertiary: #9ca3af;
+  --backcolor: #038C7F;
   background: linear-gradient(135deg, 
   rgba(3, 115, 140, 1) 0%, 
   rgba(3, 127, 140, 1) 40%, 
@@ -28,6 +29,7 @@
   --text-primary: #f9fafb;
   --text-secondary: #d1d5db;
   --text-tertiary: #9ca3af;
+  --backcolor: #03738C;
 }
 
 .input-login-autofill:-webkit-autofill,
