@@ -461,7 +461,7 @@ export function ControlsPricing() {
         </div>
 
         <div className={styles.searchBar}>
-          <Search size={20} className={styles.searchIcon} />
+          <Search size={20} />
           <input
             type="text"
             placeholder={t('ctrlpricing.search')}

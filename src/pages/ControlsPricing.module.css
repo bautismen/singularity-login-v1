@@ -23,13 +23,13 @@
 .title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
   margin: 0;
 }
 
-.dark .title {
+/* .dark .title {
   color: #6b7280;
-}
+} */
 
 .required {
   color: #ef4444;
@@ -152,46 +152,50 @@
 }
 
 .searchBar {
-  position: relative;
-  padding: 1.5rem 2rem;
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  transition: border-color 0.2s;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  color: var(--text-secondary);
 }
 
-.dark .searchBar {
+/* .dark .searchBar {
   background: #1f2937;
   border-bottom-color: #374151;
-}
+} */
 
 .searchIcon {
   position: absolute;
   left: 2.75rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #9ca3af;
+  color: var(--text-primary);
 }
 
 .searchInput {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  background: #f9fafb;
-  color: #111827;
-  transition: all 0.2s;
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 1rem;
+  outline: none;
 }
 
-.dark .searchInput {
+/* .dark .searchInput {
   background: #111827;
   border-color: #374151;
   color: #f9fafb;
-}
+} */
 
 .searchInput:focus {
   outline: none;
   border-color: #038C7F;
-  background: white;
 }
 
 .dark .searchInput:focus {
@@ -228,8 +232,8 @@
 }
 
 .card {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 0.75rem;
   padding: 1.5rem;
   display: flex;
@@ -287,7 +291,7 @@
 .companyName {
   font-size: 1rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
   margin: 0;
   display: flex;
   align-items: center;
@@ -392,12 +396,12 @@
 .countries {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #111827;
+  color: var(--text-secondary);
 }
 
-.dark .countries {
+/* .dark .countries {
   color: #f9fafb;
-}
+} */
 
 .category {
   font-size: 0.75rem;
@@ -416,13 +420,13 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  color: #000000;
+  color: var(--text-primary);
   font-size: 1.2rem;
 }
 
-.dark .dateInfo {
+/* .dark .dateInfo {
   color: #9ca3af;
-}
+} */
 
 .dateInfoRed {
   display: flex;
@@ -448,7 +452,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.875rem;
 }
 
@@ -490,7 +494,7 @@
   flex-direction: column;
   gap: 0.75rem;
   padding: 1rem;
-  background: #f9fafb;
+  background: var(--background);
   border-radius: 0.5rem;
 }
 
@@ -523,13 +527,13 @@
 
 .assignedName {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-tertiary);
   white-space: nowrap;
 }
 
-.dark .assignedName {
+/* .dark .assignedName {
   color: #9ca3af;
-}
+} */
 
 .controlNumberCenter {
   display: flex;
@@ -665,23 +669,23 @@
   justify-content: center;
   padding: 4rem 2rem;
   text-align: center;
-  color: #6b7280;
+  color: var(--text-tertiary);
 }
 
-.dark .emptyState {
+/* .dark .emptyState {
   color: #9ca3af;
-}
+} */
 
 .emptyState h3 {
   font-size: 1.25rem;
   font-weight: 600;
   margin: 0 0 0.5rem 0;
-  color: #111827;
+  color: var(--text-primary);
 }
 
-.dark .emptyState h3 {
+/* .dark .emptyState h3 {
   color: #f9fafb;
-}
+} */
 
 .emptyState p {
   font-size: 1rem;
@@ -1841,8 +1845,8 @@
 
 .filtersPanel {
   width: 280px;
-  background: white;
-  border-right: 1px solid #e5e7eb;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
   overflow-y: auto;
   padding: 1.5rem;
   display: flex;
@@ -1853,7 +1857,7 @@
 .filtersPanelHeader h3 {
   font-size: 1rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -1866,10 +1870,14 @@
 .filterTitle {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-secondary);
   margin: 0 0 0.5rem 0;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #e5e7eb;
+}
+
+.iconbutonlucide {
+  color: var(--text-secondary);
 }
 
 .headerRow {
@@ -1884,7 +1892,7 @@
   gap: 0.5rem;
   cursor: pointer;
   font-size: 0.875rem;
-  color: #4b5563;
+  color: var(--text-tertiary);
 }
 
 .radioLabel input[type="radio"] {
@@ -1894,7 +1902,7 @@
 }
 
 .radioLabel:hover {
-  color: #1f2937;
+  color: var(--text-secondary);
 }
 
 .checkboxLabel {
