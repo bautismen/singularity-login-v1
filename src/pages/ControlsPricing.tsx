@@ -75,7 +75,22 @@ export function ControlsPricing() {
         showInfo(data.message);
         return;
       }
-      let filtered = [...data.data];    
+      let filtered = [...data.data].sort((a, b) => {
+
+        const hasControl = item =>
+          item.assignedTo?.some(x => x.pricingControlNumbers?.length > 0) ? 1 : 0;
+
+        const rank = item =>
+          (hasControl(item) * 2) + (item.priority ? 0 : 1);
+
+        // 1️⃣ Ordenar por idStatusRequest ASCENDENTE
+        const statusCompare = a.idStatusRequest - b.idStatusRequest;
+        if (statusCompare !== 0) return statusCompare;
+
+        // 2️⃣ Luego aplicar tu orden principal
+        return rank(a) - rank(b);
+
+      });
       const excludedEmails = [
         "maria.cervantes@kromlogistica.com",
         "estela.guerrero@kromlogistica.com",
