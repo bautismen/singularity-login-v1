@@ -161,7 +161,7 @@ const toggleFilters = () => {
   setShowFilters(prev => {
     const willClose = prev;
 
-    // 🔥 Si el panel se está cerrando → limpiar todo
+    // Si el panel se está cerrando → limpiar todo
     if (willClose) {
       setReferenceFilter("");
       setSeccionFilter("");
@@ -481,20 +481,33 @@ const uploadFiles = async () => {
         );
       } catch (err: any) {
 
-        if (err.name === "AbortError") throw err;
+          if (err.name === "AbortError") {
+            setUploading(false);
+            return;
+          }
 
-        setUploadQueue(prev =>
-          prev.map(item =>
-            item.id === currentId
-              ? { ...item, status: "error", progress: 100 }
-              : item
-          )
-        );
+          setUploadQueue(prev =>
+            prev.map(item =>
+              item.id === currentId
+                ? { ...item, status: "error", progress: 100 }
+                : item
+            )
+          );
 
-        showError(
-          t('dig.fileUploadError').replace('{{name}}', file.name)
-        );
-      }
+          let errorMessage = t('dig.fileUploadError');
+
+          try {
+            const parsed = JSON.parse(err.message);
+            errorMessage = parsed.messageStatus || errorMessage;
+          } catch {
+            errorMessage = err.message || errorMessage;
+          }
+
+          showError(errorMessage);
+
+          setUploading(false);
+          abortControllerRef.current = null;
+        }
     }
 
     if (!abortControllerRef.current?.signal.aborted) {
@@ -704,7 +717,13 @@ const filteredDocuments = recentDocuments.filter(doc =>
             </button>
 
             <button
-              onClick={() => setShowUploadModal(true)}
+              onClick={() => {
+                setShowUploadModal(true);
+
+                // limpiar selección al abrir modal
+                setSelectedDocuments([]);
+                setSelectAll(false);
+              }}
               className={styles.headerButton}
               title={t('dig.uploadFiles')}
             >
@@ -945,7 +964,7 @@ const filteredDocuments = recentDocuments.filter(doc =>
                 onChange={(e) =>
                   setDocumentTypeUpload(e.target.value)
                 }
-                className={styles.select}
+                className={styles.selectupload}
               >
                 <option value="">{t('dig.documentType')}</option>
                 {documentTypes.map(d => (
@@ -962,7 +981,7 @@ const filteredDocuments = recentDocuments.filter(doc =>
                     e.target.value ? Number(e.target.value) : ""
                   )
                 }
-                className={styles.select}
+                className={styles.selectupload}
               >
                 <option value="">{t('dig.section')}</option>
 
@@ -976,7 +995,7 @@ const filteredDocuments = recentDocuments.filter(doc =>
                 ))}
               </select>
 
-              {/* 🔥 BOTÓN AQUÍ */}
+              {/* BOTÓN AQUÍ */}
               <div className={styles.tooltipUploadWrapper}>
                 <button
                   className={styles.cloudUploadButton}

@@ -79,7 +79,7 @@
 }
 
 /* ===============================
-  LISTADO DOCUMENTOS
+   LISTADO DOCUMENTOS
 ================================ */
 .recentTitle {
   font-size: 16px;
@@ -93,7 +93,7 @@
   gap: 12px;
 }
 .recentCard {
-  background: white;
+  background: var(--hover);
   border-radius: 12px;
   border: 1px solid #e5e7eb;
   padding: 12px 18px;
@@ -150,14 +150,11 @@
 .fileName {
   font-weight: 600;
   font-size: 14px;
-
   max-width: 280px;
-
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
-  color: #111827;
+  color: var(--text-primary);;
 }
 
 .fileMeta {
@@ -231,7 +228,7 @@
   max-width: 95%;
   max-height: 85vh;
   min-height: 260px;
-  background: white;
+  background: var(--background);
   border-radius: 20px;
   padding: 32px;
   box-sizing: border-box;
@@ -261,6 +258,7 @@
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .modalHeader button {
@@ -278,11 +276,7 @@
   border: 2px dashed rgba(3, 140, 127, 0.25);
   border-radius: 22px;
 
-  background: linear-gradient(
-    145deg,
-    #fafafa,
-    #f1f5f9
-  );
+  background: var(--surface);
 
   padding: 28px 20px;
 
@@ -350,7 +344,7 @@
 
 .dropZone p {
   font-size: 15px;
-  color: #374151;
+  color:var(--text-primary);
   font-weight: 500;
   margin: 0;
 }
@@ -358,24 +352,22 @@
 .dropTitle {
   font-size: 16px;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary) !important;
   margin-bottom: 6px;
 }
 
 .dropSubtitle {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-secondary) !important;
 }
-
 /* ===============================
    INPUTS UPLOAD
 ================================ */
-
 .uploadFieldsModal {
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
-  align-items: center; 
+  align-items: center;
 }
 
 .uploadFieldsModal input,
@@ -384,26 +376,25 @@
   min-width: 200px;
   padding: 0 12px;
   font-size: 0.85rem;
-
-  background-color: white !important;
-  color: #111827 !important;
-  border: 1px solid #d1d5db;
+  background-color: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
   border-radius: 10px;
 
   transition: all 0.2s ease;
-
 }
 
+/* Opciones del select respetando tema */
 .uploadFieldsModal select option {
-  background-color: white !important;
-  color: #111827 !important;
+  background-color: var(--surface);
+  color: var(--text-primary);
 }
 
 .uploadFieldsModal input:focus,
 .uploadFieldsModal select:focus {
   outline: none;
   border-color: #038C7F;
-  background: white;
+  background: var(--surface);
   box-shadow: 0 0 0 3px rgba(3, 140, 127, 0.15);
 }
 
@@ -617,31 +608,60 @@
   font-size: 14px;
 
   border-radius: 8px;
-  border: 1px solid #e4ecef;
-  background: #ffffff;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
 
-  color: #1f2937;
   outline: none;
 
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 /* Placeholder */
 .executiveSelect::placeholder {
-  color: #9aa6b2;
+  color: var(--text-tertiary);
   font-weight: 400;
 }
 
-/* Hover (muy sutil) */
-.executiveSelect:hover {
-  border-color: #038C7F;
+/* Options tema */
+.executiveSelect option {
+  background: var(--surface);
+  color: var(--text-primary);
 }
 
-/* Focus estilo Drive */
-.executiveSelect:focus {
-  border-color: #03738C;
-  box-shadow: 0 0 0 2px rgba(3, 115, 140, 0.15);
+/* Hover */
+.executiveSelect:hover {
+  border-color: var(--border);
 }
+
+/* Focus */
+.executiveSelect:focus {
+  border-color: var(--backcolor);
+  box-shadow: 0 0 0 2px rgba(3,140,127,0.15);
+}
+
+.selectupload {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+/* Mantener el tema en las opciones */
+.selectupload option {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.selectupload:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.iconbutonlucide{
+  color: var(--text-tertiary);
+}
+
 @keyframes slideInLeft {
   from {
     transform: translateX(-15px);
@@ -665,7 +685,7 @@
 ================================ */
 
 .filterSection {
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
   padding-bottom: 14px;
 }
 
@@ -752,23 +772,18 @@
 .resetButton {
   background: transparent;
   border: none;
-
   padding: 8px 12px;
   border-radius: 8px;
-
   font-size: 14px;
   font-weight: 500;
-
-  color: #374151;
+  color: var(--text-primary);
   cursor: pointer;
-
   transition: background 0.15s ease;
 }
 
 .resetButton:hover {
-  background: #f3f4f6;
+  background: var(--hover);
 }
-
 /* Apply estilo Google */
 
 .applyButton {
@@ -901,7 +916,7 @@
   margin-bottom: 14px;
   font-size: 15px;
   font-weight: 600;
-  color: #03738C;
+  color: #038C7F;
 }
 
 .modalFileCard {
@@ -909,33 +924,34 @@
   justify-content: space-between;
   align-items: center;
 
-  padding: 6px 8px;      /* más compacto */
+  padding: 6px 8px;
   margin-bottom: 6px;
 
-  border-radius: 6px;     /*  menos redondeado */
+  border-radius: 6px;
 
+  /* Gradient adaptado al tema oscuro */
   background: linear-gradient(
     135deg,
-    #e9f2f3,
-    #9dedf8
+    var(--surface),
+    var(--backcolor)
   );
 
-  color: white;
-  font-size: 10px;        /* texto más pequeño */
+  color: var(--text-primary);
+  font-size: 10px;
   font-weight: 500;
 
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
-/* ✨ EFECTO FLOTAR */
+/* Hover */
 .modalFileCard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(3, 166, 120, 0.35);
+  box-shadow: 0 10px 20px rgba(3, 115, 140, 0.25);
   background: linear-gradient(
     135deg,
-    #e9f2f3,
-    #9dedf8
+    var(--surface),
+    var(--hover)
   );
 }
 
@@ -944,6 +960,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 85%;
+  color: var(--text-primary);
 }
 
 .modalRemoveFile {
@@ -1007,7 +1024,7 @@
   max-height: 60vh;
   overflow-y: auto;
 
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 14px;
   padding: 16px;
 
@@ -1026,59 +1043,79 @@
   font-weight: 600;
   margin-bottom: 14px;
   font-size: 14px;
+  color: var(--text-primary)
 }
 
-/* Item container */
 .uploadItem {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  transition: all 0.2s ease;
 }
 
-/* Top row */
 .uploadItemTop {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* File name */
+/* Nombre del archivo */
 .uploadFileName {
+  color: var(--text-primary);
   font-size: 13px;
-  font-weight: 600;
-
-  background: #f5f6f3;
-  padding: 4px 8px;
-  border-radius: 6px;
-
-  color: #111827;
-
-  max-width: 220px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 500;
 }
 
-/* Progress text */
+/* Status container */
+.uploadStatus {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Progress porcentaje */
 .progressText {
   font-size: 12px;
-  font-weight: 500;
-  color: #6b7280;
+  color: var(--text-secondary);
+}
+
+/* Badge estados */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.successBadge {
+  background: var(--backcolor);
+  color: white;
+}
+
+.errorBadge {
+  background: #ef4444;
+  color: white;
 }
 
 /* Progress bar */
 .progressBar {
+  margin-top: 8px;
   height: 6px;
-  background: #e5e7eb;
   border-radius: 6px;
+  background: var(--border);
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #038C7F, #0d9488);
-  transition: width 0.3s ease;
+  width: 0%;
+  background: var(--backcolor);
+  transition: width 0.2s ease;
 }
 
 /* Status badges */
@@ -1130,19 +1167,13 @@
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-
   width: 520px;
-
-  background: white;
-
+  background: var(--hover);
   border-radius: 16px;
-
   padding: 14px 18px;
-
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   box-shadow:
     0 20px 50px rgba(0,0,0,0.18),
     0 0 0 1px rgba(0,0,0,0.05);
@@ -1180,7 +1211,7 @@
 .bulkText {
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-primary);
 }
 
 /* ACTIONS */
@@ -1272,7 +1303,7 @@
   font-size: 14px;
   font-weight: 500;
 
-  color: #374151;
+  color: var(--text-primary);
 
   cursor: pointer;
 
@@ -1283,14 +1314,14 @@
 }
 
 .selectAllControl:hover {
-  background: rgba(3, 140, 127, 0.08);
+  background: var(--hover);
 }
 
 .selectAllControl input {
   width: 18px;
   height: 18px;
 
-  accent-color: #038C7F;
+  accent-color: var(--backcolor);
 
   cursor: pointer;
 }
@@ -1301,36 +1332,40 @@
   gap: 8px;
 
   padding: 7px 16px;
-
   border-radius: 999px;
 
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--border);
 
   font-size: 14px;
   font-weight: 500;
 
-  color: #374151;
+  color: var(--text-primary);
 
   cursor: pointer;
-
   transition: all 0.25s cubic-bezier(.4,0,.2,1);
   user-select: none;
 }
 
 .selectAllChip:hover {
-  border-color: #038C7F;
-  background: rgba(3,140,127,0.08);
+  border-color: var(--backcolor);
+  background: var(--hover);
   transform: translateY(-1px);
 }
 
 .selectAllChipActive {
-  background: linear-gradient(135deg,#038C7F,#0d9488);
+  background: linear-gradient(
+    135deg,
+    var(--backcolor),
+    #0d9488
+  );
+
   color: white;
   border-color: transparent;
-  box-shadow:
-    0 8px 22px rgba(3,140,127,0.28);
+
+  box-shadow: 0 8px 22px rgba(3,140,127,0.28);
 }
+
 .selectAllDot {
   width: 8px;
   height: 8px;
@@ -1339,7 +1374,6 @@
   background: currentColor;
   opacity: 0.6;
 }
-
 .noResults {
   grid-column: 1 / -1;
   text-align: center;
