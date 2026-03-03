@@ -34,7 +34,6 @@ export function QuotationsManager() {
   };
 
   const handleBack = (newId? : string) => {
-    console.log('BACK',newId);
     if (newId) {
     setHighlightId(newId);
     }

@@ -164,8 +164,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
         now.setHours(0, 0, 0, 0);
         requestDate.setHours(0, 0, 0, 0);
         const diffDays = Math.ceil((now.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
-        console.log('Filter days: ' , q.referenceRequest , q.dateRequest, diffDays)
-
+        
         switch (dateFilter) {
           case 'hoy':
             return diffDays === 0;

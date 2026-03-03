@@ -211,7 +211,15 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               idService : service.idService,
               nameService: service.nameService || '',
               used: service.used || false,
-              shipments : service.shipments,
+              shipments : service.shipments.map((shipment: any) => {
+                if('projectionShipment' in shipment) {
+                  setProjectionShipmentState(prev => ({
+                    ...prev,
+                    [service.idServiceItem] : true
+                  }));
+                }
+                return shipment;
+              }),
             };
         });
         setServices(loadedServices);
@@ -285,7 +293,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const openMerchandiseModal = (serviceId: number, cargo?: Cargo) => {    
-    console.log('OPEN CARGO: ' , cargo, formData, services);
     setCurrentServiceId(serviceId);    
     setByUnitsMerch(true);
     setEditingMerchandise(cargo || null);    
@@ -370,7 +377,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const addPackage = (pkg: any) => {
-    console.log(pkg);
     setCurrentPackages([...currentPackages, {
       ...pkg,
       id: Date.now()
@@ -394,7 +400,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       totalWeight += weight;
     });
 
-    return { totalVolume, totalWeight };
+    return { 
+      totalVolume : Number(totalVolume.toFixed(2)), 
+      totalWeight : Number(totalWeight.toFixed(2)) };
   };
 
   const saveMerchandise = () => {
@@ -650,7 +658,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         statusComment: statusId === 10 ? (document.getElementById('comments-cancelation') as HTMLInputElement).value : '',
                 
       };
-
       if (quotationId) {
         await quotationService.changeStatus(quotationData);
         showSuccess(t('quote.success.statusUpdated').replace('{status}', statusName));
@@ -759,7 +766,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         services: services.map((service, idx) => {                                                               
           
           const shipmentsInService = service.shipments.map((shipment, index) => {
-
+            
             const projectionShipment = projectionShipmentState[service.idServiceItem] === true &&
                                        shipment.projectionShipment?.frecuency && 
                                        shipment.projectionShipment?.idTypeMesurementFrecuency && 
@@ -819,8 +826,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   unitCargo : unitMerch.unitCargo,
                 }))
               })), 
-            }
-            
+            }            
           })
 
           const selectedService = availableServices.find(s => s.service_name === service.nameService); 
@@ -872,14 +878,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       setSaving(true);
       if (mode === 'edit' && quotationId) {
         quotationData.id = quotationId;
-        console.log('UPDATE: ', JSON.stringify(quotationData, null, 2))
         const res = await quotationService.update(quotationData);
-        console.log('Result:', res);
+        console.log('UPDATE: ', JSON.stringify(quotationData, null, 2), 'Result:', res);
         showSuccess(t('quote.success.updated'));
       } else {
-        console.log('create: ', JSON.stringify(quotationData, null, 2))
         result = await quotationService.create(quotationData);
-        console.log('Create result:', result);
+        console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
         showSuccess(t('quote.success.created'));
       }
 
@@ -919,9 +923,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   }
 
   const renderZipCodesOriginDestination =  (service : Service) => {
-    const isPort = [1, 2].includes(service.idService);
-    switch(true){
-      case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : return (
+    const isPort = [1, 2].includes(service.idService); //Maritimo FCL y LCL
+    switch(true) {
+      case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : 
+      return (
         <div className={styles.formGrid}>
           <div className={styles.formGroup}>
             <label className={styles.label}>
@@ -930,6 +935,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               </label>
             <input
               type="number"
+              min="0"
               onInput={(e) => {
                 e.currentTarget.value = e.currentTarget.value.slice(0, 9);
               }}
@@ -946,7 +952,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="number"
-               onInput={(e) => {
+              min="0"
+              onInput={(e) => {
                 e.currentTarget.value = e.currentTarget.value.slice(0, 9);
               }}
               value={service.shipments[0].destination.zipCode}
@@ -955,8 +962,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
           </div>    
-        </div>);
-      case service.shipments[0].idTypeShipment === 2: return (
+        </div>
+      );
+      case service.shipments[0].idTypeShipment === 2: 
+      return (
         <div className={styles.formGrid}>
           <div className={styles.formGroup}>
             <label className={styles.label}>
@@ -966,6 +975,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <input
               className={`${styles.input}`}
               type="text"
+              maxLength={20}
               placeholder={isPort ? 'MXVER' : 'MXMEX'}
               value={isPort ? service.shipments[0].origin.portCode ?? '' : service.shipments[0].origin.airportCode ?? '' }
               onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()})}              
@@ -979,6 +989,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="text"
+              maxLength={20}
               placeholder={isPort ? 'MXVER' : 'MXMEX'}
               value={isPort ? service.shipments[0].destination.portCode ?? '' : service.shipments[0].destination.airportCode ?? '' }
               onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()})}
@@ -988,7 +999,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           </div>                            
         </div>
       )
-      case service.shipments[0].idTypeShipment === 3 : return (
+      case service.shipments[0].idTypeShipment === 3 : 
+      return (
         <div className={styles.formGrid}>
           <div className={styles.formGroup}>
             <label className={styles.label}>
@@ -997,6 +1009,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="number"
+              min="0"
               onInput={(e) => {
                 e.currentTarget.value = e.currentTarget.value.slice(0, 9);
               }}
@@ -1013,6 +1026,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="text"
+              maxLength={20}
               placeholder={isPort ? 'MXVER' : 'MXMEX'}
               value={isPort ? service.shipments[0].destination.portCode ?? '' : service.shipments[0].destination.airportCode ?? '' }
               onChange={(e) => 
@@ -1024,7 +1038,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               required/>
           </div>                            
         </div>);      
-      case service.shipments[0].idTypeShipment === 4: return( 
+      case service.shipments[0].idTypeShipment === 4: 
+      return( 
         <div className={styles.formGrid}>   
           <div className={styles.formGroup}>
             <label className={styles.label}>
@@ -1033,6 +1048,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="text"
+              maxLength={20}
               placeholder={isPort ? 'MXVER' : 'MXMEX'}
               value={isPort ? service.shipments[0].origin.portCode ?? '' : service.shipments[0].origin.airportCode ?? '' }
               onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment,  isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()})}
@@ -1047,7 +1063,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="number"
-               onInput={(e) => {
+              min="0"
+              onInput={(e) => {
                 e.currentTarget.value = e.currentTarget.value.slice(0, 9);
               }}
               value={service.shipments[0].destination.zipCode}
@@ -1582,6 +1599,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <div className={styles.formGroup} style={{ marginTop: '1.25rem' }}>
               <label className={styles.label}>{t('quote.comments')}</label>
               <textarea
+                maxLength={500}
                 value={service.shipments[0].comments}
                 onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'comments', e.target.value)}
                 className={styles.textarea}
@@ -1626,8 +1644,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <input
                       required
                       type="number"
+                      min="0"
+                      step="any"
                       value={service.shipments[0].projectionShipment?.number}
-                      onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, {number: parseInt(e.target.value)})}
+                      onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, {number: Number(e.target.value)})}
                       className={styles.input}
                       placeholder="0"
                       disabled={mode === 'view' || formData.idStatusRequest >= 2}
@@ -1768,6 +1788,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   </label>
                   <input
                     type="text"
+                    maxLength={80}
+                    minLength={3}
                     placeholder="Baterías de Telefonos Modelo 388"
                     className={styles.input}
                     value={merchandiseForm?.merchandiseName}
@@ -1790,6 +1812,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <label className={styles.label}>{t('quote.merchandiseDescription')}</label>
                 <textarea
                   className={styles.textarea}
+                  maxLength={500}
                   rows={3}
                   value={merchandiseForm?.merchandiseDescription}
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}
@@ -2237,7 +2260,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   </label>
                   <input
                     type="number"  
-                    min="0"                   
+                    min="0"   
+                    onInput={(e) => {
+                      e.currentTarget.value = e.currentTarget.value.slice(0, 9);
+                    }}                
                     className={styles.input}
                     placeholder="5"
                     id="package-quantity"
@@ -2252,6 +2278,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       type="number"
                       min="0" 
                       step="any"
+                      onInput={(e) => {
+                        e.currentTarget.value = e.currentTarget.value.slice(0, 9);
+                      }}
                       className={styles.input}
                       id="package-length"
                       required/>
@@ -2264,6 +2293,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       type="number"
                       min="0" 
                       step="any"
+                       onInput={(e) => {
+                        e.currentTarget.value = e.currentTarget.value.slice(0, 9);
+                      }}
                       className={styles.input}
                       id="package-height"
                       required/>
@@ -2278,6 +2310,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       type="number"
                       min="0" 
                       step="any"
+                      onInput={(e) => {
+                        e.currentTarget.value = e.currentTarget.value.slice(0, 9);
+                      }}
                       className={styles.input}
                       id="package-width"
                       required
@@ -2291,6 +2326,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       type="number"
                       min="0" 
                       step="any"
+                      onInput={(e) => {
+                        e.currentTarget.value = e.currentTarget.value.slice(0, 9);
+                      }}
                       className={styles.input}
                       id="package-weight"
                       required
