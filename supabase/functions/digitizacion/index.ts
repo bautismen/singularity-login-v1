@@ -28,15 +28,12 @@ async function getMongoClient(): Promise<MongoClient> {
     const client = new MongoClient(MONGODB_URI);
     await client.connect();
 
-    // 🔥 VALIDACIÓN REAL DE CONEXIÓN
     await client.db("admin").command({ ping: 1 });
-
-    console.log("✅ MongoDB connected successfully");
 
     cachedClient = client;
     return cachedClient;
   } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
+    console.error(" MongoDB connection error:", error);
     cachedClient = null;
     throw error;
   }

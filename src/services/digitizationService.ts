@@ -31,7 +31,7 @@ function fileToBase64(file: File): Promise<string> {
 
     reader.onload = () => {
       const result = reader.result as string;
-      const base64 = result.split(",")[1]; // quitamos data:xxx;base64,
+      const base64 = result.split(",")[1];
       resolve(base64);
     };
 
@@ -180,31 +180,34 @@ export async function uploadDocuments(
   reference: string,
   sectionId: number,
   documentTypeId: number,
-  createdBy: {
-    idUser: string;
-    nameEmployee: string;
+  createdby: {
+    iduser: string;
+    nameemployee: string;
   },
   files: File[],
   signal?: AbortSignal
 ): Promise<{ codeStatus: number; messageStatus?: string }> {
 
- const payloads = [];
+  const payloads = [];
 
-for (const file of files) {
-  const base64 = await fileToBase64(file);
+  for (const file of files) {
+    const base64 = await fileToBase64(file);
 
-  payloads.push({
-    file_model_64: {
-      base64_data: base64,
-      filename_64: file.name
-    }
-  });
-}
+    payloads.push({
+      file_model_64: {
+        base64_data: base64,
+        filename_64: file.name
+      },
+      createdby: {
+        idUser: createdby.iduser,     
+        nameemployee: createdby.nameemployee
+      }
+    });
+  }
 
-const body = {
-  createdBy,   
-  payloads
-};
+  const body = {
+    payloads
+  };
 
   const url = `${DIGITIZATION_URL}qrreferences/${encodeURIComponent(
     reference
@@ -217,13 +220,11 @@ const body = {
     signal
   });
 
-  // ✅ Primero verificar HTTP transport layer
   if (!response.ok) {
     const errorText = await response.text().catch(() => "");
     throw new Error(errorText || "Error al subir el archivo");
   }
 
-  // ✅ Luego leer JSON negocio
   const data = await response.json().catch(() => ({}));
 
   if (data.codeStatus !== 201 && data.codeStatus !== 200) {
@@ -251,7 +252,7 @@ export async function deleteDocument(
     }
   );
 
-  // 🔥 Si es 204 → éxito directo (no hay body)
+  //  Si es 204 → éxito directo (no hay body)
   if (response.status === 204) {
     return {
       codeStatus: 204,
@@ -259,7 +260,7 @@ export async function deleteDocument(
     };
   }
 
-  // 🔥 Si no es 204, intentar leer JSON
+  //  Si no es 204, intentar leer JSON
   const data = await response.json().catch(() => ({}));
 
   if (data.codeStatus !== 204 && data.codeStatus !== 200) {
@@ -295,7 +296,6 @@ class CatalogService {
 
     const json = await response.json();
 
-    // ⭐ ESTE ES EL PUNTO CRÍTICO
     const rawData = json.data ?? [];
 
     return mapper

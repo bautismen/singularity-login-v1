@@ -1,6 +1,8 @@
 import { useState, useEffect, DragEvent, useRef } from "react";
 import JSZip from "jszip";
+import { useLanguage } from '../contexts/LanguageContext';
 import { saveAs } from "file-saver";
+import { Modal } from "../components/Modal";
 import {
   RefreshCw,
   Filter,
@@ -10,6 +12,8 @@ import {
   Trash2,
   Cloud,
   ArrowUp,X,
+  ChevronUp, ChevronDown,
+  Search,
   Plus
 } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
@@ -42,14 +46,14 @@ interface UploadItem {
 const Digitization = () => {
 
   const { showError, showSuccess } = useNotification();
-
+  const { t } = useLanguage();
   /* ================= STATE ================= */
   const { user } = useAuth();
   const [documents, setDocuments] = useState<DigitizationDocument[]>([]);
   const [recentDocuments, setRecentDocuments] = useState<DigitizationDocument[]>([]);
   const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
-
+  const [searchTerm, setSearchTerm] = useState('');
   const [seccionFilter, setSeccionFilter] = useState<number | "">("");
 const [documentTypeFilter, setDocumentTypeFilter] = useState<number | "">("");
 const [seccionUpload, setSeccionUpload] = useState<number | "">("");
@@ -62,8 +66,13 @@ const [documentTypeUpload, setDocumentTypeUpload] = useState("");
   const [referenceFilter, setReferenceFilter] = useState("");
   const [selectAll, setSelectAll] = useState(false);
   const hasDocuments = recentDocuments.length > 0;
+const [openReference, setOpenReference] = useState(true);
+const [openSection, setOpenSection] = useState(true);
+const [openDocType, setOpenDocType] = useState(true);
 
-
+const refReference = useRef<HTMLDivElement>(null);
+const refSection = useRef<HTMLDivElement>(null);
+const refDocType = useRef<HTMLDivElement>(null);
   /* ========= UPLOAD MODAL ========= */
 
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -77,10 +86,20 @@ const [documentTypeUpload, setDocumentTypeUpload] = useState("");
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const [deleteTarget, setDeleteTarget] = useState<{
-    id: number;
-    name: string;
-  } | null>(null);
+
+  const [modalState, setModalState] = useState<{
+  isOpen: boolean;
+  type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
+  title: string;
+  message: string;
+  onConfirm?: () => void;
+  showCancel?: boolean;
+  }>({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: ''
+  });
 
   const toggleSelectAll = () => {
 
@@ -93,6 +112,37 @@ const [documentTypeUpload, setDocumentTypeUpload] = useState("");
   }
 
   setSelectAll(!selectAll);
+};
+
+  /* ================= DELETE ================= */
+const handleDelete = (id: number, name: string) => {
+
+  setModalState({
+    isOpen: true,
+    type: 'confirm',
+    title: t('dig.deleteDocument'),
+    message: t('dig.deleteDocumentConfirm')
+      .replace('{{name}}', name),
+    showCancel: true,
+    onConfirm: async () => {
+
+      try {
+
+        const response = await deleteDocument(id);
+
+        if (![200, 204].includes(response.codeStatus)) {
+          throw new Error(response.messageStatus);
+        }
+
+        showSuccess(t('dig.deleteSuccess'));
+
+        await loadRecentDocuments();
+
+      } catch (error: any) {
+        showError(error.message);
+      }
+    }
+  });
 };
 
   /* ================= cierra modal carga documentos ================= */
@@ -128,7 +178,7 @@ const toggleFilters = () => {
 
 const fetchDocuments = async () => {
   if (!referenceFilter) {
-    showError("Debe ingresar una referencia");
+    showError(t('dig.referenceRequired'));
     return;
   }
 
@@ -259,14 +309,16 @@ const fetchDocuments = async () => {
 
         window.URL.revokeObjectURL(url);
 
-        showSuccess(`Archivo ${fileName} descargado`);
+        showSuccess(
+          t('dig.fileDownloaded').replace('{{name}}', fileName)
+        );
         setSelectedDocuments([]);
         setSelectAll(false);
       } else {
-        showError("Error al descargar archivo");
+      showError(t('dig.downloadError'));
       }
     } catch {
-      showError("No se pudo descargar el archivo");
+      showError(t('dig.downloadFailed'));
     }
   };
 
@@ -282,7 +334,7 @@ const fetchDocuments = async () => {
     setSections(secs);
 
   } catch {
-    showError("Error al cargar catálogos");
+    showError(t('dig.catalogError'));
   }
 };
 
@@ -324,39 +376,23 @@ const fetchDocuments = async () => {
 
         const zipBlob = await zip.generateAsync({ type: "blob" });
 
-        const nombre = `Documentos_${new Date().toISOString().replace(/[:.-]/g, "_")}.zip`;
+        const nombre = `${t('dig.documents')}_${new Date().toISOString().slice(0,10)}.zip`;
+        
         saveAs(zipBlob, nombre);
 
-        showSuccess(`${selectedDocuments.length} archivos descargados en ZIP`);
-
+        showSuccess(
+          t('dig.zipDownloaded')
+            .replace('{{count}}', String(selectedDocuments.length))
+        );
         setSelectedDocuments([]);
         setSelectAll(false);
 
       } catch {
-        showError("Error al descargar archivos");
+        showError(t('dig.downloadFilesError'));
       }
     };
 
-  /* ================= DELETE ================= */
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
-
-    try {
-      const response = await deleteDocument(deleteTarget.id);
-
-      if (![200, 204].includes(response.codeStatus)) {
-        throw new Error(response.messageStatus);
-      }
-
-      showSuccess("Documento eliminado");
-      loadRecentDocuments();
-    } catch (error: any) {
-      showError(error.message);
-    } finally {
-      setDeleteTarget(null);
-    }
-  };
 
   /* ================= UPLOAD ================= */
 
@@ -383,7 +419,7 @@ const uploadFiles = async () => {
     !documentTypeUpload ||
     files.length === 0
   ) {
-    showError("Debes llenar los campos referencia, tipo doc. y sección");
+    showError(t('dig.uploadValidation'));
     return;
   }
 
@@ -424,8 +460,8 @@ const uploadFiles = async () => {
         Number(seccionUpload),
         Number(documentTypeUpload),
         {
-          idUser: user?._id || '',
-          nameEmployee: user?.name || ''
+          iduser: user?._id || '',
+          nameemployee: user?.name || ''
         },
         [file],
         abortControllerRef.current?.signal
@@ -440,8 +476,9 @@ const uploadFiles = async () => {
           )
         );
 
-        showSuccess(`Registro del archivo ${file.name}`);
-
+        showSuccess(
+          t('dig.fileUploaded').replace('{{name}}', file.name)
+        );
       } catch (err: any) {
 
         if (err.name === "AbortError") throw err;
@@ -454,7 +491,9 @@ const uploadFiles = async () => {
           )
         );
 
-        showError(`Error al subir ${file.name}`);
+        showError(
+          t('dig.fileUploadError').replace('{{name}}', file.name)
+        );
       }
     }
 
@@ -474,9 +513,9 @@ const uploadFiles = async () => {
   } catch (error: any) {
 
     if (error.name === "AbortError") {
-      showError("Carga cancelada");
+      showError(t('dig.uploadCanceled'));
     } else {
-      showError("Error al subir archivos");
+      showError(t('dig.uploadError'));
     }
 
   } finally {
@@ -485,69 +524,132 @@ const uploadFiles = async () => {
   }
 };
 
+const filteredDocuments = recentDocuments.filter(doc =>
+  doc.documentName
+    ?.toLowerCase()
+    .includes(searchTerm.toLowerCase())
+);
+
   /* ================= RENDER ================= */
 
   return (
     <div className={styles.contentWrapper}>
-      
       {showFilters && (
         <div className={styles.filtersPanel}>
-          <div className={styles.filtersHeader}>
-            <h3>Refina tu búsqueda</h3>
+          <div className={styles.filtersPanelHeader}>
+            <h3>{t('dig.refineSearch')}</h3>
           </div>
 
           {/* REFERENCIA */}
-          <div className={styles.filterBlock}>
-            <label>Referencia</label>
-            <input
-              type="text"
-              placeholder="Buscar referencia..."
-              value={referenceFilter}
-              onChange={(e) => setReferenceFilter(e.target.value)}
-              className={styles.input}
-            />
+          <div className={styles.filterSection}>
+            <div className={styles.headerRow}>
+              <h4 className={styles.filterTitle}>{t('dig.reference')}</h4>
+              <button
+                onClick={() => setOpenReference(!openReference)}
+                className={styles.iconbutonlucide}
+              >
+                {openReference ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </button>
+            </div>
+            <div
+              ref={refReference}
+              style={{
+                maxHeight: openReference
+                  ? refReference.current?.scrollHeight + "px"
+                  : "0px",
+                overflow: "hidden",
+                transition: "max-height 0.3s ease"
+              }}
+            >
+              <input
+                type="text"
+                placeholder={t('dig.searchReference')}
+                value={referenceFilter}
+                onChange={(e) => setReferenceFilter(e.target.value)}
+                className={styles.executiveSelect}
+              />
+            </div>
           </div>
 
           {/* SECCIÓN */}
-          <div className={styles.filterBlock}>
-            <label>Sección</label>
-            <select
-              value={seccionFilter}
-              onChange={(e) =>
-                setSeccionFilter(
-                e.target.value ? Number(e.target.value) : ""
-              )
-              }
-              className={styles.select}
+          <div className={styles.filterSection}>
+            <div className={styles.headerRow}>
+              <h4 className={styles.filterTitle}>{t('dig.section')}</h4>
+              <button
+                onClick={() => setOpenSection(!openSection)}
+                className={styles.iconbutonlucide}
+              >
+                {openSection ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </button>
+            </div>
+            <div
+              ref={refSection}
+              style={{
+                maxHeight: openSection
+                  ? refSection.current?.scrollHeight + "px"
+                  : "0px",
+                overflow: "hidden",
+                transition: "max-height 0.3s ease"
+              }}
             >
-              <option value="">Todas</option>
-              {sections.map(s => (
-                <option key={s.sectionid} value={s.sectionid}>
-                  {s.section}
-                </option>
-              ))}
-            </select>
+              <select
+                value={seccionFilter}
+                onChange={(e) =>
+                  setSeccionFilter(
+                    e.target.value ? Number(e.target.value) : ""
+                  )
+                }
+                className={styles.executiveSelect}
+              >
+                <option value="">{t('dig.all')}</option>
+                {sections.map(s => (
+                  <option key={s.sectionid} value={s.sectionid}>
+                    {s.section}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* TIPO DOCUMENTO */}
-          <div className={styles.filterBlock}>
-            <label>Tipo de documento</label>
-            <select
-              value={documentTypeFilter}
-              onChange={(e) =>
-                setDocumentTypeFilter(
-                e.target.value ? Number(e.target.value) : ""
-              )
-              }
-              className={styles.select}
+          <div className={styles.filterSection}>
+            <div className={styles.headerRow}>
+              <h4 className={styles.filterTitle}>{t('dig.documentType')}</h4>
+              <button
+                onClick={() => setOpenDocType(!openDocType)}
+                className={styles.iconbutonlucide}
+              >
+                {openDocType ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </button>
+            </div>
+
+            <div
+              ref={refDocType}
+              style={{
+                maxHeight: openDocType
+                  ? refDocType.current?.scrollHeight + "px"
+                  : "0px",
+                overflow: "hidden",
+                transition: "max-height 0.3s ease"
+              }}
             >
-              <option value="">Todos</option>
-              {documentTypes.map(d => (
-                <option key={d.documenttypeid} value={d.documenttypeid}>
-                  {d.documentnametype}
-                </option>
-              ))}
-            </select>
+              <select
+                value={documentTypeFilter}
+                onChange={(e) =>
+                  setDocumentTypeFilter(
+                    e.target.value ? Number(e.target.value) : ""
+                  )
+                }
+                className={styles.executiveSelect}
+              >
+                <option value="">{t('dig.all')}</option>
+                {documentTypes.map(d => (
+                  <option key={d.documenttypeid} value={d.documenttypeid}>
+                    {d.documentnametype}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           
@@ -563,33 +665,32 @@ const uploadFiles = async () => {
                 loadRecentDocuments();
               }}
             >
-              Restaurar
+              {t('dig.restore')}
             </button>
 
             <button
               className={styles.applyButton}
               onClick={() => fetchDocuments()}
             >
-              Aplicar
+              {t('dig.apply')}
             </button>
           </div>
 
         </div>
       )}
 
-
       <div className={styles.container}>
 
         {/* ===== HEADER ===== */}
         <div className={styles.header}>
-          <h1 className={styles.title}>Digitalización</h1>
+          <h1 className={styles.title}>{t('dig.title')}</h1>
 
           <div className={styles.buttonGroup}>
             <button
               onClick={loadRecentDocuments}
               className={styles.headerButton}
               disabled={loading}
-              title="Actualizar"
+              title={t('dig.refresh')}
             >
               <RefreshCw size={20} />
             </button>
@@ -597,7 +698,7 @@ const uploadFiles = async () => {
             <button
               onClick={toggleFilters}
               className={styles.headerButton}
-              title="Filtros"
+              title={t('dig.filters')}
             >
           {showFilters ? <FilterX size={20} /> : <Filter size={20} />}
             </button>
@@ -605,15 +706,37 @@ const uploadFiles = async () => {
             <button
               onClick={() => setShowUploadModal(true)}
               className={styles.headerButton}
-              title="Cargar archivos"
+              title={t('dig.uploadFiles')}
             >
               <Plus size={20} />
             </button>
           </div>
         </div>
+        {/* ===== SEARCH BAR ===== */}
+        <div className={styles.searchContainer}>
+          <div className={styles.searchBar}>
+            <Search size={18} className={styles.searchIcon} />
+            <input
+              type="text"
+              placeholder={t('dig.searchDocument')}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={styles.searchInput}
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                className={styles.clearButton}
+                onClick={() => setSearchTerm("")}
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+        </div>
         <div className={styles.recentHeaderRow}>
           <h2 className={styles.recentTitle}>
-            Archivos cargados recientemente...
+            {t('dig.recentFiles')}
           </h2>
 
           {hasDocuments && (
@@ -624,9 +747,8 @@ const uploadFiles = async () => {
               onClick={toggleSelectAll}
             >
               <div className={styles.selectAllDot} />
-
               <span>
-                {selectAll ? "Deseleccionar todo" : "Seleccionar todo"}
+                {selectAll ? t('dig.unselectAll') : t('dig.selectAll')}
               </span>
             </div>
           )}
@@ -640,7 +762,7 @@ const uploadFiles = async () => {
             </div>
 
             <span className={styles.bulkText}>
-              seleccionados
+              {t('dig.selected')}
             </span>
           </div>
 
@@ -651,22 +773,46 @@ const uploadFiles = async () => {
               onClick={handleBulkDownload}
             >
               <Download size={16} />
-              Descargar
+              {t('dig.download')}
             </button>
 
             <button
-              className={styles.DeleteDocument}
-              onClick={() => {
-                selectedDocuments.forEach(id =>
-                  setDeleteTarget({
-                    id,
-                    name: "Documento seleccionado"
-                  })
-                );
-              }}
-            >
+            className={styles.DeleteDocument}
+            onClick={() => {
+
+              setModalState({
+                isOpen: true,
+                type: 'confirm',
+                title: t('dig.deleteDocuments'),
+                message: t('dig.deleteDocumentsConfirm')
+                  .replace('{{count}}', String(selectedDocuments.length)),
+                showCancel: true,
+                onConfirm: async () => {
+
+                  try {
+
+                    for (const id of selectedDocuments) {
+                      await deleteDocument(id);
+                    }
+
+                    showSuccess(t('dig.deleteDocumentsSuccess'));
+
+                    setSelectedDocuments([]);
+                    setSelectAll(false);
+
+                    await loadRecentDocuments();
+
+                  } catch (error: any) {
+                    showError(error.message);
+                  }
+
+                }
+              });
+
+            }}
+          >
               <Trash2 size={16} />
-              Eliminar
+              {t('dig.delete')}
             </button>
 
           </div>
@@ -676,12 +822,12 @@ const uploadFiles = async () => {
         {/* ===== LISTADO ===== */}
 
         <div className={styles.recentGrid}>
-          {recentDocuments.length === 0 ? (
+          {filteredDocuments.length === 0 ? (
             <div className={styles.noResults}>
-              No se encontraron resultados
+              {t('dig.noResults')}
             </div>
           ) : (
-            recentDocuments.map(doc => (
+            filteredDocuments.map(doc => (
               <div key={doc.documentId} className={styles.recentCard}>
                 <input
                   type="checkbox"
@@ -723,10 +869,7 @@ const uploadFiles = async () => {
                   <button
                     className={styles.actionButtonDelete}
                     onClick={() =>
-                      setDeleteTarget({
-                        id: doc.documentId,
-                        name: doc.documentName
-                      })
+                      handleDelete(doc.documentId, doc.documentName)
                     }
                   >
                     <Trash2 size={17} />
@@ -746,7 +889,7 @@ const uploadFiles = async () => {
           <div className={styles.uploadModal}>
 
             <div className={styles.modalHeader}>
-              <h3>Cargar documentos</h3>
+              <h3>{t('dig.uploadDocuments')}</h3>
               <button onClick={closeUploadModal} className={styles.closeButton}>
                                   <X size={24} />
                                 </button>
@@ -767,11 +910,11 @@ const uploadFiles = async () => {
               <UploadCloud size={48} />
 
               <p className={styles.dropTitle}>
-                Arrastra archivos aquí
+                {t('dig.dragFiles')}
               </p>
 
               <span className={styles.dropSubtitle}>
-                o haz clic para seleccionar desde tu equipo
+                {t('dig.clickToSelect')}
               </span>
             </div>
 
@@ -792,7 +935,7 @@ const uploadFiles = async () => {
             <div className={styles.uploadFieldsModal}>
               <input
                 type="text"
-                placeholder="Referencia"
+                placeholder={t('dig.reference')}
                 value={referenceUpload}
                 onChange={(e) => setReferenceUpload(e.target.value)}
               />
@@ -804,7 +947,7 @@ const uploadFiles = async () => {
                 }
                 className={styles.select}
               >
-                <option value="">Tipo documento</option>
+                <option value="">{t('dig.documentType')}</option>
                 {documentTypes.map(d => (
                 <option key={d.documenttypeid} value={d.documenttypeid}>
                   {d.documentnametype}
@@ -821,7 +964,7 @@ const uploadFiles = async () => {
                 }
                 className={styles.select}
               >
-                <option value="">Sección</option>
+                <option value="">{t('dig.section')}</option>
 
                 {sections.map(s => (
                   <option
@@ -846,10 +989,12 @@ const uploadFiles = async () => {
 
                 <div className={styles.customTooluploadtip}>
                   {uploading
-                    ? `Subiendo ${files.length} ${files.length === 1 ? "archivo..." : "archivos..."}`
+                    ? t('dig.uploadingFiles')
+                        .replace('{{count}}', String(files.length))
                     : files.length > 0
-                      ? `Subir ${files.length} ${files.length === 1 ? "archivo" : "archivos"}`
-                      : "Subir archivo"
+                      ? t('dig.uploadFilesCount')
+                          .replace('{{count}}', String(files.length))
+                      : t('dig.uploadFile')
                   }
                 </div>
               </div>
@@ -859,7 +1004,7 @@ const uploadFiles = async () => {
             {previewFiles.length > 0 && (
               <div className={styles.modalFilesContainer}>
                 <h4 className={styles.modalFilesTitle}>
-                  Archivos seleccionados ({previewFiles.length})
+                  {t('dig.selectedFiles')} ({previewFiles.length})
                 </h4>
 
                 {previewFiles.map((file, index) => (
@@ -901,12 +1046,12 @@ const uploadFiles = async () => {
                 <div className={styles.uploadFloatingWindow}>
 
                   <div className={styles.uploadHeader}>
-                    <span>Subiendo archivos...</span>
+                    <span>{t('dig.uploading')}</span>
 
                     <button
                       className={styles.closeButton}
                       onClick={handleCancelUpload}
-                      title="Cancelar"
+                      title={t('dig.cancel')}
                       type="button"
                     >
                       ✕
@@ -957,16 +1102,17 @@ const uploadFiles = async () => {
         )}
       
       {/* ================= CONFIRM DELETE ================= */}
-
-      {deleteTarget && (
-        <div className={styles.blurOverlay}>
-          <div className={styles.confirmModal}>
-            <p>¿Eliminar {deleteTarget.name}?</p>
-            <button onClick={confirmDelete}>Eliminar</button>
-            <button onClick={() => setDeleteTarget(null)}>Cancelar</button>
-          </div>
-        </div>
-      )}
+        <Modal
+          isOpen={modalState.isOpen}
+          onClose={() => setModalState({ ...modalState, isOpen: false })}
+          onConfirm={modalState.onConfirm}
+          title={modalState.title}
+          message={modalState.message}
+          type={modalState.type}
+          showCancel={modalState.showCancel}
+          confirmText={t('dig.delete')}
+          cancelText={t('dig.cancel')}
+        />
 
     </div>
   );

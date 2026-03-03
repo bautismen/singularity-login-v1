@@ -23,8 +23,7 @@
 
 .contentWrapper {
   display: flex;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
 }
 
 .mainContent {
@@ -47,7 +46,7 @@
 .title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
   margin: 0;
 }
 .buttonGroup {
@@ -80,12 +79,12 @@
 }
 
 /* ===============================
-   LISTADO DOCUMENTOS
+  LISTADO DOCUMENTOS
 ================================ */
 .recentTitle {
   font-size: 16px;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
   margin-bottom: 16px;
 }
 .recentGrid {
@@ -527,10 +526,17 @@
   }
 }
 
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .filterTitle {
-  margin-bottom: 20px;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
+  margin: 0;
+  color:var(--text-secondary)
 }
 
 .filterGroup {
@@ -581,9 +587,16 @@
 /* ===============================
    GOOGLE / DROPBOX STYLE PANEL
 ================================ */
+.filtersHeader h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #000000;
+  border-bottom: 2px solid rgba(3, 115, 140, 0.15);
+  padding-bottom: 6px;
+}
 
 .filtersPanel {
-  width: 300px;
+  width: 350px;
   background: var(--surface);
   border-right: 1px solid var(--border);
   overflow-y: auto;
@@ -591,8 +604,54 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.03);
 }
 
+.filtersPanel {
+  animation: slideInLeft 0.25s ease;
+}
+.executiveSelect {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  font-size: 14px;
+
+  border-radius: 8px;
+  border: 1px solid #e4ecef;
+  background: #ffffff;
+
+  color: #1f2937;
+  outline: none;
+
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Placeholder */
+.executiveSelect::placeholder {
+  color: #9aa6b2;
+  font-weight: 400;
+}
+
+/* Hover (muy sutil) */
+.executiveSelect:hover {
+  border-color: #038C7F;
+}
+
+/* Focus estilo Drive */
+.executiveSelect:focus {
+  border-color: #03738C;
+  box-shadow: 0 0 0 2px rgba(3, 115, 140, 0.15);
+}
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-15px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
 .filtersPanelHeader h3 {
   font-size: 1rem;
   font-weight: 600;
@@ -600,6 +659,37 @@
   margin: 0;
 }
 
+
+/* ===============================
+   FILTER SECTION ACCORDION
+================================ */
+
+.filterSection {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 14px;
+}
+
+.filterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.filterHeader h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  color: #374151;
+}
+
+.filterContent {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeIn 0.2s ease;
+}
 
 /* Blocks */
 
@@ -1256,4 +1346,65 @@
   padding: 50px;
   color: #888;
   font-size: 16px;
+}
+.searchContainer {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.searchBar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  height: 44px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.searchBar:focus-within {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.searchIcon {
+  color: var(--text-tertiary);
+  flex-shrink: 0;   
+  display: flex;
+  align-items: center;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;     
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--text-tertiary);
+}
+
+.clearButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.clearButton:hover {
+  color: #ef4444;
 }
