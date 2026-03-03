@@ -18,8 +18,9 @@ import { CatalogSectorOfBusiness } from './pages/CatalogSectorOfBusiness';
 import { Layout } from './components/Layout';
 import Companies from './pages/Companies';
 import { DashboardStats } from './components/DashboardStats';
+import Digitization from './pages/Digitization';
 
-type Route = 'dashboard' | 'quotations' | 'controls-pricing' | 'tracking-monitor' | 'executives' | 'shipments' | 'customers' | 'suppliers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users' | 'catalogs/sector-of-business'| 'catalogs/companies';
+type Route = 'dashboard' | 'quotations' | 'controls-pricing' | 'tracking-monitor' | 'executives' | 'shipments' | 'customers' | 'suppliers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users' | 'catalogs/sector-of-business'| 'catalogs/companies' | 'digitization';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState<Route>('dashboard');
@@ -59,6 +60,8 @@ function App() {
           return <Customers onNavigate={handleNavigate} />;
         case 'suppliers':
           return <Suppliers onNavigate={handleNavigate}/>;
+        case 'digitization':
+          return <Digitization />;
         case 'catalogs/imo':
           return <CatalogIMO />;
         case 'catalogs/incoterms':

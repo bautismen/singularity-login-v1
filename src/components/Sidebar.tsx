@@ -29,6 +29,7 @@ const menuItems = [
   { key: 'nav.executives', icon: UserCheck, route: 'executives' },
   { key: 'nav.customers', icon: Users, route: 'customers' },
   { key: 'nav.suppliers', icon: Users, route: 'suppliers' },
+  { key: 'nav.digitization', icon: FileText, route: 'digitization' },
 ];
 
 interface SidebarProps {
