@@ -21,7 +21,7 @@ type QuotationRequestItem = {
 };
 
 const STATUS_STYLES: Record<number, string> = {
-  1: 'bg-teal-500/20 text-teal-600 dark:text-teal-400',
+  1: 'bg-teal-500/20 text-teal-600 dark:bg-teal-500/40 dark:text-teal-400',
   2: 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
   3: 'bg-purple-500/20 text-purple-600 dark:text-purple-400',
   4: 'bg-amber-500/20 text-amber-600 dark:text-amber-400',
@@ -41,7 +41,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
   const [activeTab, setActiveTab] = useState<"urgent" | "recent">("urgent");
   const [currentPageUrgent, setCurrentPageUrgent] = useState(1);
   const [currentPageRecent, setCurrentPageRecent] = useState(1);
-  const [pageSize, setPageSize] = useState(3);
+  const [pageSize, setPageSize] = useState(4);
 
 
   const getPagesToDisplay = (totalPages: number, currentPage: number) => {
@@ -109,7 +109,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
   }
 
   return (
-    <div className="p-8 dark:bg-gray-800">
+    <div className="p-8 dark:bg-gray-900">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           {t("dash.title")}
@@ -131,7 +131,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-black rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4">
               <img
                 src="/gold.png"
@@ -152,7 +152,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-black rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4">
               <img
                 src="/silver.png"
@@ -173,7 +173,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-black rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4">
               <img
                 src="/bronze.png"
@@ -199,8 +199,14 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
       <div className="flex justify-end mb-5 ">
         <button
           id="btnCotizacion"
-          onClick={() => onNavigate?.("quotations")}
-          className="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white font-medium rounded-lg transition-colors"
+         onClick={() => {
+                          sessionStorage.setItem(
+                                "quotationViewMode",
+                                'create',
+                              );
+                          onNavigate?.("quotations");
+                        }}
+          className="px-4 py-2 bg-[#038C7F] hover:bg-[#03738C] text-white font-medium rounded-lg transition-colors"
         >
           + {t("dash.quotationrequest")}
         </button>
@@ -209,13 +215,13 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
 
       <div
         id="StatementofContributions"
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
+        className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8"
       >
         <div
           id="divDonutChart"
-          className="bg-white dark:bg-black rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700"
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 border border-gray-200 dark:border-gray-700"
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               {t("dash.statementofContributions")}
             </h3>
@@ -241,7 +247,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
 
         <div
           id="divQuotesAll"
-          className="bg-white dark:bg-black rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700"
+          className="col-span-1 lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700"
         >
           <div
             id="divHeaderTabsAndPageSize"
@@ -253,7 +259,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                   setActiveTab("urgent");
                   setCurrentPageUrgent(1);
                 }}
-                className={`px-4 py-3 text-sm font-medium ${activeTab === "urgent" ? "border-b-2 border-teal-500 text-teal-500" : "text-gray-500 dark:text-gray-400 hover:text-teal-500"}`}
+                className={`px-4 py-3 text-sm font-medium ${activeTab === "urgent" ? "border-b-2 border-teal-600 text-teal-600" : "text-gray-500 dark:text-gray-400 hover:text-teal-600"}`}
               >
                 {t("dash.quotes.urgent")}
               </button>
@@ -262,7 +268,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                   setActiveTab("recent");
                   setCurrentPageRecent(1);
                 }}
-                className={`px-4 py-3 text-sm font-medium ${activeTab === "recent" ? "border-b-2 border-teal-500 text-teal-500" : "text-gray-500 dark:text-gray-400 hover:text-teal-500"}`}
+                className={`px-4 py-3 text-sm font-medium ${activeTab === "recent" ? "border-b-2 border-teal-600 text-teal-600" : "text-gray-500 dark:text-gray-400 hover:text-teal-600"}`}
               >
                 {t("dash.quotes.recent")}
               </button>
@@ -282,15 +288,15 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                 id="per_page"
                 value={pageSize}
                 onChange={(e) => {
-                  const size = Number(e.target.value) || 3;
+                  const size = Number(e.target.value) || 4;
                   setPageSize(size);
                   if (activeTab === "urgent") setCurrentPageUrgent(1);
                   else setCurrentPageRecent(1);
                 }}
                 className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 text-xs rounded-lg focus:ring-teal-500 focus:border-teal-500 block p-1.5 outline-none transition-all cursor-pointer"
               >
-                <option value={3}>3</option>
-                <option value={5}>5</option>
+                <option value={4}>4</option>
+                <option value={8}>8</option>
                 <option value={10}>10</option>
                 <option value={20}>20</option>
               </select>
@@ -302,9 +308,9 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
             className="bg-white dark:bg-slate-950 rounded-xl shadow-sm overflow-hidden"
           >
             <table className="w-full border-collapse table-fixed">
-              <thead className="bg-gray-50 dark:bg-black/80 border-b border-b-gray-100 dark:border-b-slate-700">
+              <thead className="bg-gray-50 dark:bg-slate-950 border-b border-b-gray-100 dark:border-b-slate-700">
                 <tr>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 md:w-[45%] text-xs text-left font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                     {t("dash.table.col.client")}
                   </th>
                   <th className="sm:table-cell px-6 py-4 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
@@ -322,7 +328,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
               {(() => {
                 const urgentList: QuotationRequestItem[] =
                   data.quotations?.upcomingDeadlines?.map((d) => ({
-                    _id: d._id.$oid,
+                    _id: String(d._id),
                     customer_name: d.customer.customer_name,
                     customer_category: d.customer.customer_category,
                     reference_request: d.reference_request,
@@ -332,7 +338,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                   })) ?? [];
                 const recentList: QuotationRequestItem[] =
                   data.quotations?.newRequestsCurrentMonth?.map((r) => ({
-                    _id: r._id.$oid,
+                    _id: String(r._id),
                     customer_name: r.customer.customer_name,
                     customer_category: r.customer.customer_category,
                     reference_request: r.reference_request,
@@ -391,7 +397,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                               className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
                             >
                               <td className="px-6 py-4 text-left">
-                                <div className="flex items-center gap-3 overflow-hidden">
+                                <div className="flex items-center gap-3 overflow-hidden min-w-0">
                                   <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xs font-bold ring-2 ring-white dark:ring-slate-800">
                                     {deadline.customer_name?.slice(0, 2) ?? "?"}
                                   </div>
@@ -400,7 +406,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                                   </span>
                                 </div>
                               </td>
-                              <td className="md:table-cell px-6 py-4 text-center">
+                              <td className="px-6 py-4 text-center">
                                 <span
                                   className="inline-block bg-yellow-100 dark:bg-yellow-900/30 rounded text-yellow-600"
                                   title="Premium"
@@ -443,8 +449,9 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                                    onClick={() => {
                                 try {
                                   if (deadline?._id) {
+                                    sessionStorage.setItem('quotationViewMode','view');
                                     sessionStorage.setItem(
-                                      "quotationToOpen",
+                                      "quotationToId",
                                       String(deadline._id),
                                     );
                                   }
@@ -481,8 +488,8 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
 
                     <tfoot>
                       <tr>
-                        <td colSpan={4}>
-                          <div className="flex items-center justify-between pt-4">
+                        <td colSpan={4} className="px-3 py-3" >
+                          <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <span className="text-sm text-gray-500 dark:text-gray-400">
                                 {t("dash.quotes.records", {
@@ -497,7 +504,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                             {total > pageSize && (
                               <div className="flex items-center gap-2">
                                 <button
-                                  className="w-8 h-8 flex items-center justify-center rounded bg-teal-500 text-white hover:bg-teal-600"
+                                  className="w-8 h-8 flex items-center justify-center rounded bg-[#038C7F] hover:bg-[#03738C] text-white"
                                   onClick={() => {
                                     const prev = Math.max(1, currentPage - 1);
                                     if (activeTab === "urgent")
@@ -530,7 +537,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                                             setCurrentPageUrgent(page);
                                           else setCurrentPageRecent(page);
                                         }}
-                                        className={`w-8 h-8 flex items-center justify-center rounded ${isActive ? "bg-teal-500 text-white" : "border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                                        className={`w-8 h-8 flex items-center justify-center rounded ${isActive ? "bg-[#038C7F] text-white" : "border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
                                       >
                                         {page}
                                       </button>
@@ -539,7 +546,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                                 )}
 
                                 <button
-                                  className="w-8 h-8 flex items-center justify-center rounded bg-teal-500 text-white hover:bg-teal-600"
+                                  className="w-8 h-8 flex items-center justify-center rounded text-white bg-[#038C7F] hover:bg-[#03738C]"
                                   onClick={() => {
                                     const next = Math.min(
                                       totalPages,
@@ -577,7 +584,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
           </select>
         </div>
 
-        <div className="bg-white dark:bg-black rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700 mb-8">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
               {t("dash.performanceperchannel.adress")}

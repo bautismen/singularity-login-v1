@@ -72,13 +72,13 @@ export function DonutChart({ data, total }: DonutChartProps) {
   }, [data, total]);
 
   return (
-    <div className="flex items-center gap-8">
+    <div className="flex flex-col items-center gap-1">
       <div className="relative">
         <canvas ref={canvasRef} width={200} height={200} />
       </div>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1">
         {data.map((item) => (
-          <div key={item.statusId} className="flex items-center gap-3">
+          <div key={item.statusId} className="flex items-center gap-4">
             <div
               className="w-3 h-3 rounded-full"
               style={{ backgroundColor: STATUS_COLORS[item.statusId] || '#94A3B8' }}
