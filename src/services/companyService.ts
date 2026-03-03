@@ -22,7 +22,6 @@ export async function getCompanies(status: 'activo' | 'inactivo' = 'activo'): Pr
 
 export async function getCompanies(includeArchived = false): Promise<Company[]> {
   const url = `${SUPABASE_URL}/functions/v1/companies?includeArchived=${includeArchived}`;
-  console.log(url);
 
   const response = await fetch(url, { headers });
   if (!response.ok) throw new Error('Error al obtener companies');
@@ -35,16 +34,13 @@ export async function getCompanies(includeArchived = false): Promise<Company[]> 
 
 export async function createCompany(company: Partial<Company>): Promise<Company> {
   try {
-    console.log('Creating company with data:', company);
     const response = await fetch(`${SUPABASE_URL}/functions/v1/companies`, {
       method: 'POST',
       headers,
       body: JSON.stringify(company),
     });
 
-    console.log('Response status:', response.status);
     const responseText = await response.text();
-    console.log('Response body:', responseText);
 
     if (!response.ok) {
       let errorMessage = 'Failed to create company';

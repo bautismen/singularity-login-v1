@@ -312,7 +312,6 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
   async function handleCreatePerson() {
     try {
       const created = await createPerson(newPerson);
-      console.log('Person created:', created);
       setPeople([...people, created]);
       setFormData({ ...formData, person_id: created._id! });
       setShowPersonForm(false);
@@ -337,7 +336,6 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       e.preventDefault();
 
       const created = await createCompany(newCompany);
-      console.log('Company created:', created);
       setCompanies([...companies, created]);
       setFormData({ ...formData, company_id: created._id! });
       handleCloseModal()

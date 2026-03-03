@@ -80,8 +80,6 @@ Deno.serve(async (req: Request) => {
     if (method === "POST" && path.endsWith("/companies")) {
       const body = await req.json();
 
-      console.log("Received company data:", body);
-
       if (!body.business_name || !body.rfc_taxid) {
         return new Response(
           JSON.stringify({ error: "Faltan datos requeridos: Razón Social y RFC" }),
@@ -110,8 +108,6 @@ Deno.serve(async (req: Request) => {
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-
-      console.log("Company created with ID:", result.insertedId);
 
       return new Response(JSON.stringify({
         ...newCompany,

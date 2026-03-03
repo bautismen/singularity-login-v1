@@ -141,8 +141,6 @@ const handleSaveCompany = async (e: React.FormEvent) => {
       showSuccess(t('comp.oksave'));
     }
 
-    console.log('Empresa guardada:', savedCompany);
-
     // Limpiar formulario
     setEditingCompany(null);
     setFormData({

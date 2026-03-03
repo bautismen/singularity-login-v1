@@ -12,9 +12,7 @@ const headers = {
 //Obtener clientes
 export async function getCustomers(includeArchived = false): Promise<Customer[]> {
   try {
-    console.log(SUPABASE_URL);
     const url = `${SUPABASE_URL}/functions/v1/customers?includeArchived=${true}`;
-    console.log(url);
     const response = await fetch(url, { headers });
 
     if (!response.ok) {
@@ -124,16 +122,13 @@ export async function getPeople(status = 'activo'): Promise<Person[]> {
 
 export async function createPerson(person: Partial<Person>): Promise<Person> {
   try {
-    console.log('Creating person with data:', person);
     const response = await fetch(`${SUPABASE_URL}/functions/v1/people`, {
       method: 'POST',
       headers,
       body: JSON.stringify(person),
     });
 
-    console.log('Response status:', response.status);
     const responseText = await response.text();
-    console.log('Response body:', responseText);
 
     if (!response.ok) {
       let errorMessage = 'Failed to create person';
@@ -171,16 +166,13 @@ export async function getCompanies(status = 'activo'): Promise<Company[]> {
 
 export async function createCompany(company: Partial<Company>): Promise<Company> {
   try {
-    console.log('Creating company with data:', company);
     const response = await fetch(`${SUPABASE_URL}/functions/v1/companies`, {
       method: 'POST',
       headers,
       body: JSON.stringify(company),
     });
 
-    console.log('Response status:', response.status);
     const responseText = await response.text();
-    console.log('Response body:', responseText);
 
     if (!response.ok) {
       let errorMessage = 'Failed to create company';
