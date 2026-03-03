@@ -50,16 +50,26 @@ export function QuotationsManager() {
   */
   useEffect(() => {
     try {
-      const ref_id = sessionStorage.getItem('quotationToOpen');
-      if (ref_id) {
-        setSelectedQuotationId(ref_id);
-        setViewMode('view');
+
+      const ref_id = sessionStorage.getItem('quotationToId');
+      const ref_ViewMode = sessionStorage.getItem('quotationViewMode') ?? 'list' as ViewMode;
+      
+      try {
+        sessionStorage.removeItem('quotationToId'); 
+        sessionStorage.removeItem('quotationViewMode'); 
+      } catch { /** ignorado */ }
+
+     if (ref_ViewMode){
+      switch (ref_ViewMode) {
+        case 'create' : handleCreateNew(); break;
+        case 'edit' : if(ref_id) handleEdit(ref_id); break;
+        case 'view' : if(ref_id) handleView(ref_id); break;
+        default: break;
       }
+     }
     } catch {
       // Ignorado intencionalmente: este error no afecta la UI
-    } finally {
-      try {sessionStorage.removeItem('quotationToOpen'); } catch { /** ignorado */ }
-    }
+    } 
   }, []);
 
   if (viewMode === 'list') {
