@@ -9,7 +9,7 @@ const API_KEYSL = import.meta.env.VITE_APIKEYSL;
 export const quotationService = {
 
   async getRecentQuotations() {
-    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/api/quotationrequest/getRecentRequestQuotations?limit_=200`, {
+    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/quotationrequest/getRecentRequestQuotations?limit_=200`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${API_TOKENSL}`,
@@ -28,7 +28,7 @@ export const quotationService = {
   },
 
   async getById(id: string) {
-    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/api/quotationrequest/getById?id=${id}`, {
+    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/quotationrequest/getById?id=${id}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${API_TOKENSL}`,
@@ -36,7 +36,6 @@ export const quotationService = {
         'x-api-key': API_KEYSL,
       },
     });
-    console.log('API: ', response)
     if (!response.ok) {
       throw new Error('Error al cargar la cotización');
     }
@@ -44,7 +43,7 @@ export const quotationService = {
   },
 
   async create(data: QuotationRequest) {
-    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/api/quotationrequest/add`, {
+    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/quotationrequest/add`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${API_TOKENSL}`,
@@ -62,7 +61,7 @@ export const quotationService = {
   },
 
   async update(data: QuotationRequest) {    
-    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/api/quotationrequest/update`, {
+    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/quotationrequest/update`, {
       method: 'PUT',
       headers: {   
         'Authorization': `Bearer ${API_TOKENSL}`,
@@ -95,7 +94,7 @@ export const quotationService = {
   },*/
 
   async changeStatus(data: ChangeStatusRequest) {    
-    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/api/quotationrequest/changestatus`, {
+    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/quotationrequest/changestatus`, {
       method: 'PUT',
       headers: {   
         'Authorization': `Bearer ${API_TOKENSL}`,
@@ -114,9 +113,8 @@ export const quotationService = {
 
   async AsignateExecutive(data: AsignateToRequest) {    
        try {
-        console.log(JSON.stringify(data))
           const response = await fetch(
-              `${API_REQUESTQUOTATION}/operations/v1/kl/api/quotationrequest/addasigneto`,
+              `${API_REQUESTQUOTATION}/operations/v1/kl/quotationrequest/addasigneto`,
               {
                 method: 'PUT',
                 headers: {
