@@ -4,11 +4,11 @@
 .container {
   padding: 24px;
   background-color: #f8fafc;
-  min-height: 100%;
+  width: 100%;
 }
 
 .dark .container{
-  @apply bg-slate-800;
+  @apply bg-gray-900;
 }
 
 /* ===== Header ===== */
@@ -316,7 +316,7 @@
 }
 
 .dark .modalContent {
-  background: #1e293b;
+  @apply bg-gray-900;
 }
 
 .modalHeader {
@@ -405,10 +405,18 @@
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
-.dark .input,
+/* .dark .input,
 .dark .textarea,
 .dark .select {
   background-color: #0f172a;
+  border-color: #334155;
+  color: white;
+} */
+
+.dark .input,
+.dark .textarea,
+.dark .select {
+  @apply bg-gray-800;
   border-color: #334155;
   color: white;
 }

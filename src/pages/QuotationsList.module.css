@@ -186,6 +186,7 @@
   font-size: 0.95rem;
   transition: all 0.2s;
   background: var(--surface);
+  color: var(--text-secondary);
 }
 
 .searchInput:focus {

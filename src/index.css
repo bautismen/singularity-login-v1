@@ -22,8 +22,8 @@
 }
 
 .dark {
-  --background: #1f2937;
-  --surface: #111827;
+  --background: #111827;
+  --surface: #1f2937;
   --border: #374151;
   --hover: #374151;
   --text-primary: #f9fafb;

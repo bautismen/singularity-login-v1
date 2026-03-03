@@ -105,7 +105,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         "estela.guerrero@kromlogistica.com",
         "magali.tamayo@kromlogistica.com",
         "erick.barrientos@kromlogistica.com",
-        "elsa.caicero@kromlogistica.com"        
+        "elsa.caicero@kromlogistica.com",
+        "guadalupe.dimas@kromlogistica.com"
   ];
 
   useEffect(() => {
@@ -2059,14 +2060,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </div>
                   <div className={styles.formGroup}>
                     <div className={styles.unitTypeToggle}>
-                      <span className={!useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.lbsInches')}</span>
+                      <span className={!useMetricSystem ? styles.activeUnitLabel : styles.inactiveUnitLabel}>{t('quote.units.lbsInches')}</span>
                       <button                     
                         className={`${styles.toggleSwitch} ${useMetricSystem ? styles.active : ''}`}
                         onClick={() => setUseMetricSystem(!useMetricSystem)}
                         disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                         <div className={styles.toggleThumb}></div>
                       </button>
-                      <span className={useMetricSystem ? styles.activeUnitLabel : ''}>{t('quote.units.kgCm')}</span>
+                      <span className={useMetricSystem ? styles.activeUnitLabel : styles.inactiveUnitLabel}>{t('quote.units.kgCm')}</span>
                     </div>
                   </div>
               </div>

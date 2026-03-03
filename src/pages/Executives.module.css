@@ -351,7 +351,23 @@
   transition: all 0.15s ease;
 }
 
+.inputdate {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  background: var(--hover);
+  transition: all 0.15s ease;
+}
+
 .input:focus {
+  outline: none;
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.inputdate:focus {
   outline: none;
   border-color: #14b8a6;
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
@@ -420,10 +436,12 @@
 .table {
   width: 100%;
   border-collapse: collapse;
+  border-radius: 0.5rem;
+  background: var(--surface);
 }
 
 .table thead {
-  background-color: var(--surface);
+  background-color: var(--background);
   border-bottom: 2px solid var(--border);
 }
 
@@ -434,7 +452,6 @@
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
-  border-radius: 0.5rem;
 }
 
 .table td {

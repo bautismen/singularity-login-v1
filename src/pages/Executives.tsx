@@ -358,7 +358,7 @@ export function Executives() {
               type="date"
               value={formData.fecha_ingreso}
               onChange={(e) => setFormData({ ...formData, fecha_ingreso: e.target.value })}
-              className={styles.input}
+              className={styles.inputdate}
               required
               onInvalid={(e) => 
                 e.currentTarget.setCustomValidity(t('catalog.requiredFields'))

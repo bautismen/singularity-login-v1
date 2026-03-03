@@ -210,7 +210,7 @@
   border-radius: 0.5rem;
   font-size: 0.875rem;
   color: var(--text-primary);
-  background: var(--surface);
+  background: var(--hover);
   transition: all 0.15s ease;
 }
 
@@ -247,11 +247,11 @@
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
-.dark .select {
+/* .dark .select {
   background-color: #374151;
   border-color: #4b5563;
   color: white;
-}
+} */
 
 .inputWithIcon {
   position: relative;
@@ -405,10 +405,10 @@
 
 .iconButton {
   padding: 0.5rem;
-  background-color: white;
-  border: 1px solid #e5e7eb;
+  background-color: var(--hover);
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
-  color: #6b7280;
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.15s ease;
   display: flex;
@@ -417,11 +417,12 @@
 }
 
 .iconButton:hover {
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: var(--hover);
+  color: #14b8a6;
+  border: 1px solid #14b8a6;
 }
 
-.dark .iconButton {
+/* .dark .iconButton {
   background-color: #374151;
   border-color: #4b5563;
   color: #9ca3af;
@@ -430,10 +431,10 @@
 .dark .iconButton:hover {
   background-color: #4b5563;
   color: #d1d5db;
-}
+} */
 
 .iconButton.danger:hover {
-  background-color: #fef2f2;
+  background-color: var(--hover);
   border-color: #ef4444;
   color: #ef4444;
 }
@@ -786,8 +787,8 @@
 }
 
 .executivesCard {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
   padding: 1.5rem;
 }
@@ -1067,7 +1068,7 @@
 .simpleTable td {
   padding: 0.625rem 0.75rem;
   border-bottom: 1px solid #e5e7eb;
-  color: #1f2937;
+  color: var(--text-secondary);
 }
 
 .dark .simpleTable td {
@@ -1083,7 +1084,7 @@
   padding: 0.25rem;
   background: transparent;
   border: none;
-  color: #6b7280;
+  color: var(--text-secondary);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -1160,38 +1161,38 @@
   align-items: center;
   gap: 1rem;
   padding: 0.875rem 1rem;
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--hover);
+  border: 1px solid var(--border);
   border-radius: 0.375rem;
   margin-bottom: 0.75rem;
 }
 
-.dark .executiveItemSimple {
+/* .dark .executiveItemSimple {
   background: #374151;
   border-color: #4b5563;
-}
+} */
 
 .executiveLabel {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   min-width: 70px;
 }
 
 .executiveNameSimple {
   flex: 1;
   font-size: 0.875rem;
-  color: #1f2937;
+  color: var(--text-primary);
 }
 
-.dark .executiveNameSimple {
+/* .dark .executiveNameSimple {
   color: white;
-}
+} */
 
 .removeIconButton {
   padding: 0.375rem;
   background: transparent;
   border: none;
-  color: #6b7280;
+  color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1228,7 +1229,7 @@
 }
 
 .addExecutiveButton:hover {
-  background: #f0fdfa;
+  background: var(--hover);
   border-style: solid;
 }
 
@@ -1555,9 +1556,14 @@
   color: #14b8a6;
 }
 
-.dark .activeUnitLabel {
-  color: #14b8a6;
+.inactiveUnitLabel {
+  font-weight: 600;
+  color: var(--text-tertiary);
 }
+
+/* .dark .activeUnitLabel {
+  color: #14b8a6;
+} */
 
 @media (max-width: 1024px) {
   .container {

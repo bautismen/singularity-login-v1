@@ -205,7 +205,7 @@
 }
 
 .submenuButton:hover {
-  background-color: var(--backcolor);
+  background-color: var(--hover);
   color: #d1d5db;
 }
 
