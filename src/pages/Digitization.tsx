@@ -1,31 +1,23 @@
 import { useState, useEffect, DragEvent, useRef } from "react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-
 import {
   RefreshCw,
   Filter,
   FilterX,
-  ChevronDown,
-  ChevronUp,
   Download,
   UploadCloud,
   Trash2,
   Cloud,
-  ArrowDown,
   ArrowUp,X,
   Plus
 } from "lucide-react";
-
 import { useAuth } from '../contexts/AuthContext';
-
-
 import {
   DigitizationDocument, 
   DocumentTypeDTO,
   SectionDTO
 } from "../types/digitization";
-
 import {
   getDocumentsByReference,
   getDocumentsByReferenceSection,
@@ -37,7 +29,6 @@ import {
   getDocumentTypes,
   getSections
 } from "../services/digitizationService";
-
 import styles from "./Digitization.module.css";
 import { useNotification } from "../contexts/NotificationContext";
 
@@ -53,13 +44,11 @@ const Digitization = () => {
   const { showError, showSuccess } = useNotification();
 
   /* ================= STATE ================= */
-  const { user } = useAuth();   // 👈 aquí sí se puede usar
+  const { user } = useAuth();
   const [documents, setDocuments] = useState<DigitizationDocument[]>([]);
   const [recentDocuments, setRecentDocuments] = useState<DigitizationDocument[]>([]);
   const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]);
-  const [isBouncing, setIsBouncing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const [seccionFilter, setSeccionFilter] = useState<number | "">("");
 const [documentTypeFilter, setDocumentTypeFilter] = useState<number | "">("");
@@ -73,15 +62,7 @@ const [documentTypeUpload, setDocumentTypeUpload] = useState("");
   const [referenceFilter, setReferenceFilter] = useState("");
   const [selectAll, setSelectAll] = useState(false);
   const hasDocuments = recentDocuments.length > 0;
-  const handleUpload = async () => {
-  setIsBouncing(true);
 
-  setTimeout(() => {
-    setIsBouncing(false);
-  }, 500);
-
-  await uploadFiles();
-};
 
   /* ========= UPLOAD MODAL ========= */
 
@@ -153,7 +134,6 @@ const fetchDocuments = async () => {
 
   try {
     setLoading(true);
-    setError(null);
 
     let docs: DigitizationDocument[] = [];
 
@@ -161,7 +141,7 @@ const fetchDocuments = async () => {
     const section = seccionFilter ? String(seccionFilter) : "";
     const docType = documentTypeFilter ? String(documentTypeFilter) : "";
 
-    // ✅ 3 filtros → API más específica
+    //3 filtros → API más específica
     if (ref && section && docType) {
       docs = await getDocumentsByReferenceSectionType(
         ref,
@@ -169,14 +149,14 @@ const fetchDocuments = async () => {
         docType
       );
     }
-    // ✅ referencia + sección
+    // referencia + sección
     else if (ref && section) {
       docs = await getDocumentsByReferenceSection(
         ref,
         section
       );
     }
-    // ✅ solo referencia
+    // solo referencia
     else if (ref) {
       docs = await getDocumentsByReference(ref);
     }
@@ -195,7 +175,6 @@ const fetchDocuments = async () => {
     setSelectAll(sorted.length > 0);
 
   } catch (err: any) {
-    setError(err.message);
     setDocuments([]);
     setRecentDocuments([]);
     showError(err.message);
@@ -219,7 +198,7 @@ const fetchDocuments = async () => {
       setDocuments(sorted);
       setIsSearchResult(false);
     } catch (err: any) {
-      setError(err.message);
+      showError(err.message);
     } finally {
       setLoading(false);
     }
@@ -312,13 +291,13 @@ const fetchDocuments = async () => {
 
         if (selectedDocuments.length === 0) return;
 
-        // ✅ SOLO 1 → descarga normal
+        // SOLO 1 → descarga normal
         if (selectedDocuments.length === 1) {
           await handleDownload(selectedDocuments[0]);
           return;
         }
 
-        // ✅ MÁS DE 1 → crear ZIP
+        // MÁS DE 1 → crear ZIP
         const zip = new JSZip();
 
         for (const id of selectedDocuments) {
@@ -439,16 +418,20 @@ const uploadFiles = async () => {
           )
         );
 
-        // 🔥 Upload real
+        //  Upload real
         await uploadDocuments(
-          referenceUpload,
-          Number(seccionUpload),
-          Number(documentTypeUpload),
-          [file],
-          abortControllerRef.current?.signal
-        );
+        referenceUpload,
+        Number(seccionUpload),
+        Number(documentTypeUpload),
+        {
+          idUser: user?._id || '',
+          nameEmployee: user?.name || ''
+        },
+        [file],
+        abortControllerRef.current?.signal
+      );
 
-        // ✅ success solo si no hubo error
+        // success solo si no hubo error
         setUploadQueue(prev =>
           prev.map(item =>
             item.id === currentId

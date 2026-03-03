@@ -180,24 +180,31 @@ export async function uploadDocuments(
   reference: string,
   sectionId: number,
   documentTypeId: number,
+  createdBy: {
+    idUser: string;
+    nameEmployee: string;
+  },
   files: File[],
   signal?: AbortSignal
 ): Promise<{ codeStatus: number; messageStatus?: string }> {
 
-  const payloads = [];
+ const payloads = [];
 
-  for (const file of files) {
-    const base64 = await fileToBase64(file);
+for (const file of files) {
+  const base64 = await fileToBase64(file);
 
-    payloads.push({
-      file_model_64: {
-        base64_data: base64,
-        filename_64: file.name
-      }
-    });
-  }
+  payloads.push({
+    file_model_64: {
+      base64_data: base64,
+      filename_64: file.name
+    }
+  });
+}
 
-  const body = { payloads };
+const body = {
+  createdBy,   
+  payloads
+};
 
   const url = `${DIGITIZATION_URL}qrreferences/${encodeURIComponent(
     reference

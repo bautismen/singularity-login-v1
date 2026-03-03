@@ -134,6 +134,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1;             
+  min-width: 0;   
 }
 
 .fileIcon {
@@ -164,10 +166,13 @@
   color: #6b7280;
 }
 
-/* Actions (Drive style hover reveal) */
 .cardActions {
+  position: relative;
+  top: 12px;   
   display: flex;
   gap: 5px;
+  flex-shrink: 0;
+  margin-left: auto;
   opacity: 0;
   transform: translateX(8px);
   transition: all 0.2s ease;
@@ -183,10 +188,8 @@
 .actionButtonDelete {
   border: none;
   background: transparent;
-
   padding: 3px;
   border-radius: 8px;
-
   cursor: pointer;
 
   color: #6b7280;
@@ -227,23 +230,17 @@
 .uploadModal {
   width: 800px;
   max-width: 95%;
-
   max-height: 85vh;
   min-height: 260px;
-
   background: white;
   border-radius: 20px;
   padding: 32px;
-
   box-sizing: border-box;
-
   box-shadow:
     0 25px 70px rgba(0, 0, 0, 0.25),
     0 0 0 1px rgba(0, 0, 0, 0.04);
-
   display: flex;
   flex-direction: column;
-
   transition: height 0.28s ease, min-height 0.28s ease;
 }
 
