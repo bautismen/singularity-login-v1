@@ -1,6 +1,6 @@
 import { PricingControl,CreatePricingControlAPI,QuotedControlRequest,ResquetQuote } from '../types/pricingControl';
 
-const PRICING_API_URL = import.meta.env.VITE_PRICING_API_URL;
+const PRICING_API_URL = import.meta.env.VITE_API_URL;
 const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 const API_KEYSL = import.meta.env.VITE_APIKEYSL;
 
@@ -32,7 +32,7 @@ class PricingControlService {
 
   async getResquetById(id: string): Promise<ResquetQuote> {
     const response = await fetch(
-      `${PRICING_API_URL}/operations/v1/kl/quotationrequests/${id}`,
+      `${PRICING_API_URL}/operations/v1/kl/controlnumbers/quotationrequests/${id}`,
       {
         method: 'GET',
         headers: this.getHeaders2(),
@@ -49,7 +49,7 @@ class PricingControlService {
   async create(data: CreatePricingControlAPI): Promise<PricingControl> {    
     try {    
       const response = await fetch(
-        `${PRICING_API_URL}/operations/v1/kl/quotationrequests/${data.Idrequest}/controlnumbers/add`,
+        `${PRICING_API_URL}/operations/v1/kl/controlnumbers/quotationrequests/${data.Idrequest}/add`,
         {
           method: 'POST',
           headers: this.getHeaders2(),

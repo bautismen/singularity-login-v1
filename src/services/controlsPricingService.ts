@@ -1,10 +1,10 @@
-const PRICING_API_URL = import.meta.env.VITE_PRICING_API_URL;
+const PRICING_API_URL = import.meta.env.VITE_API_URL;
 const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 const API_KEYSL = import.meta.env.VITE_APIKEYSL;
 
 export const controlsPricingService = {
   async getAll() {
-    const response = await fetch(`${PRICING_API_URL}/operations/v1/kl/quotationrequests/view=1&skip=12`, {
+    const response = await fetch(`${PRICING_API_URL}/operations/v1/kl/controlnumbers/quotationrequests/view=1&skip=12`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${API_TOKENSL}`,
