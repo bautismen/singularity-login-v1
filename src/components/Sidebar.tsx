@@ -1,25 +1,22 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import {
   Menu,
   X,
   Layout,
   FileText,
-  Truck,
   Users,
   Cog,
-  BarChart3,
   FileCheck,
-  Zap,
   UserCheck,
   FolderOpen,
   ChevronDown,
   ChevronRight,
   DollarSign,
-  Building,
   MapPin,
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import styles from './Sidebar.module.css';
+import { useAuth } from '../contexts/AuthContext';
 
 const menuItems = [
   { key: 'nav.dashboard', icon: Layout, route: 'dashboard' },
@@ -42,6 +39,10 @@ export function Sidebar({ onCollapsedChange, currentRoute = 'dashboard', onNavig
   const [collapsed, setCollapsed] = useState(false);
   const [catalogsExpanded, setCatalogsExpanded] = useState(false);
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const rolAdmin = ["admin"] // Roles que puuedo ir agregando para validar los botones del menu/admin
+  const isAdmin = user?.roles?.every(() => true) && rolAdmin.every(v => user?.roles?.includes(v));
+
 
   const handleCollapse = () => {
     const newState = !collapsed;
@@ -137,18 +138,25 @@ export function Sidebar({ onCollapsedChange, currentRoute = 'dashboard', onNavig
               >
                 <span>{t('nav.catalogs.sectorOfBusiness')}</span>
               </button>
-              <button
-                onClick={() => onNavigate?.('catalogs/users')}
-                className={`${styles.submenuButton} ${currentRoute === 'catalogs/users' ? styles.active : ''}`}
-              >
-                <span>{t('nav.catalogs.users')}</span>
-              </button>
+
+
+              {isAdmin && (
+                <button
+                  onClick={() => onNavigate?.('catalogs/users')}
+                  className={`${styles.submenuButton} ${currentRoute === 'catalogs/users' ? styles.active : ''}`}
+                >
+                  <span>{t('nav.catalogs.users')}</span>
+                </button>
+              )}
+             
+
             </div>
           )}
         </div>
       </nav>
 
       <div className={styles.footer}>
+        {isAdmin && (
         <button
           onClick={() => onNavigate?.('settings')}
           className={`${styles.footerButton} ${currentRoute === 'settings' ? styles.active : ''}`}
@@ -156,6 +164,7 @@ export function Sidebar({ onCollapsedChange, currentRoute = 'dashboard', onNavig
           <Cog size={18} />
           {!collapsed && <span>{t('nav.settings')}</span>}
         </button>
+        )}
       </div>
     </aside>
   );

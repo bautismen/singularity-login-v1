@@ -185,6 +185,12 @@ export function Login() {
             </button>
           </form>
 
+        <div className="mt-10 text-center">
+         { /* quitar caundo se puedan crear lascuentas y regreso del pwd  */}
+          <span className="text-white text-sm font-medium" />
+        </div>
+
+          {/*
           <div className="mt-6 text-center">
             <button
               type="button"
@@ -208,6 +214,9 @@ export function Login() {
               </button>
             </div>
           )}
+          */}
+
+
         </div>
       </div>
     </div>
