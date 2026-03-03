@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Plus, Copy, X, RotateCcw, Save, Eye, ArrowLeft, User, ZapIcon } from 'lucide-react';
+import { Trash2, Plus, Copy, X, RotateCcw, Save, Eye, ArrowLeft, User } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -176,11 +176,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       setIncoterms(incotermsData.filter((i: any) => i.status === 1));
       setCountries(countriesData.filter((co: any) => co.status === 1));
       setImoList(imoData.filter((imo: any) => imo.status === 1));
-
-      //console.log('AVAILABLE SERVICES', availableServices)
     } catch (error) {
       console.error('Error loading catalogs:', error);
-      showError('Error al cargar los catálogos');
+      showError(t('quote.errors.loadCatalogs'));
     } finally {
       setLoading(false);
     }
@@ -229,7 +227,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       
     } catch (error) {
       console.error('Error loading quotation:', error);
-      showError('Error al cargar la cotización');
+      showError(t('quote.errors.loadQuotation'));
     } finally {
       setLoading(false);
     }
@@ -266,12 +264,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const removeMerchandise = (serviceId: number,  merchandise: Cargo) => {
-   /* setServices(services.map(service =>
-      service.idService === serviceId
-        ? { ...service,
-          merchandise: service.shipments[0].cargo.filter(m => m !== merchandise) }
-        : service
-    ));*/
+
     setServices(services.map(service => {
       if (service.idServiceItem === serviceId) {       
           return {
@@ -412,8 +405,15 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       return;
     }
     if(byUnitsMerch && currentPackages.length === 0){
-       showWarning('Por favor ingresa las unidades de la mercancía');
+       showWarning(t('quote.warnings.merchandisePackages'));
        return;
+    }
+
+    if(!byUnitsMerch  && 
+      (merchandiseForm.volumeTotal == 0 || isNaN(merchandiseForm.volumeTotal) || 
+      merchandiseForm.weigthTotal == 0 || isNaN(merchandiseForm.weigthTotal) ) ){
+      showWarning(t('quote.warnings.merchandiseVolumenAndWeight'));
+      return;
     }
 
     const dangerous = merchandiseForm.classification?.find(c => c.idClassificationMerchandise === 7);
@@ -421,13 +421,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     if(dangerous && 
       ((dangerous?.imo == null || dangerous?.imoDescription == undefined ) || 
       (dangerous?.un == null || dangerous?.un == '' ))) {
-      showWarning('Por favor ingresa IMO y UN');
+      showWarning(t('quote.warnings.IMOUN'));
        return;
     }
 
     const refrigerated = merchandiseForm.classification?.find(c => c.idClassificationMerchandise === 10);
     if(refrigerated && (refrigerated?.temperature == null )) {
-      showWarning('Por favor ingresa los grados de temperatura');
+      showWarning(t('quote.warnings.temperature'));
        return;
     }
 
@@ -456,7 +456,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }))}),
       classification: merchandiseForm.classification
     };
-    console.log(newMerchandise)
 
     setServices(services.map(service => {
       if (service.idServiceItem === currentServiceId) {
@@ -682,7 +681,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       };
 
       if (quotationData.Employees.length === 0) {
-        showError('Debe seleccionar al menos un ejecutivo para asignar la cotización');
+        showError(t('quote.noExecutivesTitle'));
         return;
       }
 
@@ -696,7 +695,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }
     } catch (error) {
       console.error('Error updating quotation status:', error);
-      showError('Error al asignar ejecutivos a la cotización');
+      showError(t('quote.errors.executivesAssingned'));
     } finally {
       setSaving(false);
     }
@@ -754,7 +753,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           idEmployee: exec.idEmployee,
           nameEmployee: exec.nameEmployee,
           idUser: exec.idUser
-          //control_number: 'SN',
         })),       
                         
         services: services.map((service, idx) => {                                                               
@@ -777,14 +775,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               origin: {
                 idCountry : shipment.origin.idCountry,
                 countryCode: shipment.origin.countryCode, 
-                ...((shipment.origin.zipCode && [1, 3].includes(shipment.idTypeShipment)) && {zipCode : shipment.origin.zipCode}) ,
+                ...((shipment.origin.zipCode && [1, 3, 4].includes(shipment.idTypeShipment)) && {zipCode : shipment.origin.zipCode}) ,
                 ...((shipment.origin.portCode && [2, 4].includes(shipment.idTypeShipment) && [1, 2].includes(service.idService)) && {portCode : shipment.origin.portCode}),
                 ...((shipment.origin.airportCode && [2, 4].includes(shipment.idTypeShipment) && [5].includes(service.idService)) && {airportCode : shipment.origin.airportCode})                 
               } ,
               destination: {
                 idCountry: shipment.destination.idCountry,
                 countryCode: shipment.destination.countryCode,
-                ...((shipment.destination.zipCode && [1, 4].includes(shipment.idTypeShipment)) && {zipCode : shipment.destination.zipCode}) ,
+                ...((shipment.destination.zipCode && [1, 3, 4].includes(shipment.idTypeShipment)) && {zipCode : shipment.destination.zipCode}) ,
                 ...((shipment.destination.portCode && [2, 3].includes(shipment.idTypeShipment) && [1, 2].includes(service.idService)) && {portCode : shipment.destination.portCode}),
                 ...((shipment.destination.airportCode && [2, 3].includes(shipment.idTypeShipment) && [5].includes(service.idService)) && {airportCode : shipment.destination.airportCode})
               },
@@ -899,12 +897,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
   const handleSavePackage = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("1")        
-    /*if(e.currentTarget.checkValidity()){
-                e.currentTarget.reportValidity();
-                console.log("2", e.currentTarget)
-                return;
-              }     */ 
     const selectElement = document.getElementById('package-type') as HTMLSelectElement;
     const UnitCargo = selectElement.options[selectElement.selectedIndex].text;
     const quantity = (document.getElementById('package-quantity') as HTMLInputElement).value;
@@ -1393,6 +1385,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <option value={2}>{t('quote.export')}</option>
                   <option value={3}>{t('quote.national')}</option>
                   <option value={4}>{t('quote.localUSA')}</option>
+                  <option value={5}>{t('quote.Triangulacion')}</option>
                 </select>
               </div>  
               <div className={styles.formGroup}>
@@ -1616,6 +1609,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <div className={styles.formGroup}>
                     <label className={styles.label}>{t('quote.frequencyPeriod')}</label>
                     <select
+                      required
                       value={service.shipments[0].projectionShipment?.frecuency}
                       onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, {frecuency: e.target.value})}
                       className={styles.select}
@@ -1629,6 +1623,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <div className={styles.formGroup}>
                     <label className={styles.label}>{t('quote.quantity')}</label>
                     <input
+                      required
                       type="number"
                       value={service.shipments[0].projectionShipment?.number}
                       onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, {number: parseInt(e.target.value)})}
@@ -1640,6 +1635,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <div className={styles.formGroup}>
                     <label className={styles.label}>{t('quote.unit')}</label>
                     <select
+                      required
                       value={service.shipments[0].projectionShipment?.idTypeMesurementFrecuency}
                       onChange={(e) => 
                         updateProjectionShipment(
@@ -1680,7 +1676,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         <td>{merch.merchandiseName}</td>
                         <td>{merch.classification?.some(clas => clas.idClassificationMerchandise === 7) ? 'Si' : 'No'}</td>
                         <td>{merch.classification?.some(clas => clas.idClassificationMerchandise === 10) ? 'Si' : 'No'}</td>
-                        <td>{merch.stackable ? 'Si' : 'No'}</td>
+                        <td>{merch.stowable ? 'Si' : 'No'}</td>
                         <td>{merch.volumeTotal} {merch.unitMeasurement} </td>
                         <td>{merch.weigthTotal} {merch.unitWeight}</td>
                         <td>
@@ -1983,6 +1979,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             <label className={styles.label}>*{t('quote.un')}</label>
                             <input
                               type="number"
+                              min="0"
+                              step="1"
                               placeholder="19"
                               className={styles.input}
                               style={{ width: '80px' }}
@@ -2052,10 +2050,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       type="checkbox"                  
                       checked={byUnitsMerch}                  
                       onChange={(e) => { 
-                        setByUnitsMerch(!byUnitsMerch)
-                        if(byUnitsMerch === false) {
-                          setCurrentPackages([]);
-                        }}}
+                        setByUnitsMerch(!byUnitsMerch);
+                        setCurrentPackages([]);
+                        }}
                       className={styles.checkbox}
                       disabled={mode === 'view' || formData.idStatusRequest >= 2}/> 
                   <label className={styles.checkboxLabel}> Por unidades </label>                  
@@ -2077,11 +2074,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               {!byUnitsMerch ? (
                 <div className={styles.modalRow} style={{ marginTop: '1.0rem' }}>
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>{t('quote.totalVolume')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})  </label>
+                    <label className={styles.label}>{t('quote.totalVolume')} ({useMetricSystem ? t('quote.cm') : t('quote.in')}) </label>
                     <input
-                      type="number"
+                      type="number"   
+                      min="0"                
+                      step="any"
                       value={merchandiseForm.volumeTotal}
-                      onChange={(e) => setMerchandiseForm({...merchandiseForm, volumeTotal: parseInt(e.target.value) })}
+                      onChange={(e) => setMerchandiseForm({...merchandiseForm, volumeTotal: Number(e.target.value) })}
                       className={styles.input}
                       placeholder="0"
                       disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
@@ -2090,8 +2089,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <label className={styles.label}>{t('quote.totalWeight')} ({useMetricSystem ? t('quote.cm') : t('quote.in')}) </label>
                       <input
                         type="number"
+                        min="0"
+                        step="any"
                         value={merchandiseForm.weigthTotal}
-                        onChange={(e) => setMerchandiseForm({...merchandiseForm, weigthTotal: parseInt(e.target.value)})}                                           
+                        onChange={(e) => setMerchandiseForm({...merchandiseForm, weigthTotal: Number(e.target.value)})}                                           
                         className={styles.input}
                         placeholder="0"
                         disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
@@ -2234,7 +2235,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <span className={styles.required}>*</span>{t('quote.quantity')}
                   </label>
                   <input
-                    type="number"                    
+                    type="number"  
+                    min="0"                   
                     className={styles.input}
                     placeholder="5"
                     id="package-quantity"
@@ -2247,6 +2249,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     </label>
                     <input
                       type="number"
+                      min="0" 
                       step="any"
                       className={styles.input}
                       id="package-length"
@@ -2258,6 +2261,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     </label>
                     <input
                       type="number"
+                      min="0" 
                       step="any"
                       className={styles.input}
                       id="package-height"
@@ -2271,6 +2275,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     </label>
                     <input
                       type="number"
+                      min="0" 
                       step="any"
                       className={styles.input}
                       id="package-width"
@@ -2283,6 +2288,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     </label>
                     <input
                       type="number"
+                      min="0" 
                       step="any"
                       className={styles.input}
                       id="package-weight"
