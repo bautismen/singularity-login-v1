@@ -85,18 +85,7 @@ export function ControlsPricing() {
 
         // 2️⃣ Ordenar por idStatusRequest ASCENDENTE
         const statusCompare = a.idStatusRequest - b.idStatusRequest;
-        if (statusCompare !== 0) return statusCompare;       
-
-        // 1️⃣ Ordenar por diferencia de días (más cercano a 0 primero)
-        const daysA = getDaysElapsed(a.deadlineDate);
-        const daysB = getDaysElapsed(b.deadlineDate);
-
-        // Si alguno es null lo mandamos al final
-        if (daysA === null) return 1;
-        if (daysB === null) return -1;
-
-        const daysCompare = Math.abs(daysA) - Math.abs(daysB);
-        if (daysCompare !== 0) return daysCompare;
+        if (statusCompare !== 0) return statusCompare;              
 
          // 3️⃣ Luego aplicar tu orden principal
         return rank(a) - rank(b);
