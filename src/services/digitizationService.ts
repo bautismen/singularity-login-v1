@@ -7,7 +7,7 @@ import {
   SectionDTO
 } from "../types/digitization";
 
-const ENVIRONMENT_ID = 2; // o el que corresponda
+const ENVIRONMENT_ID = 2; 
 
 const API_KEY = import.meta.env.VITE_APIKEYSL;
 
@@ -16,9 +16,7 @@ const headers = {
   "environmentId_": ENVIRONMENT_ID.toString(),
   "Content-Type": "application/json",
 };
-const DIGITIZATION_API_URL = `https://localhost:7011/`;
-const DIGITIZATION_FUNCTION_URL = `operations/v1/kl/t/datastorage/`;
-const DIGITIZATION_URL =DIGITIZATION_API_URL + DIGITIZATION_FUNCTION_URL;
+const API_DIGITIZATION = import.meta.env.VITE_API_URL_PruebaDIG + `operations/v1/kl/t/datastorage/`;
 /* ==============================
  * UTIL: File → Base64
  * ============================== */
@@ -45,7 +43,7 @@ function fileToBase64(file: File): Promise<string> {
 export async function getRecentDocuments(
   limit: number = 100
 ): Promise<DigitizationDocument[]> {
-  const url = `${DIGITIZATION_URL}docs/info?limit_=${limit}`;
+  const url = `${API_DIGITIZATION}docs/info?limit_=${limit}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -70,7 +68,7 @@ export async function getRecentDocuments(
 export async function getDocumentsByReference(
   reference: string
 ): Promise<DigitizationDocument[]> {
-  const url = `${DIGITIZATION_URL}qrreferences/${encodeURIComponent(
+  const url = `${API_DIGITIZATION}qrreferences/${encodeURIComponent(
     reference
   )}/docs/info`;
 
@@ -98,7 +96,7 @@ export async function getDocumentsByReferenceSection(
   reference: string,
   section: string
 ): Promise<DigitizationDocument[]> {
-  const url = `${DIGITIZATION_URL}qrreferences/${encodeURIComponent(
+  const url = `${API_DIGITIZATION}qrreferences/${encodeURIComponent(
     reference
   )}/sections/${encodeURIComponent(section)}/docs/info`;
 
@@ -126,7 +124,7 @@ export async function getDocumentsByReferenceSectionType(
   section: string,
   documentType: string
 ): Promise<DigitizationDocument[]> {
-  const url = `${DIGITIZATION_URL}qrreferences/${encodeURIComponent(
+  const url = `${API_DIGITIZATION}qrreferences/${encodeURIComponent(
     reference
   )}/sections/${encodeURIComponent(section)}/doctypes/${encodeURIComponent(
     documentType
@@ -157,7 +155,7 @@ export async function downloadDocument(
   id: number
 ): Promise<DownloadResponse> {
   const response = await fetch(
-    `${DIGITIZATION_URL}docs/${id}/download`,
+    `${API_DIGITIZATION}docs/${id}/download`,
     {
       method: "GET",
       headers: {
@@ -209,7 +207,7 @@ export async function uploadDocuments(
     payloads
   };
 
-  const url = `${DIGITIZATION_URL}qrreferences/${encodeURIComponent(
+  const url = `${API_DIGITIZATION}qrreferences/${encodeURIComponent(
     reference
   )}/sections/${sectionId}/doctypes/${documentTypeId}/add`;
 
@@ -245,7 +243,7 @@ export async function deleteDocument(
 ): Promise<{ codeStatus: number; messageStatus?: string }> {
 
   const response = await fetch(
-    `${DIGITIZATION_URL}docs/${id}/delete`,
+    `${API_DIGITIZATION}docs/${id}/delete`,
     {
       method: "DELETE",
       headers,
@@ -282,7 +280,7 @@ class CatalogService {
     mapper?: (dto: any) => T
   ): Promise<T[]> {
 
-    const url = `${DIGITIZATION_URL}catalogs/${endpoint}/info`;
+    const url = `${API_DIGITIZATION}catalogs/${endpoint}/info`;
 
     const response = await fetch(url, {
       method: "GET",

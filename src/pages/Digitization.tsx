@@ -139,7 +139,7 @@ const handleDelete = (id: number, name: string) => {
         await loadRecentDocuments();
 
       } catch (error: any) {
-        showError(error.message);
+        showError(t('dig.deleteError'));
       }
     }
   });
@@ -227,7 +227,7 @@ const fetchDocuments = async () => {
   } catch (err: any) {
     setDocuments([]);
     setRecentDocuments([]);
-    showError(err.message);
+    showError(t('dig.catalogError'));
   } finally {
     setLoading(false);
   }
@@ -248,7 +248,7 @@ const fetchDocuments = async () => {
       setDocuments(sorted);
       setIsSearchResult(false);
     } catch (err: any) {
-      showError(err.message);
+      showError(t('dig.catalogError'));
     } finally {
       setLoading(false);
     }
@@ -504,7 +504,7 @@ const uploadFiles = async () => {
           }
 
           showError(errorMessage);
-
+          
           setUploading(false);
           abortControllerRef.current = null;
         }
@@ -826,7 +826,7 @@ const filteredDocuments = recentDocuments.filter(doc =>
                     await loadRecentDocuments();
 
                   } catch (error: any) {
-                    showError(error.message);
+                    showError(t('dig.deleteError'));
                   }
 
                 }
