@@ -75,6 +75,10 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
     try {
       setLoading(true);      
       const data = await quotationService.getRecentQuotations();
+      if (data.message ===  t('ctrlpricing.norequests')) {
+        showInfo(data.message);
+        return;
+      }
       const sortdata = [...data.data].sort((a, b) => {
         if(a.idStatusRequest === 10 && b.idStatusRequest !== 10) return 1; // a va despues de b
         if(a.idStatusRequest !== 10 && b.idStatusRequest === 10) return -1; // a va antes de b

@@ -20,11 +20,19 @@ export const quotationService = {
     if (!response.ok) {
         throw new Error('Error al cargar las cotizaciones');
     }
-    if (response.status === 204) {
-        throw new Error('No hay solicitudes disponibles');        
-    }
-    const data = await response.json()
-    return {data: data.data || []};
+     if (response.status === 204) {
+        return {
+        message: 'No hay solicitudes disponibles',
+        data: [],
+        };
+      }
+      else {
+        const data = await response.json();
+        return {
+            message: '',
+            data: data.data || [],
+        }; 
+      }
   },
 
   async getById(id: string) {
