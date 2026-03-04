@@ -236,7 +236,7 @@ const fetchDocuments = async () => {
   const loadRecentDocuments = async () => {
     try {
       setLoading(true);
-      const docs = await getRecentDocuments(20);
+      const docs = await getRecentDocuments(100);
 
       const sorted = [...docs].sort(
         (a, b) =>
