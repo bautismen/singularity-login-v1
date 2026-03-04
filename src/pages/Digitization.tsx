@@ -512,16 +512,20 @@ const uploadFiles = async () => {
 
     if (!abortControllerRef.current?.signal.aborted) {
 
-      setFiles([]);
-      setPreviewFiles([]);
+    setFiles([]);
+    
+    setPreviewFiles([]);
 
-      await loadRecentDocuments();
-      handleResetFilters();
+    await loadRecentDocuments();
 
-      setTimeout(() => {
-        setUploadQueue([]);
-      }, 2000);
-    }
+    handleResetFilters();
+
+    closeUploadModal();
+
+    setTimeout(() => {
+      setUploadQueue([]);
+    }, 2000);
+  }
 
   } catch (error: any) {
 
