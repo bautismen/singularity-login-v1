@@ -278,16 +278,16 @@
 .sectionTitle {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-secondary);
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--border);
 }
 
-.dark .sectionTitle {
+/* .dark .sectionTitle {
   color: #d1d5db;
   border-bottom-color: #374151;
-}
+} */
 
 .formGrid {
   display: grid;
@@ -304,12 +304,12 @@
 .label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-primary);
 }
 
-.dark .label {
+/* .dark .label {
   color: #d1d5db;
-}
+} */
 
 .labelInfoRed {
   display: flex;
@@ -330,11 +330,12 @@
 
 .input {
   padding: 0.625rem 0.875rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  color: #1f2937;
+  color: var(--text-secondary);
   transition: all 0.15s ease;
+  background-color: var(--hover);
 }
 
 .input:focus {
@@ -343,7 +344,7 @@
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
-.dark .input {
+/* .dark .input {
   background-color: #374151;
   border-color: #4b5563;
   color: white;
@@ -351,7 +352,7 @@
 
 .dark .input:focus {
   border-color: #037F8C;
-}
+} */
 
 .select {
   padding: 0.625rem 0.875rem;
@@ -485,20 +486,6 @@
 
 .toggle.active .toggleThumb {
   transform: translateX(1.5rem);
-}
-
-.serviceCard {
-  background-color: var(--surface);
-  border: 2px solid #e5e7eb;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-  position: relative;
-}
-
-.dark .serviceCard {
-  background-color: #111827;
-  border-color: #374151;
 }
 
 .serviceHeader {
@@ -676,15 +663,15 @@
 .merchandiseTitle {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0;
 }
 
-.dark .merchandiseTitle {
+/* .dark .merchandiseTitle {
   color: #9ca3af;
-}
+} */
 
 .merchandiseTable {
   display: flex;
@@ -1265,16 +1252,6 @@
   margin-bottom: 1rem;
 }
 
-.checkboxLabel {
-  font-size: 0.9375rem;
-  color: #1f2937;
-  cursor: pointer;
-}
-
-.dark .checkboxLabel {
-  color: white;
-}
-
 .simpleTable {
   width: 100%;
   border-collapse: collapse;
@@ -1283,18 +1260,18 @@
 
 .simpleTable thead {
   background: transparent;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
 }
 
-.dark .simpleTable thead {
+/* .dark .simpleTable thead {
   border-bottom-color: #374151;
-}
+} */
 
 .simpleTable th {
   padding: 0.625rem 0.75rem;
   text-align: left;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--text-tertiary);
   font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1306,14 +1283,14 @@
 
 .simpleTable td {
   padding: 0.625rem 0.75rem;
-  border-bottom: 1px solid #e5e7eb;
-  color: #1f2937;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
 }
 
-.dark .simpleTable td {
+/* .dark .simpleTable td {
   border-bottom-color: #374151;
   color: white;
-}
+} */
 
 .simpleTable tbody tr:last-child td {
   border-bottom: none;
@@ -1868,8 +1845,8 @@
 }
 
 .clientSection {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 0.75rem;
   padding: 1.5rem;
   display: flex;
@@ -1899,16 +1876,16 @@
 .clientName {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
   margin: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.dark .clientName {
+/* .dark .clientName {
   color: #f9fafb;
-}
+} */
 
 .priorityIcon {
   width: 20px;
@@ -1921,12 +1898,12 @@
   gap: 1rem;
   margin-top: 0.5rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-tertiary);
 }
 
-.dark .clientDetails {
+/* .dark .clientDetails {
   color: #9ca3af;
-}
+} */
 
 .clientId,
 .clientExecutive {
@@ -2009,13 +1986,13 @@
 .switchLabel {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-secondary);
   user-select: none;
 }
 
-.dark .switchLabel {
+/* .dark .switchLabel {
   color: #d1d5db;
-}
+} */
 
 .containerWithSidebar {
   display: flex;
@@ -2032,7 +2009,7 @@
 
 .controlLabel {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-tertiary);
 }
 
 .dark .controlLabel {
@@ -2104,14 +2081,14 @@
   gap: 0.75rem;
   justify-content: flex-end;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border);
 }
 
 .btnDecline {
   padding: 0.625rem 1.25rem;
-  background: white;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
+  background: var(--hover);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
   border-radius: 0.375rem;
   cursor: pointer;
   font-size: 0.875rem;
@@ -2120,11 +2097,10 @@
 }
 
 .btnDecline:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: #6b7280;
 }
 
-.dark .btnDecline {
+/* .dark .btnDecline {
   background: #111827;
   color: #9ca3af;
   border-color: #374151;
@@ -2132,7 +2108,7 @@
 
 .dark .btnDecline:hover {
   background: #1f2937;
-}
+} */
 
 .dark .clientActions {
   border-top-color: #374151;
@@ -2155,8 +2131,8 @@
 }
 
 .suppliersSection {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 0.75rem;
   padding: 1.5rem;
   display: flex;
@@ -2180,7 +2156,7 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: #f9fafb;
+  background: var(--background);
   border-radius: 0.5rem;
 }
 
@@ -2190,29 +2166,29 @@
 
 .supplierLabel {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-tertiary);
   min-width: 80px;
 }
 
-.dark .supplierLabel {
+/* .dark .supplierLabel {
   color: #9ca3af;
-}
+} */
 
 .supplierInput {
   flex: 1;
   padding: 0.5rem 0.75rem;
-  background: white;
-  border: 1px solid #d1d5db;
+  background: var(--hover);
+  border: 1px solid var(--border);
   border-radius: 0.375rem;
   font-size: 0.875rem;
-  color: #111827;
+  color: var(--text-secondary);
 }
 
-.dark .supplierInput {
+/* .dark .supplierInput {
   background: #1f2937;
   border-color: #374151;
   color: #f9fafb;
-}
+} */
 
 .btnRemoveSupplier {
   padding: 0.5rem;
@@ -2249,7 +2225,7 @@
 }
 
 .btnAddSupplier:hover {
-  background: #f0fdfa;
+  background: var(--hover);
 }
 
 .dark .btnAddSupplier:hover {
@@ -2257,8 +2233,8 @@
 }
 
 .generalSection {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 0.75rem;
   padding: 1.5rem;
   display: flex;
@@ -2274,11 +2250,11 @@
 .formInput,
 .formSelect {
   padding: 0.625rem 0.75rem;
-  background: white;
-  border: 1px solid #d1d5db;
+  background: var(--hover);
+  border: 1px solid var(--border);
   border-radius: 0.375rem;
   font-size: 0.875rem;
-  color: #111827;
+  color: var(--text-secondary);
   transition: all 0.2s;
 }
 
@@ -2298,11 +2274,11 @@
 
 .formTextarea {
   padding: 0.625rem 0.75rem;
-  background: white;
-  border: 1px solid #d1d5db;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 0.375rem;
   font-size: 0.875rem;
-  color: #111827;
+  color: var(--text-secondary);
   font-family: inherit;
   resize: vertical;
   transition: all 0.2s;
@@ -2323,12 +2299,13 @@
 .servicesSection {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  /* gap: 1.5rem; */
+  padding: 1.5rem;
 }
 
 .serviceCard {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 0.75rem;
   padding: 1.5rem;
   display: flex;
@@ -2336,10 +2313,24 @@
   gap: 1.5rem;
 }
 
+/* .serviceCard {
+  background-color: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+} */
+
+/* .dark .serviceCard {
+  background-color: #111827;
+  border-color: #374151;
+}
+
 .dark .serviceCard {
   background: #1f2937;
   border-color: #374151;
-}
+} */
 
 .serviceHeader {
   display: flex;
@@ -2400,12 +2391,12 @@
 .associatedServices label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-secondary);
 }
 
-.dark .associatedServices label {
+/* .dark .associatedServices label {
   color: #d1d5db;
-}
+} */
 
 .servicesChips {
   display: flex;
@@ -2454,13 +2445,23 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--text-secondary);
   cursor: pointer;
 }
 
+/* .checkboxLabel {
+  font-size: 0.9375rem;
+  color: #1f2937;
+  cursor: pointer;
+} */
+
+/* .dark .checkboxLabel {
+  color: white;
+} 
+
 .dark .checkboxLabel {
   color: #d1d5db;
-}
+} */
 
 .checkboxLabel input[type="checkbox"] {
   cursor: pointer;
@@ -2537,4 +2538,21 @@
   .modalRow {
     grid-template-columns: 1fr;
   }
+}
+
+.selectInput {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  background: var(--hover);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.selectInput:focus {
+  outline: none;
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }

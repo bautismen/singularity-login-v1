@@ -726,7 +726,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             <h3 className={styles.sectionTitle}>General</h3>
             <div className={styles.formGrid}>
               <div className={styles.formGroup}>
-                <label><span className={styles.required}>*</span> {t('ctrlpricing.status')}</label>
+                <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.status')}</label>
                 <select required
                   value={statusControl.status_control_name}
                   onChange={(e) => {
@@ -746,7 +746,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 </select>
               </div>
               <div className={styles.formGroup}>
-                <label><span className={styles.required}>*</span> {t('ctrlpricing.network')}</label>
+                <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.network')}</label>
                 <select required
                   value={generalData.network}
                   onChange={(e) => setGeneralData({...generalData, network: e.target.value})}
@@ -762,7 +762,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 </select>
               </div>
               <div className={styles.formGroup}>
-                <label><span className={styles.required}>*</span> {t('ctrlpricing.complexity')}</label>
+                <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.complexity')}</label>
                 <select required
                   value={generalData.complexity}
                   onChange={(e) => setGeneralData({...generalData, complexity: e.target.value})}
@@ -775,7 +775,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 </select>
               </div>
               <div className={styles.formGroup}>
-                <label><span className={styles.required}>*</span> {t('ctrlpricing.currency')}</label>
+                <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.currency')}</label>
                 <select required
                   value={generalData.currency}
                   onChange={(e) => setGeneralData({...generalData, currency: e.target.value})}
@@ -788,7 +788,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 </select>
               </div>
               <div className={styles.formGroup}>
-                <label><span className={styles.required}>*</span> {t('ctrlpricing.unitprofit')}</label>
+                <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.unitprofit')}</label>
                 <input required
                   type="number"
                   value={generalData.unit_profit}
@@ -798,7 +798,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 />
               </div>
               <div className={styles.formGroup}>
-                <label><span className={styles.required}>*</span> {t('ctrlpricing.volume')}</label>
+                <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.volume')}</label>
                 <input required
                   type="number"
                   value={generalData.volume}
@@ -808,7 +808,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 />
               </div>
               <div className={styles.formGroup}>
-                <label><span className={styles.required}>*</span> {t('ctrlpricing.generalprofit')}</label>
+                <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.generalprofit')}</label>
                 <input required
                   type="number"
                   value={calculateProfit_general()}
@@ -818,7 +818,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 />
               </div>
                 <div className={styles.formGroup}>
-                <label><span className={styles.required}>*</span> Key TD</label>
+                <label className={styles.label}><span className={styles.required}>*</span> Key TD</label>
                 <select required
                   value={generalData.key_td}
                   onChange={(e) => setGeneralData({...generalData, key_td: e.target.value})}
@@ -839,7 +839,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               </div>
             </div>
             <div className={styles.formGroup}>
-              <label>{t('ctrlpricing.comments')}</label>
+              <label className={styles.label}>{t('ctrlpricing.comments')}</label>
               <textarea
                 value={generalData.comments_general}
                 onChange={(e) => setGeneralData({...generalData, comments_general: e.target.value})}
@@ -908,7 +908,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                       <>
                         <div className={styles.serviceGrid}>
                           <div className={styles.formGroup}>
-                            <label><span className={styles.required}>*</span> {t('ctrlpricing.service')}</label>
+                            <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.service')}</label>
                             <input
                               type="text"
                               value={service.nameService || ''}
@@ -917,7 +917,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                             />
                           </div>
                           <div className={styles.formGroup}>
-                            <label><span className={styles.required}>*</span> {t('ctrlpricing.operation')}</label>
+                            <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.operation')}</label>
                             <input
                               type="text"
                               value={shipment.typeOperation || ''}
@@ -926,7 +926,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                             />
                           </div>
                           <div className={styles.formGroup}>
-                            <label><span className={styles.required}>*</span> Incoterm</label>
+                            <label className={styles.label}><span className={styles.required}>*</span> Incoterm</label>
                             <input
                               type="text"
                               value={shipment.incoterm_name || shipment.incoterm || ''}
@@ -935,7 +935,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                             />
                           </div>
                           <div className={styles.formGroup}>
-                            <label>{t('ctrlpricing.expecteddeparture')}</label>
+                            <label className={styles.label}>{t('ctrlpricing.expecteddeparture')}</label>
                             <input
                               type="date"
                               value={shipment.departureDateAproximate ? new Date(shipment.departureDateAproximate.$date || shipment.departureDateAproximate).toISOString().split('T')[0] : ''}
@@ -944,7 +944,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                             />
                           </div>
                           <div className={styles.formGroup}>
-                            <label><span className={styles.required}>*</span> {t('ctrlpricing.shippingtype')}</label>
+                            <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.shippingtype')}</label>
                             <input
                               type="text"
                               value={shipment.typeShipment || ''}
@@ -953,7 +953,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                             />
                           </div>
                           <div className={styles.formGroup}>
-                            <label><span className={styles.required}>*</span> {t('ctrlpricing.origin')}</label>
+                            <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.origin')}</label>
                             <input
                               type="text"
                               value={(() => {
@@ -966,7 +966,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                             />
                           </div>                         
                           <div className={styles.formGroup}>
-                            <label><span className={styles.required}>*</span> {t('ctrlpricing.destination')}</label>
+                            <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.destination')}</label>
                             <input
                               type="text"
                               value={(() => {
@@ -987,7 +987,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                         </div>
 
                         <div className={styles.associatedServices}>
-                          <label>{t('ctrlpricing.associatedServices')}</label>
+                          <label className={styles.label}>{t('ctrlpricing.associatedServices')}</label>
                           <div className={styles.servicesChips}>
                             {(shipment.servicesAsociated || shipment.services_asociated) && (shipment.servicesAsociated || shipment.services_asociated).length > 0 ? (
                               (shipment.servicesAsociated || shipment.services_asociated).map((assocService: any, idx: number) => (
@@ -1002,7 +1002,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                         </div>
 
                         <div className={styles.formGroup}>
-                          <label>{t('ctrlpricing.comments')}</label>
+                          <label className={styles.label}>{t('ctrlpricing.comments')}</label>
                           <textarea
                             value={shipment.comment || shipment.comments || ''}
                             className={styles.formTextarea}
@@ -1024,7 +1024,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           {shipment.projectionShipment && (
                             <div className={styles.frequencyGrid}>
                               <div className={styles.formGroup}>
-                                <label>{t('ctrlpricing.frequency')}</label>
+                                <label className={styles.label}>{t('ctrlpricing.frequency')}</label>
                                 <input
                                   type="text"
                                   value={shipment.projectionShipment.frecuency || ''}
@@ -1033,7 +1033,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                                 />
                               </div>
                               <div className={styles.formGroup}>
-                                <label>{t('ctrlpricing.quantity')}</label>
+                                <label className={styles.label}>{t('ctrlpricing.quantity')}</label>
                                 <input
                                   type="number"
                                   value={shipment.projectionShipment.number || 0}
@@ -1042,7 +1042,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                                 />
                               </div>
                               <div className={styles.formGroup}>
-                                <label>{t('ctrlpricing.unit')}</label>
+                                <label className={styles.label}>{t('ctrlpricing.unit')}</label>
                                 <input
                                   type="text"
                                   value={shipment.projectionShipment.measurementFrecuency || ''}
