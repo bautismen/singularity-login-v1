@@ -159,8 +159,12 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     suppliersCombo?.supplier_associated_name === '0') {
       showError(t('ctrlpricing.selectprov'));
       return;
-    }    
-
+    }
+    
+    if (suppliers?.some(s => s.idsuplier === suppliersCombo?.idsuplier)) {
+      showError(t('ctrlpricing.provalreadyadded'));    
+      return;
+    }   
     
     setSuppliers([...suppliers, {
       idsuplier: suppliersCombo?.idsuplier,
