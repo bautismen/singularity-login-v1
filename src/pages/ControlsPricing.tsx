@@ -549,10 +549,10 @@ export function ControlsPricing() {
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
                       </svg>
-                      <span>{request.createdBy?.fullName || t('ctrlpricing.unassigned')}</span>
+                      <span>{request.createdBy?.fullName || t('ctrlpricing.unassigned')}</span>                      
                     </div>
                     <div className={styles.servicesCounter}>
-                      {(request.statusRequest === 'Parcialmente cotizada' || request.statusRequest === 'Cotizada') && (
+                      {(request.idStatusRequest === 4 || request.idStatusRequest === 5) && (
                         <button
                           className={styles.documentsButton}
                           onClick={() => handleOpenDocuments(request)}
