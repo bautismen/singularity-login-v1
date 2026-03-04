@@ -1565,6 +1565,27 @@
   color: #14b8a6;
 } */
 
+.loading {
+  text-align: center;
+  padding: 3rem;
+}
+
+.spinner {
+  display: inline-block;
+  width: 3rem;
+  height: 3rem;
+  border: 4px solid #e5e7eb;
+  border-top-color: #14b8a6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 1024px) {
   .container {
     padding: 1.5rem;

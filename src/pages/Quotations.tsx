@@ -162,7 +162,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         }),
       ]);
 
-      const customersData = await  await getCustomers(true);
+      const customersData =  await getCustomers(true);
       const requestTypesData = await requestTypesRes.json();
       const servicesData = await servicesRes.json();
       const executivesData = await getExecutivesByDepartment('Pricing');
@@ -186,8 +186,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const loadQuotation = async (id: string) => {
-    try {
-      setLoading(true);
+    try {      
       const data = await quotationService.getById(id);
       setFormData({
         referenceRequest: data.data.referenceRequest || '',
@@ -237,8 +236,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     } catch (error) {
       console.error('Error loading quotation:', error);
       showError(t('quote.errors.loadQuotation'));
-    } finally {
-      setLoading(false);
+    } finally {      
     }
   };
 
@@ -1121,7 +1119,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           </button>
         </div>
       </div>
-
+      {loading ? (
+            <div className={styles.loading}>
+              <div className={styles.spinner}></div>
+            </div>
+            ) :
+      <div>
       {formData?.statuscomments !== null && (
         <div>
          <label className={styles.label}>Comentarios por cancelación</label>
@@ -1767,7 +1770,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             {t('quote.addExecutive')}
           </button>
         </div>
+      </div>      
       </div>
+      }
       </form>
 
       {showMerchandiseModal && (
