@@ -1,5 +1,10 @@
 .header {
-  background: linear-gradient(to right, #1a8fa4, #1c9bab);
+  /* background: linear-gradient(to right, #1a8fa4, #1c9bab); */
+  background: #03738C; /* Old browsers */
+  background: -moz-linear-gradient(90deg, rgba(3,115,140,1) 0%, rgba(3,127,140,1) 40%, rgba(3, 140, 127, 1) 80%, rgba(3, 166, 120, 1) 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(90deg, rgba(3,115,140,1) 0%, rgba(3,127,140,1) 40%, rgba(3, 140, 127, 1) 80%, rgba(3, 166, 120, 1) 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(90deg, rgba(3,115,140,1) 0%, rgba(3,127,140,1) 40%, rgba(3, 140, 127, 1) 80%, rgba(3, 166, 120, 1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  /* filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#03738C', endColorstr='#3CA64C',GradientType=1 ); IE6-9 fallback on horizontal gradient */
   color: white;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   border-bottom: 1px solid #1a8fa4;
