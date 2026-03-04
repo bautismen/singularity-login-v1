@@ -1,7 +1,7 @@
 import {AsignateToRequest, ChangeStatusRequest, QuotationRequest} from '../types/requestQuotation';
 
 //const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quotation-requests`;
-const API_REQUESTQUOTATION = import.meta.env.VITE_REQUESTQUOTATION;
+const API_REQUESTQUOTATION = import.meta.env.VITE_API_URL;
 const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 const API_KEYSL = import.meta.env.VITE_APIKEYSL;
 
