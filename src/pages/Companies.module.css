@@ -207,7 +207,7 @@
 
 .companyCard p {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--text-tertiary);
   margin: 2px 0;
 }
 
@@ -255,7 +255,7 @@
 }
 
 .editButton {
-  background: #d1fae5;
+  background: var(--hover);
   color: #10b981;
 }
 
@@ -342,7 +342,7 @@
 }
 
 .formContainer {
-  background: var(--surface);
+  background: var(--background);
   border: none;
   border-radius: 0;
   padding: 0;

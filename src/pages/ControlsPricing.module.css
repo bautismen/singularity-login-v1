@@ -2,11 +2,12 @@
   flex: 1;
   padding: 2rem;
   overflow-y: auto;
+  background: var(--background);
 }
 
-.dark .container {
+/* .dark .container {
   background: #111827;
-}
+} */
 
 .header {
  display: flex;
@@ -432,7 +433,7 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  color: #e20202;
+  color: #fa0404;
   font-size: 1.2rem;
 }
 
@@ -655,7 +656,7 @@
 }
 
 .addControlButton:hover {
-  background: #f0fdfa;
+  background: var(--hover);
 }
 
 .dark .addControlButton:hover {

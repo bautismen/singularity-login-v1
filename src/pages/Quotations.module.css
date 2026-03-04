@@ -236,7 +236,7 @@
   border-radius: 0.5rem;
   font-size: 0.875rem;
   color: var(--text-primary);
-  background: var(--surface);
+  background: var(--hover);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -509,7 +509,7 @@
   border-radius: 0.5rem;
   font-size: 0.875rem;
   color: var(--text-secondary);
-  background: var(--surface);
+  background: var(--hover);
   resize: vertical;
   min-height: 80px;
   font-family: inherit;
@@ -1504,31 +1504,31 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--hover);
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .executiveSelectionItem:hover {
-  background: #f9fafb;
+  background: var(--surface);
   border-color: #14b8a6;
 }
 
-.dark .executiveSelectionItem {
+/* .dark .executiveSelectionItem {
   background: #374151;
   border-color: #4b5563;
-}
+} */
 
-.dark .executiveSelectionItem:hover {
+/* .dark .executiveSelectionItem:hover {
   background: #4b5563;
   border-color: #14b8a6;
-}
+} */
 
 .executiveSelectionItem span {
   font-size: 0.875rem;
-  color: #1f2937;
+  color: var(--text-secondary);
 }
 
 .dark .executiveSelectionItem span {

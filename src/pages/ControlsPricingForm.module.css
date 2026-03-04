@@ -25,7 +25,7 @@
 .title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
 }
 
 .dark .title {
@@ -34,7 +34,7 @@
 
 .formSubtitle {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 0.25rem 0 0 0;
 }
 
@@ -488,7 +488,7 @@
 }
 
 .serviceCard {
-  background-color: #f9fafb;
+  background-color: var(--surface);
   border: 2px solid #e5e7eb;
   border-radius: 0.75rem;
   padding: 1.5rem;

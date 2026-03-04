@@ -508,7 +508,7 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  color: #e20202;
+  color: #fa0404;
   font-size: 1.2rem;
 }
 
@@ -590,7 +590,7 @@
 }
 
 .editButton {
-  background: #d1fae5;
+  background: var(--hover);
   color: #059669;
 }
 

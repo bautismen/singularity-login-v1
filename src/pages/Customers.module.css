@@ -314,7 +314,7 @@
 }
 
 .editButton {
-  background: #d1fae5;
+  background: var(--hover);
   color: #10b981;
 }
 

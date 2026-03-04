@@ -302,7 +302,7 @@
 }
 
 .editButton {
-  background: #d1fae5;
+  background: var(--hover);
   color: #10b981;
 }
 
@@ -709,7 +709,7 @@
 
 .saveButton {
   padding: 0.75rem 2rem;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #038C7F;
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -722,8 +722,8 @@
 
 .saveButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  /* box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); */
+  background: #03738C;
 }
 
 .saveButton:disabled {
