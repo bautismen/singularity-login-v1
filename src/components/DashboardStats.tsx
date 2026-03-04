@@ -357,6 +357,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                 const paginated = currentList.slice( (currentPage - 1) * pageSize,
                                                       currentPage * pageSize,
                                                     );
+                const totalPaginated = paginated.length;
 
                 if (!currentList || currentList.length === 0) {
                   return (
@@ -494,7 +495,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                               <span className="text-sm text-gray-500 dark:text-gray-400">
                                 {t("dash.quotes.records", {
                                   values: {
-                                    record: pageSize > total ? total : pageSize,
+                                    record: totalPaginated,
                                     records: total,
                                   },
                                 })}
