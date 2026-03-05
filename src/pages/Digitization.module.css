@@ -1135,6 +1135,14 @@
   transition: width 0.2s ease;
 }
 
+.progressError {
+  background: #ef4444;
+}
+
+.progressSuccess {
+  background: #22c55e;
+}
+
 /* Status badges */
 .statusBadge {
   width: 24px;

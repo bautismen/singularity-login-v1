@@ -414,6 +414,10 @@ const fetchDocuments = async () => {
     setSeccionFilter("");
     setDocumentTypeFilter("");
   };
+
+const sleep = (ms: number) =>
+  new Promise(resolve => setTimeout(resolve, ms));
+
    /* ================= UPLOAD ================= */
 
 const uploadFiles = async () => {
@@ -453,6 +457,17 @@ const uploadFiles = async () => {
         setUploadQueue(prev =>
           prev.map(item =>
             item.id === currentId
+              ? { ...item, status: "uploading", progress: 25 }
+              : item
+          )
+        );
+
+        await sleep(300);
+
+        //  estado uploading
+        setUploadQueue(prev =>
+          prev.map(item =>
+            item.id === currentId
               ? { ...item, status: "uploading", progress: 50 }
               : item
           )
@@ -470,6 +485,17 @@ const uploadFiles = async () => {
         [file],
         abortControllerRef.current?.signal
       );
+
+        // success solo si no hubo error
+        setUploadQueue(prev =>
+          prev.map(item =>
+            item.id === currentId
+              ? { ...item, status: "success", progress: 75 }
+              : item
+          )
+        );
+
+        await sleep(300);
 
         // success solo si no hubo error
         setUploadQueue(prev =>
@@ -1126,7 +1152,11 @@ const filteredDocuments = recentDocuments.filter(doc =>
 
                       <div className={styles.progressBar}>
                         <div
-                          className={styles.progressFill}
+                          className={`${styles.progressFill} ${
+                            item.status === "error" ? styles.progressError : ""
+                          } ${
+                            item.status === "success" ? styles.progressSuccess : ""
+                          }`}
                           style={{ width: `${item.progress}%` }}
                         />
                       </div>
