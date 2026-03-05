@@ -234,9 +234,10 @@ if (isFormOpen) {
               <input
                 type="text"
                 value={formData.business_name}
-                onChange={(e) =>
-                  setFormData({ ...formData, business_name: e.target.value })
-                }
+                onChange={(e) => setFormData({ 
+                  ...formData, 
+                  business_name: e.target.value.replace(/[^A-Za-z0-9ÁÉÍÓÚáéíóúÑñÄ\s.,&'’()+-]/g, "")
+                })}
                 className={styles.textInput}
                 placeholder={t('comp.CompanyName')}
                 required
@@ -304,7 +305,7 @@ if (isFormOpen) {
                 value={formData.rfc_taxid}
                 onChange={(e) => {
                   const value = e.target.value
-                    .replace(/[^a-zA-Z0-9]/g, '') // solo letras y números
+                    .replace(/[^a-zA-Z0-9-&]/g, '') // solo letras y números
                     .slice(0, 13); // máximo 13 caracteres
 
                   setFormData({ ...formData, rfc_taxid: value });

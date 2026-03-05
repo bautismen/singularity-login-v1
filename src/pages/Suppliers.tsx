@@ -608,7 +608,12 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                       <input
                         type="text"
                         value={formData.curp}
-                        onChange={(e) => setFormData({ ...formData, curp: e.target.value })}
+                        onChange={(e) => setFormData({ 
+                          ...formData, 
+                          curp: e.target.value.toUpperCase()
+                                              .replace(/[^A-Z0-9]/g, "")
+                                              .slice(0, 18)
+                        })}
                         className={styles.textInput}
                         placeholder="CURP"
                         disabled = {editingSupplier ? true : false}
@@ -668,7 +673,11 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                           <input
                             type="text"
                             value={contact.name}
-                            onChange={(e) => updateContact(index, 'name', e.target.value)}
+                            onChange={(e) => updateContact(
+                              index, 
+                              'name', 
+                              e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
+                            )}
                           />
                         </label>
                       </div>
@@ -738,7 +747,11 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                           <input
                             type="text"
                             value={address.street}
-                            onChange={(e) => updateAddress(index, 'street', e.target.value)}
+                            onChange={(e) => updateAddress(
+                              index, 
+                              'street', 
+                              e.target.value.replace(/[^A-Za-z0-9ÁÉÍÓÚáéíóúÑñ\s.,#\/-]/g, "").replace(/\s{2,}/g, " ")
+                            )}
                           />
                         </label>
                       </div>
@@ -748,7 +761,11 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                           <input
                             type="text"
                             value={address.city}
-                            onChange={(e) => updateAddress(index, 'city', e.target.value)}
+                            onChange={(e) => updateAddress(
+                              index, 
+                              'city', 
+                              e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
+                            )}
                           />
                         </label>
                       </div>
@@ -805,7 +822,10 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                       <input
                         type="text"
                         value={newCompany.business_name}
-                        onChange={(e) => setNewCompany({ ...newCompany, business_name: e.target.value })}
+                        onChange={(e) => setNewCompany({ 
+                          ...newCompany, 
+                          business_name: e.target.value.replace(/[^A-Za-z0-9ÁÉÍÓÚáéíóúÑñÄ\s.,&'’()+-]/g, "")
+                        })}
                         required
                         onInvalid={(e) =>
                           e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
@@ -824,7 +844,12 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                       <input
                         type="text"
                         value={newCompany.rfc_taxid}
-                        onChange={(e) => setNewCompany({ ...newCompany, rfc_taxid: e.target.value })}
+                        onChange={(e) => setNewCompany({ 
+                          ...newCompany, 
+                          rfc_taxid: e.target.value.replace(/[^a-zA-Z0-9-&]/g, '') // solo letras y números
+                                                   .slice(0, 13) // máximo 13 caracteres
+
+                        })}
                         required
                         onInvalid={(e) =>
                           e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
