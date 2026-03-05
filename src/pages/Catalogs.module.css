@@ -83,10 +83,11 @@
 .iconButton.edit:hover {
   color: #14b8a6;
   border-color: #14b8a6;
+  background: #a7f3d0;
 }
 
 .iconButton.delete:hover {
-  /* background-color: #fef2f2; */
+  background: #fee2e2;
   border-color: #ef4444;
   color: #ef4444;
 }

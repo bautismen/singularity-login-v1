@@ -131,9 +131,14 @@ export function CatalogIMO() {
   };
 
   const handleSave = async (e: React.FormEvent) => {
+
     try {
       e.preventDefault();
       setLoading(true);
+
+      const exists = items.some( imo =>
+        imo.imo === formData.imo       
+      )
 
       if (editingItem) {
         const response = await fetch(`${API_URL}/${editingItem.id}`, {
@@ -148,7 +153,15 @@ export function CatalogIMO() {
         if (!response.ok) {
           showError('Error al actualizar el registro');
         }
+
       } else {
+
+        if (exists) {
+          showError(t('catalog.exists').replace('{name}', t('catalog.imo.code').toLowerCase()));
+          setLoading(false);
+          return;
+        }
+
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: {
@@ -161,6 +174,7 @@ export function CatalogIMO() {
         if (!response.ok) {
           showError('Error al crear el registro');
         }
+
       }
 
       await loadData();
@@ -358,7 +372,7 @@ export function CatalogIMO() {
                 <textarea
                   className="textarea"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value.replace(/\s{2,}/g, " ")})}
                   disabled={loading}
                   required
                   onInvalid={(e) => 
