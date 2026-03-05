@@ -93,12 +93,12 @@ export function Modal({
                 ${showCancel ? 'flex-1' : 'w-full'}
                 px-4 py-2.5 rounded-lg font-medium transition-colors
                 ${type === 'error'
-                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                  ? 'bg-[#038C7F] hover:bg-[#037F8C] text-white'
                   : type === 'warning'
-                  ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                  ? 'bg-[#038C7F] hover:bg-[#037F8C] text-white'
                   : type === 'success'
-                  ? 'bg-green-500 hover:bg-green-600 text-white'
-                  : 'bg-blue-500 hover:bg-blue-600 text-white'
+                  ? 'bg-[#038C7F] hover:bg-[#037F8C] text-white'
+                  : 'bg-[#038C7F] hover:bg-[#037F8C] text-white'
                 }
               `}
             >
