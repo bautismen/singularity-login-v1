@@ -12,6 +12,8 @@ import styles from './ControlsPricing.module.css';
 import {DocumentTypeDTO,  SectionDTO} from "../types/digitization";
 import {uploadDocuments, getDocumentTypes, getSections, getDocumentsByReference, downloadDocumentByReference
 } from "../services/digitizationService";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 export function ControlsPricing() {
   const { t } = useLanguage();
@@ -67,6 +69,23 @@ export function ControlsPricing() {
   useEffect(() => {
     filterRequests();
   }, [requests, searchQuery,dateFilter, executiveFilter,selectedExecutive]);
+
+  //filtrado combos tipo documento y sección
+useEffect(() => {
+
+  // filtrado por tarifa de venta final
+  const filteredDocs = documentTypes.filter(d => d.documenttypeid === 1);
+  if (filteredDocs.length > 0) {
+    setDocumentTypeUpload(String(filteredDocs[0].documenttypeid));
+  }
+
+  // filtrado por sección pricing
+  const filteredSections = sections.filter(s => s.sectionid === 1);
+  if (filteredSections.length > 0) {
+    setSeccionUpload(filteredSections[0].sectionid);
+  }
+
+}, [documentTypes, sections]);
 
   const loadUsers = async () => {
     try {
@@ -127,8 +146,72 @@ const handleOpenDocuments = async (request: ResquetQuote) => {
   }
 };
 
-const handleDownloadDocuments = (request: ResquetQuote) => {
-  // lógica de descarga
+const handleDownloadDocuments = async (request: ResquetQuote) => {
+
+  if (!request.referenceRequest) {
+    showWarning(t('dig.noReference'));
+    return;
+  }
+
+  try {
+
+    const meta = await downloadDocumentByReference(request.referenceRequest);
+
+    if (!meta || meta.length === 0) {
+      showWarning(t('dig.noDocuments'));
+      return;
+    }
+
+    // CASO 1: Solo un documento, no zip
+    if (meta.length === 1) {
+
+      const doc = meta[0];
+
+      if (!doc.fileBytes || !doc.fileName) {
+        showWarning(t('dig.invalidDocument'));
+        return;
+      }
+
+      const binary = atob(doc.fileBytes);
+      const bytes = new Uint8Array(binary.length);
+
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+
+      const blob = new Blob([bytes]);
+      saveAs(blob, doc.fileName);
+
+      return;
+    }
+
+    // CASO 2: Más de un documento se descargue como ZIP
+    const zip = new JSZip();
+
+    for (const doc of meta) {
+
+      if (!doc.fileBytes || !doc.fileName) continue;
+
+      const binary = atob(doc.fileBytes);
+      const bytes = new Uint8Array(binary.length);
+
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+
+      zip.file(doc.fileName, bytes);
+    }
+
+    const zipBlob = await zip.generateAsync({
+      type: "blob",
+      compression: "DEFLATE"
+    });
+
+    saveAs(zipBlob, `${request.referenceRequest}.zip`);
+
+  } catch (error: any) {
+    showError(error.message || t('dig.downloadError'));
+  }
 };
 
     const handleCancelUpload = () => {
@@ -150,8 +233,7 @@ const loadDocumentCount = async (reference: string) => {
     }));
 
   } catch (error) {
-    console.error("Error loading document count", error);
-
+    showError(t('dig.ErrorGetDocumentsByReference'));
     setDocumentCounts(prev => ({
       ...prev,
       [reference]: 0
@@ -796,7 +878,7 @@ const closeDocumentsModal = () => {
                         {(documentCounts[request.referenceRequest] ?? 0) > 0 && (
                           <button
                             className={styles.downloadButton}
-                            onClick={() => downloadDocumentByReference(request.referenceRequest)}
+                            onClick={() => handleDownloadDocuments(request)}
                             title={t('dig.download')}
                           >
                             <DownloadCloud  size={16} />
@@ -945,19 +1027,21 @@ const closeDocumentsModal = () => {
 
                       <select
                         value={documentTypeUpload}
-                        onChange={(e) =>
-                          setDocumentTypeUpload(e.target.value)
-                        }
+                        onChange={(e) => setDocumentTypeUpload(e.target.value)}
                         className={styles.selectupload}
+                        disabled
                       >
                         <option value="">{t('dig.documentType')}</option>
-                        {documentTypes.map(d => (
-                          <option
-                            key={d.documenttypeid}
-                            value={d.documenttypeid}
-                          >
-                            {d.documentnametype}
-                          </option>
+
+                        {documentTypes
+                          .filter(d => [1].includes(d.documenttypeid))
+                          .map(d => (
+                            <option
+                              key={d.documenttypeid}
+                              value={d.documenttypeid}
+                            >
+                              {d.documentnametype}
+                            </option>
                         ))}
                       </select>
 
@@ -969,15 +1053,19 @@ const closeDocumentsModal = () => {
                           )
                         }
                         className={styles.selectupload}
+                        disabled
                       >
                         <option value="">{t('dig.section')}</option>
-                        {sections.map(s => (
-                          <option
-                            key={s.sectionid}
-                            value={s.sectionid}
-                          >
-                            {s.section}
-                          </option>
+
+                        {sections
+                          .filter(s => [1].includes(s.sectionid))
+                          .map(s => (
+                            <option
+                              key={s.sectionid}
+                              value={s.sectionid}
+                            >
+                              {s.section}
+                            </option>
                         ))}
                       </select>
 
