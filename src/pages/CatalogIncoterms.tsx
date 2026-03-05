@@ -329,7 +329,14 @@ export function CatalogIncoterms() {
                     type="text"
                     className="input"
                     value={formData.incoterm}
-                    onChange={(e) => setFormData({ ...formData, incoterm: e.target.value })}
+                    onChange={(e) => {
+                      const value = e.target.value.toUpperCase();
+
+                      // Solo letras y máximo 3 caracteres
+                      if (/^[A-Za-z]{0,3}$/.test(value)) {
+                        setFormData({ ...formData, incoterm: value });
+                      }
+                    }}                   
                     disabled={disabled}
                     required
                     onInvalid={(e) => 
