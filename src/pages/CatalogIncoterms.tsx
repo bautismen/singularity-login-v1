@@ -125,9 +125,14 @@ export function CatalogIncoterms() {
   };
 
   const handleSave = async (e: React.FormEvent) => {
+
     try {
       e.preventDefault();
-      setLoading(true);     
+      setLoading(true);    
+      
+      const exists = items.some( i =>
+        i.incoterm === formData.incoterm   
+      )
 
       if (editingItem) {
         const response = await fetch(`${API_URL}/${editingItem.id}`, {
@@ -142,7 +147,15 @@ export function CatalogIncoterms() {
         if (!response.ok) {
           showError('Error al actualizar el registro');
         }
+
       } else {
+
+        if (exists) {
+          showError(t('catalog.exists').replace('{name}', t('catalog.incoterm.code').toLowerCase()));
+          setLoading(false);
+          return;
+        }
+
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: {
