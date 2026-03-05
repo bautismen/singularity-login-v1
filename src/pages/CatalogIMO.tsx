@@ -337,7 +337,10 @@ export function CatalogIMO() {
                   type="number"
                   className="input"
                   value={formData.imo}
-                  onChange={(e) => setFormData({ ...formData, imo: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value.slice(0, 5);
+                    setFormData({ ...formData, imo: value });
+                  }}
                   disabled={disabled}
                   required
                   onInvalid={(e) => 
