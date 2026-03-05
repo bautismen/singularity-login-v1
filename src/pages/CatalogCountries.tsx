@@ -131,10 +131,14 @@ export function CatalogCountries() {
   };
 
   const handleSave = async (e: React.FormEvent) => {
-    
+
     try {
       e.preventDefault();
       setLoading(true);
+
+      const exists = items.some( c =>
+        c.country_code === formData.country_code       
+      )
 
       if (editingItem) {
         const response = await fetch(`${API_URL}/${editingItem.id_country}`, {
@@ -151,6 +155,13 @@ export function CatalogCountries() {
         }
 
       } else {
+
+        if (exists) {
+          showError(t('catalog.exists').replace('{name}', t('catalog.country.code').toLowerCase()));
+          setLoading(false);
+          return;
+        }
+
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: {
@@ -343,7 +354,7 @@ export function CatalogCountries() {
                     type="text"
                     className="input"
                     value={formData.country_code}
-                    onChange={(e) => setFormData({ ...formData, country_code: e.target.value.toUpperCase() })}
+                    onChange={(e) => setFormData({ ...formData, country_code: e.target.value.toUpperCase().trim()})}
                     disabled = {editingItem ? true : false} 
                     maxLength={2}
                     placeholder="US, MX, CA..."
@@ -366,7 +377,7 @@ export function CatalogCountries() {
                     type="text"
                     className="input"
                     value={formData.name_country}
-                    onChange={(e) => setFormData({ ...formData, name_country: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, name_country: e.target.value.replace(/\s{2,}/g, " ")})}
                     disabled = {editingItem ? true : false} 
                     required
                     onInvalid={(e) => 

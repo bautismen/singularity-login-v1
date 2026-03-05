@@ -340,7 +340,7 @@ export function CatalogSectorOfBusiness() {
                     type="text"
                     className="input"
                     value={formData.name} 
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/\s{2,}/g, " ")})}
                     disabled = {editingItem ? true : false} 
                     required
                     onInvalid={(e) => 
@@ -357,7 +357,7 @@ export function CatalogSectorOfBusiness() {
                   <textarea
                     className="textarea"
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value.replace(/\s{2,}/g, " ")})}
                     disabled={loading}
                   />
                 </div>
