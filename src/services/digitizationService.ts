@@ -41,7 +41,7 @@ function fileToBase64(file: File): Promise<string> {
  * Obtener últimos documentos
  * ============================== */
 export async function getRecentDocuments(
-  limit: number = 100
+  limit: number = 20
 ): Promise<DigitizationDocument[]> {
   const url = `${API_DIGITIZATION}docs/info?limit_=${limit}`;
 

@@ -7,7 +7,6 @@ import {
   RefreshCw,
   Filter,
   FilterX,
-  Download,
   UploadCloud,
   Trash2,
   Cloud,
@@ -16,6 +15,10 @@ import {
   Search,
   Plus
 } from "lucide-react";
+import { GrCloudDownload  } from "react-icons/gr";
+
+import { FaFilePdf  } from "react-icons/fa";
+import { IoDocumentText } from "react-icons/io5";
 import { useAuth } from '../contexts/AuthContext';
 import {
   DigitizationDocument, 
@@ -73,6 +76,7 @@ const [openDocType, setOpenDocType] = useState(true);
 const refReference = useRef<HTMLDivElement>(null);
 const refSection = useRef<HTMLDivElement>(null);
 const refDocType = useRef<HTMLDivElement>(null);
+
   /* ========= UPLOAD MODAL ========= */
 
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -236,7 +240,7 @@ const fetchDocuments = async () => {
   const loadRecentDocuments = async () => {
     try {
       setLoading(true);
-      const docs = await getRecentDocuments(100);
+      const docs = await getRecentDocuments(20);
 
       const sorted = [...docs].sort(
         (a, b) =>
@@ -795,7 +799,7 @@ const filteredDocuments = recentDocuments.filter(doc =>
               className={styles.DownloadButton}
               onClick={handleBulkDownload}
             >
-              <Download size={16} />
+              <GrCloudDownload size={16} />
               {t('dig.download')}
             </button>
 
@@ -852,31 +856,41 @@ const filteredDocuments = recentDocuments.filter(doc =>
           ) : (
             filteredDocuments.map(doc => (
               <div key={doc.documentId} className={styles.recentCard}>
-                <input
-                  type="checkbox"
-                  className={styles.cardCheckbox}
-                  checked={selectedDocuments.includes(doc.documentId)}
-                  onChange={() => {
-                    setSelectedDocuments(prev => {
-                      if (prev.includes(doc.documentId)) {
-                        return prev.filter(id => id !== doc.documentId);
-                      }
-
-                      return [...prev, doc.documentId];
-                    });
-                  }}
-                />
-
                 <div className={styles.fileInfo}>
-                  <div className={styles.fileIcon}>📄</div>
+                <div className={styles.fileIconContainer}>
+                  <div className={styles.fileIcon}>
+                    {doc.documentName?.toLowerCase().endsWith(".pdf") ? (
+                      <FaFilePdf size={22} className={styles.iconPdf} />
+                    ) : (
+                      <IoDocumentText  size={22} className={styles.iconDoc} />
+                    )}
+                  </div>
 
+                  <input
+                    type="checkbox"
+                    className={styles.cardCheckbox}
+                    checked={selectedDocuments.includes(doc.documentId)}
+                    onChange={() => {
+                      setSelectedDocuments(prev => {
+                        if (prev.includes(doc.documentId)) {
+                          return prev.filter(id => id !== doc.documentId);
+                        }
+                        return [...prev, doc.documentId];
+                      });
+                    }}
+                  />
+                </div>
                   <div className={styles.fileText}>
                     <span className={styles.fileName}>
                       {doc.documentName}
                     </span>
 
-                    <span className={styles.fileMeta}>
+                    <span className={styles.fileMetaTypedoc}>
                       {doc.documenttype?.documentNameType ?? ""}
+                    </span>
+
+                    <span className={styles.fileMetaReference}>
+                      {doc.reference}
                     </span>
                   </div>
                 </div>
@@ -886,7 +900,7 @@ const filteredDocuments = recentDocuments.filter(doc =>
                     className={styles.actionButton}
                     onClick={() => handleDownload(doc.documentId)}
                   >
-                    <Download size={17} />
+                    <GrCloudDownload size={20} />
                   </button>
 
                   <button
@@ -895,7 +909,7 @@ const filteredDocuments = recentDocuments.filter(doc =>
                       handleDelete(doc.documentId, doc.documentName)
                     }
                   >
-                    <Trash2 size={17} />
+                    <Trash2 size={20} />
                   </button>
                 </div>
               </div>

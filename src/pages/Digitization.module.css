@@ -96,7 +96,7 @@
   background: var(--hover);
   border-radius: 12px;
   border: 1px solid #e5e7eb;
-  padding: 12px 18px;
+  padding: 14px 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -138,7 +138,18 @@
 }
 
 .fileIcon {
-  font-size: 22px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+.iconPdf {
+  color: #ee4a47; /* rojo PDF */
+
+}
+
+.iconDoc {
+  color: #888f9e; /* gris normal */
+
 }
 
 /* Text */
@@ -157,9 +168,15 @@
   color: var(--text-primary);;
 }
 
-.fileMeta {
+.fileMetaTypedoc {
   font-size: 12px;
   color: var(--text-secondary);
+}
+
+.fileMetaReference {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 650;
 }
 
 .cardActions {
@@ -1156,12 +1173,43 @@
 }
 
 .cardCheckbox {
-  width: 16px;
-  height: 16px;
-  accent-color: #038C7F;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 17px;
+  height: 17px;
+  border: 2px solid #cfd8dc;
+  border-radius: 4px;
   cursor: pointer;
+  position: relative;
+  margin-top: 30px;
+  transition: all 0.15s ease;
+  margin: 0;
 }
 
+/* hover estilo drive/dropbox */
+.cardCheckbox:hover {
+  border-color: #038C7F;
+  background: #f2fbfa;
+}
+
+/* estado seleccionado */
+.cardCheckbox:checked {
+  background-color: #038C7F;
+  border-color: #038C7F;
+}
+
+/* check interno */
+.cardCheckbox:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
 .bulkToolbar {
   position: fixed;
   bottom: 24px;
@@ -1442,3 +1490,11 @@
 .clearButton:hover {
   color: #ef4444;
 }
+
+.fileIconContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px; /* espacio entre icono y checkbox */
+}
+

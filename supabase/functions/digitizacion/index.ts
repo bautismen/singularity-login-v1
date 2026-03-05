@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-const MONGODB_URI = Deno.env.get("MONGODB_URI_Dig");
+const MONGODB_URI = Deno.env.get("MONGODB_URI");
 const MONGODB_DATABASE = Deno.env.get("MONGODB_DATABASE_DIG");
 
 let cachedClient: MongoClient | null = null;
