@@ -553,8 +553,8 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                       value={formData.fiscal_data.rfc_taxid}
                       onChange={(e) => {
                         const value = e.target.value
-                          .replace(/[^a-zA-Z0-9]/g, '') // solo letras y números
-                          .slice(0, 13); // máximo 13 caracteres
+                          .replace(/[^a-zA-Z0-9Ññ&.\-\/ ]/g, '') // caracteres permitidos para RFC y TAX ID internacionales
+                          .slice(0, 20);
 
                        setFormData({
                         ...formData,
