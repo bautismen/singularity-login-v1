@@ -16,7 +16,8 @@ export function Header() {
   };
 
   return (
-    <header className={styles.header}>
+    <header className="text-white shadow-md border-b border-[#1a8fa4] bg-[linear-gradient(90deg,rgba(3,115,140,1)_0%,rgba(3,127,140,1)_40%,rgba(3,140,127,1)_100%)]
+                                                dark:border-[#002d47] dark:bg-[linear-gradient(90deg,rgba(0,45,71,1)_0%,rgba(0,61,80,1)_40%,rgba(0,69,84,1)_100%)]">
       <div className={styles.headerContent}>
         <div className={styles.leftSection}>
           <img src="/logo_png_small_1.png" alt="Singularity" className={styles.logo} />

@@ -180,7 +180,7 @@ export function CatalogUsers() {
 
       await loadData();
       closeModal();
-      showSuccess('user.successSave');
+      showSuccess(t('user.successSave'));
     } catch (error: any) {
       console.error('Error saving User:', error);
       showError(error.message || t('user.errorSave'));
