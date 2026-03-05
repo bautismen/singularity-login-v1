@@ -633,6 +633,10 @@ const translations = {
     'dig.fileUploaded': 'Registro del archivo {{name}}',
     'dig.fileUploadError': 'Error al subir {{name}}',
     'dig.documents': 'Documentos',
+    'dig.ErrorGetDocumentsByReference': 'Error al obtener los documentos por la referencia',
+    "dig.noReference": "La solicitud no tiene referencia",
+    "dig.noDocuments": "No hay documentos para descargar",
+    "dig.invalidDocument": "Documento inválido",
   },
   en: {
     'app.title': 'Singularity',
@@ -1250,6 +1254,10 @@ const translations = {
     'dig.fileUploaded': 'File {{name}} uploaded',
     'dig.fileUploadError': 'Error uploading {{name}}',
     'dig.documents': 'Documents',
+    'dig.ErrorGetDocumentsByReference': 'Error loading documents by reference',
+    "dig.noReference": "The request has no reference",
+    "dig.noDocuments": "No documents available to download",
+    "dig.invalidDocument": "Invalid document",
   },
 };
 
