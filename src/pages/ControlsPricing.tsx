@@ -233,7 +233,7 @@ const loadDocumentCount = async (reference: string) => {
     }));
 
   } catch (error) {
-    showError(t('dig.ErrorGetDocumentsByReference'));
+    console.error('Error loading documents by reference :', error);
     setDocumentCounts(prev => ({
       ...prev,
       [reference]: 0
