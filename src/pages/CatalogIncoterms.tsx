@@ -367,7 +367,7 @@ export function CatalogIncoterms() {
                   {t('catalog.cancel')}
                 </button>
                 <button type="submit" className="saveButton" disabled={loading}>
-                  {loading ? 'Guardando...' : t('catalog.save')}
+                  {loading ? t('catalog.saving') : t('catalog.save')}
                 </button>
               </div>
             </div>

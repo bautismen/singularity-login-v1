@@ -268,7 +268,7 @@ export function Executives() {
           <div className={styles.actionBar}>
             <button type='submit' className={styles.actionBarSaveButton} disabled={saving}>
               <Save size={18} />
-              <span>{t('exec.save')}</span>
+              {loading ? t('catalog.saving') : t('catalog.save')}
             </button>
             <button type="button" className={styles.actionBarResetButton} onClick={resetForm} disabled={saving}>
               <RotateCcw size={18} />
@@ -295,7 +295,7 @@ export function Executives() {
               value={formData.nombre}
               onChange={(e) => setFormData({ 
                 ...formData, 
-                nombre: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "")
+                nombre: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
               })}
               className={styles.input}
               required
@@ -317,7 +317,7 @@ export function Executives() {
               value={formData.apellido_paterno}
               onChange={(e) => setFormData({ 
                 ...formData, 
-                apellido_paterno: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "")
+                apellido_paterno: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
               })}
               className={styles.input}
               required
@@ -339,7 +339,7 @@ export function Executives() {
               value={formData.apellido_materno}
               onChange={(e) => setFormData({ 
                 ...formData, 
-                apellido_materno: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "") 
+                apellido_materno: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
               })}
               className={styles.input}
             // required

@@ -327,7 +327,7 @@ export function CatalogStatus() {
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="noResults">
+                <td colSpan={6} className="noResults">
                   {t('catalog.noResults')}
                 </td>
               </tr>
@@ -455,7 +455,7 @@ export function CatalogStatus() {
                   {t('catalog.cancel')}
                 </button>
                 <button className="saveButton" type="submit" disabled={loading}>
-                  {loading ? 'Guardando...' : t('catalog.save')}
+                  {loading ? t('catalog.saving') : t('catalog.save')}
                 </button>
               </div>
             </div>

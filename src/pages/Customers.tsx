@@ -479,7 +479,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                 disabled={loading}
               >
                 <Plus size={18} />
-                {t('cust.save')}
+                {loading ? t('catalog.saving') : t('catalog.save')}
               </button>
 
               {/*
@@ -997,7 +997,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   <button 
                     type="submit" 
                     className={styles.saveButton}>
-                    {t('cust.save')}
+                    {loading ? t('catalog.saving') : t('catalog.save')}
                   </button>
                 </div>
 

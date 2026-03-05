@@ -406,7 +406,10 @@ export function CatalogUsers() {
                     type="text"
                     className="input"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) => setFormData({ 
+                      ...formData, 
+                      name: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
+                    })}
                     disabled={loading}
                     placeholder={t('user.fullName')}
                     required
@@ -473,7 +476,7 @@ export function CatalogUsers() {
                   {t('user.cancel')}
                 </button>
                 <button className="saveButton" type="submit" disabled={loading}>
-                  {loading ? 'Guardando...' : t('user.save')}
+                  {loading ? t('catalog.saving') : t('user.save')}
                 </button>
               </div>
             </div>

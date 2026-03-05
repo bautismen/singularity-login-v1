@@ -1138,7 +1138,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   {t('catalog.cancel')}
                 </button>
                 <button type="submit" className={styles.saveButton} disabled={loading}>
-                  {loading ? 'Guardando...' : t('catalog.save')}
+                  {loading ? t('catalog.saving') : t('catalog.save')}
                 </button>
               </div>
             </div>

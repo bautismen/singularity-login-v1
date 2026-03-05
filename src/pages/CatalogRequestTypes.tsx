@@ -364,7 +364,7 @@ export function CatalogRequestTypes() {
                   {t('catalog.cancel')}
                 </button>
                 <button className="saveButton" type="submit" disabled={loading}>
-                  {loading ? 'Guardando...' : t('catalog.save')}
+                  {loading ? t('catalog.saving') : t('catalog.save')}
                 </button>
               </div>
             </div>

@@ -218,7 +218,7 @@ if (isFormOpen) {
             className={styles.saveHeaderButton}
             disabled={loading}
           >
-            {t('comp.Save')}
+            {loading ? t('catalog.saving') : t('catalog.save')}
           </button>
         </div>
       </div>

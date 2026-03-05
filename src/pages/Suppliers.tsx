@@ -300,6 +300,8 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
       setCompanies([...companies, created]);
       setFormData({ ...formData, company_id: created._id! });
       handleCloseModal()
+      // loadCompanies()
+      // handleCompanyChange(created._id!)
     } catch (error) {
       console.error('Error creating company:', error);
       showError('Error al crear la empresa: ' + (error instanceof Error ? error.message : 'Error desconocido'));
@@ -435,7 +437,7 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
             <div className={styles.headerActions}>
               <button type="submit" className={styles.saveHeaderButton} disabled={loading}>
                 <Plus size={18} />
-                {t('supp.save')}
+                {loading ? t('catalog.saving') : t('catalog.save')}
               </button>
             </div> {/*End header actions */}
 
@@ -920,7 +922,7 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                   <button 
                     type="submit" 
                     className={styles.saveButton}>
-                    {t('cust.save')}
+                    {loading ? t('catalog.saving') : t('catalog.save')}
                   </button>
                 </div>
 

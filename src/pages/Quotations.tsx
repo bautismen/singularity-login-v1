@@ -1106,7 +1106,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             type="submit"
             disabled={saving || mode === 'view' || formData.idStatusRequest >= 2}>
             <Save size={18} />
-            <span>{saving ? 'Guardando...' : t('quote.save')}</span>
+            <span>{saving ? t('catalog.saving') : t('quote.save')}</span>
           </button>
           {mode === 'create' && (
             <button type="button" className={styles.actionBarResetButton} onClick={resetForm}>
