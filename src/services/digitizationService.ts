@@ -7,6 +7,9 @@ import {
   SectionDTO
 } from "../types/digitization";
 
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+
 const ENVIRONMENT_ID = 2; 
 
 const API_KEY = import.meta.env.VITE_APIKEYSL;
@@ -169,6 +172,56 @@ export async function downloadDocument(
   }
 
   return await response.json();
+}
+
+
+/* ==============================
+ * Descargar documentos por referencia (Base64 → File)
+ * ============================== */
+export async function downloadDocumentByReference(reference: string): Promise<void> {
+
+  const url = `${API_DIGITIZATION}qrreferences/${encodeURIComponent(reference)}/download`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "x-api-key": API_KEY
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("Error al descargar el documento");
+  }
+
+  const data = await response.json().catch(() => null);
+
+  if (!data?.meta || data.meta.length === 0) {
+    throw new Error("No hay documentos para descargar");
+  }
+
+  const zip = new JSZip();
+
+  for (const doc of data.meta) {
+
+    if (!doc.fileBytes || !doc.fileName) continue;
+
+    const binary = atob(doc.fileBytes);
+
+    const bytes = new Uint8Array(binary.length);
+
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+
+    zip.file(doc.fileName, bytes);
+  }
+
+  const zipBlob = await zip.generateAsync({
+    type: "blob",
+    compression: "DEFLATE"
+  });
+
+  saveAs(zipBlob, `${reference}.zip`);
 }
 
 /* ==============================
