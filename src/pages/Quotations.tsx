@@ -843,8 +843,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         setModalState({
           isOpen : true,
           type: 'warning',
-          title: 'No tiene servicios añadidos',
-          message: 'Debe agregar al menos un servicio para mandar la solicitud de cotización.',
+          title: t('quote.serviceaddtitle'),
+          message: t('quote.serviceaddmessage'),
           showCancel: false      
         });
         setSaving(false);
@@ -853,8 +853,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         setModalState({
           isOpen : true,
           type: 'warning',
-          title: 'No tiene mercancia añadida',
-          message: 'Debe agregar al menos una mercancia para mandar la solicitud de cotización.',
+          title: t('quote.merchaddtitle'),
+          message: t('quote.merchaddmessage'),
           showCancel: false      
         });
         setSaving(false);
