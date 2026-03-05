@@ -1,13 +1,17 @@
-import { useState, useEffect, useRef  } from 'react';
-import { RefreshCw, Filter, ChevronDown, Search, Clock, Plus, FilterXIcon, FileText, ChevronUp  } from 'lucide-react';
+import { useState, useEffect, useRef, DragEvent   } from 'react';
+import { RefreshCw, Filter, ChevronDown, Search, Clock, Plus, FilterXIcon, FilePlus, DownloadCloud, ChevronUp, UploadCloud, Cloud, ArrowUp, X   } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { controlsPricingService } from '../services/controlsPricingService';
 import { ResquetQuote } from '../types/pricingControl';
 import { ControlsPricingForm } from './ControlsPricingForm';
 import { useAuth } from '../contexts/AuthContext';
-import { DocumentsModal } from '../components/DocumentsModal';
 import styles from './ControlsPricing.module.css';
+
+  //se añade parte de los documentos
+import {DocumentTypeDTO,  SectionDTO} from "../types/digitization";
+import {uploadDocuments, getDocumentTypes, getSections, getDocumentsByReference, downloadDocumentByReference
+} from "../services/digitizationService";
 
 export function ControlsPricing() {
   const { t } = useLanguage();
@@ -33,9 +37,31 @@ export function ControlsPricing() {
   const [showDocumentsModal, setShowDocumentsModal] = useState(false);
   const [selectedRequestForDocs, setSelectedRequestForDocs] = useState<ResquetQuote | null>(null);
 
+  //se añade parte de los documentos
+  const [previewFiles, setPreviewFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const [referenceUpload, setReferenceUpload] = useState("");
+  const [documentTypeUpload, setDocumentTypeUpload] = useState("");
+  const [seccionUpload, setSeccionUpload] = useState<number | "">("");
+  const [uploadQueue, setUploadQueue] = useState<UploadItem[]>([]);
+  const [documentTypes, setDocumentTypes] = useState<DocumentTypeDTO[]>([]);
+  const [sections, setSections] = useState<SectionDTO[]>([]);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const [documentCounts, setDocumentCounts] = useState<Record<string, number>>({});
+
+  interface UploadItem {
+  id: string;
+  fileName: string;
+  progress: number;
+  status: "pending" | "uploading" | "success" | "error";
+}
+
   useEffect(() => {
     loadRequests();
     loadUsers();
+    loadCatalogs();
   }, []);
 
   useEffect(() => {
@@ -67,6 +93,201 @@ export function ControlsPricing() {
     }
   };
 
+    //se añade parte de los documentos
+  const loadCatalogs = async () => {
+  try {
+    const [docs, secs] = await Promise.all([
+      getDocumentTypes(),
+      getSections()
+    ]);
+
+    setDocumentTypes(docs);
+    setSections(secs);
+  } catch {
+    showError(t('dig.catalogError'));
+  }
+};
+
+const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+  e.preventDefault();
+  setDragActive(false);
+
+  const droppedFiles = Array.from(e.dataTransfer.files);
+  setFiles(prev => [...prev, ...droppedFiles]);
+  setPreviewFiles(prev => [...prev, ...droppedFiles]);
+};
+
+const handleOpenDocuments = async (request: ResquetQuote) => {
+  setSelectedRequestForDocs(request);
+  setReferenceUpload(request.referenceRequest || "");
+  setShowDocumentsModal(true);
+
+  if (request.referenceRequest) {
+    await loadDocumentCount(request.referenceRequest);
+  }
+};
+
+const handleDownloadDocuments = (request: ResquetQuote) => {
+  // lógica de descarga
+};
+
+    const handleCancelUpload = () => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setUploadQueue([]);
+    setUploading(false);
+    setFiles([]);
+    setPreviewFiles([]);
+  };
+
+const loadDocumentCount = async (reference: string) => {
+  try {
+    const docs = await getDocumentsByReference(reference);
+
+    setDocumentCounts(prev => ({
+      ...prev,
+      [reference]: docs?.length ?? 0
+    }));
+
+  } catch (error) {
+    console.error("Error loading document count", error);
+
+    setDocumentCounts(prev => ({
+      ...prev,
+      [reference]: 0
+    }));
+  }
+};
+
+const uploadFiles = async () => {
+  if (!referenceUpload || !seccionUpload || !documentTypeUpload || files.length === 0) {
+    showError(t('dig.uploadValidation'));
+    return;
+  }
+
+  abortControllerRef.current = new AbortController();
+  setUploading(true);
+
+  // Inicializa la cola de archivos
+  const initialQueue: UploadItem[] = files.map((file, index) => ({
+    id: `${file.name}-${index}`,
+    fileName: file.name,
+    progress: 0,
+    status: "pending",
+  }));
+
+  setUploadQueue(initialQueue);
+
+  try {
+    for (let i = 0; i < files.length; i++) {
+
+      if (abortControllerRef.current?.signal.aborted) break;
+
+      const file = files[i];
+      const currentId = `${file.name}-${i}`;
+
+      try {
+        // Cambia estado a "uploading"
+        setUploadQueue(prev =>
+          prev.map(item =>
+            item.id === currentId
+              ? { ...item, status: "uploading", progress: 50 }
+              : item
+          )
+        );
+
+        // Upload real
+        await uploadDocuments(
+          referenceUpload,
+          Number(seccionUpload),
+          Number(documentTypeUpload),
+          {
+            iduser: user?._id || '',
+            nameemployee: user?.name || ''
+          },
+          [file],
+          abortControllerRef.current?.signal
+        );
+
+        // Si fue exitoso
+        setUploadQueue(prev =>
+          prev.map(item =>
+            item.id === currentId
+              ? { ...item, status: "success", progress: 100 }
+              : item
+          )
+        );
+
+        showInfo(
+          t('dig.fileUploaded').replace('{{name}}', file.name)
+        );
+
+      } catch (err: any) {
+
+        if (err.name === "AbortError") {
+          setUploading(false);
+          return;
+        }
+
+        setUploadQueue(prev =>
+          prev.map(item =>
+            item.id === currentId
+              ? { ...item, status: "error", progress: 100 }
+              : item
+          )
+        );
+
+        let errorMessage = t('dig.fileUploadError');
+        try {
+          const parsed = JSON.parse(err.message);
+          errorMessage = parsed.messageStatus || errorMessage;
+        } catch {
+          errorMessage = err.message || errorMessage;
+        }
+
+        showError(errorMessage);
+
+        setUploading(false);
+        abortControllerRef.current = null;
+      }
+    }
+
+    if (!abortControllerRef.current?.signal.aborted) {
+      // Limpia archivos y preview
+      setFiles([]);
+      setPreviewFiles([]);
+
+      handleResetFilters();
+      closeDocumentsModal();
+
+  // REFRESCAR numero documentos
+      if (referenceUpload) {
+        await loadDocumentCount(referenceUpload);
+      }
+
+      // limpia cola después de 2s
+      setTimeout(() => {
+        setUploadQueue([]);
+      }, 2000);
+    }
+
+  } finally {
+    setUploading(false);
+    abortControllerRef.current = null;
+  }
+};
+
+const closeDocumentsModal = () => {
+  setShowDocumentsModal(false);
+  setPreviewFiles([]);
+  setFiles([]);
+  setDocumentTypeUpload("");
+  setSeccionUpload("");
+  setReferenceUpload("");
+  setSelectedRequestForDocs(null);
+  setDragActive(false);
+};
+
   const loadRequests = async () => {
     try {
       setLoading(true);
@@ -95,7 +316,8 @@ export function ControlsPricing() {
         "maria.cervantes@kromlogistica.com",
         "estela.guerrero@kromlogistica.com",
         "magali.tamayo@kromlogistica.com",        
-        "guadalupe.dimas@kromlogistica.com"        
+        "guadalupe.dimas@kromlogistica.com",
+        "beatriz.gonzalez@kromlogistica.com"         
       ];
 
       if (!excludedEmails.includes(user.email)) {
@@ -104,6 +326,16 @@ export function ControlsPricing() {
         );
       }
       setRequests(filtered);
+
+      // Precargar conteos de documentos
+      const references = filtered
+        .map(r => r.referenceRequest)
+        .filter(Boolean);
+      // Precargar conteos de documentos
+      await Promise.all(
+        references.map(ref => loadDocumentCount(ref))
+      );
+
     } catch (error) {
       console.error('Error loading requests:', error);
       showError('Error al cargar las solicitudes');
@@ -136,15 +368,6 @@ export function ControlsPricing() {
     loadRequests();
   };
 
-  const handleOpenDocuments = (request: ResquetQuote) => {
-    setSelectedRequestForDocs(request);
-    setShowDocumentsModal(true);
-  };
-
-  const handleCloseDocuments = () => {
-    setShowDocumentsModal(false);
-    setSelectedRequestForDocs(null);
-  };
 
   if (showForm) {
     return <ControlsPricingForm requestId={selectedRequestId} controlId={selectedControlId} onBack={handleBackToList} />;
@@ -552,18 +775,39 @@ export function ControlsPricing() {
                       <span>{request.createdBy?.fullName || t('ctrlpricing.unassigned')}</span>                      
                     </div>
                     <div className={styles.servicesCounter}>
-                      {(request.idStatusRequest === 4 || request.idStatusRequest === 5) && (
+                    {(request.idStatusRequest === 4 || request.idStatusRequest === 5) && (
+                      <div className={styles.documentsActions}>
+                        
+                        {/* Documents Button */}
                         <button
                           className={styles.documentsButton}
                           onClick={() => handleOpenDocuments(request)}
-                          title="Ver documentos"
                         >
-                          <FileText size={16} />
-                          {t('ctrlpricing.documents')}
+                          <FilePlus size={22} />
+
+                          {request.referenceRequest && (
+                            <span className={styles.documentCounterBadge}>
+                              {documentCounts[request.referenceRequest] ?? 0}
+                            </span>
+                          )}
                         </button>
-                      )}
-                      {attendedServices}/{totalServices} {t('ctrlpricing.servicesattended')}
-                    </div>
+
+                        {/* Download Button (solo si hay documentos) */}
+                        {(documentCounts[request.referenceRequest] ?? 0) > 0 && (
+                          <button
+                            className={styles.downloadButton}
+                            onClick={() => downloadDocumentByReference(request.referenceRequest)}
+                            title={t('dig.download')}
+                          >
+                            <DownloadCloud  size={16} />
+                          </button>
+                        )}
+
+                      </div>
+                    )}
+
+                    {attendedServices}/{totalServices} {t('ctrlpricing.servicesattended')}
+                  </div>
                   </div>
 
                   {assignedWithControls.length > 0 && (
@@ -626,17 +870,243 @@ export function ControlsPricing() {
         )}
       </div>
 
-      {showDocumentsModal && selectedRequestForDocs && (
-        <DocumentsModal
-          isOpen={showDocumentsModal}
-          onClose={handleCloseDocuments}
-          requestData={{
-            companyName: selectedRequestForDocs.customerName,
-            reference: selectedRequestForDocs.referenceRequest,
-            location: getCountries(selectedRequestForDocs.services),
-          }}
-        />
+      {/* ================= MODAL UPLOAD ================= */}
+        {showDocumentsModal && selectedRequestForDocs && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.uploadModal}>
+
+              {/* HEADER */}
+              <div className={styles.modalHeader}>
+                <h3>{t('dig.uploadDocuments')}</h3>
+                <button
+                  onClick={closeDocumentsModal}
+                  className={styles.closeButton}
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* BODY SCROLLABLE */}
+              <div className={styles.modalBody}>
+
+                {/* DROPZONE */}
+                <div className={styles.modalSection}>
+                  <div
+                    className={`${styles.dropZone} ${
+                      dragActive ? styles.dropZoneActive : ""
+                    }`}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragActive(true);
+                    }}
+                    onDragLeave={() => setDragActive(false)}
+                    onDrop={handleDrop}
+                    onClick={() =>
+                      document.getElementById("fileInputModal")?.click()
+                    }
+                  >
+                    <UploadCloud size={48} />
+
+                    <p className={styles.dropTitle}>
+                      {t('dig.dragFiles')}
+                    </p>
+
+                    <span className={styles.dropSubtitle}>
+                      {t('dig.clickToSelect')}
+                    </span>
+                  </div>
+
+                  <input
+                    id="fileInputModal"
+                    type="file"
+                    multiple
+                    hidden
+                    onChange={(e) => {
+                      if (!e.target.files) return;
+                      const arr = Array.from(e.target.files);
+                      setFiles(prev => [...prev, ...arr]);
+                      setPreviewFiles(prev => [...prev, ...arr]);
+                    }}
+                  />
+                </div>
+
+                {/* CAMPOS */}
+                {previewFiles.length > 0 && (
+                  <div className={styles.modalSection}>
+                    <div className={styles.uploadFieldsModal}>
+
+                      <input
+                        type="text"
+                        placeholder={t('dig.reference')}
+                        value={referenceUpload}
+                        onChange={(e) => setReferenceUpload(e.target.value)}
+                        disabled
+                      />
+
+                      <select
+                        value={documentTypeUpload}
+                        onChange={(e) =>
+                          setDocumentTypeUpload(e.target.value)
+                        }
+                        className={styles.selectupload}
+                      >
+                        <option value="">{t('dig.documentType')}</option>
+                        {documentTypes.map(d => (
+                          <option
+                            key={d.documenttypeid}
+                            value={d.documenttypeid}
+                          >
+                            {d.documentnametype}
+                          </option>
+                        ))}
+                      </select>
+
+                      <select
+                        value={seccionUpload}
+                        onChange={(e) =>
+                          setSeccionUpload(
+                            e.target.value ? Number(e.target.value) : ""
+                          )
+                        }
+                        className={styles.selectupload}
+                      >
+                        <option value="">{t('dig.section')}</option>
+                        {sections.map(s => (
+                          <option
+                            key={s.sectionid}
+                            value={s.sectionid}
+                          >
+                            {s.section}
+                          </option>
+                        ))}
+                      </select>
+
+                      <div className={styles.tooltipUploadWrapper}>
+                        <button
+                          className={styles.cloudUploadButton}
+                          onClick={uploadFiles}
+                          disabled={uploading}
+                        >
+                          <Cloud size={55} className={styles.cloudUploadIcon} />
+                          <ArrowUp size={25} className={styles.arrowUploadIcon} />
+                        </button>
+
+                        <div className={styles.customTooluploadtip}>
+                          {uploading
+                            ? t('dig.uploadingFiles')
+                                .replace('{{count}}', String(files.length))
+                            : files.length > 0
+                              ? t('dig.uploadFilesCount')
+                                  .replace('{{count}}', String(files.length))
+                              : t('dig.uploadFile')
+                          }
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                )}
+
+                {/* ARCHIVOS */}
+                {previewFiles.length > 0 && (
+                  <div className={styles.modalSection}>
+                    <div className={styles.modalFilesContainer}>
+                      <h4 className={styles.modalFilesTitle}>
+                        {t('dig.selectedFiles')} ({previewFiles.length})
+                      </h4>
+
+                      {previewFiles.map((file, index) => (
+                        <div key={index} className={styles.modalFileCard}>
+                          <span className={styles.modalFileName}>
+                            {file.name}
+                          </span>
+
+                          <button
+                            className={styles.modalRemoveFile}
+                            onClick={() => {
+                              setPreviewFiles(prev =>
+                                prev.filter((_, i) => i !== index)
+                              );
+                              setFiles(prev =>
+                                prev.filter((_, i) => i !== index)
+                              );
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          </div>
       )}
+        {/* ================= UPLOAD FLOATING PROGRESS ================= */}
+
+            {uploadQueue.length > 0 && (
+              <>
+                <div className={styles.blurOverlay} style={{ zIndex: 3000 }} />
+
+                <div className={styles.uploadFloatingWindow}>
+
+                  <div className={styles.uploadHeader}>
+                    <span>{t('dig.uploading')}</span>
+
+                    <button
+                      className={styles.closeButton}
+                      onClick={handleCancelUpload}
+                      title={t('dig.cancel')}
+                      type="button"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {uploadQueue.map((item) => (
+                    <div key={item.id} className={styles.uploadItem}>
+
+                      <div className={styles.uploadItemTop}>
+                        <span className={styles.uploadFileName}>
+                          {item.fileName}
+                        </span>
+
+                        <div className={styles.uploadStatus}>
+                          {item.status === "uploading" && (
+                            <span className={styles.progressText}>
+                              {item.progress}%
+                            </span>
+                          )}
+
+                          {item.status === "success" && (
+                            <span className={`${styles.statusBadgeUpload} ${styles.successBadge}`}>
+                              ✓
+                            </span>
+                          )}
+
+                          {item.status === "error" && (
+                            <span className={`${styles.statusBadgeUpload} ${styles.errorBadge}`}>
+                              ✕
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className={styles.progressBar}>
+                        <div
+                          className={styles.progressFill}
+                          style={{ width: `${item.progress}%` }}
+                        />
+                      </div>
+
+                    </div>
+            ))}
+
+            </div>
+          </>
+        )}
     </div>
   );
 }
