@@ -549,10 +549,15 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                     <input
                       type="text"
                       value={formData.fiscal_data.rfc_taxid}
-                      onChange={(e) => setFormData({
+                      onChange={(e) => {
+                        const value = e.target.value
+                          .replace(/[^a-zA-Z0-9]/g, '') // solo letras y números
+                          .slice(0, 13); // máximo 13 caracteres
+
+                       setFormData({
                         ...formData,
-                        fiscal_data: { ...formData.fiscal_data, rfc_taxid: e.target.value }
-                      })}
+                        fiscal_data: { ...formData.fiscal_data, rfc_taxid: value }})
+                      }}                     
                       className={styles.textInput}
                       placeholder="RFC/TAXID"
                       disabled
@@ -681,7 +686,13 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                           <input
                             type="text"
                             value={contact.phone}
-                            onChange={(e) => updateContact(index, 'phone', e.target.value)}
+                            onChange={(e) => {
+                              const value = e.target.value
+                                .replace(/\D/g, '') // solo números
+                                .slice(0, 10); // máximo 10 dígitos
+
+                              updateContact(index, 'phone', value);
+                            }}
                           />
                         </label>
                       </div>
