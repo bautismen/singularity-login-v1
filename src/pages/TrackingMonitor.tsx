@@ -24,7 +24,7 @@ export function TrackingMonitor() {
     <div className="relative w-full h-full p-8">
       <div className="mb-4">
         <div className="flex items-baseline gap-2">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{t("tracking.title")}</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">{t("tracking.title")}</h1>
           <span className="ml-4 text-gray-600 dark:text-gray-400 text-sm">{t("tracking.subtitle")}</span>
         </div>
       </div>

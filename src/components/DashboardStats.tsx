@@ -24,7 +24,7 @@ const STATUS_STYLES: Record<number, string> = {
   1: 'bg-teal-500/20 text-teal-600 dark:bg-teal-500/40 dark:text-teal-400',
   2: 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
   3: 'bg-purple-500/20 text-purple-600 dark:text-purple-400',
-  4: 'bg-amber-500/20 text-amber-600 dark:text-amber-400',
+  4: 'bg-amber-400/40 text-amber-600 dark:text-amber-400',
   5: 'bg-green-500/20 text-green-600 dark:text-green-400',
   6: 'bg-red-500/20 text-red-600 dark:text-red-400',
   7: 'bg-gray-500/20 text-gray-600 dark:text-gray-400',
@@ -42,6 +42,10 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
   const [currentPageUrgent, setCurrentPageUrgent] = useState(1);
   const [currentPageRecent, setCurrentPageRecent] = useState(1);
   const [pageSize, setPageSize] = useState(4);
+  const nameMonth = new Date().toLocaleDateString(
+                language === "es" ? "es-ES" : "en-US",
+                { month: "long", year: "numeric" },
+              )
 
 
   const getPagesToDisplay = (totalPages: number, currentPage: number) => {
@@ -111,7 +115,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
   return (
     <div className="p-8 dark:bg-gray-900">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
           {t("dash.title")}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">{t("dash.subtitle")}</p>
@@ -124,9 +128,10 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
           </h2>
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {t("dash.CustomerCategorization.total", {
-              values: { count: data.stats.total },
-              upper: true,
-            })}
+              values: { count: data.stats.total } , 
+              upper: true
+            }) + " " + new Date().getFullYear() }
+            
           </span>
         </div>
 
@@ -226,10 +231,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
               {t("dash.statementofContributions")}
             </h3>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              {new Date().toLocaleDateString(
-                language === "es" ? "es-ES" : "en-US",
-                { month: "long", year: "numeric" },
-              )}
+              {nameMonth}
             </span>
           </div>
           {data.quotations?.statusPercentageCurrentMonth &&
