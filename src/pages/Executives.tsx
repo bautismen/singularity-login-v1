@@ -114,19 +114,18 @@ export function Executives() {
     if (
       !formData.nombre ||
       !formData.apellido_paterno ||
-      !formData.apellido_materno ||
       !formData.numero_nomina ||
       !formData.fecha_ingreso ||
       !formData.email ||
       !formData.departamento ||
       !formData._iduser
     ) {
-      showNotification('error', t('catalog.requiredFields'));
+      showError('error:' + t('catalog.requiredFields'));
       return false;
     }
 
     if (!validateEmail(formData.email)) {
-      showNotification('error', t('exec.invalidEmail'));
+      showError('error' + t('exec.invalidEmail'));
       return false;
     }
 
@@ -143,8 +142,9 @@ export function Executives() {
     e.preventDefault();
     setSaving(true);
     const isValid = await validateForm();
-
+    
     if (!isValid) {
+      console.log('si soy fal')
       setSaving(false);
       return;
     }
@@ -293,7 +293,10 @@ export function Executives() {
             <input
               type="text"
               value={formData.nombre}
-              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+              onChange={(e) => setFormData({ 
+                ...formData, 
+                nombre: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "")
+              })}
               className={styles.input}
               required
               onInvalid={(e) =>
@@ -312,7 +315,10 @@ export function Executives() {
             <input
               type="text"
               value={formData.apellido_paterno}
-              onChange={(e) => setFormData({ ...formData, apellido_paterno: e.target.value })}
+              onChange={(e) => setFormData({ 
+                ...formData, 
+                apellido_paterno: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "")
+              })}
               className={styles.input}
               required
               onInvalid={(e) =>
@@ -331,7 +337,10 @@ export function Executives() {
             <input
               type="text"
               value={formData.apellido_materno}
-              onChange={(e) => setFormData({ ...formData, apellido_materno: e.target.value })}
+              onChange={(e) => setFormData({ 
+                ...formData, 
+                apellido_materno: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "") 
+              })}
               className={styles.input}
             // required
             />
@@ -342,7 +351,7 @@ export function Executives() {
               {t('exec.numeroNomina')}
             </label>
             <input
-              type="text"
+              type="number"
               value={formData.numero_nomina}
               onChange={(e) => setFormData({ ...formData, numero_nomina: e.target.value })}
               className={styles.input}

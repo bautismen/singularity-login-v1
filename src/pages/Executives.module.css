@@ -347,7 +347,7 @@
   border-radius: 0.5rem;
   font-size: 0.875rem;
   color: var(--text-primary);
-  background: var(--surface);
+  background: var(--hover);
   transition: all 0.15s ease;
 }
 
@@ -379,7 +379,7 @@
   border-radius: 0.5rem;
   font-size: 0.875rem;
   color: var(--text-primary);
-  background: var(--surface);
+  background: var(--hover);
   cursor: pointer;
   transition: all 0.15s ease;
 }
