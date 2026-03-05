@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, DragEvent   } from 'react';
-import { RefreshCw, Filter, ChevronDown, Search, Clock, Plus, FilterXIcon, FilePlus, DownloadCloud, ChevronUp, UploadCloud, Cloud, ArrowUp, X   } from 'lucide-react';
+import { RefreshCw, Filter, ChevronDown, Search, Clock, Plus, FilterXIcon, ChevronUp, UploadCloud, Cloud, ArrowUp, X   } from 'lucide-react';
+import { GrCloudUpload, GrCloudDownload  } from "react-icons/gr";
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { controlsPricingService } from '../services/controlsPricingService';
@@ -14,6 +15,7 @@ import {uploadDocuments, getDocumentTypes, getSections, getDocumentsByReference,
 } from "../services/digitizationService";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+
 
 export function ControlsPricing() {
   const { t } = useLanguage();
@@ -825,6 +827,35 @@ const closeDocumentsModal = () => {
                             {request.statusRequest}
                           </span>
                         </div>
+                        {(request.idStatusRequest === 4 || request.idStatusRequest === 5) && (
+                          <div className={styles.documentsActions}>
+
+                            {/* Upload */}
+                            <button
+                              className={`${styles.cloudButton} ${styles.upload}`}
+                              onClick={() => handleOpenDocuments(request)}
+                              title={t('dig.upload')}
+                            >
+                              <GrCloudUpload size={22} />
+                            </button>
+
+                            {/* Download */}
+                            {(documentCounts[request.referenceRequest] ?? 0) > 0 && (
+                              <button
+                                className={`${styles.cloudButton} ${styles.download}`}
+                                onClick={() => handleDownloadDocuments(request)}
+                                title={t('dig.download')}
+                              >
+                                <GrCloudDownload size={22} />
+
+                                <span className={styles.documentBadge}>
+                                  {documentCounts[request.referenceRequest] ?? 0}
+                                </span>
+                              </button>
+                            )}
+
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className={styles.cardHeaderRight}>
@@ -857,36 +888,7 @@ const closeDocumentsModal = () => {
                       <span>{request.createdBy?.fullName || t('ctrlpricing.unassigned')}</span>                      
                     </div>
                     <div className={styles.servicesCounter}>
-                    {(request.idStatusRequest === 4 || request.idStatusRequest === 5) && (
-                      <div className={styles.documentsActions}>
-                        
-                        {/* Documents Button */}
-                        <button
-                          className={styles.documentsButton}
-                          onClick={() => handleOpenDocuments(request)}
-                        >
-                          <FilePlus size={22} />
-
-                          {request.referenceRequest && (
-                            <span className={styles.documentCounterBadge}>
-                              {documentCounts[request.referenceRequest] ?? 0}
-                            </span>
-                          )}
-                        </button>
-
-                        {/* Download Button (solo si hay documentos) */}
-                        {(documentCounts[request.referenceRequest] ?? 0) > 0 && (
-                          <button
-                            className={styles.downloadButton}
-                            onClick={() => handleDownloadDocuments(request)}
-                            title={t('dig.download')}
-                          >
-                            <DownloadCloud  size={16} />
-                          </button>
-                        )}
-
-                      </div>
-                    )}
+                    
 
                     {attendedServices}/{totalServices} {t('ctrlpricing.servicesattended')}
                   </div>

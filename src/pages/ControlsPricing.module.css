@@ -473,21 +473,17 @@
 .documentsButton {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.5rem 0.875rem;
-  background: #2f80ed;
-  color: rgb(240, 255, 241);
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 0.813rem;
-  font-weight: 500;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
 }
 
 .documentsButton:hover {
-  background: #1c6ed5;
-  box-shadow: 0 2px 6px rgba(47, 128, 237, 0.35);
+  background: #f3f4f6;
 }
 
 .controlNumbers {
@@ -2157,39 +2153,6 @@
   align-items: center;
 }
 
-.cloudUploadButton {
-  position: relative;
-  background: transparent;
-  border: none;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  margin-bottom: 18px;
-  transition: transform 0.2s ease;
-}
-
-.cloudUploadButton:hover {
-  transform: scale(1.05);
-}
-
-.cloudUploadButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.cloudUploadIcon {
-  color: white;
-  stroke: #037F8C;
-  stroke-width: 1.8px;
-
-  filter:
-    drop-shadow(0 4px 10px rgba(3, 115, 140, 0.35))
-    drop-shadow(0 0 6px rgba(3, 140, 127, 0.25));
-
-  transition: all 0.2s ease;
-}
 
 .arrowUploadIcon {
   position: absolute;
@@ -2199,9 +2162,6 @@
   transition: transform 0.2s ease;
 }
 
-.cloudUploadButton:hover .arrowUploadIcon {
-  transform: translateY(-5px);
-}
 
 .customTooluploadtip {
   position: absolute;
@@ -2469,39 +2429,58 @@
   }
 }
 
-.documentCounterBadge {
-  margin-left: 8px;
-  background: #ef4444;
-  color: white;
-  font-size: 12px;
-  padding: 2px 6px;
-  border-radius: 999px;
-  font-weight: 600;
-}
-
 .documentsActions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 14px;
 }
 
-.downloadButton {
-  border: none;
-  background: transparent;
-  padding: 8px;
-  cursor: pointer;
+/* botón base */
+.cloudButton {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.2s ease;
 }
 
-.downloadButton svg {
-  color: #3CA64C;
-  width: 30px;
-  height: 30px;
-  transition: transform 0.2s ease;
+/* icono grande */
+.cloudButton svg {
+  font-size: 30px;
 }
 
-.downloadButton:hover svg {
-  transform: scale(1.30);
+/* colores */
+.upload svg {
+  color: #038C7F;
 }
+
+.download svg {
+  color: #03738C;
+}
+
+/* badge */
+.documentBadge {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* efecto flotante */
+.cloudButton:hover {
+  transform: translateY(-4px) scale(1.08);
+  opacity: 0.95;
+}
+
+/* click */
+.cloudButton:active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.cloudButton:hover svg {
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+}
+
