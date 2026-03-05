@@ -302,9 +302,13 @@ if (isFormOpen) {
               <input
                 type="text"
                 value={formData.rfc_taxid}
-                onChange={(e) =>
-                  setFormData({ ...formData, rfc_taxid: e.target.value })
-                }
+                onChange={(e) => {
+                  const value = e.target.value
+                    .replace(/[^a-zA-Z0-9]/g, '') // solo letras y números
+                    .slice(0, 13); // máximo 13 caracteres
+
+                  setFormData({ ...formData, rfc_taxid: value });
+                }}
                 className={styles.textInput}
                 placeholder="RFC o TAXID"
                 required
