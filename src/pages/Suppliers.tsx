@@ -292,16 +292,26 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
   // }
 
   async function handleCreateCompany(e: React.FormEvent<HTMLFormElement>) {
+    
     try {
-      e.preventDefault();
 
+      e.preventDefault();
       const created = await createCompany(newCompany);
-      console.log('Company created:', created);
       setCompanies([...companies, created]);
-      setFormData({ ...formData, company_id: created._id! });
+      handleCompanyChange(created._id!)
+      setFormData({
+        ...formData, 
+        company_id: created._id!,
+        is_national: created.nationality === 'nacional' ? true : false,
+        fiscal_data: {
+          business_name: created.business_name,
+          rfc_taxid: created.rfc_taxid,
+          country: created.country,
+          state: created.state,
+        },
+      });
       handleCloseModal()
-      // loadCompanies()
-      // handleCompanyChange(created._id!)
+      
     } catch (error) {
       console.error('Error creating company:', error);
       showError('Error al crear la empresa: ' + (error instanceof Error ? error.message : 'Error desconocido'));
@@ -552,13 +562,9 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                       type="text"
                       value={formData.fiscal_data.rfc_taxid}
                       onChange={(e) => {
-                        const value = e.target.value
-                          .replace(/[^a-zA-Z0-9Ññ&.\-\/ ]/g, '') // caracteres permitidos para RFC y TAX ID internacionales
-                          .slice(0, 20);
-
-                       setFormData({
-                        ...formData,
-                        fiscal_data: { ...formData.fiscal_data, rfc_taxid: value }})
+                        setFormData({
+                          ...formData,
+                          fiscal_data: { ...formData.fiscal_data, rfc_taxid: e.target.value }})
                       }}                     
                       className={styles.textInput}
                       placeholder="RFC/TAXID"
@@ -846,8 +852,8 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                         value={newCompany.rfc_taxid}
                         onChange={(e) => setNewCompany({ 
                           ...newCompany, 
-                          rfc_taxid: e.target.value.replace(/[^a-zA-Z0-9-&]/g, '') // solo letras y números
-                                                   .slice(0, 13) // máximo 13 caracteres
+                          rfc_taxid: e.target.value.replace(/[^a-zA-Z0-9Ññ&.\-\/ ]/g, '') // solo letras y números
+                                                   .slice(0, 20) // máximo 13 caracteres
 
                         })}
                         required

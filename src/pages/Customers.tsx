@@ -332,12 +332,25 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
   */
 
   async function handleCreateCompany(e: React.FormEvent<HTMLFormElement>) {
-    try {
-      e.preventDefault();
 
+    try {
+      
+      e.preventDefault();
       const created = await createCompany(newCompany);
       setCompanies([...companies, created]);
-      setFormData({ ...formData, company_id: created._id! });
+      handleCompanyChange(created._id!)
+      setFormData({ 
+        ...formData, 
+        company_id: created._id!,
+        nationality: created.nationality,
+        is_national: created.nationality === 'nacional' ? true : false,
+        fiscal_data: {
+          business_name: created.business_name,
+          taxid: created.rfc_taxid,
+          country: created.country,
+          state: created.state,
+        },
+      });
       handleCloseModal()
     } catch (error) {
       console.error('Error creating company:', error);
