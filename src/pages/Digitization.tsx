@@ -30,6 +30,7 @@ import {
   getDocumentsByReferenceSection,
   getDocumentsByReferenceSectionType,
   getRecentDocuments,
+  SearchDocumentsByNameReferenceCustomer,
   downloadDocument,
   uploadDocuments,
   deleteDocument,
@@ -149,6 +150,55 @@ const handleDelete = (id: number, name: string) => {
   });
 };
 
+  /* ================= consultar por barra de busqueda ================= */
+const handleSearchDocuments = async (term: string) => {
+
+  if (!term.trim()) {
+    loadRecentDocuments();
+    return;
+  }
+
+  try {
+
+    setLoading(true);
+
+    const docs = await SearchDocumentsByNameReferenceCustomer(term);
+
+    const sorted = [...docs].sort(
+      (a, b) =>
+        new Date(b.registrationDate).getTime() -
+        new Date(a.registrationDate).getTime()
+    );
+
+    setRecentDocuments(sorted);
+    setDocuments(sorted);
+    setIsSearchResult(true);
+
+  } catch (error) {
+
+    showError(t('dig.searchError'));
+
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+
+  const delay = setTimeout(() => {
+
+    if (searchTerm) {
+      handleSearchDocuments(searchTerm);
+    } else {
+      loadRecentDocuments();
+    }
+
+  }, 500); // espera 500ms
+
+  return () => clearTimeout(delay);
+
+}, [searchTerm]);
+
   /* ================= cierra modal carga documentos ================= */
 const closeUploadModal = () => {
   setShowUploadModal(false);
@@ -240,7 +290,7 @@ const fetchDocuments = async () => {
   const loadRecentDocuments = async () => {
     try {
       setLoading(true);
-      const docs = await getRecentDocuments(20);
+      const docs = await getRecentDocuments(18);
 
       const sorted = [...docs].sort(
         (a, b) =>
@@ -462,7 +512,7 @@ const uploadFiles = async () => {
           )
         );
 
-        await sleep(200);
+        await sleep(150);
 
         //  estado uploading
         setUploadQueue(prev =>
@@ -495,7 +545,7 @@ const uploadFiles = async () => {
           )
         );
 
-        await sleep(200);
+        await sleep(150);
 
         // success solo si no hubo error
         setUploadQueue(prev =>
@@ -570,12 +620,6 @@ const uploadFiles = async () => {
     abortControllerRef.current = null;
   }
 };
-
-const filteredDocuments = recentDocuments.filter(doc =>
-  doc.documentName
-    ?.toLowerCase()
-    .includes(searchTerm.toLowerCase())
-);
 
   /* ================= RENDER ================= */
 
@@ -735,7 +779,7 @@ const filteredDocuments = recentDocuments.filter(doc =>
           <div className={styles.buttonGroup}>
             <button
               onClick={loadRecentDocuments}
-              className={styles.headerButton}
+              className={`${styles.headerButton} `}
               disabled={loading}
               title={t('dig.refresh')}
             >
@@ -874,13 +918,14 @@ const filteredDocuments = recentDocuments.filter(doc =>
       )}
         {/* ===== LISTADO ===== */}
 
-        <div className={styles.recentGrid}>
-          {filteredDocuments.length === 0 ? (
-            <div className={styles.noResults}>
-              {t('dig.noResults')}
+        
+          {loading ? (
+            <div className={styles.loading}>
+              <div className={styles.spinner}></div>
             </div>
-          ) : (
-            filteredDocuments.map(doc => (
+          ) : recentDocuments.length > 0 ? (
+            <div className={styles.recentGrid}>
+              {recentDocuments.map(doc => (
               <div key={doc.documentId} className={styles.recentCard}>
                 <div className={styles.fileInfo}>
                 <div className={styles.fileIconContainer}>
@@ -939,10 +984,15 @@ const filteredDocuments = recentDocuments.filter(doc =>
                   </button>
                 </div>
               </div>
-            ))
-          )}
+            ))}
+            </div>
+          ): (
+            <div className={styles.noResults}>
+              {t('dig.noResults')}
+            </div>
+          )
+          }
         </div>
-      </div>
       
       
       {/* ================= MODAL UPLOAD ================= */}

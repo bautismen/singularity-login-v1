@@ -41,7 +41,7 @@ function fileToBase64(file: File): Promise<string> {
  * Obtener últimos documentos
  * ============================== */
 export async function getRecentDocuments(
-  limit: number = 20
+  limit: number = 18
 ): Promise<DigitizationDocument[]> {
   const url = `${API_DIGITIZATION}docs/info?limit_=${limit}`;
 
@@ -385,4 +385,30 @@ export function getSections() {
       status: dto.status
     })
   );
+}
+
+/* ==============================
+ * Buscar documentos por nombre, referencia o cliente
+ * ============================== */
+export async function SearchDocumentsByNameReferenceCustomer(
+  search: string
+): Promise<DigitizationDocument[]> {
+
+  const url = `${API_DIGITIZATION}SearchFilesByNameReferenceCustomer/${encodeURIComponent(search)}/docs/info`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      errorData.messageStatus || "Error al buscar documentos"
+    );
+  }
+
+  const result = await response.json();
+
+  return result.data ?? [];
 }
