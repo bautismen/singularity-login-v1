@@ -462,7 +462,7 @@ const uploadFiles = async () => {
           )
         );
 
-        await sleep(300);
+        await sleep(200);
 
         //  estado uploading
         setUploadQueue(prev =>
@@ -495,7 +495,7 @@ const uploadFiles = async () => {
           )
         );
 
-        await sleep(300);
+        await sleep(200);
 
         // success solo si no hubo error
         setUploadQueue(prev =>

@@ -16,7 +16,7 @@
    CONTENT WRAPPER (LISTA + SIDEBAR)
 ================================ */
 .container {
-  padding: 1.5rem 2rem;
+  padding: 1.5rem 2rem 6rem 2rem; /* ↑ más espacio abajo */
   background: var(--background);
   width: 100%;
 }
