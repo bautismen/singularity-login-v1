@@ -15,6 +15,7 @@ import {uploadDocuments, getDocumentTypes, getSections, getDocumentsByReference,
 } from "../services/digitizationService";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { quotationService } from '../services/quotationService';
 
 
 export function ControlsPricing() {
@@ -54,6 +55,7 @@ export function ControlsPricing() {
   const [sections, setSections] = useState<SectionDTO[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [documentCounts, setDocumentCounts] = useState<Record<string, number>>({});
+    const [idRequestUpload, setIdRequestUpload] = useState("");
 
   interface UploadItem {
   id: string;
@@ -141,6 +143,7 @@ const handleDrop = (e: DragEvent<HTMLDivElement>) => {
 const handleOpenDocuments = async (request: ResquetQuote) => {
   setSelectedRequestForDocs(request);
   setReferenceUpload(request.referenceRequest || "");
+    setIdRequestUpload(request.id || "");
   setShowDocumentsModal(true);
 
   if (request.referenceRequest) {
@@ -306,6 +309,16 @@ const uploadFiles = async () => {
           t('dig.fileUploaded').replace('{{name}}', file.name)
         );
 
+         const quotationData = {
+                  IdRequest: idRequestUpload,       
+                  IdStatusRequest: 5,
+                  StatusRequest: "Cotizada",
+                  statusComment: "",          
+                          
+          };
+          await quotationService.changeStatus(quotationData);
+          loadRequests();
+
       } catch (err: any) {
 
         if (err.name === "AbortError") {
@@ -368,6 +381,7 @@ const closeDocumentsModal = () => {
   setDocumentTypeUpload("");
   setSeccionUpload("");
   setReferenceUpload("");
+  setIdRequestUpload("");
   setSelectedRequestForDocs(null);
   setDragActive(false);
 };
