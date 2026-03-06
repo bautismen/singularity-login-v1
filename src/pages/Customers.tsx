@@ -450,6 +450,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
         country: selectedCompany.country || 'MX',
         state: selectedCompany.state || '',
       },
+      is_persona_fisica: selectedCompany.rfc_taxid.length === 13 ? true : false,
     });
   }
 
@@ -927,8 +928,9 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                         value={newCompany.rfc_taxid}
                         onChange={(e) => setNewCompany({ 
                           ...newCompany, 
-                          rfc_taxid: e.target.value.replace(/[^a-zA-Z0-9-&]/g, '') // solo letras y números
-                                                   .slice(0, 13) // máximo 13 caracteres
+                          rfc_taxid: e.target.value
+                            .replace(/[^a-zA-Z0-9Ññ&.\-\/ ]/g, '') // caracteres permitidos para RFC y TAX ID internacionales
+                            .slice(0, 20)
                         })}
                         required
                         onInvalid={(e) =>
