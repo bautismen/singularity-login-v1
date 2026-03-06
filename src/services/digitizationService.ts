@@ -16,7 +16,7 @@ const headers = {
   "environmentId_": ENVIRONMENT_ID.toString(),
   "Content-Type": "application/json",
 };
-const API_DIGITIZATION = import.meta.env.VITE_API_URL_PruebaDIG + `operations/v1/kl/t/datastorage/`;
+const API_DIGITIZATION = import.meta.env.VITE_API_URL_DIG + `operations/v1/kl/t/datastorage/`;
 /* ==============================
  * UTIL: File → Base64
  * ============================== */
