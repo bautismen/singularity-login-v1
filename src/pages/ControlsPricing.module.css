@@ -2484,3 +2484,40 @@
   filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
 }
 
+.cloudUploadButton {
+  position: relative;
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-bottom: 18px;
+  transition: transform 0.2s ease;
+}
+
+.cloudUploadButton:hover {
+  transform: scale(1.05);
+}
+
+.cloudUploadButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cloudUploadIcon {
+  color: white;
+  stroke: #037F8C;
+  stroke-width: 1.8px;
+
+  filter:
+    drop-shadow(0 4px 10px rgba(3, 115, 140, 0.35))
+    drop-shadow(0 0 6px rgba(3, 140, 127, 0.25));
+
+  transition: all 0.2s ease;
+}
+
+.cloudUploadButton:hover .arrowUploadIcon {
+  transform: translateY(-5px);
+}

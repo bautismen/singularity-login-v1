@@ -74,9 +74,13 @@ export function ControlsPricing() {
     filterRequests();
   }, [requests, searchQuery,dateFilter, executiveFilter,selectedExecutive]);
 
-  //filtrado combos tipo documento y sección
-useEffect(() => {
+  useEffect(() => {
+  if (documentTypes.length > 0 && sections.length > 0) {
+    setDefaultFilters();
+    }
+  }, [documentTypes, sections]);
 
+const setDefaultFilters = () => {
   // filtrado por tarifa de venta final
   const filteredDocs = documentTypes.filter(d => d.documenttypeid === 1);
   if (filteredDocs.length > 0) {
@@ -88,8 +92,7 @@ useEffect(() => {
   if (filteredSections.length > 0) {
     setSeccionUpload(filteredSections[0].sectionid);
   }
-
-}, [documentTypes, sections]);
+};
 
   const loadUsers = async () => {
     try {
@@ -362,6 +365,8 @@ const uploadFiles = async () => {
         await loadDocumentCount(referenceUpload);
       }
 
+      setDefaultFilters();
+
       // limpia cola después de 2s
       setTimeout(() => {
         setUploadQueue([]);
@@ -384,6 +389,7 @@ const closeDocumentsModal = () => {
   setIdRequestUpload("");
   setSelectedRequestForDocs(null);
   setDragActive(false);
+  setDefaultFilters()
 };
 
   const loadRequests = async () => {
