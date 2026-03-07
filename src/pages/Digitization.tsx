@@ -17,7 +17,8 @@ import {
 } from "lucide-react";
 import { GrCloudDownload  } from "react-icons/gr";
 
-import { FaFilePdf  } from "react-icons/fa";
+import { FaFilePdf } from "react-icons/fa";
+import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
 import { IoDocumentText } from "react-icons/io5";
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -621,6 +622,20 @@ const uploadFiles = async () => {
   }
 };
 
+const getFileIcon = (name?: string) => {
+  const ext = name?.split(".").pop()?.toLowerCase();
+
+  switch (ext) {
+    case "pdf":
+      return <FaFilePdf size={22} className={styles.iconPdf} />;
+    case "xls":
+    case "xlsx":
+      return <PiMicrosoftExcelLogoFill size={22} className={styles.iconExcel} />;
+    default:
+      return <IoDocumentText size={22} className={styles.iconDoc} />;
+  }
+};
+
   /* ================= RENDER ================= */
 
   return (
@@ -930,13 +945,8 @@ const uploadFiles = async () => {
                 <div className={styles.fileInfo}>
                 <div className={styles.fileIconContainer}>
                   <div className={styles.fileIcon}>
-                    {doc.documentName?.toLowerCase().endsWith(".pdf") ? (
-                      <FaFilePdf size={22} className={styles.iconPdf} />
-                    ) : (
-                      <IoDocumentText  size={22} className={styles.iconDoc} />
-                    )}
+                    {getFileIcon(doc.documentName)}
                   </div>
-
                   <input
                     type="checkbox"
                     className={styles.cardCheckbox}
