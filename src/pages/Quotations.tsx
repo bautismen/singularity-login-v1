@@ -1708,10 +1708,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       }}
                       onChange={(e) =>
                       { 
-                          const value = e.target.value
-                          if (value === '' || Number(value) > 0) {
+                        const value = e.target.value
+                        if (value === '' || Number(value) > 0) {
                           updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, {number: Number(e.target.value)})
-                          }
+                        }
                       }}
                       className={styles.input}
                       placeholder="0"
