@@ -731,7 +731,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       e.preventDefault();
       setSaving(true);
       const selectedCustomer = customers.find(c => c._id === formData.customerId);
-      const hasAssignedExecutives = executives.length > 0;      
+      const hasAssignedExecutives = executives.length > 0;             
 
       const quotationData = {
         referenceRequest: formData.referenceRequest,
@@ -859,7 +859,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         });
         setSaving(false);
         return;
-      }      
+      }   
+     
       await performSave(quotationData);
 
     } catch (error) {
@@ -933,12 +934,23 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               </label>
             <input
               type="number"
-              min="0"
+              min="1"
               onInput={(e) => {
                 e.currentTarget.value = e.currentTarget.value.slice(0, 9);
               }}
               value={service.shipments[0].origin.zipCode}
-              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment,  {zipCode : parseInt(e.target.value)})}
+              onKeyDown={(e) => {
+                if (e.key === '-' || e.key === 'e') {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e) => 
+              {
+                const value = e.target.value
+                if (value === '' || Number(value) > 0) {
+                  updateOrigin(service.idServiceItem, service.shipments[0].idShipment,  {zipCode : parseInt(e.target.value)})
+                }
+              }}
               className={styles.input}
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
@@ -951,11 +963,21 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <input
               type="number"
               min="0"
+              onKeyDown={(e) => {
+                if (e.key === '-' || e.key === 'e') {
+                  e.preventDefault();
+                }
+              }}
               onInput={(e) => {
                 e.currentTarget.value = e.currentTarget.value.slice(0, 9);
               }}
               value={service.shipments[0].destination.zipCode}
-              onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, {zipCode : parseInt(e.target.value)})}
+              onChange={(e) => {
+                const value = e.target.value
+                if (value === '' || Number(value) > 0) {
+                  updateDestination(service.idServiceItem, service.shipments[0].idShipment, {zipCode : parseInt(e.target.value)})
+                }
+              }}
               className={styles.input}
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
@@ -1011,8 +1033,18 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               onInput={(e) => {
                 e.currentTarget.value = e.currentTarget.value.slice(0, 9);
               }}
+              onKeyDown={(e) => {
+                if (e.key === '-' || e.key === 'e') {
+                   e.preventDefault();
+                }
+              }}
               value={service.shipments[0].origin.zipCode}
-              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, {zipCode: e.target.value})}
+              onChange={(e) => {
+                const value = e.target.value
+                if (value === '' || Number(value) > 0) {
+                updateOrigin(service.idServiceItem, service.shipments[0].idShipment, {zipCode: e.target.value})
+                }}
+              }
               className={styles.input}
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
@@ -1065,8 +1097,18 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               onInput={(e) => {
                 e.currentTarget.value = e.currentTarget.value.slice(0, 9);
               }}
+              onKeyDown={(e) => {
+                if (e.key === '-' || e.key === 'e') {
+                   e.preventDefault();
+                }
+              }}
               value={service.shipments[0].destination.zipCode}
-              onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, {zipCode : parseInt(e.target.value)})}
+              onChange={(e) => {
+                const value = e.target.value
+                if (value === '' || Number(value) > 0) {
+                updateDestination(service.idServiceItem, service.shipments[0].idShipment, {zipCode : parseInt(e.target.value)})
+                }}
+              }
               className={styles.input}
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
               required/>
@@ -1219,9 +1261,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <label className={styles.label}>{t('quote.responseDeadline')}</label>
             <input
               type="date"
+              onKeyDown={(e) => e.preventDefault()}
               min= {mode === 'create' ? new Date().toISOString().split("T")[0] : undefined}
               value={formData.responseDeadline}
-              onChange={(e) => setFormData({ ...formData, responseDeadline: e.target.value })}
+              onChange={(e) => {                      
+                 setFormData({ ...formData, responseDeadline: e.target.value })
+                }
+              }                
               className={styles.input}
               placeholder="dd/mm/aaaa"
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
@@ -1234,9 +1280,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input
               type="date"
+              onKeyDown={(e) => e.preventDefault()}
               max={mode === 'create'  ? new Date().toISOString().split("T")[0] : undefined}
               value={formData.created}
-              onChange={(e) => setFormData({ ...formData, created: e.target.value })}
+              onChange={(e) => 
+                {                     
+                  setFormData({ ...formData, created: e.target.value })}
+                }
               className={styles.input}
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
             />
@@ -1464,6 +1514,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <label className={styles.label}>{t('quote.expectedDeparture')}</label>
                 <input
                   type="date"
+                  onKeyDown={(e) => e.preventDefault()}
                   min={mode === 'create' ? new Date().toISOString().split("T")[0] : undefined}
                   value={formatDateForInput(service.shipments[0].departureDateAproximate || '') }
                   onChange={(e) => updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'departureDateAproximate', e.target.value)}
@@ -1650,7 +1701,18 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       min="0"
                       step="any"
                       value={service.shipments[0].projectionShipment?.number}
-                      onChange={(e) => updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, {number: Number(e.target.value)})}
+                      onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e') {
+                            e.preventDefault();
+                        }
+                      }}
+                      onChange={(e) =>
+                      { 
+                          const value = e.target.value
+                          if (value === '' || Number(value) > 0) {
+                          updateProjectionShipment(service.idServiceItem, service.shipments[0].idShipment, {number: Number(e.target.value)})
+                          }
+                      }}
                       className={styles.input}
                       placeholder="0"
                       disabled={mode === 'view' || formData.idStatusRequest >= 2}
@@ -2013,8 +2075,15 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               placeholder="19"
                               className={styles.input}
                               style={{ width: '80px' }}
+                              onKeyDown={(e) => {
+                                if (e.key === '-' || e.key === 'e') {
+                                    e.preventDefault();
+                                }
+                              }}
                               value={merchandiseForm?.classification.find(classification => classification.idClassificationMerchandise === 7)?.un || ''}
                               onChange={(e) => {
+                                const value = e.target.value
+                                if (value === '' || Number(value) > 0) {
                                 const currentClassifications =  merchandiseForm?.classification ?? [];                                                                 
                                 setMerchandiseForm({
                                   ...merchandiseForm,
@@ -2022,7 +2091,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                                     ...currentClas,
                                     un:  e.target.value
                                   } : currentClas)                                  
-                                })                                
+                                })  
+                              }                              
                               }}
                             />
                           </div>
@@ -2037,8 +2107,15 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               placeholder="80"
                               className={styles.input}
                               style={{width: '100px' }}
+                              onKeyDown={(e) => {
+                                if (e.key === '-' || e.key === 'e') {
+                                    e.preventDefault();
+                                }
+                              }}
                               value={merchandiseForm?.classification?.find(classification => classification.idClassificationMerchandise === 10)?.temperature || ''}
-                               onChange={(e) => {
+                              onChange={(e) => {
+                                const value = e.target.value
+                                if (value === '' || Number(value) > 0) {
                                 const currentClassifications =  merchandiseForm?.classification ?? [];                                                                 
                                 setMerchandiseForm({
                                   ...merchandiseForm,
@@ -2047,6 +2124,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                                     temperature:  e.target.value
                                   } : currentClas)                                  
                                 })  
+                              }
                                }}/>
                             <select
                               className={styles.select}
@@ -2106,10 +2184,20 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <label className={styles.label}>{t('quote.totalVolume')} ({useMetricSystem ? t('quote.cm') : t('quote.in')}) </label>
                     <input
                       type="number"   
-                      min="0"                
+                      min="1"                
                       step="any"
                       value={merchandiseForm.volumeTotal}
-                      onChange={(e) => setMerchandiseForm({...merchandiseForm, volumeTotal: Number(e.target.value) })}
+                      onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e') {
+                            e.preventDefault();
+                        }
+                      }}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        if (value === '' || Number(value) > 0) {
+                          setMerchandiseForm({...merchandiseForm, volumeTotal: Number(e.target.value) })
+                        }
+                      }}
                       className={styles.input}
                       placeholder="0"
                       disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
@@ -2121,7 +2209,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         min="0"
                         step="any"
                         value={merchandiseForm.weigthTotal}
-                        onChange={(e) => setMerchandiseForm({...merchandiseForm, weigthTotal: Number(e.target.value)})}                                           
+                        onKeyDown={(e) => {
+                          if (e.key === '-' || e.key === 'e') {
+                              e.preventDefault();
+                          }
+                        }}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          if (value === '' || Number(value) > 0) {
+                            setMerchandiseForm({...merchandiseForm, weigthTotal: Number(e.target.value)})}    
+                          }
+                        }                                       
                         className={styles.input}
                         placeholder="0"
                         disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
@@ -2265,7 +2363,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   </label>
                   <input
                     type="number"  
-                    min="0"   
+                    min="0"
+                    onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e') {
+                            e.preventDefault();
+                        }
+                      }}   
                     onInput={(e) => {
                       e.currentTarget.value = e.currentTarget.value.slice(0, 9);
                     }}                
@@ -2283,6 +2386,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       type="number"
                       min="0" 
                       step="any"
+                      onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e') {
+                            e.preventDefault();
+                        }
+                      }}   
                       onInput={(e) => {
                         e.currentTarget.value = e.currentTarget.value.slice(0, 9);
                       }}
@@ -2297,6 +2405,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <input
                       type="number"
                       min="0" 
+                      onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e') {
+                            e.preventDefault();
+                        }
+                      }}   
                       step="any"
                        onInput={(e) => {
                         e.currentTarget.value = e.currentTarget.value.slice(0, 9);
@@ -2314,6 +2427,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <input
                       type="number"
                       min="0" 
+                      onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e') {
+                            e.preventDefault();
+                        }
+                      }}   
                       step="any"
                       onInput={(e) => {
                         e.currentTarget.value = e.currentTarget.value.slice(0, 9);
@@ -2329,8 +2447,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     </label>
                     <input
                       type="number"
-                      min="0" 
+                      min="0"                         
                       step="any"
+                      onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e') {
+                            e.preventDefault();
+                        }
+                      }} 
                       onInput={(e) => {
                         e.currentTarget.value = e.currentTarget.value.slice(0, 9);
                       }}
