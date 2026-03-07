@@ -6,6 +6,11 @@ import { useNotification } from '../contexts/NotificationContext';
 import styles from './QuotationsList.module.css';
 import {QuotationRequest} from '../types/requestQuotation';
 import { quotationService } from '../services/quotationService';
+import { getDocumentsByReference, downloadDocumentByReference
+} from "../services/digitizationService";
+import {  GrCloudDownload  } from "react-icons/gr";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 const USERS_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/users`;
 const REQUEST_TYPES_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-request-types`;
@@ -52,6 +57,9 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
   const [users, setUsers] = useState<any[]>([]);
   const [requestTypes, setRequestTypes] = useState<any[]>([]);
 
+  /* documentos contador */
+  const [documentCounts, setDocumentCounts] = useState<Record<string, number>>({});
+
   useEffect(() => {
     loadQuotationsRequests();
     loadUsers();
@@ -88,6 +96,8 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
         return a_deadline -  b_deadline; //fecha mas antigua va primero 
       }); 
       setQuotations(sortdata);
+      //recargar contadores de documentos
+      await loadAllDocumentCounts(sortdata);
     } catch (error) {
       console.error('Error loading quotations:', error);
       showError('Error al cargar las cotizaciones');
@@ -255,6 +265,121 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
+
+   /* recargar los documentos total por cantidad referencia qua req */
+useEffect(() => {
+  if (quotations.length > 0) {
+    loadAllDocumentCounts(quotations);
+  }
+}, [quotations]);
+
+    /* recargar los documentos total por cantidad referencia qua req */
+  const loadAllDocumentCounts = async (list: QuotationRequest[]) => {
+
+  const results = await Promise.all(
+    list.map(async (q) => {
+
+      if (!q.referenceRequest) {
+        return { reference: "", count: 0 };
+      }
+
+      try {
+        const docs = await getDocumentsByReference(q.referenceRequest);
+
+        return {
+          reference: q.referenceRequest,
+          count: docs?.length ?? 0
+        };
+
+      } catch {
+        return {
+          reference: q.referenceRequest,
+          count: 0
+        };
+      }
+    })
+  );
+
+  const counts: Record<string, number> = {};
+
+  results.forEach(r => {
+    if (r.reference) {
+      counts[r.reference] = r.count;
+    }
+  });
+
+  setDocumentCounts(counts);
+};
+
+    /* descargar los documentos por referencia qua req */
+  const handleDownloadDocuments = async (quotation: QuotationRequest) => {
+
+    if (!quotation.referenceRequest) {
+      showError(t('dig.noReference'));
+      return;
+    }
+
+    try {
+
+      const meta = await downloadDocumentByReference(quotation.referenceRequest);
+
+      if (!meta || meta.length === 0) {
+        showError(t('dig.noDocuments'));
+        return;
+      }
+
+      // CASO 1: Solo un documento
+      if (meta.length === 1) {
+
+        const doc = meta[0];
+
+        if (!doc.fileBytes || !doc.fileName) {
+          showError(t('dig.invalidDocument'));
+          return;
+        }
+
+        const binary = atob(doc.fileBytes);
+        const bytes = new Uint8Array(binary.length);
+
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+
+        const blob = new Blob([bytes]);
+        saveAs(blob, doc.fileName);
+
+        return;
+      }
+
+      // CASO 2: varios documentos -> ZIP
+      const zip = new JSZip();
+
+      for (const doc of meta) {
+
+        if (!doc.fileBytes || !doc.fileName) continue;
+
+        const binary = atob(doc.fileBytes);
+        const bytes = new Uint8Array(binary.length);
+
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+
+        zip.file(doc.fileName, bytes);
+      }
+
+      const zipBlob = await zip.generateAsync({
+        type: "blob",
+        compression: "DEFLATE"
+      });
+
+      saveAs(zipBlob, `${quotation.referenceRequest}.zip`);
+
+    } catch (error: any) {
+      showError(error.message || t('dig.downloadError'));
+    }
+  };
+
 
   return (
     <div className={styles.containerWithSidebar}>
@@ -671,6 +796,23 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
                         <button className={`${styles.statusBadge} ${getStatusClass(quotation.statusRequest)}`}>
                           {quotation.statusRequest}
                         </button>
+
+                        {quotation.idStatusRequest === 5 && (
+                          <div className={styles.documentsActions}>
+                            <button
+                              className={`${styles.cloudButton} ${styles.download}`}
+                              onClick={() => handleDownloadDocuments(quotation)}
+                              title={t('dig.download')}
+                              disabled={(documentCounts[quotation.referenceRequest ?? ""] ?? 0) === 0}
+                            >
+                              <GrCloudDownload size={22} />
+
+                              <span className={styles.documentBadge}>
+                                {documentCounts[quotation.referenceRequest ?? ""] ?? 0}
+                              </span>
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       <div className={styles.rightInfo}>                        

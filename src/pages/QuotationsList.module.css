@@ -409,8 +409,9 @@
 
 .referenceContainer {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .medalImage {
@@ -681,4 +682,41 @@
     margin-left: 0;
   }
   
+}
+
+/*  botones de download de documentos */
+
+.documentsActions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* botón base */
+.cloudButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.2s ease;
+}
+
+/* icono grande */
+.cloudButton svg {
+  font-size: 30px;
+}
+
+.download svg {
+  color: #03738C;
+}
+
+/* badge */
+.documentBadge {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
