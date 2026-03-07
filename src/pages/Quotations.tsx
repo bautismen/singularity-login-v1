@@ -178,7 +178,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       setCountries(countriesData.filter((co: any) => co.status === 1));
       setImoList(imoData.filter((imo: any) => imo.status === 1));
     } catch (error) {
-      console.error('Error loading catalogs:', error);
+      //console.error('Error loading catalogs:', error);
       showError(t('quote.errors.loadCatalogs'));
     } finally {
       setLoading(false);
@@ -234,7 +234,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }
       
     } catch (error) {
-      console.error('Error loading quotation:', error);
+      //console.error('Error loading quotation:', error);
       showError(t('quote.errors.loadQuotation'));
     } finally {      
     }
@@ -665,7 +665,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         onBack();
       }
     } catch (error) {
-      console.error('Error updating quotation status:', error);
+      //console.error('Error updating quotation status:', error);
       showError(t('quote.errors.updateStatus'));
     } finally {
       setSaving(false);
@@ -700,7 +700,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         onBack();
       }
     } catch (error) {
-      console.error('Error updating quotation status:', error);
+      //console.error('Error updating quotation status:', error);
       showError(t('quote.errors.executivesAssingned'));
     } finally {
       setSaving(false);
@@ -864,7 +864,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       await performSave(quotationData);
 
     } catch (error) {
-      console.error('Error saving quotation:', error);
+      //console.error('Error saving quotation:', error);
       showError(t('quote.errors.saveQuotation'));
     } finally {
       setSaving(false);
@@ -878,11 +878,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       if (mode === 'edit' && quotationId) {
         quotationData.id = quotationId;
         const res = await quotationService.update(quotationData);
-        console.log('UPDATE: ', JSON.stringify(quotationData, null, 2), 'Result:', res);
+        //console.log('UPDATE: ', JSON.stringify(quotationData, null, 2), 'Result:', res);
         showSuccess(t('quote.success.updated'));
       } else {
         result = await quotationService.create(quotationData);
-        console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
+       // console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
         showSuccess(t('quote.success.created'));
       }
 
@@ -892,7 +892,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         onBack();
       }
     } catch (error) {
-      console.error('Error in performSave:', error);
+      //console.error('Error in performSave:', error);
       showError(t('quote.errors.saveQuotation'));
     } finally {
       setSaving(false);
