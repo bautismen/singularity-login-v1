@@ -793,20 +793,53 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.unitprofit')}</label>
-                <input required
-                  type="number"
-                  value={generalData.unit_profit}
-                  onChange={(e) => setGeneralData({...generalData, unit_profit: e.target.value})}
-                  className={styles.formInput}
-                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}                
-                />
+                <input
+                    required
+                    type="number"
+                    min="1"
+                    value={generalData.unit_profit}
+                    onKeyDown={(e) => {
+                      if (e.key === '-' || e.key === 'e') {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || Number(value) > 0) {
+                        setGeneralData({
+                          ...generalData,
+                          unit_profit: value
+                        });
+                      }
+                    }}
+                    className={styles.formInput}
+                    disabled={
+                      loading ||
+                      statusControl.id_status_control === 5 ||
+                      statusControl.id_status_control === 6
+                    }
+                  />
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.volume')}</label>
                 <input required
                   type="number"
+                  min="1"
                   value={generalData.volume}
-                  onChange={(e) => setGeneralData({...generalData, volume: e.target.value})}
+                  onKeyDown={(e) => {
+                      if (e.key === '-' || e.key === 'e') {
+                        e.preventDefault();
+                      }
+                    }}                  
+                  onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || Number(value) > 0) {
+                        setGeneralData({
+                          ...generalData,
+                          volume: value
+                        });
+                      }
+                    }}
                   className={styles.formInput}                
                   disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
                 />
