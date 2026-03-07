@@ -40,6 +40,17 @@
   transition: background-color 9999s ease-in-out 0s;
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--text-primary);
+  -webkit-box-shadow: 0 0 0px 1000px var(--surface) inset;
+  transition: background-color 9999s ease-in-out 0s;
+  border: 1px solid var(--border);
+}
+
 html, body, #root {
   height: 100%;
 }
@@ -48,13 +59,13 @@ body {
   margin: 0;
   /* background: var(--background); */
 }
-/* 
+
 .layout {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
 }
-*/
+
 .content {
   flex: 1;
   background: var(--background);

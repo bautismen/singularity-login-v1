@@ -352,8 +352,16 @@ export function Executives() {
             </label>
             <input
               type="number"
+              min="1"
               value={formData.numero_nomina}
-              onChange={(e) => setFormData({ ...formData, numero_nomina: e.target.value })}
+              onKeyDown={(e) => {
+                if (e.key === '-' || e.key === 'e') {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e) =>{
+                setFormData({ ...formData, numero_nomina: e.target.value })}
+              } 
               className={styles.input}
               required
             />
@@ -365,6 +373,11 @@ export function Executives() {
             </label>
             <input
               type="date"
+              min="1980-01-01"
+              max={new Date(new Date().setMonth(new Date().getMonth() + 1))
+                  .toISOString()
+                  .split("T")[0]
+              }
               value={formData.fecha_ingreso}
               onChange={(e) => setFormData({ ...formData, fecha_ingreso: e.target.value })}
               className={styles.inputdate}

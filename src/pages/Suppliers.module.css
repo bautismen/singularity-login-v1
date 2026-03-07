@@ -1488,3 +1488,13 @@
   background: var(--background);
   transition: background 0.3s ease;
 }
+
+select option {
+  background-color: var(--surface);
+  color: var(--text-primary);
+}
+
+select option:checked {
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
+}
