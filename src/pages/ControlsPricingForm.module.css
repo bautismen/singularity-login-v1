@@ -2096,11 +2096,11 @@
   transition: all 0.2s;
 }
 
-.btnDecline:hover {
+/*.btnDecline:hover {
   background: #6b7280;
 }
 
-/* .dark .btnDecline {
+ .dark .btnDecline {
   background: #111827;
   color: #9ca3af;
   border-color: #374151;
