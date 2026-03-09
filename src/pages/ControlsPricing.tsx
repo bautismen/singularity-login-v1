@@ -864,7 +864,11 @@ const closeDocumentsModal = () => {
                               <button
                                 className={`${styles.cloudButton} ${styles.download}`}
                                 onClick={() => handleDownloadDocuments(request)}
-                                title={t('dig.download')}
+                                title={
+                                  (documentCounts[request.referenceRequest] ?? 0) === 1
+                                    ? t('dig.downloadfile')
+                                    : t('dig.downloadfiles')
+                                }
                               >
                                 <GrCloudDownload size={22} />
 
