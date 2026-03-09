@@ -827,7 +827,7 @@ const getFileIcon = (name?: string) => {
         {/* ===== SEARCH BAR ===== */}
         <div className={styles.searchContainer}>
           <div className={styles.searchBar}>
-            <Search size={18} className={styles.searchIcon} />
+            <Search size={20} className={styles.searchIcon} />
             <input
               type="text"
               placeholder={t('dig.searchDocument')}
