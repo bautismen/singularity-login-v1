@@ -802,7 +802,11 @@ useEffect(() => {
                             <button
                               className={`${styles.cloudButton} ${styles.download}`}
                               onClick={() => handleDownloadDocuments(quotation)}
-                              title={t('dig.download')}
+                               title={
+                                  (documentCounts[quotation.referenceRequest] ?? 0) === 1
+                                    ? t('dig.downloadfile')
+                                    : t('dig.downloadfiles')
+                                }
                               disabled={(documentCounts[quotation.referenceRequest ?? ""] ?? 0) === 0}
                             >
                               <GrCloudDownload size={22} />

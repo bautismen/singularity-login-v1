@@ -710,6 +710,21 @@
   font-size: 30px;
 }
 
+/* efecto flotante */
+.cloudButton:hover {
+  transform: translateY(-4px) scale(1.08);
+  opacity: 0.95;
+}
+
+/* click */
+.cloudButton:active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.cloudButton:hover svg {
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+}
+
 .download svg {
   color: #03738C;
 }
