@@ -792,6 +792,20 @@ const getFileIcon = (name?: string) => {
           <h1 className={styles.title}>{t('dig.title')}</h1>
 
           <div className={styles.buttonGroup}>
+          <button
+              onClick={() => {
+                setShowUploadModal(true);
+
+                // limpiar selección al abrir modal
+                setSelectedDocuments([]);
+                setSelectAll(false);
+              }}
+              className={styles.headerButton}
+              title={t('dig.uploadFiles')}
+            >
+              <Plus size={20} />
+            </button>
+
             <button
               onClick={loadRecentDocuments}
               className={`${styles.headerButton} `}
@@ -807,20 +821,6 @@ const getFileIcon = (name?: string) => {
               title={t('dig.filters')}
             >
           {showFilters ? <FilterX size={20} /> : <Filter size={20} />}
-            </button>
-
-            <button
-              onClick={() => {
-                setShowUploadModal(true);
-
-                // limpiar selección al abrir modal
-                setSelectedDocuments([]);
-                setSelectAll(false);
-              }}
-              className={styles.headerButton}
-              title={t('dig.uploadFiles')}
-            >
-              <Plus size={20} />
             </button>
           </div>
         </div>
