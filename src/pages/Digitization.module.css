@@ -93,9 +93,9 @@
   gap: 12px;
 }
 .recentCard {
-  background: var(--hover);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
   padding: 10px 10px;
   display: flex;
   justify-content: space-between;
@@ -108,7 +108,7 @@
 
 .recentCard:hover {
   border-color: #038C7F;
-
+  background: var(--hover);
   box-shadow:
     0 12px 30px rgba(3, 140, 127, 0.12),
     0 2px 8px rgba(0,0,0,0.04);
@@ -1249,7 +1249,7 @@
   left: 50%;
   transform: translateX(-50%);
   width: 520px;
-  background: var(--hover);
+  background: var(--background);
   border-radius: 16px;
   padding: 14px 18px;
   display: flex;
@@ -1261,6 +1261,12 @@
 
   animation: bulkFadeIn 0.25s ease;
   z-index: 4000;
+  border: 1px solid var(--border);
+}
+
+.bulkToolbar:hover {
+    background: var(--surface);
+  border: 1px solid var(--hover);
 }
 
 /* LEFT SIDE */
