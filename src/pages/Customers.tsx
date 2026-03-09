@@ -956,7 +956,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                     </label>
                   </div>{/*RFC*/}
 
-                  <div className={styles.countryField}>
+                  <div className={styles.formRow}>
                     <label>
                       <span className="required">* </span>
                       {t('cust.country')}
