@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, ChevronDown, ChevronUp, X, ArrowLeft, RefreshCw } from 'lucide-react';
+import { Search, Plus, Save, Edit2, ChevronDown, ChevronUp, X, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { Supplier, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES, SectorOfBusiness } from '../types/supplier';
@@ -446,7 +446,7 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                 
             <div className={styles.headerActions}>
               <button type="submit" className={styles.saveHeaderButton} disabled={loading}>
-                <Plus size={18} />
+                <Save size={18} />
                 {loading ? t('catalog.saving') : t('catalog.save')}
               </button>
             </div> {/*End header actions */}

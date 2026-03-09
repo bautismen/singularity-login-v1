@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Edit2, Search } from 'lucide-react';
+import { Plus, Save, Edit2, Search } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { Company } from '../types/company';
@@ -218,6 +218,7 @@ if (isFormOpen) {
             className={styles.saveHeaderButton}
             disabled={loading}
           >
+            <Save size={18} />
             {loading ? t('catalog.saving') : t('catalog.save')}
           </button>
         </div>

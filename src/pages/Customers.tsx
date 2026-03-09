@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, ChevronDown, ChevronUp, X, ArrowLeft } from 'lucide-react';
+import { Search, Plus, Save, Edit2, ChevronDown, ChevronUp, X, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { Customer, Person, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES } from '../types/customer';
@@ -492,7 +492,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                 className={styles.saveHeaderButton} 
                 disabled={loading}
               >
-                <Plus size={18} />
+                <Save size={18} />
                 {loading ? t('catalog.saving') : t('catalog.save')}
               </button>
 

@@ -1297,8 +1297,8 @@
 }
 
 .classificationCheckbox:has(input:checked) {
-  background: #d1fae5;
-  border-color: #10b981;
+  background: #038C7F;
+  border-color: #038C7F;
 }
 
 .dark .classificationCheckbox {
@@ -1386,12 +1386,12 @@
 .totalValue {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-tertiary);
 }
 
-.dark .totalValue {
+/* .dark .totalValue {
   color: white;
-}
+} */
 
 .generalDataGrid {
   display: grid;
