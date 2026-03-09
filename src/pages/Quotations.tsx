@@ -120,8 +120,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   }, [mode, quotationId]);
 
   const resetForm = () => {
+    //onBack('69af1fd25d2264a9f03e1b76');
     setFormData({
-      referenceRequest: '',
+      referenceRequest: 'QR...',
       customerId: '',
       client: '',
       isPriority: false,
@@ -524,8 +525,15 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const duplicateService = (idServiceItem: number) => {
     const serviceToDuplicate = services.find(service => service.idServiceItem === idServiceItem);
     if (serviceToDuplicate) {
-      const newService = { ...serviceToDuplicate, idServiceItem: services.length + 1 };
+      const newService = { ...serviceToDuplicate, idServiceItem: services.length + 1 };      
       setServices([...services, newService]);
+      setProjectionShipmentState(prevState => {
+        const currentValue = prevState[ services.length + 1 ] ?? false;
+        return {
+          ...prevState,
+          [services.length + 1] : !currentValue
+        }      
+      });
     }
   };
 
@@ -641,10 +649,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const handleProjectionShipmentState = (idServiceItem : number) => {
-    setProjectionShipmentState(prev => ({
-      ...prev,
-      [idServiceItem] : !prev[idServiceItem]
-    }));
+    setProjectionShipmentState(prevState => {
+      const currentValue = prevState[idServiceItem] ?? false;
+      return {
+        ...prevState,
+        [idServiceItem] : !currentValue
+      }      
+    });
   }
 
   const handleStatusUpdate = async (statusId: number, statusName: string) => {
@@ -731,7 +742,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       e.preventDefault();
       setSaving(true);
       const selectedCustomer = customers.find(c => c._id === formData.customerId);
-      const hasAssignedExecutives = executives.length > 0;             
+      const hasAssignedExecutives = executives.length > 0;   
 
       const quotationData = {
         referenceRequest: formData.referenceRequest,
@@ -761,6 +772,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           idUser: exec.idUser
         })),       
                         
+       
+
         services: services.map((service, idx) => {                                                               
           
           const shipmentsInService = service.shipments.map((shipment, index) => {
@@ -882,7 +895,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         showSuccess(t('quote.success.updated'));
       } else {
         result = await quotationService.create(quotationData);
-       // console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
+        //console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
         showSuccess(t('quote.success.created'));
       }
 
@@ -908,8 +921,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     const height = (document.getElementById('package-height') as HTMLInputElement).value;
     const width = (document.getElementById('package-width') as HTMLInputElement).value;
     const weight = (document.getElementById('package-weight') as HTMLInputElement).value;                
-    if (UnitCargo && quantity && length && height && width && weight) {
-      addPackage({
+    if (UnitCargo && quantity && length && height && width && weight) {      
+        addPackage({
         idUnitCargo : parseInt(selectElement.value),
         unitCargo: UnitCargo,
         quantity: parseInt(quantity),
@@ -917,7 +930,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         height: height,
         width: width,
         weight: weight,
-      });
+        });            
     } 
   }
 
@@ -1126,7 +1139,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
   return (
     <div className={styles.container}>
-      <form onSubmit={handleSaveQuotation}>
+      <form onSubmit={handleSaveQuotation} 
+      onKeyDown={(e) => { 
+        if(e.key === "Enter"){ 
+          e.preventDefault(); 
+          }}} >
       <div className={styles.header}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {onBack && (
@@ -1705,6 +1722,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         if (e.key === '-' || e.key === 'e') {
                             e.preventDefault();
                         }
+                        if (e.currentTarget.value.length >= 7 && e.key !== "Backspace" && e.key !== "Delete") {
+                          e.preventDefault();
+                        }
                       }}
                       onChange={(e) =>
                       { 
@@ -1714,7 +1734,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         }
                       }}
                       className={styles.input}
-                      placeholder="0"
                       disabled={mode === 'view' || formData.idStatusRequest >= 2}
                     />
                   </div>
@@ -1723,6 +1742,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <select
                       required
                       value={service.shipments[0].projectionShipment?.idTypeMesurementFrecuency}
+                      onInput={(e) => {
+                        e.currentTarget.value = e.currentTarget.value.slice(0, 9);
+                      }}
                       onChange={(e) => 
                         updateProjectionShipment(
                           service.idServiceItem, 
@@ -2075,8 +2097,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               placeholder="19"
                               className={styles.input}
                               style={{ width: '80px' }}
+                              onInput={(e) => {
+                                e.currentTarget.value = e.currentTarget.value.slice(0, 9);
+                              }}
                               onKeyDown={(e) => {
-                                if (e.key === '-' || e.key === 'e') {
+                                if (e.key === "." || e.key === '-' || e.key === 'e') {
                                     e.preventDefault();
                                 }
                               }}
@@ -2103,28 +2128,30 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                           <label className={styles.label}>* {t('quote.temperature')}</label>
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <input
-                              type="number"
+                              type="text"
+                              inputMode="numeric"
                               placeholder="80"
+                              step="1"
                               className={styles.input}
-                              style={{width: '100px' }}
-                              onKeyDown={(e) => {
-                                if (e.key === '-' || e.key === 'e') {
-                                    e.preventDefault();
-                                }
-                              }}
+                              style={{width: '100px' }}                                                                                     
                               value={merchandiseForm?.classification?.find(classification => classification.idClassificationMerchandise === 10)?.temperature || ''}
                               onChange={(e) => {
-                                const value = e.target.value
-                                if (value === '' || Number(value) > 0) {
-                                const currentClassifications =  merchandiseForm?.classification ?? [];                                                                 
+                                let value = e.target.value;
+                                // eliminar todo lo que no sea número o "-"
+                                value = value.replace(/[^0-9-]/g, "");
+
+                                // permitir "-" solo al inicio
+                                value = value.replace(/(?!^)-/g, "");
+
+                                const currentClassifications =  merchandiseForm?.classification ?? [];     
+
                                 setMerchandiseForm({
                                   ...merchandiseForm,
                                   classification : currentClassifications.map(currentClas => currentClas.idClassificationMerchandise === 10 ? {
                                     ...currentClas,
-                                    temperature:  e.target.value
+                                    temperature:  value
                                   } : currentClas)                                  
-                                })  
-                              }
+                                })                                
                                }}/>
                             <select
                               className={styles.select}
@@ -2186,10 +2213,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       type="number"   
                       min="1"                
                       step="any"
+                      placeholder="0"
                       value={merchandiseForm.volumeTotal}
                       onKeyDown={(e) => {
                         if (e.key === '-' || e.key === 'e') {
                             e.preventDefault();
+                        }
+                        if (e.currentTarget.value.length >= 7 && e.key !== "Backspace" && e.key !== "Delete") {
+                          e.preventDefault();
                         }
                       }}
                       onChange={(e) => {
@@ -2199,7 +2230,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         }
                       }}
                       className={styles.input}
-                      placeholder="0"
                       disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
                   </div>                
                   <div className={styles.formGroup}>
@@ -2211,7 +2241,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                         value={merchandiseForm.weigthTotal}
                         onKeyDown={(e) => {
                           if (e.key === '-' || e.key === 'e') {
-                              e.preventDefault();
+                            e.preventDefault();
+                          }
+                          if (e.currentTarget.value.length >= 7 && e.key !== "Backspace" && e.key !== "Delete") {
+                            e.preventDefault();
                           }
                         }}
                         onChange={(e) => {
@@ -2363,9 +2396,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   </label>
                   <input
                     type="number"  
-                    min="0"
+                    min="1"
+                    step="1"
                     onKeyDown={(e) => {
-                        if (e.key === '-' || e.key === 'e') {
+                        if (e.key === '-' ) {
                             e.preventDefault();
                         }
                       }}   
@@ -2384,16 +2418,17 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     </label>
                     <input
                       type="number"
-                      min="0" 
+                      min="1" 
                       step="any"
                       onKeyDown={(e) => {
                         if (e.key === '-' || e.key === 'e') {
                             e.preventDefault();
                         }
+                        if (e.currentTarget.value.length >= 6 && e.key !== "Backspace" && e.key !== "Delete") {
+                          e.preventDefault();
+                        }
                       }}   
-                      onInput={(e) => {
-                        e.currentTarget.value = e.currentTarget.value.slice(0, 9);
-                      }}
+                      
                       className={styles.input}
                       id="package-length"
                       required/>
@@ -2404,16 +2439,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     </label>
                     <input
                       type="number"
-                      min="0" 
+                      min="1" 
                       onKeyDown={(e) => {
                         if (e.key === '-' || e.key === 'e') {
                             e.preventDefault();
                         }
+                        if (e.currentTarget.value.length >= 6 && e.key !== "Backspace" && e.key !== "Delete") {
+                          e.preventDefault();
+                        }
                       }}   
-                      step="any"
-                       onInput={(e) => {
-                        e.currentTarget.value = e.currentTarget.value.slice(0, 9);
-                      }}
+                      step="any"                       
                       className={styles.input}
                       id="package-height"
                       required/>
@@ -2426,16 +2461,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     </label>
                     <input
                       type="number"
-                      min="0" 
+                      min="1" 
                       onKeyDown={(e) => {
                         if (e.key === '-' || e.key === 'e') {
                             e.preventDefault();
                         }
+                        if (e.currentTarget.value.length >= 6 && e.key !== "Backspace" && e.key !== "Delete") {
+                          e.preventDefault();
+                        }
                       }}   
-                      step="any"
-                      onInput={(e) => {
-                        e.currentTarget.value = e.currentTarget.value.slice(0, 9);
-                      }}
+                      step="any"                     
                       className={styles.input}
                       id="package-width"
                       required
@@ -2447,16 +2482,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     </label>
                     <input
                       type="number"
-                      min="0"                         
+                      min="1"                         
                       step="any"
                       onKeyDown={(e) => {
                         if (e.key === '-' || e.key === 'e') {
-                            e.preventDefault();
+                         e.preventDefault();
                         }
-                      }} 
-                      onInput={(e) => {
-                        e.currentTarget.value = e.currentTarget.value.slice(0, 9);
-                      }}
+                        if (e.currentTarget.value.length >= 6 && e.key !== "Backspace" && e.key !== "Delete") {
+                          e.preventDefault();
+                        }
+                      }}                      
                       className={styles.input}
                       id="package-weight"
                       required
