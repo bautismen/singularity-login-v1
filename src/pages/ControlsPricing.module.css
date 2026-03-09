@@ -2007,6 +2007,7 @@
     0 0 0 1px rgba(0, 0, 0, 0.04);
 
   animation: fadeIn 0.25s ease;
+  border: 1px solid var(--border);
 }
 
 .modalHeader {
