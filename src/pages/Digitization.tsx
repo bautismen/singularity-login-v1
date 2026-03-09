@@ -980,6 +980,7 @@ const getFileIcon = (name?: string) => {
                   <button
                     className={styles.actionButton}
                     onClick={() => handleDownload(doc.documentId)}
+                    title={t('dig.downloadfile')}
                   >
                     <GrCloudDownload size={20} />
                   </button>
@@ -989,6 +990,7 @@ const getFileIcon = (name?: string) => {
                     onClick={() =>
                       handleDelete(doc.documentId, doc.documentName)
                     }
+                    title={t('dig.delete')}
                   >
                     <Trash2 size={20} />
                   </button>

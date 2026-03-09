@@ -225,6 +225,26 @@
   background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
 }
+
+/* efecto flotante */
+.actionButton:hover,
+.actionButtonDelete:hover {
+  transform: translateY(-4px) scale(1.08);
+  opacity: 0.95;
+}
+
+/* click */
+.actionButton:active,
+.actionButtonDelete:active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+/* sombra al icono */
+.actionButton:hover svg,
+.actionButtonDelete:hover svg {
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+}
+
 /* ===============================
    MODAL OVERLAY
 ================================ */
@@ -259,6 +279,7 @@
   display: flex;
   flex-direction: column;
   transition: height 0.28s ease, min-height 0.28s ease;
+  border: 1px solid var(--border);
 }
 
 .dropZone {
