@@ -2189,14 +2189,14 @@
 }
 
 .modalFilesContainer {
-  margin-top: 18px;
   padding: 18px;
-  background: linear-gradient(135deg, #03738C10, #03A67810);
+  background: var(--background);
   border-radius: 14px;
   border: 1px solid #037F8C30;
-
   max-height: 220px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--backcolor) var(--surface);
 }
 
 .modalFilesTitle {
@@ -2210,22 +2210,31 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  padding: 6px 10px;
+  padding: 6px 8px;
   margin-bottom: 6px;
-
-  border-radius: 8px;
-  background: var(--surface);
-
-  font-size: 13px;
+  border-radius: 6px;
+  /* Gradient adaptado al tema oscuro */
+  background: linear-gradient(
+    135deg,
+    var(--surface),
+    var(--backcolor)
+  );
   color: var(--text-primary);
-
+  font-size: 10px;
+  font-weight: 500;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
+/* Hover */
 .modalFileCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(3, 115, 140, 0.2);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(3, 115, 140, 0.25);
+  background: linear-gradient(
+    135deg,
+    var(--surface),
+    var(--hover)
+  );
 }
 
 .modalFileName {
@@ -2233,6 +2242,8 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 85%;
+  font-size: 13.5px;   /* tamaño del texto */
+  color: var(--text-primary);
 }
 
 .modalRemoveFile {
