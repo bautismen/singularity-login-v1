@@ -693,6 +693,26 @@
   gap: 14px;
 }
 
+.tooltip {
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%) translateY(65px);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 5px 8px;
+  white-space: nowrap;
+  opacity: 0;             
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.cloudButton:hover .tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(65px);
+}
+
 /* botón base */
 .cloudButton {
   display: flex;

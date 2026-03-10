@@ -798,25 +798,26 @@ useEffect(() => {
                         </button>
 
                         {quotation.idStatusRequest === 5 && (
-                          <div className={styles.documentsActions}>
-                            <button
-                              className={`${styles.cloudButton} ${styles.download}`}
-                              onClick={() => handleDownloadDocuments(quotation)}
-                               title={
-                                  (documentCounts[quotation.referenceRequest] ?? 0) === 1
-                                    ? t('dig.downloadfile')
-                                    : t('dig.downloadfiles')
-                                }
-                              disabled={(documentCounts[quotation.referenceRequest ?? ""] ?? 0) === 0}
-                            >
-                              <GrCloudDownload size={22} />
+                        <div className={styles.documentsActions}>
+                          <button
+                            className={`${styles.cloudButton} ${styles.download}`}
+                            onClick={() => handleDownloadDocuments(quotation)}
+                            disabled={(documentCounts[quotation.referenceRequest ?? ""] ?? 0) === 0}
+                          >
+                            <GrCloudDownload size={22} />
 
-                              <span className={styles.documentBadge}>
-                                {documentCounts[quotation.referenceRequest ?? ""] ?? 0}
-                              </span>
-                            </button>
-                          </div>
-                        )}
+                            <span className={styles.tooltip}>
+                              {(documentCounts[quotation.referenceRequest] ?? 0) === 1
+                                ? t('dig.downloadfile')
+                                : t('dig.downloadfiles')}
+                            </span>
+
+                            <span className={styles.documentBadge}>
+                              {documentCounts[quotation.referenceRequest ?? ""] ?? 0}
+                            </span>
+                          </button>
+                        </div>
+                      )}
                       </div>
 
                       <div className={styles.rightInfo}>                        
