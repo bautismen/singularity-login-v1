@@ -854,29 +854,33 @@ const closeDocumentsModal = () => {
                             <button
                               className={`${styles.cloudButton} ${styles.upload}`}
                               onClick={() => handleOpenDocuments(request)}
-                              title={t('dig.upload')}
                             >
                               <GrCloudUpload size={22} />
+
+                              <span className={styles.tooltip}>
+                                {t('dig.upload')}
+                              </span>
                             </button>
 
-                            {/* Download */}
-                            {(documentCounts[request.referenceRequest] ?? 0) > 0 && (
-                              <button
-                                className={`${styles.cloudButton} ${styles.download}`}
-                                onClick={() => handleDownloadDocuments(request)}
-                                title={
-                                  (documentCounts[request.referenceRequest] ?? 0) === 1
-                                    ? t('dig.downloadfile')
-                                    : t('dig.downloadfiles')
-                                }
-                              >
-                                <GrCloudDownload size={22} />
+                          {/* Download */}
+                          {(documentCounts[request.referenceRequest] ?? 0) > 0 && (
+                            <button
+                              className={`${styles.cloudButton} ${styles.download}`}
+                              onClick={() => handleDownloadDocuments(request)}
+                            >
+                              <GrCloudDownload size={22} />
 
-                                <span className={styles.documentBadge}>
-                                  {documentCounts[request.referenceRequest] ?? 0}
-                                </span>
-                              </button>
-                            )}
+                              <span className={styles.tooltip}>
+                                {(documentCounts[request.referenceRequest] ?? 0) === 1
+                                  ? t('dig.downloadfile')
+                                  : t('dig.downloadfiles')}
+                              </span>
+
+                              <span className={styles.documentBadge}>
+                                {documentCounts[request.referenceRequest] ?? 0}
+                              </span>
+                            </button>
+                          )}
 
                           </div>
                         )}
