@@ -1197,7 +1197,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           )}          
            <button type="button" className={styles.actionBarResetButton} onClick={handleAsignateto} hidden={formData.idStatusRequest <= 1}  disabled={saving || mode === 'view'} >
             <User size={18} />
-            <span>{'Agregar'}</span>
+            <span>{t('quote.add')}</span>
           </button>
         </div>
       </div>
@@ -1362,21 +1362,21 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 onClick={handleCancelQuotation}
                 disabled={saving}
                 hidden={formData.idStatusRequest >= 5}>
-                {t('quote.cancelq')}
+                {t('quote.cancelrequest')}
               </button>
 
               {showCancelQuotationRequestModal && (
               <div className={styles.modalOverlay} onClick={() => {setShowCancelQuotationRequestModal(false)}}>
                 <div className={styles.modalContentSmall} onClick={(e) => e.stopPropagation()}>
                   <div className={styles.modalHeader}>
-                    <h2 className={styles.modalTitle}>Motivos de cancelación</h2>
+                    <h2 className={styles.modalTitle}>{t('quote.reasons')}</h2>
                     <button type="button" className={styles.closeButton} onClick={() => {setShowCancelQuotationRequestModal(false) }}>
                       <X size={24} />
                     </button>
                   </div>
                   <div className={styles.modalBody}>
                   <div className={styles.formGroup} style={{ marginTop: '1.25rem' }}>
-                    <label className={styles.label}>Escriba los motivos de cancelación</label>
+                    <label className={styles.label}>{t('quote.writereasons')}</label>
                     <textarea id="comments-cancelation" className={styles.textarea} rows={3} placeholder="" />
                     <div className={styles.modalFooter}>
                       <button type="button" className={styles.saveModalButton} 
@@ -1412,14 +1412,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.modalOverlay} onClick={() => {setShowRejectQuotationRequestModal(false)}}>
                 <div className={styles.modalContentSmall} onClick={(e) => e.stopPropagation()}>
                   <div className={styles.modalHeader}>
-                    <h2 className={styles.modalTitle}>Motivos de rechazo</h2>
+                    <h2 className={styles.modalTitle}>{t('quote.reasonsreject')}</h2>
                     <button type="button" className={styles.closeButton} onClick={() => {setShowRejectQuotationRequestModal(false) }}>
                       <X size={24} />
                     </button>
                   </div>
                   <div className={styles.modalBody}>
                   <div className={styles.formGroup} style={{ marginTop: '1.25rem' }}>
-                    <label className={styles.label}>Escriba los motivos de rechazo</label>
+                    <label className={styles.label}>{t('quote.writereasonsreject')}</label>
                     <textarea id="comments-rejection" className={styles.textarea} rows={3} placeholder="" />
                     <div className={styles.modalFooter}>
                       <button type="button" className={styles.saveModalButton} 
