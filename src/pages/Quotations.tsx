@@ -58,6 +58,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const [currentServiceId, setCurrentServiceId] = useState<number | null>(null);
   const [showExecutiveModal, setShowExecutiveModal] = useState(false);
   const [showCancelQuotationRequestModal, setShowCancelQuotationRequestModal] = useState(false);
+  const [showRejectQuotationRequestModal, setShowRejectQuotationRequestModal] = useState(false);
   const [merchandiseForm, setMerchandiseForm] = useState<Cargo>({
     merchandiseName: '',
     merchandiseDescription: '',
@@ -661,11 +662,15 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const handleStatusUpdate = async (statusId: number, statusName: string) => {
     try {      
       const quotationData = {
-        IdRequest: quotationId,       
+        IdRequest: quotationId,
         IdStatusRequest: statusId,
         StatusRequest: statusName,
-        statusComment: statusId === 10 ? (document.getElementById('comments-cancelation') as HTMLInputElement).value : '',
-                
+        statusComment:
+          statusId === 10
+            ? (document.getElementById('comments-cancelation') as HTMLInputElement).value
+            : statusId === 9
+            ? (document.getElementById('comments-rejection') as HTMLInputElement).value
+            : ''
       };
       if (quotationId) {
         await quotationService.changeStatus(quotationData);
@@ -722,6 +727,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     handleStatusUpdate(2, 'Enviada');
   };
 
+  const handleAcceptQuotation = () => {
+    handleStatusUpdate(8, 'Aceptada');
+  };
+
   const handleCancelQuotation = () => {
     setModalState({
       isOpen: true,
@@ -731,6 +740,20 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       showCancel: true,
       onConfirm: async () => {
         setShowCancelQuotationRequestModal(true)       
+      }
+    });
+   
+  };
+
+  const handleRejectQuotation = () => {
+    setModalState({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Está a punto de rechazar la cotización',
+      message: '¿Desea continuar con el rechazo?',
+      showCancel: true,
+      onConfirm: async () => {
+        setShowRejectQuotationRequestModal(true)       
       }
     });
    
@@ -1337,8 +1360,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 type="button" 
                 className={styles.cancelButton}
                 onClick={handleCancelQuotation}
-                disabled={saving}>
-                Cancelar solicitud
+                disabled={saving}
+                hidden={formData.idStatusRequest >= 5}>
+                {t('quote.cancelq')}
               </button>
 
               {showCancelQuotationRequestModal && (
@@ -1373,6 +1397,49 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 disabled={saving} 
                 hidden={formData.idStatusRequest >= 2}>                  
                 {t('quote.send')}
+              </button>
+
+              <button
+                type="button" 
+                className={styles.cancelButton}
+                onClick={handleRejectQuotation}
+                disabled={saving}
+                 hidden={formData.idStatusRequest !== 5 || formData.idStatusRequest === 8 || formData.idStatusRequest === 9}>
+                {t('quote.reject')}
+              </button>
+
+              {showRejectQuotationRequestModal && (
+              <div className={styles.modalOverlay} onClick={() => {setShowRejectQuotationRequestModal(false)}}>
+                <div className={styles.modalContentSmall} onClick={(e) => e.stopPropagation()}>
+                  <div className={styles.modalHeader}>
+                    <h2 className={styles.modalTitle}>Motivos de rechazo</h2>
+                    <button type="button" className={styles.closeButton} onClick={() => {setShowRejectQuotationRequestModal(false) }}>
+                      <X size={24} />
+                    </button>
+                  </div>
+                  <div className={styles.modalBody}>
+                  <div className={styles.formGroup} style={{ marginTop: '1.25rem' }}>
+                    <label className={styles.label}>Escriba los motivos de rechazo</label>
+                    <textarea id="comments-rejection" className={styles.textarea} rows={3} placeholder="" />
+                    <div className={styles.modalFooter}>
+                      <button type="button" className={styles.saveModalButton} 
+                      onClick={() => handleStatusUpdate(9, "Rechazada")}>
+                        {t('quote.save')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            )}
+
+              <button
+                type="button" 
+                className={styles.sendButton}
+                onClick={handleAcceptQuotation}
+                disabled={saving} 
+                hidden={formData.idStatusRequest !== 5 || formData.idStatusRequest === 8 || formData.idStatusRequest === 9}>               
+                {t('quote.accept')}
               </button>
             </div>
           )}
