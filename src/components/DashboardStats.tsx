@@ -41,7 +41,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
   const [activeTab, setActiveTab] = useState<"urgent" | "recent">("urgent");
   const [currentPageUrgent, setCurrentPageUrgent] = useState(1);
   const [currentPageRecent, setCurrentPageRecent] = useState(1);
-  const [pageSize, setPageSize] = useState(4);
+  const [pageSize, setPageSize] = useState(3);
   const nameMonth = new Date().toLocaleDateString(
                 language === "es" ? "es-ES" : "en-US",
                 { month: "long", year: "numeric" },
@@ -290,15 +290,15 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                 id="per_page"
                 value={pageSize}
                 onChange={(e) => {
-                  const size = Number(e.target.value) || 4;
+                  const size = Number(e.target.value) || 3;
                   setPageSize(size);
                   if (activeTab === "urgent") setCurrentPageUrgent(1);
                   else setCurrentPageRecent(1);
                 }}
                 className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 text-xs rounded-lg focus:ring-teal-500 focus:border-teal-500 block p-1.5 outline-none transition-all cursor-pointer"
               >
-                <option value={4}>4</option>
-                <option value={8}>8</option>
+                <option value={3}>3</option>
+                <option value={6}>6</option>
                 <option value={10}>10</option>
                 <option value={20}>20</option>
               </select>
@@ -621,7 +621,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                 </div>
               ))
             ) : (
-              <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+              <div className="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
                 No hay datos de canales disponibles
               </div>
             )}

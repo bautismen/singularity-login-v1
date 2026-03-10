@@ -114,12 +114,14 @@ export function Sidebar({ onCollapsedChange, currentRoute = 'dashboard', onNavig
               >
                 <span>{t('nav.catalogs.services')}</span>
               </button>
+              {/* 
               <button
                 onClick={() => onNavigate?.('catalogs/status')}
                 className={`${styles.submenuButton} ${currentRoute === 'catalogs/status' ? styles.active : ''}`}
               >
                 <span>{t('nav.catalogs.status')}</span>
               </button>
+              */}
               <button
                 onClick={() => onNavigate?.('catalogs/request-types')}
                 className={`${styles.submenuButton} ${currentRoute === 'catalogs/request-types' ? styles.active : ''}`}
