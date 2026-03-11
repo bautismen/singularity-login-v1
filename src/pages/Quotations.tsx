@@ -2340,7 +2340,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                       disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
                   </div>                
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>{t('quote.totalWeight')} ({useMetricSystem ? t('quote.cm') : t('quote.in')}) </label>
+                    <label className={styles.label}>{t('quote.totalWeight')} ({useMetricSystem ? t('quote.kg') : t('quote.lbs')}) </label>
                       <input
                         type="number"
                         min="0"

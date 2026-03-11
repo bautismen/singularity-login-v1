@@ -263,11 +263,13 @@
 
 .prospectCheckbox {
   display: flex;
+  flex-direction: inherit;
+  align-self: flex-start;
   align-items: center;
   gap: 0.6rem;
   cursor: pointer;
   user-select: none;
-  margin-bottom: 0.2rem; 
+   
 }
 
 .prospectCheckbox input {
@@ -287,7 +289,6 @@
   font-weight: 500;
   color: var(--text-primary);
   cursor: pointer;
-  margin: 0;
 }
 
 .prospectCheckbox input::before {
