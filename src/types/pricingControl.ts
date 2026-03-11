@@ -111,6 +111,8 @@ export interface CreatePricingControlAPI {
   Comments_general?: string;
   Id_executive_pricing: string;
   Complete_name_pricing: string;
+  id_correspondent_country: string;
+  correspondent_country: string;
 }
 
 export interface QuotedControlRequest {

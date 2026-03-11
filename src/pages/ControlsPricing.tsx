@@ -484,6 +484,7 @@ const closeDocumentsModal = () => {
       filtered = filtered.filter(r =>
         r.referenceRequest?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.customer?.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.customer?.prospectName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.assignedTo.some(assigned => assigned.pricingControlNumbers?.some(controlNumber => controlNumber?.control?.toLowerCase().includes(searchQuery.toLowerCase())))
       );
     }
@@ -831,7 +832,7 @@ const closeDocumentsModal = () => {
                       <div className={styles.companyInfo}>
                         <div className={styles.companyNameRow}>
                           <h3 className={styles.companyName}>
-                            {request.customer?.customerName}
+                            {request.customer?.customerName || request.customer?.prospectName}
                           </h3>
                           {request.priority === 1 && (
                             <img

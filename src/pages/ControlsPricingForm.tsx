@@ -255,7 +255,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         _id_request_type: requestData.idRequestType,
         request_type_name: requestData.typeRequest,
         Id_customer: requestData.customer?.idCustomer || '',
-        Customer_business_name: requestData.customer?.customerName || '',
+        Customer_business_name: requestData.customer?.customerName || requestData.customer?.prospectName || '',
         Status_control: {Id_status_control: statusControl.id_status_control, Status_control_name: statusControl.status_control_name},
         Suppliers: suppliersAPI,       
         Services: servicesData,       
@@ -268,7 +268,9 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         key_td: generalData.key_td,
         comments_general: generalData.comments_general,
         Id_executive_pricing: generalData.id_executive_pricing,
-        Complete_name_pricing: generalData.complete_name_pricing
+        Complete_name_pricing: generalData.complete_name_pricing,
+        id_correspondent_country: '',
+        correspondent_country: ''
       };
 
       if (controlId) {
@@ -601,7 +603,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   )}
                   <div>
                     <h2 className={styles.clientName}>
-                      {requestData.customer?.customerName}
+                      {requestData.customer?.customerName || requestData.customer?.prospectName || ''}
                       {priority && (
                         <img src="/prioridad.png" alt="Prioridad" className={styles.priorityIcon} style={{width: '20px', height: '20px', marginLeft: '8px'}} />
                       )}
