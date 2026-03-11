@@ -103,14 +103,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     idStatusRequest: 1,
   });
 
-  const excludedEmails = [
-        "maria.cervantes@kromlogistica.com",
-        "estela.guerrero@kromlogistica.com",
-        "magali.tamayo@kromlogistica.com",
-        "erick.barrientos@kromlogistica.com",
-        "elsa.caicero@kromlogistica.com",
-        "guadalupe.dimas@kromlogistica.com"
-  ];
+  const rolPricing = ["pricing"] // Roles que puuedo ir agregando para validar los botones del menu/admin
+  const isPricingUser = user?.roles?.every(() => true) && rolPricing.every(v => user?.roles?.includes(v));
 
   useEffect(() => {
     loadCatalogs();
@@ -1937,7 +1931,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         </button>
       </div>
 
-      <div className={styles.section} hidden={!excludedEmails.includes(user.email)}>
+      <div className={styles.section} hidden={!isPricingUser}>
         <h2 className={styles.sectionTitle}>{t('quote.executiveAssignment')}</h2>
         <div className={styles.executivesCard}>
           <div className={styles.executivesList}>

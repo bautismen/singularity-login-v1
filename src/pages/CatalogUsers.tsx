@@ -467,6 +467,16 @@ export function CatalogUsers() {
                       />
                       {' '}{t('user.admin')}
                     </label>
+                    <label className="label" style={{ fontSize: '0.875rem', fontWeight: 'normal' }}>
+                      <input
+                        type="checkbox"
+                        className="checkbox"
+                        checked={formData.roles.includes('pricing')}
+                        onChange={() => toggleRole('pricing')}
+                        disabled={loading}
+                      />
+                      {' '}Pricing
+                    </label>
                   </div>
                 </div>
               </div>
