@@ -164,6 +164,31 @@
   color: #d1d5db;
   border-bottom-color: #374151;
 } */
+.formRow {
+  margin-bottom: 1.25rem;
+} 
+
+.formRow label {
+  display: block;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.formRow input,
+.formRow select,
+.formRow textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
 
 .formGrid {
   display: grid;
@@ -176,7 +201,11 @@
   flex-direction: column;
   gap: 0.5rem;
 }
-
+.formGroupMini {
+  display: flex;
+  flex-direction: column;
+  gap: 0rem;
+}
 .label {
   font-size: 0.875rem;
   font-weight: 500;
@@ -212,6 +241,8 @@
   color: var(--text-primary);
   background: var(--hover);
   transition: all 0.15s ease;
+
+  
 }
 
 .input:focus {
@@ -228,6 +259,73 @@
 
 .dark .input:focus {
   border-color: #14b8a6;
+}
+
+.prospectCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 0.2rem; 
+}
+
+.prospectCheckbox input {
+  appearance: none;
+  width: 40px;
+  height: 22px;
+  background: #cbd5e1;
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+
+.prospectCheckboxText {
+  font-size: 0.8375rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  margin: 0;
+}
+
+.prospectCheckbox input::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.prospectCheckbox input:checked {
+  background: #10b981;
+}
+
+.prospectCheckbox input:checked::before {
+  transform: translateX(18px);
+}
+
+.clientSelect {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  background: var(--hover);
+}
+
+.clientSelect select {
+  flex: 1;
+  min-width: 0; /* 👈 evita overflow en flex */
 }
 
 .select {

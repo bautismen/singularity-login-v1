@@ -16,6 +16,7 @@ export interface QuotationRequest {
     idCustomer: string;
     customerName: string;
     customerCategory: number;
+    prospectName: String;
   };
   assignedTo : Executive[];
   services: Service[];

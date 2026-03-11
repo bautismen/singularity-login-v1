@@ -33,7 +33,7 @@ export function QuotationsManager() {
     setViewMode('view');
   };
 
-  const handleBack = (newId? : string) => {
+  const handleBack = (newId? : string) => {    
     if (newId) {
     setHighlightId(newId);
     }

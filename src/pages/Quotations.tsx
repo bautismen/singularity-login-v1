@@ -90,6 +90,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     referenceRequest: 'QR...',
     customerId: '',
     client: '',
+    prospect : '',
+    showProspect : false,
     isPriority: false,
     isQuote: false,
     customerCategory: 1,
@@ -126,6 +128,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       referenceRequest: 'QR...',
       customerId: '',
       client: '',
+      prospect : '',
+      showProspect: false, 
       isPriority: false,
       isQuote: false,
       customerCategory: 1,
@@ -194,6 +198,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         referenceRequest: data.data.referenceRequest || '',
         customerId: data.data.customer.idCustomer || '',
         client: data.data.customer.customerName || '',
+        prospect : data.data.customer.prospectName || '',
+        showProspect : data.data.customer.prospectName ? true : false,
         isPriority: data.data.priority || false,
         isQuote: data.data.licitation || false,
         customerCategory: data.data.customer.customerCategory || 1,
@@ -238,8 +244,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     } catch (error) {
       //console.error('Error loading quotation:', error);
       showError(t('quote.errors.loadQuotation'));
-    } finally {      
-    }
+    } 
   };
 
   const addService = () => {
@@ -784,23 +789,20 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           nameEmployee: user?.name || '',
           idEmployee: null
         },
-        customer : {
+        customer : formData.showProspect === false ? {
           idCustomer: formData.customerId,
           customerName: selectedCustomer?.fiscal_data?.business_name,
           customerCategory: formData.customerCategory,
-        },
+        } : { prospectName : formData.prospect},
+
         assignedTo: executives.map(exec => ({
           idEmployee: exec.idEmployee,
           nameEmployee: exec.nameEmployee,
           idUser: exec.idUser
         })),       
-                        
-       
-
-        services: services.map((service, idx) => {                                                               
-          
-          const shipmentsInService = service.shipments.map((shipment, index) => {
-            
+                              
+        services: services.map((service, idx) => {                                                                         
+          const shipmentsInService = service.shipments.map((shipment, index) => {            
             const projectionShipment = projectionShipmentState[service.idServiceItem] === true &&
                                        shipment.projectionShipment?.frecuency && 
                                        shipment.projectionShipment?.idTypeMesurementFrecuency && 
@@ -1215,135 +1217,158 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       )}
 
       <div className={styles.section}>        
-        <h2 className={styles.sectionTitle}>{t('quote.generalData')}</h2>
-        <div className={styles.generalDataGrid}>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              <span className={styles.required}>*</span>{t('quote.reference')}
-            </label>
-            <input
-              type="text"
-              value={formData.referenceRequest}
-              onChange={(e) => setFormData({ ...formData, referenceRequest: e.target.value })}
-              className={styles.input}
-              placeholder="QR250901-0001"
-              disabled
-            />
+        <h2 className={styles.sectionTitle}>{t('quote.generalData')}</h2>        
+        <div >
+          <div className={styles.formGrid}  style={{ marginTop: '1.5rem' }}> 
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
+                <span className={styles.required}>*</span>{t('quote.reference')}
+              </label>
+              <input
+                type="text"
+                value={formData.referenceRequest}
+                onChange={(e) => setFormData({ ...formData, referenceRequest: e.target.value })}
+                className={styles.input}
+                disabled
+              />
+            </div>    
+          
+            {!formData.showProspect ? (
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>{t('quote.client')}
+                </label>
+                <select
+                  value={formData.customerId}
+                  onChange={(e) => {
+                    const customer = customers.find(c => c._id === e.target.value);
+                    setFormData({
+                      ...formData,
+                      customerId: e.target.value,
+                      client: customer?.fiscal_data?.business_name || '',
+                      customerCategory: customer?.client_level_id
+                    });
+                  }}
+                  className={styles.clientSelect}              
+                  disabled={loading || mode === 'view' || mode === 'edit' || formData.idStatusRequest >= 2}
+                  required>
+                  <option value="">{t('quote.selectClient')}</option>
+                  {customers.map((customer) => (
+                    <option key={customer._id} value={customer._id}>
+                      {customer.branch_name ? `${customer.branch_name}, ${customer.fiscal_data?.business_name}` : customer.fiscal_data?.business_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>{t('quote.prospect')}
+                </label>
+                <input
+                  type="text"
+                  value={formData.prospect}
+                  onChange={(e) => {                      
+                    setFormData({ ...formData, prospect: e.target.value })
+                  }}                
+                  className={styles.input}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
+              </div>
+            )}
+          <div className={styles.formGroup}> 
+            <div className={styles.prospectCheckbox} >
+              <label className={styles.checkboxText} >
+                {t('quote.prospect')}
+              </label>
+              <input
+                type="checkbox"
+                checked={formData.showProspect}
+                onChange={() => { setFormData({ ...formData, showProspect: !formData.showProspect }) }}                
+                disabled={loading || mode === 'view' || mode === 'edit' || formData.idStatusRequest >= 2} >
+              </input>            
+            
+              
+            </div> 
           </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              <span className={styles.required}>*</span>{t('quote.client')}
-            </label>
-            <select
-              value={formData.customerId}
-              onChange={(e) => {
-                const customer = customers.find(c => c._id === e.target.value);
-                setFormData({
-                  ...formData,
-                  customerId: e.target.value,
-                  client: customer?.fiscal_data?.business_name || '',
-                  customerCategory: customer?.client_level_id
-                });
-              }}
-              className={styles.select}              
-              disabled={loading || mode === 'view' || mode === 'edit' || formData.idStatusRequest >= 2}
-              required>
-              <option value="">{t('quote.selectClient')}</option>
-              {customers.map((customer) => (
-                <option key={customer._id} value={customer._id}>
-                  {customer.branch_name ? `${customer.branch_name}, ${customer.fiscal_data?.business_name}` : customer.fiscal_data?.business_name}
-                </option>
-              ))}
-            </select>
+          </div>   
+          
+          <div className={styles.formGrid} style={{ marginTop: '1.5rem' }}> 
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
+                <span className={styles.required}>*</span>{t('quote.requestType')}
+              </label>
+              <select
+                value={formData.requestTypeId}
+                onChange={(e) => {
+                  const requestType = requestTypes.find(r => r._id === parseInt(e.target.value));
+                  setFormData({
+                    ...formData,
+                    requestTypeId: parseInt(e.target.value),
+                    requestType: requestType?.request_type_name || ''
+                  });
+                }}
+                className={styles.select}
+                disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
+                required>
+                <option value="">{t('quote.selectType')}</option>
+                {requestTypes.map((type) => (
+                  <option key={type._id} value={type._id}>
+                    {type.request_type_name}
+                  </option>
+                ))}
+              </select>
+            </div>          
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>{t('quote.responseDeadline')}</label>
+              <input
+                type="date"
+                onKeyDown={(e) => e.preventDefault()}
+                min= {mode === 'create' ? new Date().toISOString().split("T")[0] : undefined}
+                value={formData.responseDeadline}
+                onChange={(e) => {                      
+                  setFormData({ ...formData, responseDeadline: e.target.value })
+                  }
+                }                
+                className={styles.input}
+                placeholder="dd/mm/aaaa"
+                disabled={mode === 'view' || formData.idStatusRequest >= 2}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
+                <span className={styles.required}>*</span>{t('quote.requestDate')}
+              </label>
+              <input
+                type="date"
+                onKeyDown={(e) => e.preventDefault()}
+                max={mode === 'create'  ? new Date().toISOString().split("T")[0] : undefined}
+                value={formData.created}
+                onChange={(e) => 
+                  {                     
+                    setFormData({ ...formData, created: e.target.value })}
+                  }
+                className={styles.input}
+                disabled={mode === 'view' || formData.idStatusRequest >= 2}
+              />
+            </div>
           </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              <span className={styles.required}>*</span>{t('quote.requestType')}
-            </label>
-            <select
-              value={formData.requestTypeId}
-              onChange={(e) => {
-                const requestType = requestTypes.find(r => r._id === parseInt(e.target.value));
-                setFormData({
-                  ...formData,
-                  requestTypeId: parseInt(e.target.value),
-                  requestType: requestType?.request_type_name || ''
-                });
-              }}
-              className={styles.select}
-              disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
-              required>
-              <option value="">{t('quote.selectType')}</option>
-              {requestTypes.map((type) => (
-                <option key={type._id} value={type._id}>
-                  {type.request_type_name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <div className={styles.formGrid} style={{ marginTop: '1.5rem' }}>       
+            <div className={styles.formGroupWithToggle}>
+              <label className={styles.label}>{t('quote.isPriority')}</label>
+              <button
+                type="button" 
+                className={`${styles.toggleSwitch} ${formData.isPriority ? styles.active : ''}`}
+                onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
+                disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                <div className={styles.toggleThumb}></div>
+              </button>
+            </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>{t('quote.customerCategory')}</label>
-            <select
-              value={formData.customerCategory}
-              onChange={(e) => setFormData({ ...formData, customerCategory: parseInt(e.target.value) })}
-              className={styles.select}
-              disabled>
-              <option value={1}>Golden</option>
-              <option value={2}>Silver</option>
-              <option value={3}>Bronze</option>
-            </select>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>{t('quote.responseDeadline')}</label>
-            <input
-              type="date"
-              onKeyDown={(e) => e.preventDefault()}
-              min= {mode === 'create' ? new Date().toISOString().split("T")[0] : undefined}
-              value={formData.responseDeadline}
-              onChange={(e) => {                      
-                 setFormData({ ...formData, responseDeadline: e.target.value })
-                }
-              }                
-              className={styles.input}
-              placeholder="dd/mm/aaaa"
-              disabled={mode === 'view' || formData.idStatusRequest >= 2}
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              <span className={styles.required}>*</span>{t('quote.requestDate')}
-            </label>
-            <input
-              type="date"
-              onKeyDown={(e) => e.preventDefault()}
-              max={mode === 'create'  ? new Date().toISOString().split("T")[0] : undefined}
-              value={formData.created}
-              onChange={(e) => 
-                {                     
-                  setFormData({ ...formData, created: e.target.value })}
-                }
-              className={styles.input}
-              disabled={mode === 'view' || formData.idStatusRequest >= 2}
-            />
-          </div>
-
-          <div className={styles.formGroupWithToggle}>
-            <label className={styles.label}>{t('quote.isPriority')}</label>
-            <button
-              type="button" 
-              className={`${styles.toggleSwitch} ${formData.isPriority ? styles.active : ''}`}
-              onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
-              disabled={mode === 'view' || formData.idStatusRequest >= 2}>
-              <div className={styles.toggleThumb}></div>
-            </button>
-          </div>
-
-          <div className={styles.formGroupWithToggle}>
+            <div className={styles.formGroupWithToggle}>
             <label className={styles.label}>{t('quote.isBid')}</label>
             <button
               type="button" 
@@ -1352,7 +1377,23 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               disabled={mode === 'view' || formData.idStatusRequest >= 2}>
               <div className={styles.toggleThumb}></div>
             </button>
-          </div>
+            </div>
+
+            {!formData.showProspect ? (
+              <div className={styles.formGroup}>
+                <label className={styles.label}>{t('quote.customerCategory')}</label>
+                <select
+                  value={formData.customerCategory}
+                  onChange={(e) => setFormData({ ...formData, customerCategory: parseInt(e.target.value) })}
+                  className={styles.select}
+                  disabled>
+                  <option value={1}>Golden</option>
+                  <option value={2}>Silver</option>
+                  <option value={3}>Bronze</option>
+                </select>
+              </div>
+            ) :(<div/>)}  
+          </div>  
 
           {mode === 'edit' && (
             <div className={styles.statusButtonsContainer}>

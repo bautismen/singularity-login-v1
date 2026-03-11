@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { Plus, Edit2, Search, RefreshCw, ChevronDown, FileText, Clock, Filter, FilterXIcon, ChevronUp  } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -70,15 +70,21 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
     filterQuotations();
   }, [quotations, searchQuery, statusFilter, executiveFilter, selectedExecutive, dateFilter, requestTypeFilters, orderBy  ]);
 
-  useEffect(() => {
-    if(highlightId && rowRefs.current[highlightId]){
-      rowRefs.current[highlightId]?.scrollIntoView({
-        behavior: 'smooth',
-        block:"center"
-      });
-    }
-  }, [highlightId, quotations])
-  
+  useLayoutEffect(() => {    
+    if (!highlightId) return;
+    if (!quotations.length) return;
+
+    const timer = setTimeout(() => {
+      if(highlightId && rowRefs.current[highlightId]){
+        console.log('scrolling ', highlightId);
+        rowRefs.current[highlightId]?.scrollIntoView({
+          behavior: 'smooth',
+          block:"center"
+        });            
+      }  
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [highlightId, quotations]);
   const loadQuotationsRequests = async () => {
     try {
       setLoading(true);      
@@ -154,6 +160,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
       filtered = filtered.filter(q =>
         q.referenceRequest?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         q.customer.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         q.customer.prospectName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         q.typeRequest?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
@@ -748,11 +755,11 @@ useEffect(() => {
             return (
               <div 
               key={quotation.id} 
-              ref={(el) => {
-                if (highlightId && quotation.id === highlightId) {
+              ref={(el) => {                
+                if (highlightId && quotation.id === highlightId) {                  
                   rowRefs.current[quotation.id] = el;
                 }
-              }}
+              }}            
               className={`${styles.card} ${ quotation.id === highlightId ? styles.highlightRow  : '' }`}>
                 <div className={styles.cardTop}>
                   <div className={styles.cardLeft}>
@@ -768,7 +775,7 @@ useEffect(() => {
                   <div className={styles.cardMain}>
                     <div className={styles.topRow}>
                       <h3 className={styles.clientName}>
-                        {quotation.customer.customerName}
+                        {quotation.customer.customerName || quotation.customer.prospectName }
                         {quotation.priority === 1 && (
                           <img
                             src="/prioridad.png"
