@@ -1267,6 +1267,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </label>
                 <input
                   type="text"
+                  maxLength={50}
                   value={formData.prospect}
                   onChange={(e) => {                      
                     setFormData({ ...formData, prospect: e.target.value })
@@ -1277,7 +1278,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             )}
           <div className={styles.formGroup}> 
             <div className={styles.prospectCheckbox} >
-              <label className={styles.checkboxText} >
+              <label className={styles.label} >
                 {t('quote.prospect')}
               </label>
               <input
@@ -1285,9 +1286,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 checked={formData.showProspect}
                 onChange={() => { setFormData({ ...formData, showProspect: !formData.showProspect }) }}                
                 disabled={loading || mode === 'view' || mode === 'edit' || formData.idStatusRequest >= 2} >
-              </input>            
-            
-              
+              </input>                                    
             </div> 
           </div>
 
