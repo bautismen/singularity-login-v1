@@ -85,7 +85,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     showGeneralMerch : false,
   })
   const [byUnitsMerch, setByUnitsMerch] = useState(true);
-  //const [isPort, setIsPort] = useState(false)
   const [formData, setFormData] = useState({
     referenceRequest: 'QR...',
     customerId: '',
@@ -93,7 +92,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     prospect : '',
     showProspect : false,
     isPriority: false,
-    isQuote: false,
+    isLicitation: false,
     customerCategory: 1,
     requestTypeId: 0,
     requestType: '',
@@ -102,7 +101,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     statuscomments: null,
     idStatusRequest: 1,
   });
-
   const rolPricing = ["pricing"] // Roles que puuedo ir agregando para validar los botones del menu/admin
   const isPricingUser = user?.roles?.every(() => true) && rolPricing.every(v => user?.roles?.includes(v));
 
@@ -113,6 +111,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   useEffect(() => {
     if (mode !== 'create' && quotationId) {
       loadQuotation(quotationId);
+    }else if(mode === "create"){
+       setFormData({ ...formData, responseDeadline: calculateDateResponseDeadline().toISOString().split('T')[0]})
     }
   }, [mode, quotationId]);
 
@@ -125,12 +125,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       prospect : '',
       showProspect: false, 
       isPriority: false,
-      isQuote: false,
+      isLicitation: false,
       customerCategory: 1,
       requestTypeId: 0,
       requestType: '',
       created: new Date().toISOString().split('T')[0],
-      responseDeadline: '',
+      responseDeadline: calculateDateResponseDeadline().toISOString().split('T')[0],
       statuscomments: null,
       idStatusRequest: 1,
     });
@@ -195,7 +195,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         prospect : data.data.customer.prospectName || '',
         showProspect : data.data.customer.prospectName ? true : false,
         isPriority: data.data.priority || false,
-        isQuote: data.data.licitation || false,
+        isLicitation: data.data.licitation || false,
         customerCategory: data.data.customer.customerCategory || 1,
         requestTypeId: data.data.idRequestType.toString() || 1,
         requestType: data.data.typeRequest || '',
@@ -758,7 +758,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
    
   };
 
-
   const handleSaveQuotation = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
@@ -775,7 +774,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         idRequestType:  formData.requestTypeId,
         typeRequest: formData.requestType,
         priority: formData.isPriority ? 1 : 0,
-        licitation: formData.isQuote ? 1: 0, 
+        licitation: formData.isLicitation ? 1: 0, 
         dateCreated: new Date().toISOString(),
         dateUpdated:new Date().toISOString(),
         createdBy: {
@@ -1154,7 +1153,21 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const formatDateForInput = (date: string) => {
   if (!date) return "";
   return date.split("T")[0];
-};
+  };
+
+  const calculateDateResponseDeadline = () => {    
+    const date = new Date();
+    let workingDays = 0;
+    //console.log(date.toISOString().split('T')[0]);
+    while (workingDays < 2) {
+      date.setDate(date.getDate() + 1); // avanzar un día
+      const day = date.getDay();
+      if (day !== 0 && day !== 6) { // no domingo ni sábado
+        workingDays++;
+      }
+    }
+    return date;
+  }
 
   return (
     <div className={styles.container}>
@@ -1262,6 +1275,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <input
                   type="text"
                   maxLength={50}
+                  min={3}
+                  required
                   value={formData.prospect}
                   onChange={(e) => {                      
                     setFormData({ ...formData, prospect: e.target.value })
@@ -1314,16 +1329,20 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </div>          
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>{t('quote.responseDeadline')}</label>
+              <label className={styles.label}>
+                {!formData.isLicitation && (
+                  <span className={styles.required}>*</span>
+                )}
+                {t('quote.responseDeadline')}
+              </label>
               <input
                 type="date"
+                required ={formData.isLicitation === false}
                 onKeyDown={(e) => e.preventDefault()}
-                min= {mode === 'create' ? new Date().toISOString().split("T")[0] : undefined}
-                value={formData.responseDeadline}
-                onChange={(e) => {                      
-                  setFormData({ ...formData, responseDeadline: e.target.value })
-                  }
-                }                
+                min={mode === 'create' ? new Date().toISOString().split("T")[0] : undefined}
+                value={formData.responseDeadline }
+                onChange={(e) => {     
+                  setFormData({ ...formData, responseDeadline: e.target.value })}}                
                 className={styles.input}
                 placeholder="dd/mm/aaaa"
                 disabled={mode === 'view' || formData.idStatusRequest >= 2}
@@ -1340,9 +1359,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 max={mode === 'create'  ? new Date().toISOString().split("T")[0] : undefined}
                 value={formData.created}
                 onChange={(e) => 
-                  {                     
-                    setFormData({ ...formData, created: e.target.value })}
-                  }
+                  {setFormData({ ...formData, created: e.target.value })}}
                 className={styles.input}
                 disabled={mode === 'view' || formData.idStatusRequest >= 2}
               />
@@ -1365,8 +1382,22 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             <label className={styles.label}>{t('quote.isBid')}</label>
             <button
               type="button" 
-              className={`${styles.toggleSwitch} ${formData.isQuote ? styles.active : ''}`}
-              onClick={() => setFormData({ ...formData, isQuote: !formData.isQuote })}
+              className={`${styles.toggleSwitch} ${formData.isLicitation ? styles.active : ''}`}
+              onClick={() => {
+                if(mode=== 'create'){
+                  setFormData(
+                  { ...formData, 
+                    isLicitation: !formData.isLicitation,
+                    responseDeadline: !formData.isLicitation === true ? '' : calculateDateResponseDeadline().toISOString().split('T')[0] 
+                  })
+                }else {
+                  setFormData(
+                  { ...formData, 
+                    isLicitation: !formData.isLicitation
+                  })
+                }
+              }
+              }
               disabled={mode === 'view' || formData.idStatusRequest >= 2}>
               <div className={styles.toggleThumb}></div>
             </button>
