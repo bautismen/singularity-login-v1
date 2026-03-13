@@ -8,6 +8,7 @@ import { PricingControlSupplierAPI } from '../types/pricingControl';
 import styles from './ControlsPricingForm.module.css';
 import { useAuth } from '../contexts/AuthContext';
 import { getSuppliers } from '../services/supplierService';
+import { getCustomers} from '../services/customerService';
 
 interface ControlsPricingFormProps {
   requestId: string | null;
@@ -36,6 +37,15 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const [suppliersCombo, setSuppliersCombo] = useState<PricingControlSupplierAPI>();
 
+  const [CustomCombo, setCustomCombo] = useState({
+    Id_customer_correspondent: '',
+    Customer_correspondent: '',
+  });
+   const [CustomLeads, setCustomLeads] = useState({
+    Id_customer_lead: '',
+    Customer_lead: '',
+  });
+
   const [selectedServices, setSelectedServices] = useState<any[]>([]);
   const [expandedServices, setExpandedServices] = useState<Set<number>>(new Set());
   const { user } = useAuth();
@@ -45,16 +55,18 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   });
 
   const [generalData, setGeneralData] = useState({
-    network: 'WTC Alliance',
+    network: '',
     complexity: 'Media',
     currency: 'USD',
-    unit_profit: '',
-    volume: '',
+    unit_profit: '0',
+    volume: '0',
     general_profit: '',
-    key_td: 'CI',
+    key_td: '',
     comments_general: '',
     id_executive_pricing: user._id || '',
-    complete_name_pricing: user.name || '',    
+    Affair:  '',
+    Ref_atv:  '',
+
   });
 
   const [priority, setPriority] = useState(false);
@@ -62,11 +74,13 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const actionsMenuRef = useRef<HTMLDivElement>(null);
   const [reasoncancellation, setreasoncancellation] = useState('');
+  const [customers, setCustomers] = useState<any[]>([]);
 
   useEffect(() => {
     loadData();
     loadCountries();
     loadSuppliers();
+    loadCustomers();
   }, [requestId, controlId]);
 
   const loadCountries = async () => {
@@ -87,6 +101,17 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       console.error('Error loading countries:', error);
     }
   };
+
+    const loadCustomers = async () => {
+    try {     
+
+      const customersData = await getCustomers(true);
+      setCustomers(customersData.filter((c: any) => c.status === 'activo' || c.datastate === 1));
+    } catch (error) {
+      console.error('Error loading customers:', error);
+    }
+  };
+  
 
    async function loadSuppliers() {
     try {
@@ -114,16 +139,26 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         setSelectedServices(control.services || []);
         setStatusControl(control.status_control);
         setGeneralData({
-          network: control.network || 'WTC Alliance',
+          network: control.network || '',
           complexity: control.complexity || 'Media',
           currency: control.currency || 'USD',
-          unit_profit: control.unit_profit || '',
-          volume: control.volume || '',
+          unit_profit: control.unit_profit || '0',
+          volume: control.volume || '0',
           general_profit: control.general_profit || '',
-          key_td: control.key_td || 'CI',
+          key_td: control.key_td || '',
           comments_general: control.comments_general || '',
           id_executive_pricing: control._id_executive_pricing || '',
           complete_name_pricing: control.complete_name_pricing || '',          
+          Affair:  control.affair || '',
+          Ref_atv:  control.ref_atv || '',
+        });
+        setCustomCombo({
+          Id_customer_correspondent: control.id_customer_correspondent || '',
+          Customer_correspondent: control.customer_correspondent || '',
+        });
+        setCustomLeads({
+          Id_customer_lead: control.id_customer_lead || '',
+          Customer_correspondent: control.customer_correspondent || '',
         });
 
         const request = await pricingControlService.getResquetById(control.idrequest);
@@ -214,7 +249,17 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     if (selectedServices.length === 0) {
       showError('Debe seleccionar al menos un servicio');
       return;
-    }    
+    }
+    
+    if (generalData.network === '' && requestData.typeRequest==="Corresponsales") {
+      showError(t('ctrlpricing.selectnetwork'));
+      return;
+    } 
+    
+    if (generalData.unit_profit > '0' && generalData.volume==="0") {
+      showError(t('ctrlpricing. capturevolume'));
+      return;
+    } 
 
     try {
       setLoading(true);
@@ -270,7 +315,13 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         Id_executive_pricing: generalData.id_executive_pricing,
         Complete_name_pricing: generalData.complete_name_pricing,
         id_correspondent_country: '',
-        correspondent_country: ''
+        correspondent_country: '',
+        Id_customer_correspondent: CustomCombo.Id_customer_correspondent? CustomCombo.Id_customer_correspondent : '',
+        Customer_correspondent: CustomCombo.Customer_correspondent? CustomCombo.Customer_correspondent : '',
+        Id_customer_lead:  CustomLeads.Id_customer_lead? CustomLeads.Id_customer_lead : '',
+        Customer_lead:  CustomLeads.Customer_lead? CustomLeads.Customer_lead : '',
+        Affair:  generalData.Affair || '',
+        Ref_atv:  generalData.Ref_atv || ''
       };
 
       if (controlId) {
@@ -753,18 +804,19 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.network')}</label>
-                <select required
+                <select
                   value={generalData.network}
                   onChange={(e) => setGeneralData({...generalData, network: e.target.value})}
                   className={styles.formSelect}
                   disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
-                >
-                  <option>WCA</option>
-                  <option>JC TRANS</option>
-                  <option>GLA FAMILY</option>
-                  <option>N/A</option>
-                  <option>WTC Alliance</option>
-                  <option>DF Alliance</option>
+                >                  
+                  <option value="">{t('ctrlpricing.select')}</option>
+                  <option value="WCA">WCA</option>
+                  <option value="JC TRANS">JC TRANS</option>
+                  <option value="GLA FAMILY">GLA FAMILY</option>
+                  <option value="N/A">N/A</option>
+                  <option value="WTC Alliance">WTC Alliance</option>
+                  <option value="DF Alliance">DF Alliance</option>
                 </select>
               </div>
               <div className={styles.formGroup}>
@@ -795,10 +847,9 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.unitprofit')}</label>
-                <input
-                    required
+                <input                    
                     type="number"
-                    min="1"
+                    min="0"
                     value={generalData.unit_profit}
                     onKeyDown={(e) => {
                       if (e.key === '-' || e.key === 'e') {
@@ -824,9 +875,9 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.volume')}</label>
-                <input required
+                <input
                   type="number"
-                  min="1"
+                  min="0"
                   value={generalData.volume}
                   onKeyDown={(e) => {
                       if (e.key === '-' || e.key === 'e') {
@@ -848,7 +899,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.generalprofit')}</label>
-                <input required
+                <input
                   type="number"
                   value={calculateProfit_general()}
                   onChange={(e) => setGeneralData({...generalData, general_profit: e.target.value})}
@@ -858,12 +909,13 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               </div>
                 <div className={styles.formGroup}>
                 <label className={styles.label}><span className={styles.required}>*</span> Key TD</label>
-                <select required
+                <select
                   value={generalData.key_td}
                   onChange={(e) => setGeneralData({...generalData, key_td: e.target.value})}
                   className={styles.formSelect}
                   disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
                 >
+                  <option value="" >{t('ctrlpricing.select')}</option>
                   <option value="CI" >CI Complementar información</option>
                   <option value="RFQ" >RFQ Licitación</option>
                   <option value="FS" >FS Fin de semana</option>
@@ -876,7 +928,72 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   <option value="IP" >IP Interno pricing</option>
                 </select>
               </div>
+               <div className={styles.formGroup}> 
+                <label className={styles.label}>{t('ctrlpricing.customercorrespondent')}</label>
+                <select 
+                      disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6 || requestData.typeRequest !== "Corresponsales"}                                      
+                      className={styles.formSelect}
+                      value={controlData.id_customer_correspondent}
+                      onChange={(e) => 
+                        setCustomCombo({ 
+                          ...CustomCombo, 
+                          Id_customer_correspondent: e.target.value,
+                          Customer_correspondent: e.target.options[e.target.selectedIndex].text
+                        })
+                      }                    
+                    >
+                      <option value="">{t('ctrlpricing.select')}</option>
+                     {customers.map((customer) => (
+                      <option key={customer._id} value={customer._id}>
+                        {customer.branch_name ? `${customer.branch_name}, ${customer.fiscal_data?.business_name}` : customer.fiscal_data?.business_name}
+                      </option>
+                      ))}                      
+                    </select> 
             </div>
+            <div className={styles.formGroup}> 
+              <label className={styles.label}>{t('ctrlpricing.customerlead')}</label>
+                <select
+                      disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                      className={styles.formSelect}
+                      value={controlData.id_customer_lead}
+                      onChange={(e) => 
+                        setCustomLeads({ 
+                          ...CustomLeads, 
+                          Id_customer_lead: e.target.value,
+                          Customer_lead: e.target.options[e.target.selectedIndex].text
+                        })
+                      }                    
+                    >
+                      <option value="">{t('ctrlpricing.select')}</option>
+                     {customers.map((customer) => (
+                      <option key={customer._id} value={customer._id}>
+                        {customer.branch_name ? `${customer.branch_name}, ${customer.fiscal_data?.business_name}` : customer.fiscal_data?.business_name}
+                      </option>
+                      ))}                      
+                    </select>              
+            </div>
+             <div className={styles.formGroup}>
+                <label className={styles.label}> Ref-ATV</label>
+                <input
+                  type="text"
+                  value={generalData.Ref_atv}
+                  onChange={(e) => setGeneralData({...generalData, Ref_atv: e.target.value})}
+                  className={styles.formInput}
+                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                />
+              </div>
+            </div>
+             <div className={styles.formGroup}>
+              <label className={styles.label}>{t('ctrlpricing.affair')}</label>
+              <input
+               type="text"
+                value={generalData.Affair}
+                onChange={(e) => setGeneralData({...generalData, Affair: e.target.value})} 
+                className={styles.formInput}               
+                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+              />
+            </div>
+
             <div className={styles.formGroup}>
               <label className={styles.label}>{t('ctrlpricing.comments')}</label>
               <textarea
@@ -1038,8 +1155,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               <span style={{color: '#9ca3af', fontSize: '14px'}}>{t('ctrlpricing.noassociatedservices')}</span>
                             )}
                           </div>
-                        </div>
-
+                        </div>                       
                         <div className={styles.formGroup}>
                           <label className={styles.label}>{t('ctrlpricing.comments')}</label>
                           <textarea
