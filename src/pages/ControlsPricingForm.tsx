@@ -64,6 +64,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     key_td: '',
     comments_general: '',
     id_executive_pricing: user._id || '',
+    complete_name_pricing: user?.name || '',  
     Affair:  '',
     Ref_atv:  '',
 
@@ -933,7 +934,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 <select 
                       disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6 || requestData.typeRequest !== "Corresponsales"}                                      
                       className={styles.formSelect}
-                      value={controlData.id_customer_correspondent}
+                      value={CustomCombo.Id_customer_correspondent}
                       onChange={(e) => 
                         setCustomCombo({ 
                           ...CustomCombo, 
@@ -955,7 +956,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 <select
                       disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
                       className={styles.formSelect}
-                      value={controlData.id_customer_lead}
+                      value={CustomLeads.Id_customer_lead}
                       onChange={(e) => 
                         setCustomLeads({ 
                           ...CustomLeads, 
