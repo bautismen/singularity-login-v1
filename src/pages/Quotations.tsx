@@ -1962,7 +1962,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         </button>
       </div>
 
-      <div className={styles.section} hidden={!isPricingUser}>
+      <div className={styles.section} hidden={(isPricingUser===false && formData.idStatusRequest < 2) || formData.idStatusRequest < 2}>
         <h2 className={styles.sectionTitle}>{t('quote.executiveAssignment')}</h2>
         <div className={styles.executivesCard}>
           <div className={styles.executivesList}>
