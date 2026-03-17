@@ -196,25 +196,29 @@
   gap: 1.25rem;
 }
 
+.formGridCityZipcode {
+  display: grid;
+  grid-template-columns:  1fr 1fr;
+  gap: 1.25rem;
+}
+
 .formGroup {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
-.formGroupMini {
-  display: flex;
-  flex-direction: column;
-  gap: 0rem;
+
+.formGroupCityZipcode {
+  display: grid;
+  grid-template-columns: 1fr 110px;
+  gap: 1rem;
 }
+
 .label {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
-
-/* .dark .label {
-  color: #d1d5db;
-} */
 
 .labelInfoRed {
   display: flex;
@@ -233,6 +237,19 @@
   margin-left: 0.25rem;
 }
 
+.inputZipCode {
+  display: flex; 
+  align-items: right;
+  gap: 1.5rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  background: var(--hover);
+  transition: all 0.15s ease;  
+}
+
 .input {
   padding: 0.625rem 0.875rem;
   border: 1px solid var(--border);
@@ -240,9 +257,7 @@
   font-size: 0.875rem;
   color: var(--text-primary);
   background: var(--hover);
-  transition: all 0.15s ease;
-
-  
+  transition: all 0.15s ease;  
 }
 
 .input:focus {
@@ -268,8 +283,7 @@
   align-items: center;
   gap: 0.6rem;
   cursor: pointer;
-  user-select: none;
-   
+  user-select: none;   
 }
 
 .prospectCheckbox input {
@@ -313,8 +327,8 @@
 }
 
 .clientSelect {
-  display: flex;
-  align-items: center;
+  display: flex; 
+  align-items: right;
   gap: 1.5rem;
   padding: 0.625rem 0.875rem;
   border: 1px solid var(--border);
@@ -1823,6 +1837,10 @@
 
   .formGroup {
     gap: 0.375rem;
+  }
+
+  .formGroupSmall {
+    min-width: 150px;
   }
 
   .label {

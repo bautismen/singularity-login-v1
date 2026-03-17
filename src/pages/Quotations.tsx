@@ -117,7 +117,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   }, [mode, quotationId]);
 
   const resetForm = () => {
-    //onBack('69af1fd25d2264a9f03e1b76');
     setFormData({
       referenceRequest: 'QR...',
       customerId: '',
@@ -194,8 +193,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         client: data.data.customer.customerName || '',
         prospect : data.data.customer.prospectName || '',
         showProspect : data.data.customer.prospectName ? true : false,
-        isPriority: data.data.priority || false,
-        isLicitation: data.data.licitation || false,
+        isPriority: data.data.priority === 1 ? true : false,
+        isLicitation: data.data.licitation === 1 ? true : false,
         customerCategory: data.data.customer.customerCategory || 1,
         requestTypeId: data.data.idRequestType.toString() || 1,
         requestType: data.data.typeRequest || '',
@@ -291,9 +290,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     setExecutives(executives.filter(executive => executive.idEmployee !== id));
   };
 
-  const openMerchandiseModal = (serviceId: number, cargo?: Cargo) => {    
-    setCurrentServiceId(serviceId);    
-    setByUnitsMerch(true);
+  const openMerchandiseModal = (service: Service, cargo?: Cargo) => {    
+    setCurrentServiceId(service.idServiceItem);     
+    setByUnitsMerch([2, 3, 10].includes(service.idService) ? false : true ) 
     setEditingMerchandise(cargo || null);    
     setClassificationMerchFlags({
       showDangerouseMerch : false,
@@ -770,7 +769,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         idStatusRequest: hasAssignedExecutives ? 3 : 1,
         statusRequest: hasAssignedExecutives ? 'Asignada' : 'Creada', 
         dateRequest: new Date(formData.created),
-        dateDeadline: formData.responseDeadline ? new Date(formData.responseDeadline) : null,
+        dateDeadline: formData.isLicitation === false && formData.created ? 
+          calculateDateResponseDeadline() : 
+          new Date(formData.responseDeadline),
         idRequestType:  formData.requestTypeId,
         typeRequest: formData.requestType,
         priority: formData.isPriority ? 1 : 0,
@@ -812,14 +813,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               origin: {
                 idCountry : shipment.origin.idCountry,
                 countryCode: shipment.origin.countryCode, 
-                ...((shipment.origin.zipCode && [1, 3, 4].includes(shipment.idTypeShipment)) && {zipCode : shipment.origin.zipCode}) ,
+                ...((shipment.origin.zipCode && [1, 3, 4].includes(shipment.idTypeShipment)) && {city: shipment.origin.city, zipCode : shipment.origin.zipCode}) ,
                 ...((shipment.origin.portCode && [2, 4].includes(shipment.idTypeShipment) && [1, 2].includes(service.idService)) && {portCode : shipment.origin.portCode}),
                 ...((shipment.origin.airportCode && [2, 4].includes(shipment.idTypeShipment) && [5].includes(service.idService)) && {airportCode : shipment.origin.airportCode})                 
               } ,
               destination: {
                 idCountry: shipment.destination.idCountry,
                 countryCode: shipment.destination.countryCode,
-                ...((shipment.destination.zipCode && [1, 3, 4].includes(shipment.idTypeShipment)) && {zipCode : shipment.destination.zipCode}) ,
+                ...((shipment.destination.zipCode && [1, 3, 4].includes(shipment.idTypeShipment)) && {city: shipment.destination.city, zipCode : shipment.destination.zipCode}) ,
                 ...((shipment.destination.portCode && [2, 3].includes(shipment.idTypeShipment) && [1, 2].includes(service.idService)) && {portCode : shipment.destination.portCode}),
                 ...((shipment.destination.airportCode && [2, 3].includes(shipment.idTypeShipment) && [5].includes(service.idService)) && {airportCode : shipment.destination.airportCode})
               },
@@ -955,198 +956,302 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const renderZipCodesOriginDestination =  (service : Service) => {
     const isPort = [1, 2].includes(service.idService); //Maritimo FCL y LCL
     switch(true) {
+      //Terrestre FTL Terrestre LTL Terrestre FCL Terrestre LCL || 1 Door To Door
       case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : 
-      return (
-        <div className={styles.formGrid}>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              <span className={styles.required}>*</span>
-                {t('quote.originZip')}
+        return (
+          <div className={styles.formGridCityZipcode}>
+            <div className={styles.formGroupCityZipcode}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  Ciudad
+                </label>
+                <input
+                  className={`${styles.input}`}
+                  type="text"
+                  maxLength={50}
+                  value={service.shipments[0].origin.city}
+                  onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, {city: e.target.value })}              
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
+                  required 
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>{t('quote.originZip')}
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  onInput={(e) => {e.currentTarget.value = e.currentTarget.value.slice(0, 9);}}
+                  value={service.shipments[0].origin.zipCode}
+                  onKeyDown={(e) => {
+                    if (e.key === '-' || e.key === 'e') {
+                      e.preventDefault();
+                    }
+                  }}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    if (value === '' || Number(value) > 0) {
+                      updateOrigin(service.idServiceItem, service.shipments[0].idShipment,  {zipCode : parseInt(e.target.value)})
+                    }
+                  }}
+                  className={styles.input}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
+                  required
+                />   
+              </div>           
+            </div>    
+            
+            <div className={styles.formGroupCityZipcode}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  Ciudad
+                </label>
+                <input
+                  className={`${styles.input}`}
+                  type="text"
+                  maxLength={50}
+                  value={service.shipments[0].destination.city}
+                  onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, {city: e.target.value })}              
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
+                  required 
+                />
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {t('quote.destinationZip')}
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  onKeyDown={(e) => {
+                    if (e.key === '-' || e.key === 'e') {
+                      e.preventDefault();
+                    }
+                  }}
+                  onInput={(e) => {
+                    e.currentTarget.value = e.currentTarget.value.slice(0, 9);
+                  }}
+                  value={service.shipments[0].destination.zipCode}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    if (value === '' || Number(value) > 0) {
+                      updateDestination(service.idServiceItem, service.shipments[0].idShipment, {zipCode : parseInt(e.target.value)})
+                    }
+                  }}
+                  className={styles.input}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
+                  required
+                />
+              </div> 
+            </div>               
+          </div>
+        );
+      case service.shipments[0].idTypeShipment === 2: //2 Port To Port
+        return (
+          <div className={styles.formGrid}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
+                <span className={styles.required}>*</span>
+                {isPort ? t('quote.originPort') : t('quote.originAirport')}
               </label>
-            <input
-              type="number"
-              min="1"
-              onInput={(e) => {
-                e.currentTarget.value = e.currentTarget.value.slice(0, 9);
-              }}
-              value={service.shipments[0].origin.zipCode}
-              onKeyDown={(e) => {
-                if (e.key === '-' || e.key === 'e') {
-                  e.preventDefault();
-                }
-              }}
-              onChange={(e) => 
-              {
-                const value = e.target.value
-                if (value === '' || Number(value) > 0) {
-                  updateOrigin(service.idServiceItem, service.shipments[0].idShipment,  {zipCode : parseInt(e.target.value)})
-                }
-              }}
-              className={styles.input}
-              disabled={mode === 'view' || formData.idStatusRequest >= 2}
-              required/>
-          </div>    
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              <span className={styles.required}>*</span>
-              {t('quote.destinationZip')}
-            </label>
-            <input
-              type="number"
-              min="0"
-              onKeyDown={(e) => {
-                if (e.key === '-' || e.key === 'e') {
-                  e.preventDefault();
-                }
-              }}
-              onInput={(e) => {
-                e.currentTarget.value = e.currentTarget.value.slice(0, 9);
-              }}
-              value={service.shipments[0].destination.zipCode}
-              onChange={(e) => {
-                const value = e.target.value
-                if (value === '' || Number(value) > 0) {
-                  updateDestination(service.idServiceItem, service.shipments[0].idShipment, {zipCode : parseInt(e.target.value)})
-                }
-              }}
-              className={styles.input}
-              disabled={mode === 'view' || formData.idStatusRequest >= 2}
-              required/>
-          </div>    
-        </div>
-      );
-      case service.shipments[0].idTypeShipment === 2: 
-      return (
-        <div className={styles.formGrid}>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              <span className={styles.required}>*</span>
-              {isPort ? t('quote.originPort') : t('quote.originAirport')}
-            </label>
-            <input
-              className={`${styles.input}`}
-              type="text"
-              maxLength={20}
-              placeholder={isPort ? 'MXVER' : 'MXMEX'}
-              value={isPort ? service.shipments[0].origin.portCode ?? '' : service.shipments[0].origin.airportCode ?? '' }
-              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()})}              
-              disabled={mode === 'view' || formData.idStatusRequest >= 2}
-              required />
-          </div>  
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              <span className={styles.required}>*</span>
-              {isPort ?  t('quote.destinationPort') : t('quote.destinationAirport')}
-            </label>
-            <input
-              type="text"
-              maxLength={20}
-              placeholder={isPort ? 'MXVER' : 'MXMEX'}
-              value={isPort ? service.shipments[0].destination.portCode ?? '' : service.shipments[0].destination.airportCode ?? '' }
-              onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()})}
-              className={styles.input}
-              disabled={mode === 'view' || formData.idStatusRequest >= 2}
-              required/>
-          </div>                            
-        </div>
-      )
-      case service.shipments[0].idTypeShipment === 3 : 
-      return (
-        <div className={styles.formGrid}>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              <span className={styles.required}>*</span>
-              {t('quote.originZip')}
-            </label>
-            <input
-              type="number"
-              min="0"
-              onInput={(e) => {
-                e.currentTarget.value = e.currentTarget.value.slice(0, 9);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === '-' || e.key === 'e') {
-                   e.preventDefault();
-                }
-              }}
-              value={service.shipments[0].origin.zipCode}
-              onChange={(e) => {
-                const value = e.target.value
-                if (value === '' || Number(value) > 0) {
-                updateOrigin(service.idServiceItem, service.shipments[0].idShipment, {zipCode: e.target.value})
-                }}
-              }
-              className={styles.input}
-              disabled={mode === 'view' || formData.idStatusRequest >= 2}
-              required/>
-          </div>  
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              <span className={styles.required}>*</span>
-              {isPort ? t('quote.destinationPort') : t('quote.destinationAirport')}
-            </label>
-            <input
-              type="text"
-              maxLength={20}
-              placeholder={isPort ? 'MXVER' : 'MXMEX'}
-              value={isPort ? service.shipments[0].destination.portCode ?? '' : service.shipments[0].destination.airportCode ?? '' }
-              onChange={(e) => 
-                updateDestination(service.idServiceItem, 
-                service.shipments[0].idShipment, 
-                isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()}) }
-              className={styles.input}
-              disabled={mode === 'view' || formData.idStatusRequest >= 2}
-              required/>
-          </div>                            
-        </div>);      
-      case service.shipments[0].idTypeShipment === 4: 
-      return( 
-        <div className={styles.formGrid}>   
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              <span className={styles.required}>*</span>
-              {isPort ? t('quote.originPort') : t('quote.originAirport')}
-            </label>
-            <input
-              type="text"
-              maxLength={20}
-              placeholder={isPort ? 'MXVER' : 'MXMEX'}
-              value={isPort ? service.shipments[0].origin.portCode ?? '' : service.shipments[0].origin.airportCode ?? '' }
-              onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment,  isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()})}
-              className={styles.input}
-              disabled={mode === 'view' || formData.idStatusRequest >= 2}
-              required />
-          </div>    
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              <span className={styles.required}>*</span>
-              {t('quote.destinationZip')}
-            </label>
-            <input
-              type="number"
-              min="0"
-              onInput={(e) => {
-                e.currentTarget.value = e.currentTarget.value.slice(0, 9);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === '-' || e.key === 'e') {
-                   e.preventDefault();
-                }
-              }}
-              value={service.shipments[0].destination.zipCode}
-              onChange={(e) => {
-                const value = e.target.value
-                if (value === '' || Number(value) > 0) {
-                updateDestination(service.idServiceItem, service.shipments[0].idShipment, {zipCode : parseInt(e.target.value)})
-                }}
-              }
-              className={styles.input}
-              disabled={mode === 'view' || formData.idStatusRequest >= 2}
-              required/>
-          </div>    
-        </div>
-      )
+              <input
+                className={`${styles.input}`}
+                type="text"
+                maxLength={20}
+                placeholder={isPort ? 'MXVER' : 'MXMEX'}
+                value={isPort ? service.shipments[0].origin.portCode ?? '' : service.shipments[0].origin.airportCode ?? '' }
+                onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()})}              
+                disabled={mode === 'view' || formData.idStatusRequest >= 2}
+                required />
+            </div>  
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
+                <span className={styles.required}>*</span>
+                {isPort ?  t('quote.destinationPort') : t('quote.destinationAirport')}
+              </label>
+              <input
+                type="text"
+                maxLength={20}
+                placeholder={isPort ? 'MXVER' : 'MXMEX'}
+                value={isPort ? service.shipments[0].destination.portCode ?? '' : service.shipments[0].destination.airportCode ?? '' }
+                onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()})}
+                className={styles.input}
+                disabled={mode === 'view' || formData.idStatusRequest >= 2}
+                required/>
+            </div>                            
+          </div>
+        )
+      case service.shipments[0].idTypeShipment === 3 : //3 Door To Port
+        return (
+          <div className={styles.formGridCityZipcode}>
+            <div className={styles.formGroupCityZipcode}> 
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                <span className={styles.required}>*</span>
+                Ciudad
+                </label>
+                <input
+                  className={`${styles.input}`}                
+                  type="text"
+                  maxLength={50}
+                  value={service.shipments[0].origin.city}
+                  onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, {city: e.target.value })}              
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
+                  required /> 
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                <span className={styles.required}>*</span>
+                  {t('quote.originZip')}
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  className={styles.input}                
+                  onInput={(e) => {e.currentTarget.value = e.currentTarget.value.slice(0, 9);}}
+                  onKeyDown={(e) => {if (e.key === '-' || e.key === 'e') {e.preventDefault();}}}
+                  value={service.shipments[0].origin.zipCode}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    if (value === '' || Number(value) > 0) {
+                    updateOrigin(service.idServiceItem, service.shipments[0].idShipment, {zipCode: e.target.value})
+                    }}
+                  }                
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
+                  required/>
+              </div>              
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
+                <span className={styles.required}>*</span>
+                {isPort ? t('quote.destinationPort') : t('quote.destinationAirport')}
+              </label>
+              <input
+                type="text"
+                maxLength={20}
+                placeholder={isPort ? 'MXVER' : 'MXMEX'}
+                value={isPort ? service.shipments[0].destination.portCode ?? '' : service.shipments[0].destination.airportCode ?? '' }
+                onChange={(e) => 
+                  updateDestination(service.idServiceItem, 
+                  service.shipments[0].idShipment, 
+                  isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()}) }
+                className={styles.input}
+                disabled={mode === 'view' || formData.idStatusRequest >= 2}
+                required/>
+            </div>                            
+          </div>);      
+      case service.shipments[0].idTypeShipment === 4: //4	Port To Door
+        return( 
+          <div className={styles.formGridCityZipcode}>   
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
+                <span className={styles.required}>*</span>
+                {isPort ? t('quote.originPort') : t('quote.originAirport')}
+              </label>
+              <input
+                type="text"
+                maxLength={20}
+                placeholder={isPort ? 'MXVER' : 'MXMEX'}
+                value={isPort ? service.shipments[0].origin.portCode ?? '' : service.shipments[0].origin.airportCode ?? '' }
+                onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment,  isPort? {portCode: e.target.value.toUpperCase() } : {airportCode: e.target.value.toUpperCase()})}
+                className={styles.input}
+                disabled={mode === 'view' || formData.idStatusRequest >= 2}
+                required />
+            </div>   
+            <div className={styles.formGroupCityZipcode}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                <span className={styles.required}>*</span>
+                Ciudad
+                </label>
+                <input
+                  className={`${styles.input}`}                
+                  type="text"
+                  maxLength={50}
+                  value={service.shipments[0].destination.city}
+                  onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, {city: e.target.value })}              
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
+                  required /> 
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {t('quote.destinationZip')}
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  onInput={(e) => {e.currentTarget.value = e.currentTarget.value.slice(0, 9);}}
+                  onKeyDown={(e) => {
+                    if (e.key === '-' || e.key === 'e') {
+                      e.preventDefault();
+                    }
+                  }}
+                  value={service.shipments[0].destination.zipCode}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    if (value === '' || Number(value) > 0) {
+                    updateDestination(service.idServiceItem, service.shipments[0].idShipment, {zipCode : parseInt(e.target.value)})
+                    }}
+                  }
+                  className={styles.input}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}
+                  required/>
+              </div>
+            </div>                
+          </div>
+        )
       default: return null;
+    }
+  }
+
+  const renderResponseDeadline = () => {
+    switch(true) {
+      case formData.isLicitation===true:
+        return (
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <span className={styles.required}>*</span>
+              {t('quote.responseDeadline')}
+            </label>
+            <input
+              type="date"
+              required
+              onKeyDown={(e) => e.preventDefault()}
+              min={mode === 'create' ? new Date().toISOString().split("T")[0] : undefined}
+              value={formData.responseDeadline }
+              onChange={(e) => {     
+                setFormData({ 
+                  ...formData, 
+                  responseDeadline: e.target.value })}}                
+              className={styles.input}
+              placeholder="dd/mm/aaaa"
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}
+            />
+          </div> );
+      case formData.isLicitation === false && mode==="edit" : 
+        return(
+           <div className={styles.formGroup}>
+            <label className={styles.label}>
+              {t('quote.responseDeadline')}
+            </label>
+            <input className={styles.input}
+             value={formData.responseDeadline }
+             disabled
+            >              
+            </input>
+          </div>
+        );
+      
+      default: return <div />;
     }
   }
 
@@ -1155,10 +1260,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   return date.split("T")[0];
   };
 
-  const calculateDateResponseDeadline = () => {    
-    const date = new Date();
+  const calculateDateResponseDeadline = () => {  
+    const [year , month, day] =  formData.created.split('-').map(Number);
+    const date = new Date(year, month -1, day);
     let workingDays = 0;
-    //console.log(date.toISOString().split('T')[0]);
+    
     while (workingDays < 2) {
       date.setDate(date.getDate() + 1); // avanzar un día
       const day = date.getDay();
@@ -1236,9 +1342,97 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 value={formData.referenceRequest}
                 onChange={(e) => setFormData({ ...formData, referenceRequest: e.target.value })}
                 className={styles.input}
-                disabled
-              />
+                disabled/>
             </div>    
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
+                <span className={styles.required}>*</span>{t('quote.requestType')}
+              </label>
+              <select
+                value={formData.requestTypeId}
+                onChange={(e) => {
+                  const requestType = requestTypes.find(r => r._id === parseInt(e.target.value));
+                  setFormData({
+                    ...formData,
+                    requestTypeId: parseInt(e.target.value),
+                    requestType: requestType?.request_type_name || ''
+                  });
+                }}
+                className={styles.select}
+                disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
+                required>
+                <option value="">{t('quote.selectType')}</option>
+                {requestTypes.map((type) => (
+                  <option key={type._id} value={type._id}>
+                    {type.request_type_name}
+                  </option>
+                ))}
+              </select>
+            </div>  
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
+                <span className={styles.required}>*</span>{t('quote.requestDate')}
+              </label>
+              <input
+                type="date"
+                onKeyDown={(e) => e.preventDefault()}
+                max={mode === 'create' ? new Date().toISOString().split("T")[0] : undefined}
+                value={formData.created}
+                onChange={(e) => {{
+                    setFormData({ 
+                      ...formData, 
+                      created: e.target.value                       
+                    })
+                  }}}
+                className={styles.input}
+                disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
+            </div>                                  
+          </div>   
+          
+          <div className={styles.formGrid} style={{ marginTop: '1.5rem' }}>
+            <div className={styles.formGroupWithToggle}>
+              <label className={styles.label}>{t('quote.isPriority')}</label>
+              <button
+                type="button" 
+                className={`${styles.toggleSwitch} ${formData.isPriority ? styles.active : ''}`}
+                onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
+                disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                <div className={styles.toggleThumb}></div>
+              </button>
+            </div>
+
+            <div className={styles.formGroupWithToggle}>
+            <label className={styles.label}>{t('quote.isBid')}</label>
+            <button
+              type="button" 
+              className={`${styles.toggleSwitch} ${formData.isLicitation ? styles.active : ''}`} 
+              onClick={() => { setFormData({ ...formData, isLicitation: !formData.isLicitation })}}
+              disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+              <div className={styles.toggleThumb}></div>
+            </button>
+            </div> 
+            
+            
+            {renderResponseDeadline()}     
+   
+                                 
+          </div>
+
+          <div className={styles.formGrid} style={{ marginTop: '1.5rem' }}>  
+            <div className={styles.formGroup}> 
+              <div className={styles.formGroupWithToggle} >
+                <label className={styles.label} >{t('quote.prospect')}</label>
+                <button
+                  type="button"
+                  className={`${styles.toggleSwitch} ${formData.showProspect ? styles.active : ''}`}
+                  onClick={() => { setFormData({ ...formData, showProspect: !formData.showProspect }) }}                                  
+                  disabled={loading || mode === 'view' || mode === 'edit' || formData.idStatusRequest >= 2} >
+                <div className={styles.toggleThumb}></div>
+                </button>                                    
+              </div> 
+            </div>
           
             {!formData.showProspect ? (
               <div className={styles.formGroup}>
@@ -1284,125 +1478,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   className={styles.input}
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
               </div>
-            )}
-          <div className={styles.formGroup}> 
-            <div className={styles.prospectCheckbox} >
-              <label className={styles.label} >
-                {t('quote.prospect')}
-              </label>
-              <input
-                type="checkbox"
-                checked={formData.showProspect}
-                onChange={() => { setFormData({ ...formData, showProspect: !formData.showProspect }) }}                
-                disabled={loading || mode === 'view' || mode === 'edit' || formData.idStatusRequest >= 2} >
-              </input>                                    
-            </div> 
-          </div>
-
-          </div>   
-          
-          <div className={styles.formGrid} style={{ marginTop: '1.5rem' }}> 
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>{t('quote.requestType')}
-              </label>
-              <select
-                value={formData.requestTypeId}
-                onChange={(e) => {
-                  const requestType = requestTypes.find(r => r._id === parseInt(e.target.value));
-                  setFormData({
-                    ...formData,
-                    requestTypeId: parseInt(e.target.value),
-                    requestType: requestType?.request_type_name || ''
-                  });
-                }}
-                className={styles.select}
-                disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
-                required>
-                <option value="">{t('quote.selectType')}</option>
-                {requestTypes.map((type) => (
-                  <option key={type._id} value={type._id}>
-                    {type.request_type_name}
-                  </option>
-                ))}
-              </select>
-            </div>          
-
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                {!formData.isLicitation && (
-                  <span className={styles.required}>*</span>
-                )}
-                {t('quote.responseDeadline')}
-              </label>
-              <input
-                type="date"
-                required ={formData.isLicitation === false}
-                onKeyDown={(e) => e.preventDefault()}
-                min={mode === 'create' ? new Date().toISOString().split("T")[0] : undefined}
-                value={formData.responseDeadline }
-                onChange={(e) => {     
-                  setFormData({ ...formData, responseDeadline: e.target.value })}}                
-                className={styles.input}
-                placeholder="dd/mm/aaaa"
-                disabled={mode === 'view' || formData.idStatusRequest >= 2}
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>{t('quote.requestDate')}
-              </label>
-              <input
-                type="date"
-                onKeyDown={(e) => e.preventDefault()}
-                max={mode === 'create'  ? new Date().toISOString().split("T")[0] : undefined}
-                value={formData.created}
-                onChange={(e) => 
-                  {setFormData({ ...formData, created: e.target.value })}}
-                className={styles.input}
-                disabled={mode === 'view' || formData.idStatusRequest >= 2}
-              />
-            </div>
-          </div>
-
-          <div className={styles.formGrid} style={{ marginTop: '1.5rem' }}>       
-            <div className={styles.formGroupWithToggle}>
-              <label className={styles.label}>{t('quote.isPriority')}</label>
-              <button
-                type="button" 
-                className={`${styles.toggleSwitch} ${formData.isPriority ? styles.active : ''}`}
-                onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
-                disabled={mode === 'view' || formData.idStatusRequest >= 2}>
-                <div className={styles.toggleThumb}></div>
-              </button>
-            </div>
-
-            <div className={styles.formGroupWithToggle}>
-            <label className={styles.label}>{t('quote.isBid')}</label>
-            <button
-              type="button" 
-              className={`${styles.toggleSwitch} ${formData.isLicitation ? styles.active : ''}`}
-              onClick={() => {
-                if(mode=== 'create'){
-                  setFormData(
-                  { ...formData, 
-                    isLicitation: !formData.isLicitation,
-                    responseDeadline: !formData.isLicitation === true ? '' : calculateDateResponseDeadline().toISOString().split('T')[0] 
-                  })
-                }else {
-                  setFormData(
-                  { ...formData, 
-                    isLicitation: !formData.isLicitation
-                  })
-                }
-              }
-              }
-              disabled={mode === 'view' || formData.idStatusRequest >= 2}>
-              <div className={styles.toggleThumb}></div>
-            </button>
-            </div>
-
+            )}     
+            
             {!formData.showProspect ? (
               <div className={styles.formGroup}>
                 <label className={styles.label}>{t('quote.customerCategory')}</label>
@@ -1874,9 +1951,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     <select
                       required
                       value={service.shipments[0].projectionShipment?.idTypeMesurementFrecuency}
-                      onInput={(e) => {
-                        e.currentTarget.value = e.currentTarget.value.slice(0, 9);
-                      }}
+                      onInput={(e) => {e.currentTarget.value = e.currentTarget.value.slice(0, 9);}}
                       onChange={(e) => 
                         updateProjectionShipment(
                           service.idServiceItem, 
@@ -1932,7 +2007,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             <button
                               type="button" 
                               className={styles.viewButtonGreen}
-                              onClick={() => openMerchandiseModal(service.idServiceItem, merch)}
+                              onClick={() => openMerchandiseModal(service, merch)}
                               title={t('quote.view')}>
                               <Eye size={14} />
                             </button>
@@ -1946,7 +2021,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <button
                 type="button" 
                 className={styles.addItemButton}
-                onClick={() => openMerchandiseModal(service.idServiceItem)}
+                onClick={() => openMerchandiseModal(service)}
                 disabled={mode === 'view' || formData.idStatusRequest >= 2}>
                 <Plus size={16} />
                 {t('quote.addMerchandise')}
@@ -2315,7 +2390,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <input
                       type="checkbox"                  
                       checked={byUnitsMerch}                  
-                      onChange={(e) => { 
+                      onChange={() => { 
                         setByUnitsMerch(!byUnitsMerch);
                         setCurrentPackages([]);
                         }}
