@@ -437,20 +437,20 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     return 0;
   };
 
-    const renderZipCodesOrigin =  (service : any) => {
+    const renderCityOrigin =  (service : any) => {
       const isPort = service.idService === 1 || service.idService === 2 ? true : false;    
       switch(true){
         case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : return (          
             <div className={styles.formGroup}>
               <label className={styles.label}>
                 <span className={styles.required}>*</span>
-                  {t('ctrlpricing.cpo')}
-                </label>
+                  {t('ctrlpricing.cityo')}
+              </label>
               <input
-                type="number"
-                value={service.shipments[0].origin.zipCode}                
+                type="text"
+                value={service.shipments[0].origin.city}                
                 className={styles.input}
-                disabled/>
+                disabled/>                          
             </div>    
           );
         case service.shipments[0].idTypeShipment === 2: return (          
@@ -468,17 +468,17 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             </div>           
         )
         case service.shipments[0].idTypeShipment === 3 : return (          
-            <div className={styles.formGroup}>
+            <div className={styles.formGroup}>             
               <label className={styles.label}>
                 <span className={styles.required}>*</span>
-                {t('ctrlpricing.cpo')}
+                  {t('ctrlpricing.cityo')}
               </label>
               <input
-                type="number"
-                value={service.shipments[0].origin.zipCode}                
+                type="text"
+                value={service.shipments[0].origin.city}                
                 className={styles.input}
-                disabled/>
-            </div>  
+                disabled/>                
+            </div>
             );      
         case service.shipments[0].idTypeShipment === 4: return(             
             <div className={styles.formGroup}>
@@ -498,20 +498,20 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       }
     }
 
-    const renderZipCodesDestination =  (service : any) => {
+    const renderCityDestination =  (service : any) => {
       const isPort = service.idService === 1 || service.idService === 2 ? true : false;    
       switch(true){
         case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : return (           
             <div className={styles.formGroup}>
-              <label className={styles.label}>
+               <label className={styles.label}>
                 <span className={styles.required}>*</span>
-                {t('ctrlpricing.cpd')}
+                  {t('ctrlpricing.cityd')}
               </label>
               <input
-                type="number"
-                value={service.shipments[0].destination.zipCode}                
+                type="text"
+                value={service.shipments[0].destination.city}                
                 className={styles.input}
-                disabled/>
+                disabled/>              
             </div>);
         case service.shipments[0].idTypeShipment === 2: return (          
             <div className={styles.formGroup}>
@@ -542,6 +542,71 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             </div>);      
         case service.shipments[0].idTypeShipment === 4: return(                       
             <div className={styles.formGroup}>
+               <label className={styles.label}>
+                <span className={styles.required}>*</span>
+                  {t('ctrlpricing.cityd')}
+              </label>
+              <input
+                type="text"
+                value={service.shipments[0].destination.city}                
+                className={styles.input}
+                disabled/>             
+            </div>          
+        )
+        default: return null;
+      }
+    }
+
+    const renderZipCodesOrigin =  (service : any) => {
+      const isPort = service.idService === 1 || service.idService === 2 ? true : false;    
+      switch(true){
+        case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : return (          
+            <div className={styles.formGroup}>              
+              <label className={styles.label}>
+                <span className={styles.required}>*</span>
+                  {t('ctrlpricing.cpo')}
+                </label>
+              <input
+                type="number"
+                value={service.shipments[0].origin.zipCode}                
+                className={styles.input}
+                disabled/>              
+            </div>    
+          );        
+        case service.shipments[0].idTypeShipment === 3 : return (          
+            <div className={styles.formGroup}>                           
+                 <label className={styles.label}>
+                <span className={styles.required}>*</span>
+                {t('ctrlpricing.cpo')}
+              </label>
+              <input
+                type="number"
+                value={service.shipments[0].origin.zipCode}                
+                className={styles.input}
+                disabled/>
+            </div>
+            );       
+        default: return null;
+      }
+    }
+
+    const renderZipCodesDestination =  (service : any) => {
+      const isPort = service.idService === 1 || service.idService === 2 ? true : false;    
+      switch(true){
+        case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : return (           
+            <div className={styles.formGroup}>              
+              <label className={styles.label}>
+                <span className={styles.required}>*</span>
+                {t('ctrlpricing.cpd')}
+              </label>
+              <input
+                type="number"
+                value={service.shipments[0].destination.zipCode}                
+                className={styles.input}
+                disabled/>
+            </div>);             
+        case service.shipments[0].idTypeShipment === 4: return(                       
+            <div className={styles.formGroup}>            
               <label className={styles.label}>
                 <span className={styles.required}>*</span>
                 {t('ctrlpricing.cpd')}
@@ -816,8 +881,11 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   <option value="JC TRANS">JC TRANS</option>
                   <option value="GLA FAMILY">GLA FAMILY</option>
                   <option value="N/A">N/A</option>
-                  <option value="WTC Alliance">WTC Alliance</option>
-                  <option value="DF Alliance">DF Alliance</option>
+                  <option value="WTC ALLIANCE">WTC ALLIANCE</option>
+                  <option value="LOGNET">LOGNET</option>
+                  <option value="DF ALLIANCE">DF ALLIANCE</option>
+                  <option value="TFC">TFC</option>
+                  <option value="MAGENTA">MAGENTA</option>
                 </select>
               </div>
               <div className={styles.formGroup}>
@@ -927,6 +995,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   <option value="AR" >AR Actualización de rutas</option>
                   <option value="OWOS" >OWOS Proyectos sobredimensionados</option>
                   <option value="IP" >IP Interno pricing</option>
+                  <option value="TRF" >TRF Tarifario</option>
                 </select>
               </div>
                <div className={styles.formGroup}> 
@@ -1136,11 +1205,17 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                             />
                           </div>
                           <div>
+                            {renderCityOrigin(service)}
+                          </div> 
+                          <div>
                             {renderZipCodesOrigin(service)}
                           </div>  
+                           <div>
+                            {renderCityDestination(service)}
+                          </div>   
                           <div>
                             {renderZipCodesDestination(service)}
-                          </div>                       
+                          </div>                                                                      
                         </div>
 
                         <div className={styles.associatedServices}>
