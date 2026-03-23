@@ -960,7 +960,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         });
         setSaving(false);
         return;
-      }else if(quotationData.services.find(service => service.shipments.find(ship => ship.cargo.length === 0))){
+      }
+      else 
+        if(quotationData.services.find(service => service.shipments.find(ship => ship.cargo.length === 0) 
+        && ![2, 3, 10].includes(service.idService))) { //mercancia es obligatoria si el servicio no es maritimo fcl, terr fcl y terr ftl
         setModalState({
           isOpen : true,
           type: 'warning',
@@ -1878,45 +1881,103 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               {renderZipCodesOriginDestination(service)}
             </div>
 
-            {service.idService === 2 && (
+            {[2, 3, 10].includes(service.idService) && (
               <div style={{ marginTop: '1.25rem' }} >
-                <label className={styles.label}>
-                  <span className={styles.required}>*</span>
-                  {t('quote.containers')}
-                </label>
+                <label className={styles.label}>{t('quote.containers')}</label>
                 <div className={styles.executivesCard}>
                   <div className={styles.executivesList}>
                     {service.shipments[0].containers?.map((container) => (
-                      <div key={container.idContainer} className={styles.executiveItemSimple}>
-                        <span className={styles.executiveLabel}>{t('quote.container')}</span>
-                        <span className={styles.executiveNameSimple}>{container.nameTypeContainer}</span>
-                        <label className={styles.label}>
-                          {t('quote.quantity')}
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          step="1"
-                          className={styles.input}
-                          onInput={(e) => {e.currentTarget.value = e.currentTarget.value.slice(0, 9);}}
-                          onKeyDown={(e) => {
-                            if (e.key === "." || e.key === '-' || e.key === 'e') {
-                                e.preventDefault();
-                            }
-                          }}
-                          value={container.quantity}
-                          onChange={(e) => 
-                            updateContainersQuantityShipment(service.idServiceItem, 1, container.idContainer || 1,
-                              {quantity:  parseInt(e.target.value)})}
-                        />
-                        <button
-                          type="button" 
-                          className={styles.removeIconButton}
-                          onClick={() => updateContainersShipment(service.idServiceItem, 1, container)}
-                          title={t('quote.delete')}
-                          disabled={mode === 'view' || formData.idStatusRequest >= 2}>
-                          <Trash2 size={16} />
-                        </button>
+                      <div key={container.idContainer} className={styles.executiveItemSimple}> 
+                       <div className={styles.formGroupElementsInline}>                       
+                          <div className={styles.formGroup}>
+                            <span className={styles.executiveLabel}>{t('quote.container')}</span>
+                            <span className={styles.executiveNameSimple}>{container.nameTypeContainer}</span>
+                          </div>                         
+                          <div className={styles.formGroup}>
+                            <label className={styles.label}>{t('quote.quantity')}</label>
+                            <input
+                              type="number"
+                              min="1"
+                              step="1"
+                              className={styles.input}
+                              style={{ width: '80px' }}
+                              onInput={(e) => {e.currentTarget.value = e.currentTarget.value.slice(0, 9);}}
+                              onKeyDown={(e) => { if (e.key === "." || e.key === '-' || e.key === 'e') { e.preventDefault();}}}
+                              value={container.quantity}
+                              onChange={(e) => 
+                                updateContainersQuantityShipment(service.idServiceItem, 1, container.idContainer || 1,
+                                  {quantity:  parseInt(e.target.value)})}/>
+                          </div>                                                                     
+                          <div className={styles.formGroup}>
+                            <label className={styles.label}>Volume Total</label>
+                            <input
+                              type="number"
+                              className={styles.input}
+                              onInput={(e) => {e.currentTarget.value = e.currentTarget.value.slice(0, 9);}}
+                              onKeyDown={(e) => {if (e.key === '-' || e.key === 'e') {e.preventDefault(); }}}
+                              value={container.volumeTotal}
+                              onChange={(e) => 
+                                updateContainersQuantityShipment(service.idServiceItem, 1, container.idContainer || 1,
+                                { volumeTotal:  parseInt(e.target.value)})} /> 
+                          </div>                                                                                                                      
+                          <div className={styles.formGroup}>
+                            <select
+                              value={container.idUnitVolume}
+                              onChange={(e) => {
+                                updateContainersQuantityShipment( service.idServiceItem, 1, container.idContainer || 1,
+                                  {                              
+                                  idUnitVolume: parseInt(e.target.value),
+                                  unitVolume: e.target.options[e.target.selectedIndex].text
+                                  });
+                              }}
+                              className={styles.select}
+                              disabled={loading || mode === 'view' || formData.idStatusRequest >= 2} >
+                              <option value="">{t('quote.selectOption')}</option>
+                              <option value={1}>CBM</option>                  
+                              <option value={2}>CFT</option>                        
+                            </select> 
+                          </div>                                                         
+                          <div className={styles.formGroup}>
+                            <label className={styles.label}>Peso</label>
+                            <input
+                              type="number"
+                              className={styles.input}
+                              onInput={(e) => {e.currentTarget.value = e.currentTarget.value.slice(0, 9);}}
+                              onKeyDown={(e) => {if (e.key === "." || e.key === '-' || e.key === 'e') {e.preventDefault(); }}}
+                              value={container.weigthTotal}
+                              onChange={(e) => 
+                                updateContainersQuantityShipment(service.idServiceItem, 1, container.idContainer || 1,
+                                { weigthTotal:  parseInt(e.target.value)})} />                          
+                          </div>
+                          <div className={styles.formGroup}> 
+                            <select
+                              value={container.idUnitWeight}
+                              onChange={(e) => {
+                                updateContainersQuantityShipment( service.idServiceItem, 1, container.idContainer || 1,
+                                  {                              
+                                  idUnitWeight: parseInt(e.target.value),
+                                  unitWeight: e.target.options[e.target.selectedIndex].text
+                                  });
+                              }}
+                              className={styles.select}
+                              disabled={loading || mode === 'view' || formData.idStatusRequest >= 2} >
+                              <option value="">{t('quote.selectOption')}</option>
+                              <option value={1}>KGS</option>                  
+                              <option value={2}>IN</option>           
+                              <option value={3}>Toneladas</option>                
+                            </select>
+                          </div>
+                          <div className={styles.formGroup}>
+                            <button
+                              type="button" 
+                              className={styles.removeIconButton}
+                              onClick={() => updateContainersShipment(service.idServiceItem, 1, container)}
+                              title={t('quote.delete')}
+                              disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     ))} 
                   </div>
@@ -1961,14 +2022,13 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                                   })
                               }>
                               <span>{containerAvailable.name_type}</span>
-                              <span>{containerAvailable.description}</span>
                               <Plus size={18} className={styles.addIcon} />
                             </div>
                           ))}
                       
                         {availableContainers.filter(cont => containers?.some(container => container.idContainer === cont._Id)).length === 0 && (
                           <div className={styles.noExecutivesMessage}>
-                            {t('quote.allExecutivesAdded')}
+                            {t('quote.allContainersAdded')}
                           </div>
                         )}
                       </div>

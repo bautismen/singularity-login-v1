@@ -83,6 +83,12 @@ export interface ContainerRequest {
   idContainer? : number;
   nameTypeContainer : string;  
   quantity: number;
+  idUnitVolume?: number ,
+  unitVolume?: string, 
+  volumeTotal?: number, 
+  idUnitWeight? : number, 
+  unitWeight?: number, 
+  weigthTotal?: number
 }
 
 export interface ChangeStatusRequest {
