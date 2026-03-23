@@ -6,8 +6,9 @@ import { ImoClass } from '../types/catalog';
 import { useNotification } from '../contexts/NotificationContext';
 import { Modal } from '../components/Modal';
 
-const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-imo`;
-const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const API_URL = import.meta.env.VITE_API_CATALOGS;
+const API_KEY = import.meta.env.VITE_APIKEYSL;
+const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 
 export function CatalogIMO() {
   const { t } = useLanguage();
@@ -22,9 +23,12 @@ export function CatalogIMO() {
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    imo: '',
-    description: '',
-    status: 1,
+    _Id: 0,
+    Imo: '',
+    Description: '',
+    Status: 1,
+    Archived: false,
+    Data_state: 1,
   });
   const disabled = editingItem ? true : false;
 
@@ -53,11 +57,12 @@ export function CatalogIMO() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/Imo`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          'Authorization': `Bearer ${API_TOKENSL}`,
           'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
         },
       });
 
@@ -66,8 +71,8 @@ export function CatalogIMO() {
       }
 
       const data = await response.json();
-      setItems(data.map((item: any) => ({
-        id: item._id,
+      setItems(data.data.map((item: any) => ({
+        id: item._Id,
         imo: item.imo,
         description: item.description,
         status: item.status,
@@ -105,16 +110,22 @@ export function CatalogIMO() {
     if (item) {
       setEditingItem(item);
       setFormData({
-        imo: item.imo,
-        description: item.description,
-        status: item.status,
+        _Id: item.id,
+        Imo: item.imo,
+        Description: item.description,
+        Status: item.status,
+        Archived: item.archived,
+        Data_state: item.data_state,
       });
     } else {
       setEditingItem(null);
       setFormData({
-        imo: '',
-        description: '',
-        status: 1,
+        _Id: 0,
+        Imo: '',
+        Description: '',
+        Status: 1,
+        Archived: false,
+        Data_state: 1,
       });
     }
     setShowModal(true);
@@ -124,9 +135,12 @@ export function CatalogIMO() {
     setShowModal(false);
     setEditingItem(null);
     setFormData({
-      imo: '',
-      description: '',
-      status: 1,
+      _Id: 0,
+      Imo: '',
+      Description: '',
+      Status: 1,
+      Archived: false,
+      Data_state: 1,
     });
   };
 
@@ -137,15 +151,17 @@ export function CatalogIMO() {
       setLoading(true);
 
       const exists = items.some( imo =>
-        imo.imo === formData.imo       
+        imo.imo === formData.Imo       
       )
 
       if (editingItem) {
-        const response = await fetch(`${API_URL}/${editingItem.id}`, {
+        setFormData({ ...formData, _Id: editingItem.id });     
+        const response = await fetch(`${API_URL}/v1/kl/catalog/update/Imo`, {          
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+            'Authorization': `Bearer ${API_TOKENSL}`,
             'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
           },
           body: JSON.stringify(formData),
         });
@@ -162,11 +178,12 @@ export function CatalogIMO() {
           return;
         }
 
-        const response = await fetch(API_URL, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/add/Imo`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+            'Authorization': `Bearer ${API_TOKENSL}`,
             'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
           },
           body: JSON.stringify(formData),
         });
@@ -199,11 +216,12 @@ export function CatalogIMO() {
       onConfirm: async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE',
+          const response = await fetch(`${API_URL}/v1/kl/catalog/deletelogic/view=Imo&id=${id}`, {
+            method: 'PUT',
             headers: {
-              'Authorization': `Bearer ${API_KEY}`,
-              'Content-Type': 'application/json',
+            'Authorization': `Bearer ${API_TOKENSL}`,
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
             },
           });
 
@@ -350,10 +368,10 @@ export function CatalogIMO() {
                 <input
                   type="number"
                   className="input"
-                  value={formData.imo}
+                  value={formData.Imo}
                   onChange={(e) => {
                     const value = e.target.value.slice(0, 5);
-                    setFormData({ ...formData, imo: value });
+                    setFormData({ ...formData, Imo: value });
                   }}
                   disabled={disabled}
                   required
@@ -371,8 +389,8 @@ export function CatalogIMO() {
                 <label className="label"><span className="required">*</span> {t('catalog.imo.description')}</label>
                 <textarea
                   className="textarea"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value.replace(/\s{2,}/g, " ")})}
+                  value={formData.Description}
+                  onChange={(e) => setFormData({ ...formData, Description: e.target.value.replace(/\s{2,}/g, " ")})}
                   disabled={loading}
                   required
                   onInvalid={(e) => 
@@ -389,8 +407,8 @@ export function CatalogIMO() {
                   <input
                     type="checkbox"
                     className="checkbox"
-                    checked={formData.status === 1}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
+                    checked={formData.Status === 1}
+                    onChange={(e) => setFormData({ ...formData, Status: e.target.checked ? 1 : 0 })}
                     disabled={loading}
                   />
                   {' '}{t('catalog.status.active')}

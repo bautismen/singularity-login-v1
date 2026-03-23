@@ -6,8 +6,9 @@ import { Incoterm } from '../types/catalog';
 import { useNotification } from '../contexts/NotificationContext';
 import { Modal } from '../components/Modal';
 
-const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-incoterms`;
-const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const API_URL = import.meta.env.VITE_API_CATALOGS;
+const API_KEY = import.meta.env.VITE_APIKEYSL;
+const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 
 export function CatalogIncoterms() {
   const { t } = useLanguage();
@@ -22,8 +23,11 @@ export function CatalogIncoterms() {
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    incoterm: '',
-    status: 1,
+    _Id: 0,
+    Incoterm: '',
+    Status: 1,
+    Archived: false,
+    Data_state: 1,
   });
   const disabled = editingItem ? true : false;
 
@@ -52,11 +56,12 @@ export function CatalogIncoterms() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/Incoterm`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          'Authorization': `Bearer ${API_TOKENSL}`,
           'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
         },
       });
 
@@ -65,8 +70,8 @@ export function CatalogIncoterms() {
       }
 
       const data = await response.json();
-      setItems(data.map((item: any) => ({
-        id: item._id,
+      setItems(data.data.map((item: any) => ({
+        id: item._Id,
         incoterm: item.incoterm,
         status: item.status,
         archived: item.archived,
@@ -102,14 +107,20 @@ export function CatalogIncoterms() {
     if (item) {
       setEditingItem(item);
       setFormData({
-        incoterm: item.incoterm,
-        status: item.status,
+        _Id: item.id,
+        Incoterm: item.incoterm,
+        Status: item.status,
+        Archived: item.archived,
+        Data_state: item.data_state,
       });
     } else {
       setEditingItem(null);
       setFormData({
-        incoterm: '',
-        status: 1,
+        _Id: 0,
+        Incoterm: '',
+        Status: 1,
+        Archived: false,
+        Data_state: 1,
       });
     }
     setShowModal(true);
@@ -119,8 +130,11 @@ export function CatalogIncoterms() {
     setShowModal(false);
     setEditingItem(null);
     setFormData({
-      incoterm: '',
-      status: 1,
+      _Id: 0,
+      Incoterm: '',
+      Status: 1,
+      Archived: false,
+      Data_state: 1,
     });
   };
 
@@ -131,15 +145,17 @@ export function CatalogIncoterms() {
       setLoading(true);    
       
       const exists = items.some( i =>
-        i.incoterm === formData.incoterm   
+        i.incoterm === formData.Incoterm   
       )
 
       if (editingItem) {
-        const response = await fetch(`${API_URL}/${editingItem.id}`, {
+        setFormData({ ...formData, _Id: editingItem.id });
+        const response = await fetch(`${API_URL}/v1/kl/catalog/update/Incoterm`, {
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+            'Authorization': `Bearer ${API_TOKENSL}`,
             'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
           },
           body: JSON.stringify(formData),
         });
@@ -156,11 +172,12 @@ export function CatalogIncoterms() {
           return;
         }
 
-        const response = await fetch(API_URL, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/add/Incoterm`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+            'Authorization': `Bearer ${API_TOKENSL}`,
             'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
           },
           body: JSON.stringify(formData),
         });
@@ -192,11 +209,12 @@ export function CatalogIncoterms() {
       onConfirm: async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE',
+          const response = await fetch(`${API_URL}/v1/kl/catalog/deletelogic/view=Incoterm&id=${id}`, {
+            method: 'PUT',
             headers: {
-              'Authorization': `Bearer ${API_KEY}`,
+              'Authorization': `Bearer ${API_TOKENSL}`,
               'Content-Type': 'application/json',
+              'x-api-key': API_KEY,
             },
           });
 
@@ -341,13 +359,13 @@ export function CatalogIncoterms() {
                   <input
                     type="text"
                     className="input"
-                    value={formData.incoterm}
+                    value={formData.Incoterm}
                     onChange={(e) => {
                       const value = e.target.value.toUpperCase();
 
                       // Solo letras y máximo 3 caracteres
                       if (/^[A-Za-z]{0,3}$/.test(value)) {
-                        setFormData({ ...formData, incoterm: value });
+                        setFormData({ ...formData, Incoterm: value });
                       }
                     }}                   
                     disabled={disabled}
@@ -366,8 +384,8 @@ export function CatalogIncoterms() {
                     <input
                       type="checkbox"
                       className="checkbox"
-                      checked={formData.status === 1}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
+                      checked={formData.Status === 1}
+                      onChange={(e) => setFormData({ ...formData, Status: e.target.checked ? 1 : 0 })}
                       disabled={loading}
                     />
                     {' '}{t('catalog.status.active')}

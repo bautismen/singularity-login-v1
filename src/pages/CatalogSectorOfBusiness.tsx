@@ -6,8 +6,9 @@ import { SectorOfBusiness } from '../types/catalog';
 import { useNotification } from '../contexts/NotificationContext';
 import { Modal } from '../components/Modal';
 
-const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-sector-of-business`;
-const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const API_URL = import.meta.env.VITE_API_CATALOGS;
+const API_KEY = import.meta.env.VITE_APIKEYSL;
+const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 
 export function CatalogSectorOfBusiness() {
   const { t } = useLanguage();
@@ -21,9 +22,12 @@ export function CatalogSectorOfBusiness() {
   const [editingItem, setEditingItem] = useState<SectorOfBusiness | null>(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    status: 1,
+    _Id: 0,
+    Name: '',
+    Description: '',
+    Status: 1,
+    Archived: false,
+    Data_state: 1,    
   });
 
  const [modalState, setModalState] = useState<{
@@ -51,11 +55,12 @@ export function CatalogSectorOfBusiness() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_URL, {
+     const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/SectorOfBusiness`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          'Authorization': `Bearer ${API_TOKENSL}`,
           'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
         },
       });
 
@@ -64,8 +69,8 @@ export function CatalogSectorOfBusiness() {
       }
 
       const data = await response.json();
-      setItems(data.map((item: any) => ({
-        id: item._id,
+      setItems(data.data.map((item: any) => ({
+        id: item._Id,
         name: item.name,
         description: item.description,
         status: item.status,
@@ -103,16 +108,22 @@ export function CatalogSectorOfBusiness() {
     if (item) {
       setEditingItem(item);
       setFormData({
-        name: item.name,
-        description: item.description,
-        status: item.status,
+        _Id: item.id,
+        Name: item.name,
+        Description: item.description,
+        Status: item.status,
+        Archived: item.archived,
+        Data_state: item.data_state,
       });
     } else {
       setEditingItem(null);
       setFormData({
-        name: '',
-        description: '',
-        status: 1,
+        _Id: 0,
+        Name: '',
+        Description: '',
+        Status: 1,
+        Archived: false,
+        Data_state: 1,
       });
     }
     setShowModal(true);
@@ -122,9 +133,12 @@ export function CatalogSectorOfBusiness() {
     setShowModal(false);
     setEditingItem(null);
     setFormData({
-      name: '',
-      description: '',
-      status: 1,
+      _Id: 0,
+        Name: '',
+        Description: '',
+        Status: 1,
+        Archived: false,
+        Data_state: 1,
     });
   };
 
@@ -134,11 +148,13 @@ export function CatalogSectorOfBusiness() {
       setLoading(true);
 
       if (editingItem) {
-        const response = await fetch(`${API_URL}/${editingItem.id}`, {
+        setFormData({ ...formData, _Id: editingItem.id });
+        const response = await fetch(`${API_URL}/v1/kl/catalog/update/SectorOfBusiness`, {
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+            'Authorization': `Bearer ${API_TOKENSL}`,
             'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
           },
           body: JSON.stringify(formData),
         });
@@ -148,11 +164,12 @@ export function CatalogSectorOfBusiness() {
         }
 
       } else {
-        const response = await fetch(API_URL, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/add/SectorOfBusiness`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+            'Authorization': `Bearer ${API_TOKENSL}`,
             'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
           },
           body: JSON.stringify(formData),
         });
@@ -185,11 +202,12 @@ export function CatalogSectorOfBusiness() {
       onConfirm: async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE',
+          const response = await fetch(`${API_URL}/v1/kl/catalog/deletelogic/view=SectorOfBusiness&id=${id}`, {
+            method: 'PUT',
             headers: {
-              'Authorization': `Bearer ${API_KEY}`,
+              'Authorization': `Bearer ${API_TOKENSL}`,
               'Content-Type': 'application/json',
+              'x-api-key': API_KEY,
             },
           });
 
@@ -339,8 +357,8 @@ export function CatalogSectorOfBusiness() {
                   <input
                     type="text"
                     className="input"
-                    value={formData.name} 
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/\s{2,}/g, " ")})}
+                    value={formData.Name} 
+                    onChange={(e) => setFormData({ ...formData, Name: e.target.value.replace(/\s{2,}/g, " ")})}
                     disabled = {editingItem ? true : false} 
                     required
                     onInvalid={(e) => 
@@ -356,8 +374,8 @@ export function CatalogSectorOfBusiness() {
                   <label className="label">{t('catalog.sectorOfBusiness.description')}</label>
                   <textarea
                     className="textarea"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value.replace(/\s{2,}/g, " ")})}
+                    value={formData.Description}
+                    onChange={(e) => setFormData({ ...formData, Description: e.target.value.replace(/\s{2,}/g, " ")})}
                     disabled={loading}
                   />
                 </div>
@@ -367,8 +385,8 @@ export function CatalogSectorOfBusiness() {
                     <input
                       type="checkbox"
                       className="checkbox"
-                      checked={formData.status === 1}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
+                      checked={formData.Status === 1}
+                      onChange={(e) => setFormData({ ...formData, Status: e.target.checked ? 1 : 0 })}
                       disabled={loading}
                     />
                     {' '}{t('catalog.status.active')}

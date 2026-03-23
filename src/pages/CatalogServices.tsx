@@ -6,8 +6,9 @@ import { Service } from '../types/catalog';
 import { useNotification } from '../contexts/NotificationContext';
 import { Modal } from '../components/Modal';
 
-const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-services`;
-const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const API_URL = import.meta.env.VITE_API_CATALOGS;
+const API_KEY = import.meta.env.VITE_APIKEYSL;
+const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 
 export function CatalogServices() {
   const { t } = useLanguage();
@@ -22,10 +23,13 @@ export function CatalogServices() {
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    service_name: '',
-    category: 1,
-    email_service_name: '',
-    status: 1,
+    _Id: 0,
+    Service_name: '',
+    Category: 1,
+    Email_service_name: '',
+    Status: 1,
+    Archived: false,
+    Data_state: 1,
   });
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const disabled = editingItem ? true : false;
@@ -57,11 +61,12 @@ export function CatalogServices() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/Service`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          'Authorization': `Bearer ${API_TOKENSL}`,
           'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
         },
       });
 
@@ -70,8 +75,8 @@ export function CatalogServices() {
       }
 
       const data = await response.json();
-      setItems(data.map((item: any) => ({
-        id: item._id,
+      setItems(data.data.map((item: any) => ({
+        id: item._Id,
         service_name: item.service_name,
         category: item.category,
         email_service_name: item.email_service_name,
@@ -109,18 +114,24 @@ export function CatalogServices() {
     if (item) {
       setEditingItem(item);
       setFormData({
-        service_name: item.service_name,
-        category: item.category,
-        email_service_name: item.email_service_name || '',
-        status: item.status,
+        _Id: item.id,
+        Service_name: item.service_name,
+        Category: item.category,
+        Email_service_name: item.email_service_name || '',
+        Status: item.status,
+        Archived: item.archived,
+        Data_state: item.data_state,
       });
     } else {
       setEditingItem(null);
       setFormData({
-        service_name: '',
-        category: 1,
-        email_service_name: '',
-        status: 1,
+        _Id: 0,
+        Service_name: '',
+        Category: 1,
+        Email_service_name: '',
+        Status: 1,
+        Archived: false,
+        Data_state: 1,
       });
     }
     setShowModal(true);
@@ -130,10 +141,13 @@ export function CatalogServices() {
     setShowModal(false);
     setEditingItem(null);
     setFormData({
-      service_name: '',
-      category: 1,
-      email_service_name: '',
-      status: 1,
+      _Id: 0,
+      Service_name: '',
+      Category: 1,
+      Email_service_name: '',
+      Status: 1,
+      Archived: false,
+      Data_state: 1,
     });
   };
 
@@ -142,17 +156,19 @@ export function CatalogServices() {
       e.preventDefault();
       setLoading(true);      
 
-      if (formData.email_service_name.length > 0 && !isValidEmail(formData.email_service_name)) {
+      if (formData.Email_service_name.length > 0 && !isValidEmail(formData.Email_service_name)) {
         showError('Debe ingresar un correo electrónico válido');
         return;
       }
 
       if (editingItem) {
-        const response = await fetch(`${API_URL}/${editingItem.id}`, {
+        setFormData({ ...formData, _Id: editingItem.id });
+        const response = await fetch(`${API_URL}/v1/kl/catalog/update/Service`, {
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+             'Authorization': `Bearer ${API_TOKENSL}`,
             'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
           },
           body: JSON.stringify(formData),
         });
@@ -161,11 +177,13 @@ export function CatalogServices() {
           showError('Error al actualizar el registro');
         }
       } else {
-        const response = await fetch(API_URL, {
+        console.log(JSON.stringify(formData));
+        const response = await fetch(`${API_URL}/v1/kl/catalog/add/Service`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+            'Authorization': `Bearer ${API_TOKENSL}`,
             'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
           },
           body: JSON.stringify(formData),
         });
@@ -197,11 +215,12 @@ export function CatalogServices() {
       onConfirm: async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE',
+          const response = await fetch(`${API_URL}/v1/kl/catalog/deletelogic/view=Service&id=${id}`, {
+            method: 'PUT',
             headers: {
-              'Authorization': `Bearer ${API_KEY}`,
+              'Authorization': `Bearer ${API_TOKENSL}`,
               'Content-Type': 'application/json',
+              'x-api-key': API_KEY,
             },
           });
 
@@ -352,8 +371,8 @@ export function CatalogServices() {
                 <input
                   type="text"
                   className="input"
-                  value={formData.service_name}
-                  onChange={(e) => setFormData({ ...formData, service_name: e.target.value })}
+                  value={formData.Service_name}
+                  onChange={(e) => setFormData({ ...formData, Service_name: e.target.value })}
                   disabled={disabled}
                   required
                   onInvalid={(e) =>
@@ -369,8 +388,8 @@ export function CatalogServices() {
                 <label className="label">{t('catalog.service.category')}</label>
                 <select
                   className="select"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: parseInt(e.target.value) })}
+                  value={formData.Category}
+                  onChange={(e) => setFormData({ ...formData, Category: parseInt(e.target.value) })}
                   disabled={loading}
                 >
                   <option value={1}>{t('catalog.service.categoryMain')}</option>
@@ -383,8 +402,8 @@ export function CatalogServices() {
                 <input
                   type="email"
                   className="input"
-                  value={formData.email_service_name}
-                  onChange={(e) => setFormData({ ...formData, email_service_name: e.target.value })}
+                  value={formData.Email_service_name}
+                  onChange={(e) => setFormData({ ...formData, Email_service_name: e.target.value })}
                   disabled={loading}
                 />
               </div>
@@ -394,8 +413,8 @@ export function CatalogServices() {
                   <input
                     type="checkbox"
                     className="checkbox"
-                    checked={formData.status === 1}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
+                    checked={formData.Status === 1}
+                    onChange={(e) => setFormData({ ...formData, Status: e.target.checked ? 1 : 0 })}
                     disabled={loading}
                   />
                   {' '}{t('catalog.status.active')}
