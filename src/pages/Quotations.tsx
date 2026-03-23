@@ -5,14 +5,16 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { Modal } from '../components/Modal';
 import { quotationService } from '../services/quotationService';
+import { catalogService } from '../services/catalogsService';
 import { getCustomers} from '../services/customerService';
 import { getExecutivesByDepartment} from '../services/executiveService';
 import styles from './Quotations.module.css';
-import {QuotationRequest, Service, Executive, Shipment, Cargo} from '../types/requestQuotation';
+import {Container} from '../types/container';
+import {QuotationRequest, Service, Executive, Shipment, Cargo, ContainerRequest} from '../types/requestQuotation';
 
 /*
  * CLASIFICACION MERCANCIAS
- *  7 - PELIGROSA
+ * 7 - PELIGROSA
  * 10 - REFRIGERADO
  * 8 - SOBREDIMENSIONADA
  * 5 - A GRANEL
@@ -30,8 +32,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const { user } = useAuth();
   const { showSuccess, showError, showWarning } = useNotification();
   const [loading, setLoading] = useState(false);
+  const [loadingContainers, setLoadingContainers] = useState(false);
   const [saving, setSaving] = useState(false);
   const [services, setServices] = useState<Service[]>([]);
+  const [containers, setContainers] = useState<ContainerRequest[]>([]);
   const [executives, setExecutives] = useState<Executive[]>([]);
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -49,6 +53,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const [customers, setCustomers] = useState<any[]>([]);
   const [requestTypes, setRequestTypes] = useState<any[]>([]);
   const [availableServices, setAvailableServices] = useState<any[]>([]);
+  const [availableContainers , setAvailableContainers] = useState<Container[]>([]);
   const [availableExecutives, setAvailableExecutives] = useState<any[]>([]);
   const [incoterms, setIncoterms] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
@@ -56,6 +61,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const [showMerchandiseModal, setShowMerchandiseModal] = useState(false);
   const [editingMerchandise, setEditingMerchandise] = useState<Cargo | null>(null);
   const [currentServiceId, setCurrentServiceId] = useState<number | null>(null);
+  const [showContainersModal, setShowContainersModal] = useState(false);
   const [showExecutiveModal, setShowExecutiveModal] = useState(false);
   const [showCancelQuotationRequestModal, setShowCancelQuotationRequestModal] = useState(false);
   const [showRejectQuotationRequestModal, setShowRejectQuotationRequestModal] = useState(false);
@@ -187,6 +193,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const loadQuotation = async (id: string) => {
     try {      
       const data = await quotationService.getById(id);
+      console.log(data.data);
       setFormData({
         referenceRequest: data.data.referenceRequest || '',
         customerId: data.data.customer.idCustomer || '',
@@ -217,6 +224,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     ...prev,
                     [service.idServiceItem] : true
                   }));
+                }
+                if('containers' in shipment) {
+                  setContainers(shipment.containers); 
                 }
                 return shipment;
               }),
@@ -411,17 +421,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       showWarning(t('quote.warnings.merchandiseName'));
       return;
     }
-    if(byUnitsMerch && currentPackages.length === 0){
+    /*if(byUnitsMerch && currentPackages.length === 0){
        showWarning(t('quote.warnings.merchandisePackages'));
        return;
     }
-
     if(!byUnitsMerch  && 
       (merchandiseForm.volumeTotal == 0 || isNaN(merchandiseForm.volumeTotal) || 
       merchandiseForm.weigthTotal == 0 || isNaN(merchandiseForm.weigthTotal) ) ){
       showWarning(t('quote.warnings.merchandiseVolumenAndWeight'));
       return;
-    }
+    }*/
 
     const dangerous = merchandiseForm.classification?.find(c => c.idClassificationMerchandise === 7);
 
@@ -521,6 +530,24 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     closeExecutiveModal();
   };
 
+  const openContainerModal = async (idServiceItem: number, containersInShipment : ContainerRequest []) => {
+    setLoadingContainers(true);
+    setShowContainersModal(true)
+    setCurrentServiceId(idServiceItem); 
+    setContainers(containersInShipment);
+    console.log('Containers', containers, 'available', availableContainers);
+    try {
+      if(availableContainers.length === 0) {
+        const resultContainers = await catalogService.getContainers();
+        setAvailableContainers([...resultContainers.data]);   
+      }          
+    }catch(error){
+      showError(t('quote.errors.loadCatalogs'));
+    }finally{
+      setLoadingContainers(false);
+    }
+  } 
+
   const duplicateService = (idServiceItem: number) => {
     const serviceToDuplicate = services.find(service => service.idServiceItem === idServiceItem);
     if (serviceToDuplicate) {
@@ -562,6 +589,16 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         typeOperation: text 
       }: shipment)
     }: service));
+
+    if([3,4].includes(value)) {
+      handleIncotermChange(
+        idServiceItem,
+        idShipment,
+        13,
+        'N/A'
+      )
+    }
+
   };
 
   const updateOrigin = (idServiceItem: number, idShipment: number,  changes : Record<any, any>) => {
@@ -589,6 +626,46 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }: shipment)
     }: service));
   };
+
+  const updateContainersShipment = (idServiceItem: number, idShipment: number,  containerUpdate : ContainerRequest) => {
+    console.log('update',idServiceItem,containerUpdate)
+    setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
+      ...service,
+      shipments: service.shipments.map(shipment => {
+       if(shipment.idShipment !== idShipment) return shipment;
+
+       const currentContainers = shipment.containers ?? [];
+       const exists =  currentContainers.some(currCont => currCont.idContainer === containerUpdate.idContainer);
+
+      return {
+        ...shipment,
+        containers : exists ? currentContainers.filter(cont => 
+          cont.idContainer !== containerUpdate.idContainer) 
+        : [ ...currentContainers, containerUpdate]        
+      }; 
+    })
+    }: service));
+
+    setShowContainersModal(false);
+  }
+
+  const updateContainersQuantityShipment = (idServiceItem: number, idShipment: number,  idContainer : number, changes: Record<any,any>) => {
+    setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
+      ...service,
+      shipments: service.shipments.map(shipment => {
+       if(shipment.idShipment !== idShipment) return shipment;
+       const currentContainers = shipment.containers ?? [];
+       const exists =  currentContainers.some(currCont => currCont.idContainer === idContainer);
+      return {
+        ...shipment,
+        containers : currentContainers.map(contain => contain.idContainer === idContainer ? {
+          ...contain,
+          ...changes,
+        } : contain )     
+      }; 
+    })
+    }: service));
+  }
 
   const updateProjectionShipment = (idServiceItem: number, idShipment: number,  changes : Record<any, any>) => {
     setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
@@ -623,6 +700,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   }
 
   const handleIncotermChange = (idServiceItem: number, idShipment: number, value: number, text: string) => {
+    console.log(value, text);
     setServices(prevServices => 
       prevServices.map(service => service.idServiceItem === idServiceItem ? {
       ...service,
@@ -706,7 +784,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       }
 
       if (quotationId) {
-        await quotationService.AsignateExecutive(quotationData);
+        await quotationService.asignateExecutive(quotationData);
         showSuccess(t('quote.executiveAssigned'));
       }
 
@@ -831,6 +909,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               idIncoterm: shipment.idIncoterm,
               incoterm: shipment.incoterm,
               departureDateAproximate: shipment.departureDateAproximate ? new Date(shipment.departureDateAproximate): null,
+              ...(shipment.containers && service.idService ===2 && { containers: shipment.containers }),              
               projectionShipment:shipment.projectionShipment ? projectionShipment : null,
               comments: shipment.comments,
               ...(shipment.servicesAsociated && { servicesAsociated: shipment.servicesAsociated }),              
@@ -914,7 +993,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         showSuccess(t('quote.success.updated'));
       } else {
         result = await quotationService.create(quotationData);
-        //console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
+        console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
         showSuccess(t('quote.success.created'));
       }
 
@@ -964,12 +1043,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                   <span className={styles.required}>*</span>
-                  Ciudad
+                  {t('ctrlpricing.cityo')}
                 </label>
                 <input
                   className={`${styles.input}`}
                   type="text"
-                  maxLength={50}
+                  maxLength={100}
                   value={service.shipments[0].origin.city}
                   onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, {city: e.target.value })}              
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}
@@ -1008,12 +1087,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                   <span className={styles.required}>*</span>
-                  Ciudad
+                  {t('ctrlpricing.cityd')}
                 </label>
                 <input
                   className={`${styles.input}`}
                   type="text"
-                  maxLength={50}
+                  maxLength={100}
                   value={service.shipments[0].destination.city}
                   onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, {city: e.target.value })}              
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}
@@ -1094,12 +1173,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                 <span className={styles.required}>*</span>
-                Ciudad
+                  {t('ctrlpricing.cityo')}
                 </label>
                 <input
                   className={`${styles.input}`}                
                   type="text"
-                  maxLength={50}
+                  maxLength={100}
                   value={service.shipments[0].origin.city}
                   onChange={(e) => updateOrigin(service.idServiceItem, service.shipments[0].idShipment, {city: e.target.value })}              
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}
@@ -1169,12 +1248,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                 <span className={styles.required}>*</span>
-                Ciudad
+                {t('ctrlpricing.cityd')}
                 </label>
                 <input
                   className={`${styles.input}`}                
                   type="text"
-                  maxLength={50}
+                  maxLength={100}
                   value={service.shipments[0].destination.city}
                   onChange={(e) => updateDestination(service.idServiceItem, service.shipments[0].idShipment, {city: e.target.value })}              
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}
@@ -1286,7 +1365,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {onBack && (
             <button
-              onClick={onBack}
+              onClick={() => onBack()}
               className={styles.backButton}
               title="Volver a lista"
             >
@@ -1316,7 +1395,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           </button>
         </div>
       </div>
-      {loading ? (
+      { loading ? (
             <div className={styles.loading}>
               <div className={styles.spinner}></div>
             </div>
@@ -1412,12 +1491,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               disabled={mode === 'view' || formData.idStatusRequest >= 2}>
               <div className={styles.toggleThumb}></div>
             </button>
-            </div> 
-            
+            </div>             
             
             {renderResponseDeadline()}     
-   
-                                 
+                                    
           </div>
 
           <div className={styles.formGrid} style={{ marginTop: '1.5rem' }}>  
@@ -1799,7 +1876,109 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </div>
             <div style={{ marginTop: '1.25rem' }}>
               {renderZipCodesOriginDestination(service)}
-            </div>                                                         
+            </div>
+
+            {service.idService === 2 && (
+              <div style={{ marginTop: '1.25rem' }} >
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {t('quote.containers')}
+                </label>
+                <div className={styles.executivesCard}>
+                  <div className={styles.executivesList}>
+                    {service.shipments[0].containers?.map((container) => (
+                      <div key={container.idContainer} className={styles.executiveItemSimple}>
+                        <span className={styles.executiveLabel}>{t('quote.container')}</span>
+                        <span className={styles.executiveNameSimple}>{container.nameTypeContainer}</span>
+                        <label className={styles.label}>
+                          {t('quote.quantity')}
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          className={styles.input}
+                          onInput={(e) => {e.currentTarget.value = e.currentTarget.value.slice(0, 9);}}
+                          onKeyDown={(e) => {
+                            if (e.key === "." || e.key === '-' || e.key === 'e') {
+                                e.preventDefault();
+                            }
+                          }}
+                          value={container.quantity}
+                          onChange={(e) => 
+                            updateContainersQuantityShipment(service.idServiceItem, 1, container.idContainer || 1,
+                              {quantity:  parseInt(e.target.value)})}
+                        />
+                        <button
+                          type="button" 
+                          className={styles.removeIconButton}
+                          onClick={() => updateContainersShipment(service.idServiceItem, 1, container)}
+                          title={t('quote.delete')}
+                          disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))} 
+                  </div>
+                  <button type="button" 
+                  className={styles.addExecutiveButton} 
+                  onClick={()=> openContainerModal(service.idServiceItem, service.shipments[0].containers || [])}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                    <Plus size={16} />
+                    {t('quote.container')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/** MODAL CONTENEDORES */}
+            {showContainersModal && (
+              <div className={styles.modalOverlay} onClick={() =>{setShowContainersModal(false); setCurrentServiceId(null);}}>
+                <div className={styles.modalContentSmall} onClick={(e) => e.stopPropagation()}>
+                  <div className={styles.modalHeader}>
+                    <h2 className={styles.modalTitle}>{t('quote.selectcontainer')}</h2>
+                    <button className={styles.closeButton} onClick={() =>{setShowContainersModal(false); setCurrentServiceId(null);}}>
+                      <X size={24} />
+                    </button>
+                  </div>
+                  <div className={styles.modalBody}>
+                    {loadingContainers ? 
+                    ( <div className={styles.loading}>
+                        <div className={styles.spinner} />
+                      </div> 
+                    ) :
+                      <div className={styles.executiveSelectionList}>
+                        {availableContainers.filter(cont => !containers?.some(container => container.idContainer === cont._Id)).map((containerAvailable) => (
+                            <div
+                              key={containerAvailable._Id}
+                              className={styles.executiveSelectionItem}
+                              onClick={() => 
+                                updateContainersShipment(currentServiceId || 1, 1, 
+                                  { 
+                                    idContainer: containerAvailable._Id, 
+                                    nameTypeContainer: `${containerAvailable.name_type}`,
+                                    quantity: 1
+                                  })
+                              }>
+                              <span>{containerAvailable.name_type}</span>
+                              <span>{containerAvailable.description}</span>
+                              <Plus size={18} className={styles.addIcon} />
+                            </div>
+                          ))}
+                      
+                        {availableContainers.filter(cont => containers?.some(container => container.idContainer === cont._Id)).length === 0 && (
+                          <div className={styles.noExecutivesMessage}>
+                            {t('quote.allExecutivesAdded')}
+                          </div>
+                        )}
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            )}
+            
+
             <div style={{ marginTop: '1.25rem' }}>
               <label className={styles.label}>{t('quote.associatedServices')}</label>
               <div className={styles.associatedServices}>
@@ -2538,6 +2717,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         </div>
       )}
 
+      
+
+      {/**MODAL EJECUTVOS */}
       {showExecutiveModal && (
         <div className={styles.modalOverlay} onClick={closeExecutiveModal}>
           <div className={styles.modalContentSmall} onClick={(e) => e.stopPropagation()}>

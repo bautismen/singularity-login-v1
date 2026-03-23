@@ -43,6 +43,7 @@ export interface Shipment{
   departureDateAproximate?: string;
   projectionShipment?: any; 
   comments: string;
+  containers?: ContainerRequest[];
   servicesAsociated?: any[];
   cargo : any[];  
 }
@@ -76,6 +77,12 @@ export interface Executive {
   idEmployee?: string;
   idUser: string;
   nameEmployee: string;
+}
+
+export interface ContainerRequest {
+  idContainer? : number;
+  nameTypeContainer : string;  
+  quantity: number;
 }
 
 export interface ChangeStatusRequest {

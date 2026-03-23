@@ -9,7 +9,7 @@ const API_KEYSL = import.meta.env.VITE_APIKEYSL;
 export const quotationService = {
 
   async getRecentQuotations() {
-    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/quotationrequest/getRecentRequestQuotations?limit_=200`, {
+    const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/quotationrequest/getRecentRequestQuotations?limit_=400`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${API_TOKENSL}`,
@@ -85,22 +85,6 @@ export const quotationService = {
     return response.json();
   },
 
-  /*async delete(id: string) {
-    const response = await fetch(`${API_URL}/${id}`, {
-      method: 'DELETE',
-      headers: {
-         'Authorization': `Bearer ${API_TOKENSL}`,
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEYSL,
-      },
-    });
-    if (!response.ok) {
-      throw new Error('Error al eliminar la cotización');
-    }
-
-    return response.json();
-  },*/
-
   async changeStatus(data: ChangeStatusRequest) {    
     const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/quotationrequest/changestatus`, {
       method: 'PUT',
@@ -119,7 +103,7 @@ export const quotationService = {
     return response.json();
   },
 
-  async AsignateExecutive(data: AsignateToRequest) {    
+  async asignateExecutive(data: AsignateToRequest) {    
        try {
           const response = await fetch(
               `${API_REQUESTQUOTATION}/operations/v1/kl/quotationrequest/addasigneto`,
