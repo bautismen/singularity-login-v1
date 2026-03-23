@@ -1319,7 +1319,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               disabled={mode === 'view' || formData.idStatusRequest >= 2}
             />
           </div> );
-      case formData.isLicitation === false && mode==="edit" : 
+      case formData.isLicitation === false && mode !== "create" : 
         return(
            <div className={styles.formGroup}>
             <label className={styles.label}>
@@ -1327,12 +1327,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </label>
             <input className={styles.input}
              value={formData.responseDeadline }
-             disabled
-            >              
+             disabled>              
             </input>
           </div>
-        );
-      
+        );      
       default: return <div />;
     }
   }
