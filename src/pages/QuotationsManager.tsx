@@ -33,10 +33,13 @@ export function QuotationsManager() {
     setViewMode('view');
   };
 
-  const handleBack = (newId? : string) => {    
+  const handleBack = (newId? : string) => {   
     if (newId) {
-    setHighlightId(newId);
+      setHighlightId(newId);
+    }else{
+      setHighlightId(null);
     }
+   
     setSelectedQuotationId(null);
     setViewMode('list');
   };
@@ -50,7 +53,6 @@ export function QuotationsManager() {
   */
   useEffect(() => {
     try {
-
       const ref_id = sessionStorage.getItem('quotationToId');
       const ref_ViewMode = sessionStorage.getItem('quotationViewMode') ?? 'list' as ViewMode;
       

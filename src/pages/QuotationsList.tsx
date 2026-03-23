@@ -70,21 +70,6 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
     filterQuotations();
   }, [quotations, searchQuery, statusFilter, executiveFilter, selectedExecutive, dateFilter, requestTypeFilters, orderBy  ]);
 
-  useLayoutEffect(() => {    
-    if (!highlightId) return;
-    if (!quotations.length) return;
-
-    const timer = setTimeout(() => {
-      if(highlightId && rowRefs.current[highlightId]){
-        console.log('scrolling ', highlightId);
-        rowRefs.current[highlightId]?.scrollIntoView({
-          behavior: 'smooth',
-          block:"center"
-        });            
-      }  
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, [highlightId, quotations]);
   const loadQuotationsRequests = async () => {
     try {
       setLoading(true);      
@@ -105,8 +90,8 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
       //recargar contadores de documentos
       await loadAllDocumentCounts(sortdata);
     } catch (error) {
-      console.error('Error loading quotations:', error);
-      showError('Error al cargar las cotizaciones');
+      //console.error('Error loading quotations:', error);
+      showError(t('quote.errors.loadQuotations'));
     } finally {
       setLoading(false);
     }
@@ -123,13 +108,14 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
       });
 
       if (!response.ok) {
-        throw new Error('Error al cargar ejecutivos');
+        showError(t('user.errorLoad'));               
       }
 
       const data = await response.json();
       setUsers(data);
     } catch (error) {
-      console.error('Error loading users:', error);
+      showError(t('user.errorLoad'));  
+      throw new Error('Error al cargar usuarios');
     }
   };
 
@@ -144,16 +130,18 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
       });      
 
       if (!response.ok) {
-        throw new Error('Error al cargar tipos de solicitud');
+        showError(t('quote.errors.loadTypesRequest'));  
       }
       const data = await response.json();
       setRequestTypes(data);
     } catch (error) {
-      console.error('Error loading request types:', error);
+      showError(t('quote.errors.loadTypesRequest'));  
+      throw new Error('Error loading request types:');
     }
   };
 
   const filterQuotations = () => {
+    
     let filtered = [...quotations];
 
     if (searchQuery) {
@@ -206,8 +194,8 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
     if (requestTypeFilters.length > 0) {
       filtered = filtered.filter(q => requestTypeFilters.includes(q.idRequestType));
     }  
-    
-    if(orderBy === "desc"){
+
+    if(orderBy === "desc" || highlightId){
       filtered = filtered.sort((a, b) => b.id.localeCompare(a.id));
     }
 
@@ -268,9 +256,23 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
     if (!deadline) return null;
     const now = new Date();
     const deadlineDate = new Date(deadline);
-    const diffTime = deadlineDate.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+
+    const totalDays = Math.floor(
+      (deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    const weeks = Math.floor(totalDays / 7);
+    let extraDays = totalDays % 7;
+    let businessDays = weeks * 5;
+    const startDay = now.getDay();
+
+    for (let i = 0; i <= extraDays; i++) {
+      const day = (startDay + i) % 7;
+      if (day !== 0 && day !== 6) {  // no domingo ni sábado
+        businessDays++;
+      }
+    }
+    return businessDays;
   };
 
    /* recargar los documentos total por cantidad referencia qua req */
