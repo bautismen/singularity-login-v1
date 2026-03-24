@@ -9,6 +9,8 @@ import styles from './ControlsPricingForm.module.css';
 import { useAuth } from '../contexts/AuthContext';
 import { getSuppliers } from '../services/supplierService';
 import { getCustomers} from '../services/customerService';
+import { ContainerRequest} from '../types/requestQuotation';
+import { catalogService } from '../services/catalogsService';
 
 interface ControlsPricingFormProps {
   requestId: string | null;
@@ -76,6 +78,13 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const actionsMenuRef = useRef<HTMLDivElement>(null);
   const [reasoncancellation, setreasoncancellation] = useState('');
   const [customers, setCustomers] = useState<any[]>([]);
+  const [containers, setContainers] = useState<ContainerRequest[]>([]);
+  const [loadingContainers, setLoadingContainers] = useState(false);
+  const [showContainersModal, setShowContainersModal] = useState(false);
+  const [currentServiceId, setCurrentServiceId] = useState<number | null>(null);
+  const [availableContainers , setAvailableContainers] = useState<Container[]>([]);
+  const [ControlServices, setControlServices] = useState<any[]>([]);
+  const [Disabled, setDisabled] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -138,7 +147,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         setSuppliers(control.suppliers || []);
         setSuppliersAPI(control.suppliers || []);
         setSelectedServices(control.services || []);
-        setStatusControl(control.status_control);
+        setControlServices(control.services || []);
+        setStatusControl(control.status_control);       
         setGeneralData({
           network: control.network || '',
           complexity: control.complexity || 'Media',
@@ -169,6 +179,16 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
         const expandedIds = new Set(request.services?.map((s: any) => s.idServiceItem) || []);
         setExpandedServices(expandedIds);
+
+        if(control.status_control?.id_status_control === 5 ||control.status_control?.id_status_control === 6 || request.idStatusRequest === 10)
+          {
+            setDisabled(true);
+          }
+          else
+          {
+            setDisabled(false);
+          }
+
       } else {
         const request = await pricingControlService.getResquetById(requestId);
         setRequestData(request);
@@ -179,7 +199,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
         const allServiceIds = new Set(request.services?.map((s: any) => s.idServiceItem || s._id) || []);
         setExpandedServices(allServiceIds);
-      }
+      }       
     } catch (error) {
       console.error('Error loading data:', error);
       showError('Error al cargar los datos');
@@ -219,7 +239,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   };
 
   const toggleService = (serviceId: number) => {
-    const service = requestData.services.find((s: any) =>
+    const service = ControlServices.find((s: any) =>
       (s.idServiceItem || s._id) === serviceId
     );
     if (!service) return;
@@ -436,6 +456,95 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     }
     return 0;
   };
+
+  const updateContainersShipment = (idServiceItem: number, idShipment: number,  containerUpdate : ContainerRequest) => {    
+    setSelectedServices(selectedServices.map(service => service.idServiceItem=== idServiceItem ? {
+      ...service,
+      shipments: service.shipments.map(shipment => {
+       if(shipment.idShipment !== idShipment) return shipment;
+
+       const currentContainers = shipment.containers ?? [];
+       const exists =  currentContainers.some(currCont => currCont.idContainer === containerUpdate.idContainer);
+
+      return {
+        ...shipment,
+        containers : exists ? currentContainers.filter(cont => 
+          cont.idContainer !== containerUpdate.idContainer) 
+        : [ ...currentContainers, containerUpdate]        
+      }; 
+    })
+    }: service));
+    setControlServices(ControlServices.map(service => service.idServiceItem=== idServiceItem ? {
+      ...service,
+      shipments: service.shipments.map(shipment => {
+       if(shipment.idShipment !== idShipment) return shipment;
+
+       const currentContainers = shipment.containers ?? [];
+       const exists =  currentContainers.some(currCont => currCont.idContainer === containerUpdate.idContainer);
+
+      return {
+        ...shipment,
+        containers : exists ? currentContainers.filter(cont => 
+          cont.idContainer !== containerUpdate.idContainer) 
+        : [ ...currentContainers, containerUpdate]        
+      }; 
+    })
+    }: service));
+
+    setShowContainersModal(false);
+  }
+
+  const updateContainersQuantityShipment = (idServiceItem: number, idShipment: number,  idContainer : number, changes: Record<any,any>) => {
+    setSelectedServices(selectedServices.map(service => service.idServiceItem=== idServiceItem ? {
+      ...service,
+      shipments: service.shipments.map(shipment => {
+      if(shipment.idShipment !== idShipment) return shipment;
+       const currentContainers = shipment.containers ?? [];
+       const exists =  currentContainers.some(currCont => currCont.idContainer === idContainer);
+      return {
+        ...shipment,
+        containers : currentContainers.map(contain => contain.idContainer === idContainer ? {
+          ...contain,
+          ...changes,
+        } : contain )     
+      }; 
+    })
+    }: service));
+
+    setControlServices(ControlServices.map(service => service.idServiceItem=== idServiceItem ? {
+      ...service,
+      shipments: service.shipments.map(shipment => {
+       if(shipment.idShipment !== idShipment) return shipment;
+       const currentContainers = shipment.containers ?? [];
+       const exists =  currentContainers.some(currCont => currCont.idContainer === idContainer);
+      return {
+        ...shipment,
+        containers : currentContainers.map(contain => contain.idContainer === idContainer ? {
+          ...contain,
+          ...changes,
+        } : contain )     
+      }; 
+    })
+    }: service));
+  }
+
+   const openContainerModal = async (idServiceItem: number, containersInShipment : ContainerRequest []) => {
+      setLoadingContainers(true);
+      setShowContainersModal(true)
+      setCurrentServiceId(idServiceItem); 
+      setContainers(containersInShipment);
+      console.log('Containers', containers, 'available', availableContainers);
+      try {
+        if(availableContainers.length === 0) {
+          const resultContainers = await catalogService.getContainers();
+          setAvailableContainers([...resultContainers.data]);   
+        }          
+      }catch(error){
+        showError(t('quote.errors.loadCatalogs'));
+      }finally{
+        setLoadingContainers(false);
+      }
+    } 
 
     const renderCityOrigin =  (service : any) => {
       const isPort = service.idService === 1 || service.idService === 2 ? true : false;    
@@ -670,11 +779,11 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           </div>
           <div className={styles.formHeaderRight}>
             <div className={styles.buttonGroup}>
-              <button type="submit" className={styles.headerButton} disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}>
+              <button type="submit" className={styles.headerButton} disabled={loading || Disabled}>
                 <Save size={18} />
                 {t('ctrlpricing.save')}
               </button>
-              <button type="button" className={styles.headerButtonRefresh} onClick={loadData} disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}>
+              <button type="button" className={styles.headerButtonRefresh} onClick={loadData} disabled={loading ||Disabled}>
                 <RefreshCw size={18} />
               </button>
               {/*<button
@@ -689,7 +798,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   className={styles.headerButtonAction}
                   hidden
                   onClick={() => setShowActionsMenu(!showActionsMenu)}
-                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                  disabled={loading ||Disabled}
                 >
                   {t('ctrlpricing.actions')}
                   <ChevronDown size={16} />
@@ -774,7 +883,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               <div className={styles.clientActions}>
                 <button type="button"
                 className={styles.btnDecline} 
-                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                disabled={loading ||Disabled}
                 onClick={openModal}
                 hidden={controlId ? false : true}
                 >
@@ -784,7 +893,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 <button type="button"
                   className={styles.btnQuote}
                   onClick={handleMarkAsQuoted}
-                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                  disabled={loading ||Disabled}
                   hidden={controlId ? false : true}
                 >
                   {t('ctrlpricing.quoted')}
@@ -816,7 +925,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               <button type="button"
                 className={styles.btnAddSupplier}
                 onClick={addSupplier}
-                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                disabled={loading ||Disabled}
               >
                 <Plus size={16} />
                 {t('ctrlpricing.addsupplier')}
@@ -835,7 +944,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                     <button type="button"
                       className={styles.btnRemoveSupplier}
                       onClick={() => removeSupplier(supplier.idsuplier)}
-                      disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                      disabled={loading ||Disabled}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -874,7 +983,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   value={generalData.network}
                   onChange={(e) => setGeneralData({...generalData, network: e.target.value})}
                   className={styles.formSelect}
-                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                  disabled={loading ||Disabled}
                 >                  
                   <option value="">{t('ctrlpricing.select')}</option>
                   <option value="WCA">WCA</option>
@@ -894,7 +1003,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   value={generalData.complexity}
                   onChange={(e) => setGeneralData({...generalData, complexity: e.target.value})}
                   className={styles.formSelect}
-                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                  disabled={loading ||Disabled}
                 >
                   <option>Baja</option>
                   <option>Media</option>
@@ -907,7 +1016,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   value={generalData.currency}
                   onChange={(e) => setGeneralData({...generalData, currency: e.target.value})}
                   className={styles.formSelect}
-                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                  disabled={loading ||Disabled}
                 >
                   <option>USD</option>
                   <option>MXN</option>
@@ -937,8 +1046,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                     className={styles.formInput}
                     disabled={
                       loading ||
-                      statusControl.id_status_control === 5 ||
-                      statusControl.id_status_control === 6
+                      Disabled
                     }
                   />
               </div>
@@ -963,7 +1071,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                       }
                     }}
                   className={styles.formInput}                
-                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                  disabled={loading ||Disabled}
                 />
               </div>
               <div className={styles.formGroup}>
@@ -982,7 +1090,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   value={generalData.key_td}
                   onChange={(e) => setGeneralData({...generalData, key_td: e.target.value})}
                   className={styles.formSelect}
-                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                  disabled={loading ||Disabled}
                 >
                   <option value="" >{t('ctrlpricing.select')}</option>
                   <option value="CI" >CI Complementar información</option>
@@ -1001,7 +1109,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                <div className={styles.formGroup}> 
                 <label className={styles.label}>{t('ctrlpricing.customercorrespondent')}</label>
                 <select 
-                      disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6 || requestData.typeRequest !== "Corresponsales"}                                      
+                      disabled={loading ||Disabled || requestData.typeRequest !== "Corresponsales"}                                      
                       className={styles.formSelect}
                       value={CustomCombo.Id_customer_correspondent}
                       onChange={(e) => 
@@ -1023,7 +1131,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             <div className={styles.formGroup}> 
               <label className={styles.label}>{t('ctrlpricing.customerlead')}</label>
                 <select
-                      disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                      disabled={loading ||Disabled}
                       className={styles.formSelect}
                       value={CustomLeads.Id_customer_lead}
                       onChange={(e) => 
@@ -1049,7 +1157,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   value={generalData.Ref_atv}
                   onChange={(e) => setGeneralData({...generalData, Ref_atv: e.target.value})}
                   className={styles.formInput}
-                  disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                  disabled={loading ||Disabled}
                 />
               </div>
             </div>
@@ -1060,7 +1168,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 value={generalData.Affair}
                 onChange={(e) => setGeneralData({...generalData, Affair: e.target.value})} 
                 className={styles.formInput}               
-                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                disabled={loading ||Disabled}
               />
             </div>
 
@@ -1071,18 +1179,18 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 onChange={(e) => setGeneralData({...generalData, comments_general: e.target.value})}
                 className={styles.formTextarea}
                 rows={3}
-                disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                disabled={loading ||Disabled}
               />
             </div>
           </div>
 
           <div className={styles.servicesSection}>
             <h3 className={styles.sectionTitle}>{t('ctrlpricing.services')}</h3>
-            {requestData.services && requestData.services.length > 0 ? (
-              requestData.services.map((service: any, index: number) => {
+            {ControlServices && ControlServices.length > 0 ? (
+              ControlServices.map((service: any, index: number) => {
                 const serviceId = service.idServiceItem || service._id;
                 const isSelected = selectedServices.some(s => s.idServiceItem === serviceId);
-                const isUsed = (service.used && controlId === null) || (service.used && (statusControl.id_status_control === 5 || statusControl.id_status_control === 6)) ;
+                const isUsed = (service.used && controlId === null) || (service.used && (Disabled)) ;
                 const isExpanded = expandedServices.has(serviceId);
 
                 const shipment = service.shipments && service.shipments.length > 0 ? service.shipments[0] : {};
@@ -1117,7 +1225,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                       <button type="button"
                         className={styles.btnServiceAction}
                         onClick={() => toggleServiceExpanded(serviceId)}
-                        disabled={loading ||statusControl.id_status_control === 5 || statusControl.id_status_control === 6}
+                        disabled={loading ||Disabled}
                       >
                         {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </button>
@@ -1152,7 +1260,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                             />
                           </div>
                           <div className={styles.formGroup}>
-                            <label className={styles.label}><span className={styles.required}>*</span> Incoterm</label>
+                            <label className={styles.label}><span className={styles.required}>*</span> Incoterms</label>
                             <input
                               type="text"
                               value={shipment.incoterm_name || shipment.incoterm || ''}
@@ -1215,8 +1323,189 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           </div>   
                           <div>
                             {renderZipCodesDestination(service)}
-                          </div>                                                                      
+                          </div>                                                                     
                         </div>
+                         {[2, 3, 10].includes(service.idService) && (
+                          <div style={{ marginTop: '1.25rem' }} >
+                            <label className={styles.label}>
+                              <span className={styles.required}>*</span>
+                              {t('quote.containers')}
+                            </label>
+                            <div className={styles.containerCard}>
+                              <div className={styles.containerList}>
+                                {service.shipments[0].containers?.map((container) => (
+                                  <div key={container.idContainer} className={styles.itemSimpleList}>
+                                    <div className={styles.formGroupElementsInline}>                       
+                                      <div className={styles.formGroup}>
+                                        <span className={styles.containerLabel}>{t('quote.container')}</span>
+                                        <span className={styles.containerNameSimple}>{container.nameTypeContainer}</span>
+                                      </div>                         
+                                      <div className={styles.formGroup}>
+                                        <label className={styles.label}>{t('quote.quantity')}</label>
+                                        <input
+                                          type="number"
+                                          min="1"
+                                          step="1"
+                                          className={styles.input}
+                                          style={{ width: '80px' }}
+                                          onInput={(e) => {e.currentTarget.value = e.currentTarget.value.slice(0, 9);}}
+                                          onKeyDown={(e) => { if (e.key === "." || e.key === '-' || e.key === 'e') { e.preventDefault();}}}
+                                          value={container.quantity}
+                                          onChange={(e) => 
+                                            updateContainersQuantityShipment(service.idServiceItem, 1, container.idContainer || 1,
+                                            {quantity:  parseInt(e.target.value)})}/>
+                                      </div>                                                                     
+                                      <div className={styles.formGroup}>
+                                        <label className={styles.label}>{t('quote.totalVolume')}</label>
+                                        <input
+                                          type="number"
+                                          className={styles.input}                                          
+                                          onKeyDown={(e) => {
+                                            if (e.key === '-' || e.key === 'e') {e.preventDefault();}     
+                                            if (e.currentTarget.value.length >= 7 && e.key !== "Backspace" && e.key !== "Delete") {
+                                              e.preventDefault();
+                                            }                           
+                                          }}
+                                          value={container.volumeTotal}
+                                          onChange={(e) => {
+                                            if (e.target.value === '' || Number(e.target.value) > 0) {
+                                              updateContainersQuantityShipment(
+                                                service.idServiceItem, 1, 
+                                                container.idContainer || 1,
+                                                {volumeTotal:  Number(e.target.value)})
+                                            }}
+                                          }/> 
+                                      </div>                                                                                                                      
+                                      <div className={styles.formGroup}>
+                                        <label className={styles.label}>{t('quote.unitVolume')}</label>
+                                        <select
+                                          value={container.idUnitVolume}
+                                            onChange={(e) => {
+                                              updateContainersQuantityShipment( service.idServiceItem, 1, container.idContainer || 1,
+                                                {                              
+                                                  idUnitVolume: parseInt(e.target.value),
+                                                  unitVolume: e.target.options[e.target.selectedIndex].text
+                                                });
+                                            }}
+                                            className={styles.select}
+                                            disabled={loading ||Disabled} >
+                                            <option value="">{t('quote.selectOption')}</option>
+                                            <option value={1}>CBM</option>                  
+                                            <option value={2}>CFT</option>                        
+                                        </select> 
+                                      </div>                                                         
+                                      <div className={styles.formGroup}>
+                                        <label className={styles.label}>{t('quote.totalWeight')}</label>
+                                        <input
+                                          type="number"
+                                          className={styles.input}
+                                          onKeyDown={(e) => {
+                                            if (e.key === '-' || e.key === 'e') {e.preventDefault(); }
+                                            if (e.currentTarget.value.length >= 7 && e.key !== "Backspace" && e.key !== "Delete") {
+                                              e.preventDefault();
+                                            }  
+                                          }}
+                                          value={container.weigthTotal}
+                                          onChange={(e) => {
+                                            if (e.target.value === '' || Number(e.target.value) > 0) {
+                                              updateContainersQuantityShipment(
+                                                service.idServiceItem, 1, 
+                                                container.idContainer || 1,
+                                                {weigthTotal:  Number(e.target.value)})
+                                            }}
+                                          }/>                           
+                                      </div>
+                                      <div className={styles.formGroup}>
+                                        <label className={styles.label}>{t('quote.unitWeight')}</label> 
+                                        <select
+                                          value={container.idUnitWeight}
+                                          onChange={(e) => {
+                                            updateContainersQuantityShipment( service.idServiceItem, 1, container.idContainer || 1,
+                                              {                              
+                                                idUnitWeight: parseInt(e.target.value),
+                                                unitWeight: e.target.options[e.target.selectedIndex].text
+                                              });
+                                          }}
+                                          className={styles.select}
+                                          disabled={loading ||Disabled} >
+                                          <option value="">{t('quote.selectOption')}</option>
+                                          <option value={1}>KGS</option>                  
+                                          <option value={2}>IN</option>
+                                          <option value={4}>LBS</option>        
+                                          <option value={3}>Toneladas</option>                
+                                        </select>
+                                      </div>
+                                      <div className={styles.formGroup}>
+                                        <button
+                                          type="button" 
+                                          className={styles.removeIconButton}
+                                          onClick={() => updateContainersShipment(service.idServiceItem, 1, container)}
+                                          title={t('quote.delete')}
+                                          disabled={loading ||Disabled}>
+                                          <Trash2 size={16} />
+                                        </button>
+                                      </div>
+                                    </div>                              
+                                  </div>
+                                ))} 
+                              </div>
+                              <button type="button" 
+                                className={styles.addExecutiveButton} 
+                                onClick={()=> openContainerModal(service.idServiceItem, service.shipments[0].containers || [])}
+                                disabled={loading ||Disabled}>
+                                <Plus size={16} />
+                                {t('quote.container')}
+                              </button>                            
+                            </div>
+                          </div>
+                        )}
+
+                        {/** MODAL CONTENEDORES */}
+                          {showContainersModal && (
+                            <div className={styles.modalOverlay} onClick={() =>{setShowContainersModal(false); setCurrentServiceId(null);}}>
+                              <div className={styles.modalContentSmall} onClick={(e) => e.stopPropagation()}>
+                                <div className={styles.modalHeader}>
+                                  <h2 className={styles.modalTitle}>{t('quote.selectcontainer')}</h2>
+                                    <button className={styles.closeButton} onClick={() =>{setShowContainersModal(false); setCurrentServiceId(null);}}>
+                                      <X size={24} />
+                                    </button>
+                                </div>
+                                <div className={styles.modalBody}>
+                                  {loadingContainers ? 
+                                  ( <div className={styles.loading}>
+                                    <div className={styles.spinner} />
+                                    </div> 
+                                  ) :
+                                    <div className={styles.executiveSelectionList}>
+                                      {availableContainers.filter(cont => !containers?.some(container => container.idContainer === cont._Id)).map((containerAvailable) => (
+                                        <div
+                                          key={containerAvailable._Id}
+                                            className={styles.executiveSelectionItem}
+                                            onClick={() => 
+                                              updateContainersShipment(currentServiceId || 1, 1, 
+                                                { 
+                                                  idContainer: containerAvailable._Id, 
+                                                  nameTypeContainer: `${containerAvailable.name_type}`,
+                                                  quantity: 1
+                                                })
+                                            }>
+                                            <span>{containerAvailable.name_type}</span>
+                                            <span>{containerAvailable.description}</span>
+                                            <Plus size={18} className={styles.addIcon} />
+                                        </div>
+                                      ))}
+                                                  
+                                      {availableContainers.filter(cont => containers?.some(container => container.idContainer === cont._Id)).length === 0 && (
+                                        <div className={styles.noExecutivesMessage}>
+                                          {t('quote.allExecutivesAdded')}
+                                        </div>
+                                      )}
+                                    </div>
+                                  }
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
                         <div className={styles.associatedServices}>
                           <label className={styles.label}>{t('ctrlpricing.associatedServices')}</label>

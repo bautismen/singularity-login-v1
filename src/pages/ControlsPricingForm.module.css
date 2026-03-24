@@ -356,25 +356,19 @@
 
 .select {
   padding: 0.625rem 0.875rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  color: #1f2937;
-  background-color: white;
+  color: var(--text-primary);
+  background: var(--hover);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .select:focus {
   outline: none;
-  border-color: #037F8C;
+  border-color: #14b8a6;
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
-}
-
-.dark .select {
-  background-color: #374151;
-  border-color: #4b5563;
-  color: white;
 }
 
 .inputWithIcon {
@@ -626,10 +620,11 @@
 
 .textarea {
   padding: 0.625rem 0.875rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  color: #1f2937;
+  color: var(--text-secondary);
+  background: var(--hover);
   resize: vertical;
   min-height: 80px;
   font-family: inherit;
@@ -638,7 +633,7 @@
 
 .textarea:focus {
   outline: none;
-  border-color: #037F8C;
+  border-color: #14b8a6;
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
@@ -1098,7 +1093,7 @@
 }
 
 .modalContent {
-  background: white;
+ background: var(--background);
   border-radius: 0.75rem;
   max-width: 900px;
   width: 100%;
@@ -1116,7 +1111,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
 }
 
 .dark .modalHeader {
@@ -1126,13 +1121,13 @@
 .modalTitle {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   margin: 0;
 }
 
-.dark .modalTitle {
+/*.dark .modalTitle {
   color: white;
-}
+}*/
 
 .closeButton {
   padding: 0.5rem;
@@ -1408,7 +1403,7 @@
   padding: 0.375rem;
   background: transparent;
   border: none;
-  color: #6b7280;
+  color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1432,9 +1427,9 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background: transparent;
-  border: 2px dashed #037F8C;
+  border: 2px dashed #14b8a6;
   border-radius: 0.5rem;
-  color: #037F8C;
+  color: #14b8a6;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -1445,13 +1440,13 @@
 }
 
 .addExecutiveButton:hover {
-  background: #f0fdfa;
+  background: var(--hover);
   border-style: solid;
 }
 
 .dark .addExecutiveButton {
   background: transparent;
-  border-color: #037F8C;
+  border-color: #14b8a6;
 }
 
 .dark .addExecutiveButton:hover {
@@ -1697,7 +1692,7 @@
 }
 
 .modalContentSmall {
-  background: white;
+  background: var(--background);
   border-radius: 0.75rem;
   max-width: 500px;
   width: 90%;
@@ -1721,31 +1716,31 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--hover);
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .executiveSelectionItem:hover {
-  background: #f9fafb;
-  border-color: #037F8C;
+  background: var(--surface);
+  border-color: #14b8a6;
 }
 
-.dark .executiveSelectionItem {
+/* .dark .executiveSelectionItem {
   background: #374151;
   border-color: #4b5563;
-}
+} */
 
-.dark .executiveSelectionItem:hover {
+/* .dark .executiveSelectionItem:hover {
   background: #4b5563;
-  border-color: #037F8C;
-}
+  border-color: #14b8a6;
+} */
 
 .executiveSelectionItem span {
   font-size: 0.875rem;
-  color: #1f2937;
+  color: var(--text-secondary);
 }
 
 .dark .executiveSelectionItem span {
@@ -2561,4 +2556,61 @@
   outline: none;
   border-color: #14b8a6;
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.containerCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.dark .containerCard {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+.containerList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.containerItemSimple {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  background: var(--hover);
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  margin-bottom: 0.75rem;
+}
+
+.containerLabel {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  min-width: 70px;
+}
+
+.containerNameSimple {
+  flex: 1;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.formGroupElementsInline {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.itemSimpleList {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 0.375rem;
+  margin-bottom: 0.75rem;
 }

@@ -421,7 +421,8 @@ const closeDocumentsModal = () => {
         "estela.guerrero@kromlogistica.com",
         "magali.tamayo@kromlogistica.com",        
         "guadalupe.dimas@kromlogistica.com",
-        "beatriz.gonzalez@kromlogistica.com"         
+        "beatriz.gonzalez@kromlogistica.com",
+        "erick.barrientos@kromlogistica.com"     
       ];
 
       if (!excludedEmails.includes(user.email)) {
@@ -816,7 +817,7 @@ const closeDocumentsModal = () => {
               const assignedWithControls = request.assignedTo?.filter(
                 assigned => assigned.pricingControlNumbers && assigned.pricingControlNumbers.length > 0
               ) || [];
-              const isDisabled = totalServices === attendedServices ? true : false;
+              const isDisabled = totalServices === attendedServices || request.idStatusRequest === 10 || request.idStatusRequest === 6  ? true : false;
 
               return (
                 <div key={request.id} className={styles.card}>
