@@ -216,7 +216,7 @@
 
 .formGroupElementsInline {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 1rem;
 }
 
@@ -1286,10 +1286,16 @@
   margin-bottom: 0.75rem;
 }
 
-/* .dark .executiveItemSimple {
-  background: #374151;
-  border-color: #4b5563;
-} */
+.itemSimpleList {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 0.375rem;
+  margin-bottom: 0.75rem;
+}
 
 .executiveLabel {
   font-size: 0.875rem;

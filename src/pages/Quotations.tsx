@@ -909,7 +909,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               idIncoterm: shipment.idIncoterm,
               incoterm: shipment.incoterm,
               departureDateAproximate: shipment.departureDateAproximate ? new Date(shipment.departureDateAproximate): null,
-              ...(shipment.containers && service.idService ===2 && { containers: shipment.containers }),              
+              ...(shipment.containers && [2, 3, 10].includes(service.idService) && { containers: shipment.containers }),              
               projectionShipment:shipment.projectionShipment ? projectionShipment : null,
               comments: shipment.comments,
               ...(shipment.servicesAsociated && { servicesAsociated: shipment.servicesAsociated }),              
@@ -1885,7 +1885,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <div className={styles.executivesCard}>
                   <div className={styles.executivesList}>
                     {service.shipments[0].containers?.map((container) => (
-                      <div key={container.idContainer} className={styles.executiveItemSimple}> 
+                      <div key={container.idContainer} className={styles.itemSimpleList}> 
                        <div className={styles.formGroupElementsInline}>                       
                           <div className={styles.formGroup}>
                             <span className={styles.executiveLabel}>{t('quote.container')}</span>
@@ -1907,18 +1907,28 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                                   {quantity:  parseInt(e.target.value)})}/>
                           </div>                                                                     
                           <div className={styles.formGroup}>
-                            <label className={styles.label}>Volume Total</label>
+                            <label className={styles.label}>{t('quote.totalVolume')}</label>
                             <input
                               type="number"
                               className={styles.input}
-                              onInput={(e) => {e.currentTarget.value = e.currentTarget.value.slice(0, 9);}}
-                              onKeyDown={(e) => {if (e.key === '-' || e.key === 'e') {e.preventDefault(); }}}
+                              onKeyDown={(e) => {
+                                if (e.key === '-' || e.key === 'e') {e.preventDefault();}     
+                                if (e.currentTarget.value.length >= 7 && e.key !== "Backspace" && e.key !== "Delete") {
+                                  e.preventDefault();
+                                }                           
+                              }}
                               value={container.volumeTotal}
-                              onChange={(e) => 
-                                updateContainersQuantityShipment(service.idServiceItem, 1, container.idContainer || 1,
-                                { volumeTotal:  parseInt(e.target.value)})} /> 
+                              onChange={(e) => {
+                                if (e.target.value === '' || Number(e.target.value) > 0) {
+                                  updateContainersQuantityShipment(
+                                    service.idServiceItem, 1, 
+                                    container.idContainer || 1,
+                                    {volumeTotal:  Number(e.target.value)})
+                                }}
+                              }/> 
                           </div>                                                                                                                      
                           <div className={styles.formGroup}>
+                            <label className={styles.label}>{t('quote.unitVolume')}</label>
                             <select
                               value={container.idUnitVolume}
                               onChange={(e) => {
@@ -1936,18 +1946,28 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                             </select> 
                           </div>                                                         
                           <div className={styles.formGroup}>
-                            <label className={styles.label}>Peso</label>
+                            <label className={styles.label}>{t('quote.totalWeight')}</label>
                             <input
                               type="number"
                               className={styles.input}
-                              onInput={(e) => {e.currentTarget.value = e.currentTarget.value.slice(0, 9);}}
-                              onKeyDown={(e) => {if (e.key === "." || e.key === '-' || e.key === 'e') {e.preventDefault(); }}}
+                              onKeyDown={(e) => {
+                                if (e.key === '-' || e.key === 'e') {e.preventDefault(); }
+                                if (e.currentTarget.value.length >= 7 && e.key !== "Backspace" && e.key !== "Delete") {
+                                  e.preventDefault();
+                                }  
+                              }}
                               value={container.weigthTotal}
-                              onChange={(e) => 
-                                updateContainersQuantityShipment(service.idServiceItem, 1, container.idContainer || 1,
-                                { weigthTotal:  parseInt(e.target.value)})} />                          
+                              onChange={(e) => {
+                                if (e.target.value === '' || Number(e.target.value) > 0) {
+                                  updateContainersQuantityShipment(
+                                    service.idServiceItem, 1, 
+                                    container.idContainer || 1,
+                                    {weigthTotal:  Number(e.target.value)})
+                                }}
+                              }/>                          
                           </div>
                           <div className={styles.formGroup}> 
+                             <label className={styles.label}>{t('quote.unitWeight')}</label>
                             <select
                               value={container.idUnitWeight}
                               onChange={(e) => {
@@ -1961,7 +1981,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               disabled={loading || mode === 'view' || formData.idStatusRequest >= 2} >
                               <option value="">{t('quote.selectOption')}</option>
                               <option value={1}>KGS</option>                  
-                              <option value={2}>IN</option>           
+                              <option value={2}>LBS</option>           
                               <option value={3}>Toneladas</option>                
                             </select>
                           </div>
