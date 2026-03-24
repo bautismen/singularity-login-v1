@@ -1,17 +1,16 @@
 // src/types/company.ts
 export interface Company {
-  _id?: string;
-  business_name: string;
-  rfc_taxid: string;
-  nationality: 'nacional' | 'extranjero';
-  country: string;
-  state: string;
-  status: 'activo' | 'inactivo' | 'eliminado';
-  archivado: boolean;
-  datastate: number;
-  created_at?: Date;
-  created_by?: {
-    user_id: string;
-    name: string;
+  _Id?: string;
+  Business_name: string;
+  Rfc_taxid: string;
+  Nationality: 'nacional' | 'extranjero';
+  Country: string;  
+  Status: number;
+  Archived: boolean;
+  Data_state: number;
+  Created_at?: Date;
+  Created_by?: {
+    User_id: string;
+    Name: string;
   };
 }

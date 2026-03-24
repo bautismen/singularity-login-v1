@@ -6,24 +6,18 @@ import { Company } from '../types/company';
 import { getCompanies, createCompany, updateCompany } from '../services/companyService';
 import styles from './Companies.module.css';
 import { ArrowLeft } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext';
+import { catalogService } from '../services/catalogsService';
 
 export default function Companies() {
   const { t } = useLanguage();
   const [countries, setCountries] = useState<any[]>([]);
+  const { user } = useAuth();
 
   const loadCountries = async () => {
     try {
-      const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${BASE_URL}/functions/v1/catalog-countries`, {
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const countriesData = await response.json();
-      setCountries(countriesData.filter((c: any) => c.status === 1));
+      const countriesData = await catalogService.getCountry();
+      setCountries(countriesData.data.filter((c: any) => c.status === 1));
     } catch (error) {
       console.error('Error loading countries:', error);
     }
@@ -49,14 +43,15 @@ async function loadCompanies() {
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [formData, setFormData] = useState<Partial<Company>>({
-    business_name: '',
-    rfc_taxid: '',
-    nationality: 'nacional',
-    country: 'MX',
-    state: '',
-    status: 'activo',
-    archivado: false,
-    datastate: 1,
+    _Id: "",
+    Business_name: '',
+    Rfc_taxid: '',
+    Nationality: 'nacional',
+    Country: 'MX',    
+    Status: 1,
+    Archived: false,
+    Data_state: 1,    
+    Created_by: {User_id: user._id ,Name: user?.name}
   });
 
 useEffect(() => {
@@ -65,25 +60,25 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  if (formData.nationality === 'nacional' && countries.length > 0) {
+  if (formData.Nationality === 'nacional' && countries.length > 0) {
     // Solo actualiza si no está MX ya
-    if (formData.country !== 'MX') {
+    if (formData.Country !== 'MX') {
       setFormData(f => ({ ...f, country: 'MX' }));
     }
   }
-}, [countries, formData.nationality]);
+}, [countries, formData.Nationality]);
 
 const handleEditCompanies = (company: Company) => {
   setEditingCompany(company);
   setFormData({
-    business_name: company.business_name ?? '',
-    rfc_taxid: company.rfc_taxid ?? '',
-    nationality: company.nationality ?? 'nacional',
-    country: company.country ?? 'MX',
-    state: company.state ?? '',
-    status: company.status === 'activo' ? 'activo' : 'inactivo',
-    archivado: company.archivado,
-    datastate: company.datastate,
+    Business_name: company.business_name ?? '',
+    Rfc_taxid: company.rfc_taxid ?? '',
+    Nationality: company.nationality ?? 'nacional',
+    Country: company.country ?? 'MX',    
+    Status: company.status === 1 ? 1 : 0,
+    Archived: company.archived,
+    Data_state: company.data_state,
+    Created_by: company.created_by,
   });
   setIsFormOpen(true);
 };
@@ -109,13 +104,13 @@ const handleSaveCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     // Validaciones básicas
-    if (!formData.business_name || !formData.rfc_taxid) {
+    if (!formData.Business_name || !formData.Rfc_taxid) {
       /*showError(t('comp.errorLoadcompanyRFC'));*/
       setLoading(false);
       return;
     }
 
-    if (formData.nationality === 'extranjero' && !formData.country) {
+    if (formData.Nationality === 'extranjero' && !formData.Country) {
       showError(t('comp.errorNationality'));
       setLoading(false);
       return;
@@ -124,17 +119,17 @@ const handleSaveCompany = async (e: React.FormEvent) => {
     // Prepara el objeto a enviar
     const dataToSave = {
       ...formData,
-      country: formData.nationality === 'nacional' ? 'MX' : formData.country,
-      status: formData.status || 'activo',
-      archivado: formData.archivado ?? false,
-      datastate: formData.datastate ?? 1,
+      Country: formData.Nationality === 'nacional' ? 'MX' : formData.Country,
+      Archived: formData.Archived ?? false,
+      Data_state: formData.Data_state ?? 1,
+      Created_by: formData.Created_by || {User_id: user._id, Name:user?.name || ''}
     };
 
 
     // Llamada al backend
     let savedCompany;
     if (editingCompany) {
-      savedCompany = await updateCompany(editingCompany._id!, dataToSave);
+      savedCompany = await updateCompany(editingCompany._Id!, dataToSave);
       showSuccess(t('comp.okupdate'));
     } else {
       savedCompany = await createCompany(dataToSave);
@@ -144,14 +139,14 @@ const handleSaveCompany = async (e: React.FormEvent) => {
     // Limpiar formulario
     setEditingCompany(null);
     setFormData({
-      business_name: '',
-      rfc_taxid: '',
-      nationality: 'nacional',
-      country: 'MX',
-      state: '',
-      status: 'activo',
-      archivado: false,
-      datastate: 1,
+      Business_name: '',
+      Rfc_taxid: '',
+      Nationality: 'nacional',
+      Country: 'MX',      
+      Status: 1,
+      Archived: false,
+      Data_state: 1,
+      Created_by: {User_id: user._id ,Name: user?.name},
     });
 
     // Recargar empresas
@@ -171,9 +166,15 @@ const handleSaveCompany = async (e: React.FormEvent) => {
 
 const filteredCompanies = companies.filter(c => {
   const matchesSearch = c.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.rfc_taxid.toLowerCase().includes(searchTerm.toLowerCase());
+    c.rfc_taxid.toLowerCase().includes(searchTerm.toLowerCase());      
 
-  const matchesStatus = statusFilter === 'todos' || c.status === statusFilter;
+    let matchesStatus = true;
+
+  if (statusFilter === 'activo') {
+        matchesStatus = c.status === 1;
+    } else if (statusFilter === 'inactivo') {
+        matchesStatus = c.status === 0;
+    }
 
   return matchesSearch && matchesStatus;
 });
@@ -181,14 +182,14 @@ const filteredCompanies = companies.filter(c => {
 function handleNewCompany() {
   setEditingCompany(null);
   setFormData({
-    business_name: '',
-    rfc_taxid: '',
-    nationality: 'nacional',
-    country: 'MX',
-    state: '',
-    status: 'activo',
-    archivado: false,
-    datastate: 1,
+    Business_name: '',
+    Rfc_taxid: '',
+    Nationality: 'nacional',
+    Country: 'MX',    
+    Status: 1,
+    Archived: false,
+    Data_state: 1,
+    Created_by: {User_id: user._id ,Name: user?.name},
   });
   setIsFormOpen(true);
 }
@@ -234,10 +235,10 @@ if (isFormOpen) {
               <label className={styles.fieldLabel}>{t('comp.CompanyName')}</label>
               <input
                 type="text"
-                value={formData.business_name}
+                value={formData.Business_name}
                 onChange={(e) => setFormData({ 
                   ...formData, 
-                  business_name: e.target.value.replace(/[^A-Za-z0-9ÁÉÍÓÚáéíóúÑñÄ\s.,&'’()+-]/g, "")
+                  Business_name: e.target.value.replace(/[^A-Za-z0-9ÁÉÍÓÚáéíóúÑñÄ\s.,&'’()+-]/g, "")
                 })}
                 className={styles.textInput}
                 placeholder={t('comp.CompanyName')}
@@ -258,12 +259,12 @@ if (isFormOpen) {
                 <input
                   type="checkbox"
                   id="is_national"
-                  checked={formData.nationality === 'nacional'}
+                  checked={formData.Nationality === 'nacional'}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      nationality: e.target.checked ? 'nacional' : 'extranjero',
-                      country: e.target.checked ? 'MX' : '', 
+                      Nationality: e.target.checked ? 'nacional' : 'extranjero',
+                      Country: e.target.checked ? 'MX' : '', 
                     })
                   }
                   className={styles.checkbox}
@@ -273,27 +274,6 @@ if (isFormOpen) {
                 </label>
               </div>
             </div>
-
-            <div className={styles.fieldGroup}>
-              <label className={styles.fieldLabel}>{t('comp.state')}</label>
-              <input
-                type="text"
-                // required
-                // onInvalid={(e) => 
-                //   e.currentTarget.setCustomValidity(t('comp.stateRequired')) /* si todavia no tiene capturado */
-                // }
-                // onInput={(e) =>
-                //   e.currentTarget.setCustomValidity('') /* se limpia msj si ya se capturo */
-                // }
-                value={formData.state}
-                onChange={(e) =>
-                  setFormData({ ...formData, state: e.target.value })
-                }
-                className={styles.textInput}
-                placeholder={t('comp.state')}
-              />
-            </div> {/* State */}
-            
           </div>
 
           {/* Columna derecha */}
@@ -303,13 +283,13 @@ if (isFormOpen) {
               <label className={styles.fieldLabel}>RFC / TAXID</label>
               <input
                 type="text"
-                value={formData.rfc_taxid}
+                value={formData.Rfc_taxid}
                 onChange={(e) => {
                   const value = e.target.value
                     .replace(/[^a-zA-Z0-9Ññ&.\-\/ ]/g, '') // caracteres permitidos para RFC y TAX ID internacionales
                     .slice(0, 20);
 
-                  setFormData({ ...formData, rfc_taxid: value });
+                  setFormData({ ...formData, Rfc_taxid: value });
                 }}
                 className={styles.textInput}
                 placeholder="RFC o TAXID"
@@ -326,13 +306,13 @@ if (isFormOpen) {
             <div className={styles.fieldGroup}>
               <label className={styles.fieldLabel}>{t('comp.Country')}</label>
               <select
-                value={formData.country}
+                value={formData.Country}
                 onChange={(e) =>
-                  setFormData({ ...formData, country: e.target.value })
+                  setFormData({ ...formData, Country: e.target.value })
                 }
                 className={styles.textInput}
-                disabled={formData.nationality === 'nacional'}
-                required={formData.nationality === 'extranjero'} // solo required si es extranjero
+                disabled={formData.Nationality === 'nacional'}
+                required={formData.Nationality === 'extranjero'} // solo required si es extranjero
               >
                 <option value="">{t('comp.SelectCountry')}</option>
                 {countries.map((c) => {
@@ -352,17 +332,17 @@ if (isFormOpen) {
                 <input
                   type="checkbox"
                   id="is_active"
-                  checked={formData.status === 'activo'}
+                  checked={formData.Status === 1}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      status: e.target.checked ? 'activo' : 'inactivo',
+                      Status: e.target.checked ? 1 : 0,
                     })
                   }
                   className={styles.checkbox}
                 />
                 <label htmlFor="is_active" className={styles.checkboxText}>
-                  {formData.status === 'activo' ? t('catalog.status.active') : t('catalog.status.inactive')}
+                  {formData.Status === 1 ? t('catalog.status.active') : t('catalog.status.inactive')}
                 </label>
               </div>
             </div>
@@ -432,11 +412,11 @@ if (isFormOpen) {
       ) : (
         <div className={styles.cardGrid}>
           {filteredCompanies.map(company => (
-            <div key={company._id} className={styles.companyCard}>
+            <div key={company._Id} className={styles.companyCard}>
               <h3>{company.business_name}</h3>
               <p>RFC/TAXID: {company.rfc_taxid}</p>
               <p>{company.country}</p>
-              <p> <span className={company.status === 'activo' ? styles.statusActive : styles.statusInactive}>{company.status}</span></p>
+              <p> <span className={company.status === 1 ? styles.statusActive : styles.statusInactive}>{company.status === 1 ? 'Activo' : 'Inactivo'}</span></p>
               <div className={styles.cardActions}>
                 <button 
                   onClick={() => handleEditCompanies(company)} 
