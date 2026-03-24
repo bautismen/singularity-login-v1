@@ -82,8 +82,8 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
         if(a.idStatusRequest === 10 && b.idStatusRequest !== 10) return 1; // a va despues de b
         if(a.idStatusRequest !== 10 && b.idStatusRequest === 10) return -1; // a va antes de b
         //(a.deadline_date > b.deadline_date) ? 1 : -1
-        const a_deadline = a.dateDeadline ? new Date(a.dateDeadline).getTime() : Infinity;
-        const b_deadline = b.dateDeadline ? new Date(b.dateDeadline).getTime() : Infinity;
+        const a_deadline = ([1,2,3,4].includes(a.idStatusRequest) && a.dateDeadline) ? new Date(a.dateDeadline).getTime() : Infinity;
+        const b_deadline = ([1,2,3,4].includes(b.idStatusRequest) && b.dateDeadline) ? new Date(b.dateDeadline).getTime() : Infinity;
         return a_deadline -  b_deadline; //fecha mas antigua va primero 
       }); 
       setQuotations(sortdata);
@@ -749,7 +749,7 @@ useEffect(() => {
       ) : filteredQuotations.length > 0 ? (
         <div className={styles.cardsGrid}>
           {filteredQuotations.map((quotation) => {
-            const daysRemaining = getDaysRemaining(quotation.dateDeadline || '');
+            const daysRemaining = [1,2,3,4].includes(quotation.idStatusRequest) ? getDaysRemaining(quotation.dateDeadline || '') : null;            
             const medalSrc = getCategoryMedal(quotation.customer.customerCategory);
             const totalServices = quotation.services?.length || 0;
             const attendedServices = quotation.services?.filter(s => s.used === true).length || 0;

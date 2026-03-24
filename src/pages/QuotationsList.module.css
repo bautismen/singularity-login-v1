@@ -476,9 +476,9 @@
 }
 
 .statusCancelada {
-  background: white;
-  color: #374151;
-  border-color: #374151;
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
 }
 
 .rightInfo {
