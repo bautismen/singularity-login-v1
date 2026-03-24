@@ -6,8 +6,9 @@ import { Country } from '../types/catalog';
 import { useNotification } from '../contexts/NotificationContext';
 import { Modal } from '../components/Modal';
 
-const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-countries`;
-const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const API_URL = import.meta.env.VITE_API_CATALOGS;
+const API_KEY = import.meta.env.VITE_APIKEYSL;
+const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 
 export function CatalogCountries() {
   const { t } = useLanguage();
@@ -22,9 +23,13 @@ export function CatalogCountries() {
   const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
-    country_code: '',
-    name_country: '',
-    status: 1,
+    _Id: "", 
+    Id_country: 0,
+    Country_code: '',
+    Name_country: '',
+    Status: 1,
+    Archived: false,
+    Data_state: 1,
   });
 
   const [modalState, setModalState] = useState<{
@@ -52,11 +57,12 @@ export function CatalogCountries() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_URL, {
+     const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/Countrie`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          'Authorization': `Bearer ${API_TOKENSL}`,
           'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
         },
       });
 
@@ -65,8 +71,8 @@ export function CatalogCountries() {
       }
 
       const data = await response.json();
-      setItems(data.map((item: any) => ({
-        id: item.id_country,
+      setItems(data.data.map((item: any) => ({
+        _id: item._Id,
         id_country: item.id_country,
         country_code: item.country_code,
         name_country: item.name_country,
@@ -105,16 +111,24 @@ export function CatalogCountries() {
     if (item) {
       setEditingItem(item);
       setFormData({
-        country_code: item.country_code,
-        name_country: item.name_country,
-        status: item.status,
+        _Id: item._id,
+        Id_country: item.id_country,
+        Country_code: item.country_code,
+        Name_country: item.name_country,
+        Status: item.status,
+        Archived: item.archived,
+        Data_state: item.data_state,
       });
     } else {
       setEditingItem(null);
       setFormData({
-        country_code: '',
-        name_country: '',
-        status: 1,
+        _Id: "",
+        Id_country: 0,
+        Country_code: '',
+        Name_country: '',
+        Status: 1,
+        Archived: false,
+        Data_state: 1,
       });
     }
     setShowModal(true);
@@ -124,9 +138,13 @@ export function CatalogCountries() {
     setShowModal(false);
     setEditingItem(null);
     setFormData({
-      country_code: '',
-      name_country: '',
-      status: 1,
+      _Id: "",
+      Id_country: 0,
+      Country_code: '',
+      Name_country: '',
+      Status: 1,
+      Archived: false,
+      Data_state: 1,
     });
   };
 
@@ -137,15 +155,19 @@ export function CatalogCountries() {
       setLoading(true);
 
       const exists = items.some( c =>
-        c.country_code === formData.country_code       
+        c.country_code === formData.Country_code       
       )
 
       if (editingItem) {
-        const response = await fetch(`${API_URL}/${editingItem.id_country}`, {
+         setFormData({ ...formData, _Id: editingItem._id });
+         console.log(`${API_URL}/v1/kl/catalog/update/Countrie`)
+        console.log(JSON.stringify(formData))
+        const response = await fetch(`${API_URL}/v1/kl/catalog/update/Countrie`, {
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+            'Authorization': `Bearer ${API_TOKENSL}`,
             'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
           },
           body: JSON.stringify(formData),
         });
@@ -162,11 +184,13 @@ export function CatalogCountries() {
           return;
         }
 
-        const response = await fetch(API_URL, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/add/Countrie`, {
+
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+            'Authorization': `Bearer ${API_TOKENSL}`,
             'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
           },
           body: JSON.stringify(formData),
         });
@@ -188,7 +212,7 @@ export function CatalogCountries() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: Number) => {
     
     setModalState({
       isOpen: true,
@@ -199,11 +223,12 @@ export function CatalogCountries() {
       onConfirm: async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE',
+         const response = await fetch(`${API_URL}/v1/kl/catalog/deletelogic/view=Countrie&id=${id}`, {
+            method: 'PUT',
             headers: {
-              'Authorization': `Bearer ${API_KEY}`,
+              'Authorization': `Bearer ${API_TOKENSL}`,
               'Content-Type': 'application/json',
+              'x-api-key': API_KEY,
             },
           });
 
@@ -353,8 +378,8 @@ export function CatalogCountries() {
                   <input
                     type="text"
                     className="input"
-                    value={formData.country_code}
-                    onChange={(e) => setFormData({ ...formData, country_code: e.target.value.toUpperCase().trim()})}
+                    value={formData.Country_code}
+                    onChange={(e) => setFormData({ ...formData, Country_code: e.target.value.toUpperCase().trim()})}
                     disabled = {editingItem ? true : false} 
                     maxLength={2}
                     placeholder="US, MX, CA..."
@@ -376,8 +401,8 @@ export function CatalogCountries() {
                   <input
                     type="text"
                     className="input"
-                    value={formData.name_country}
-                    onChange={(e) => setFormData({ ...formData, name_country: e.target.value.replace(/\s{2,}/g, " ")})}
+                    value={formData.Name_country}
+                    onChange={(e) => setFormData({ ...formData, Name_country: e.target.value.replace(/\s{2,}/g, " ")})}
                     disabled = {editingItem ? true : false} 
                     required
                     onInvalid={(e) => 
@@ -394,8 +419,8 @@ export function CatalogCountries() {
                     <input
                       type="checkbox"
                       className="checkbox"
-                      checked={formData.status === 1}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
+                      checked={formData.Status === 1}
+                      onChange={(e) => setFormData({ ...formData, Status: e.target.checked ? 1 : 0 })}
                       disabled={loading}
                     />
                     {' '}{t('catalog.status.active')}

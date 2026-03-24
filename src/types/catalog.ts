@@ -34,10 +34,14 @@ export interface Status extends BaseCatalog {
   description?: string;
 }
 
-export interface Country extends BaseCatalog {
+export interface Country {
+  _id: string
   id_country: number;
   country_code: string;
   name_country: string;
+  status: number;
+  archived: boolean;
+  data_state: number;
 }
 
 export interface SectorOfBusiness extends BaseCatalog {
