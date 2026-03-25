@@ -1,26 +1,28 @@
 import { Executive } from '../types/executive';
 
-const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/executives`;
-const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const API_URL = import.meta.env.VITE_API_CATALOGS;
+const API_KEY = import.meta.env.VITE_APIKEYSL;
+const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 
 const headers = {
-  'Authorization': `Bearer ${API_KEY}`,
+  'Authorization': `Bearer ${API_TOKENSL}`,
   'Content-Type': 'application/json',
+  'x-api-key': API_KEY,
 };
 
-export async function createExecutive(executive: Omit<Executive, '_id'>): Promise<Executive> {
-  try {
-    const response = await fetch(API_URL, {
+export async function createExecutive(executive: Omit<Executive, '_id'>) {
+  try {    
+    const response = await fetch(`${API_URL}/v1/kl/catalog/add/Executive`, {
       method: 'POST',
       headers,
       body: JSON.stringify(executive),
     });
 
-    if (!response.ok) {
+    if (!response.ok && response.status !== 204) {
       throw new Error('Failed to create executive');
     }
 
-    return await response.json();
+    return  response;
   } catch (error) {
     console.error('Error creating executive:', error);
     throw new Error('Failed to create executive');
@@ -29,14 +31,16 @@ export async function createExecutive(executive: Omit<Executive, '_id'>): Promis
 
 export async function getExecutives(includeArchived = false): Promise<Executive[]> {
   try {
-    const url = `${API_URL}?includeArchived=${includeArchived}`;
+    const url = `${API_URL}/v1/kl/catalog/getcatalog/Executive`;
     const response = await fetch(url, { headers });
 
     if (!response.ok) {
       throw new Error('Failed to fetch executives');
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data.data;
+
   } catch (error) {
     console.error('Error fetching executives:', error);
     throw new Error('Failed to fetch executives');
@@ -45,7 +49,7 @@ export async function getExecutives(includeArchived = false): Promise<Executive[
 
 export async function getExecutiveById(id: string): Promise<Executive | null> {
   try {
-    const response = await fetch(`${API_URL}/${id}`, { headers });
+    const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalogfiltrer/view=Executive&filtrer=${id}`, { headers });
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -54,7 +58,9 @@ export async function getExecutiveById(id: string): Promise<Executive | null> {
       throw new Error('Failed to fetch executive');
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data.data;
+
   } catch (error) {
     console.error('Error fetching executive:', error);
     throw new Error('Failed to fetch executive');
@@ -64,14 +70,15 @@ export async function getExecutiveById(id: string): Promise<Executive | null> {
 
 export async function getExecutivesByDepartment(department : string): Promise<Executive[]>{
   try {    
-    const response = await fetch(`${API_URL}/functions/v1/executives?departamento=${department}`, {headers});
+    const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalogfiltrer/view=Executive&filtrer=${department}`, {headers});
 
     if(!response.ok) {
       console.log('ERROR fetch: ',response)
       throw new Error('Failed to fetch executive');
     }
     
-    return await response.json();
+    const data = await response.json();
+    return data.data;
 
   } catch(error) {
     console.log('ERROR: ', error);
@@ -79,9 +86,9 @@ export async function getExecutivesByDepartment(department : string): Promise<Ex
   }
 }
 
-export async function updateExecutive(id: string, updates: Partial<Executive>): Promise<Executive | null> {
+export async function updateExecutive(id: string, updates: Executive): Promise<Executive | null> {
   try {
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await fetch(`${API_URL}/v1/kl/catalog/update/Executive`, {
       method: 'PUT',
       headers,
       body: JSON.stringify(updates),
@@ -103,8 +110,8 @@ export async function updateExecutive(id: string, updates: Partial<Executive>): 
 
 export async function deleteExecutive(id: string): Promise<boolean> {
   try {
-    const response = await fetch(`${API_URL}/${id}`, {
-      method: 'DELETE',
+    const response = await fetch(`${API_URL}/v1/kl/catalog/deleteidobjet/view=Executive&id=${id}`, {
+      method: 'PUT',
       headers,
     });
 
@@ -117,22 +124,5 @@ export async function deleteExecutive(id: string): Promise<boolean> {
   } catch (error) {
     console.error('Error deleting executive:', error);
     throw new Error('Failed to delete executive');
-  }
-}
-
-export async function checkNominaExists(numero_nomina: string, excludeId?: string): Promise<boolean> {
-  try {
-    const url = `${API_URL}/check-nomina?nomina=${encodeURIComponent(numero_nomina)}${excludeId ? `&excludeId=${excludeId}` : ''}`;
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      return false;
-    }
-
-    const result = await response.json();
-    return result.exists;
-  } catch (error) {
-    console.error('Error checking nomina:', error);
-    return false;
   }
 }

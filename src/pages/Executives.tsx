@@ -13,7 +13,7 @@ const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 export function Executives() {
   const { t } = useLanguage();
   const catalogName = t('quote.executive');
-  const { showError } = useNotification();
+  const { showError, showWarning,showSuccess } = useNotification();
   const [executives, setExecutives] = useState<Executive[]>([]);
   const [filteredExecutives, setFilteredExecutives] = useState<Executive[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,15 +27,18 @@ export function Executives() {
   const [users, setUsers] = useState<any[]>([]);
 
   const [formData, setFormData] = useState<ExecutiveFormData>({
-    nombre: '',
-    apellido_paterno: '',
-    apellido_materno: '',
-    numero_nomina: '',
-    fecha_ingreso: '',
-    email: '',
-    departamento: '',
-    activo: true,
-    _iduser: '',
+    _Id: '',
+    Nombre: '',
+    Apellido_paterno: '',
+    Apellido_materno: '',
+    Numero_nomina: '',
+    Fecha_ingreso: '',
+    Email: '',
+    Departamento: '',
+    Activo: true,
+    _Iduser: '',
+    Estado: 1,
+    Archivado: false,
   });
 
   const [modalState, setModalState] = useState<{
@@ -68,7 +71,7 @@ export function Executives() {
       const data = await getExecutives(true);
       setExecutives(data);
     } catch (error) {
-      showNotification('error', t('exec.errorLoad'));
+      showError(t('exec.errorLoad'));
     } finally {
       setLoading(false);
     }
@@ -98,12 +101,7 @@ export function Executives() {
     }
 
     setFilteredExecutives(filtered);
-  };
-
-  const showNotification = (type: 'success' | 'error', message: string) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 3000);
-  };
+  }; 
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -112,28 +110,28 @@ export function Executives() {
 
   const validateForm = async (): Promise<boolean> => {
     if (
-      !formData.nombre ||
-      !formData.apellido_paterno ||
-      !formData.numero_nomina ||
-      !formData.fecha_ingreso ||
-      !formData.email ||
-      !formData.departamento ||
-      !formData._iduser
+      !formData.Nombre ||
+      !formData.Apellido_paterno ||
+      !formData.Numero_nomina ||
+      !formData.Fecha_ingreso ||
+      !formData.Email ||
+      !formData.Departamento ||
+      !formData._Iduser
     ) {
-      showError('error:' + t('catalog.requiredFields'));
+      showWarning( t('catalog.requiredFields'));
       return false;
     }
 
-    if (!validateEmail(formData.email)) {
-      showError('error' + t('exec.invalidEmail'));
+    if (!validateEmail(formData.Email)) {
+      showWarning(t('exec.invalidEmail'));
       return false;
     }
 
-    const nominaExists = await checkNominaExists(formData.numero_nomina, editingId || undefined);
+    /*const nominaExists = await checkNominaExists(formData.Numero_nomina, editingId || undefined);
     if (nominaExists) {
       showNotification('error', t('exec.nominaExists'));
       return false;
-    }
+    }*/
 
     return true;
   };
@@ -152,16 +150,28 @@ export function Executives() {
     try {
       if (editingId) {
         await updateExecutive(editingId, formData);
-        showNotification('success', t('exec.successSave'));
+        showSuccess(t('exec.successSave'));
       } else {
-        await createExecutive(formData);
-        showNotification('success', t('exec.successSave'));
+       const resul = await createExecutive(formData);
+        
+       if (resul.status===204)
+       {
+       
+         showWarning(t('exec.nominaExists'));
+         setSaving(false);
+         return;
+        
+       }
+       else
+       {
+        showSuccess(t('exec.successSave'));
+       }
       }
       resetForm();
       await loadExecutives();
       setShowForm(false);
     } catch (error) {
-      showNotification('error', t('exec.errorSave'));
+      showError(t('exec.errorSave'));
     } finally {
       setSaving(false);
     }
@@ -169,17 +179,20 @@ export function Executives() {
 
   const handleEdit = (executive: Executive) => {
     setFormData({
-      nombre: executive.nombre,
-      apellido_paterno: executive.apellido_paterno,
-      apellido_materno: executive.apellido_materno,
-      numero_nomina: executive.numero_nomina,
-      fecha_ingreso: executive.fecha_ingreso,
-      email: executive.email,
-      departamento: executive.departamento,
-      activo: executive.activo,
-      _iduser: executive._iduser || '',
+      _Id: executive._Id,
+      Nombre: executive.nombre,
+      Apellido_paterno: executive.apellido_paterno,
+      Apellido_materno: executive.apellido_materno,
+      Numero_nomina: executive.numero_nomina,
+      Fecha_ingreso: executive.fecha_ingreso,
+      Email: executive.email,
+      Departamento: executive.departamento,
+      Activo: executive.activo,
+      _Iduser: executive._Iduser || '',
+      Estado: executive.estado,
+      Archivado: executive.archivado,
     });
-    setEditingId(executive._id || null);
+    setEditingId(executive._Id || null);
     setShowForm(true);
   };
 
@@ -194,10 +207,10 @@ export function Executives() {
       onConfirm: async () => {
         try {
           await deleteExecutive(id);
-          showNotification('success', t('exec.successDelete'));
+          showSuccess(t('exec.successDelete'));
           await loadExecutives();
         } catch (error) {
-          showNotification('error', t('exec.errorDelete'));
+          showError(t('exec.errorDelete'));
         }
       }
     });
@@ -205,15 +218,18 @@ export function Executives() {
 
   const resetForm = () => {
     setFormData({
-      nombre: '',
-      apellido_paterno: '',
-      apellido_materno: '',
-      numero_nomina: '',
-      fecha_ingreso: '',
-      email: '',
-      departamento: '',
-      activo: true,
-      _iduser: '',
+      _Id: '',
+      Nombre: '',
+      Apellido_paterno: '',
+      Apellido_materno: '',
+      Numero_nomina: '',
+      Fecha_ingreso: '',
+      Email: '',
+      Departamento: '',
+      Activo: true,
+      _Iduser: '',
+      Estado: 1,
+      Archivado: false,
     });
     setEditingId(null);
   };
@@ -292,10 +308,10 @@ export function Executives() {
             </label>
             <input
               type="text"
-              value={formData.nombre}
+              value={formData.Nombre}
               onChange={(e) => setFormData({ 
                 ...formData, 
-                nombre: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
+                Nombre: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
               })}
               className={styles.input}
               required
@@ -314,10 +330,10 @@ export function Executives() {
             </label>
             <input
               type="text"
-              value={formData.apellido_paterno}
+              value={formData.Apellido_paterno}
               onChange={(e) => setFormData({ 
                 ...formData, 
-                apellido_paterno: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
+                Apellido_paterno: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
               })}
               className={styles.input}
               required
@@ -336,10 +352,10 @@ export function Executives() {
             </label>
             <input
               type="text"
-              value={formData.apellido_materno}
+              value={formData.Apellido_materno}
               onChange={(e) => setFormData({ 
                 ...formData, 
-                apellido_materno: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
+                Apellido_materno: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
               })}
               className={styles.input}
             // required
@@ -353,14 +369,14 @@ export function Executives() {
             <input
               type="number"
               min="1"
-              value={formData.numero_nomina}
+              value={formData.Numero_nomina}
               onKeyDown={(e) => {
                 if (e.key === '-' || e.key === 'e') {
                   e.preventDefault();
                 }
               }}
               onChange={(e) =>{
-                setFormData({ ...formData, numero_nomina: e.target.value })}
+                setFormData({ ...formData, Numero_nomina: e.target.value })}
               } 
               className={styles.input}
               required
@@ -378,8 +394,8 @@ export function Executives() {
                   .toISOString()
                   .split("T")[0]
               }
-              value={formData.fecha_ingreso}
-              onChange={(e) => setFormData({ ...formData, fecha_ingreso: e.target.value })}
+              value={formData.Fecha_ingreso}
+              onChange={(e) => setFormData({ ...formData, Fecha_ingreso: e.target.value })}
               className={styles.inputdate}
               required
               onInvalid={(e) => 
@@ -397,8 +413,8 @@ export function Executives() {
             </label>
             <input
               type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              value={formData.Email}
+              onChange={(e) => setFormData({ ...formData, Email: e.target.value })}
               className={styles.input}
               required
               onInvalid={(e) => 
@@ -415,8 +431,8 @@ export function Executives() {
               {t('exec.departamento')}
             </label>
             <select
-              value={formData.departamento}
-              onChange={(e) => setFormData({ ...formData, departamento: e.target.value })}
+              value={formData.Departamento}
+              onChange={(e) => setFormData({ ...formData, Departamento: e.target.value })}
               className={styles.select}
               required
               onInvalid={(e) => 
@@ -440,8 +456,8 @@ export function Executives() {
               {t('exec.user')}
             </label>
             <select
-              value={formData._iduser}
-              onChange={(e) => setFormData({ ...formData, _iduser: e.target.value })}
+              value={formData._Iduser}
+              onChange={(e) => setFormData({ ...formData, _Iduser: e.target.value })}
               className={styles.select}
               required
               onInvalid={(e) => 
@@ -453,7 +469,7 @@ export function Executives() {
               >
               <option value="">Seleccionar...</option>
               {users.map((user) => (
-                <option key={user._id} value={user._id}>
+                <option key={user._Id} value={user._Id}>
                   {user.name}
                 </option>
               ))}
@@ -464,8 +480,8 @@ export function Executives() {
             <div className={styles.toggleItem}>
               <label className={styles.label}>{t('exec.disponible')}</label>
               <div
-                className={`${styles.toggle} ${formData.activo ? styles.active : ''}`}
-                onClick={() => setFormData({ ...formData, activo: !formData.activo })}>
+                className={`${styles.toggle} ${formData.Activo ? styles.active : ''}`}
+                onClick={() => setFormData({ ...formData, Activo: !formData.Activo })}>
                 <div className={styles.toggleThumb}></div>
               </div>
             </div>
@@ -552,7 +568,7 @@ export function Executives() {
             </thead>
             <tbody>
               {filteredExecutives.map((executive) => (
-                <tr key={executive._id}>
+                <tr key={executive._Id}>
                   <td className={styles.nominaCell}>
                     {executive.numero_nomina}
                   </td>
@@ -586,7 +602,7 @@ export function Executives() {
                       </button>
                       <button
                         className={`${styles.actionButton} ${styles.danger}`}
-                        onClick={() => handleDelete(executive._id!)}
+                        onClick={() => handleDelete(executive._Id!)}
                         title="Eliminar"
                       >
                         <Trash2 size={16} />
