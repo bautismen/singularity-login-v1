@@ -6,8 +6,9 @@ import { RequestType } from '../types/catalog';
 import { useNotification } from '../contexts/NotificationContext';
 import { Modal } from '../components/Modal';
 
-const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-request-types`;
-const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const API_URL = import.meta.env.VITE_API_CATALOGS;
+const API_KEY = import.meta.env.VITE_APIKEYSL;
+const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 
 export function CatalogRequestTypes() {
   const { t } = useLanguage();
@@ -22,8 +23,11 @@ export function CatalogRequestTypes() {
   const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
-    request_type_name: '',
-    status: 1,
+    _Id: 0,
+    Request_type_name: '',
+    Status: 1,
+    Archived: false,
+    Data_state: 1,
   });
 
  const [modalState, setModalState] = useState<{
@@ -51,11 +55,12 @@ export function CatalogRequestTypes() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/TypeResquet`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          'Authorization': `Bearer ${API_TOKENSL}`,
           'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
         },
       });
 
@@ -64,8 +69,8 @@ export function CatalogRequestTypes() {
       }
 
       const data = await response.json();
-      setItems(data.map((item: any) => ({
-        id: item._id,
+      setItems(data.data.map((item: any) => ({
+        id: item._Id,
         request_type_name: item.request_type_name,
         status: item.status !== undefined ? item.status : 1,
         archived: item.archived || false,
@@ -101,14 +106,20 @@ export function CatalogRequestTypes() {
     if (item) {
       setEditingItem(item);
       setFormData({
-        request_type_name: item.request_type_name,
-        status: item.status,
+        _Id: item.id,
+        Request_type_name: item.request_type_name,
+        Status: item.status,
+        Archived: item.archived,
+        Data_state: item.data_state,
       });
     } else {
       setEditingItem(null);
       setFormData({
-        request_type_name: '',
-        status: 1,
+        _Id: 0,
+        Request_type_name: '',
+        Status: 1,
+        Archived: false,
+        Data_state: 1,
       });
     }
     setShowModal(true);
@@ -118,8 +129,11 @@ export function CatalogRequestTypes() {
     setShowModal(false);
     setEditingItem(null);
     setFormData({
-      request_type_name: '',
-      status: 1,
+      _Id: 0,
+      Request_type_name: '',
+      Status: 1,
+      Archived: false,
+      Data_state: 1,
     });
   };
 
@@ -129,11 +143,12 @@ export function CatalogRequestTypes() {
       setLoading(true);
 
       if (editingItem) {
-        const response = await fetch(`${API_URL}/${editingItem.id}`, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/update/TypeResquet`, {          
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+            'Authorization': `Bearer ${API_TOKENSL}`,
             'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
           },
           body: JSON.stringify(formData),
         });
@@ -143,11 +158,12 @@ export function CatalogRequestTypes() {
         }
 
       } else {
-        const response = await fetch(API_URL, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/add/TypeResquet`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+            'Authorization': `Bearer ${API_TOKENSL}`,
             'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
           },
           body: JSON.stringify(formData),
         });
@@ -180,11 +196,12 @@ export function CatalogRequestTypes() {
       onConfirm: async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE',
+          const response = await fetch(`${API_URL}/v1/kl/catalog/deletelogic/view=TypeResquet&id=${id}`, {
+            method: 'PUT',
             headers: {
-              'Authorization': `Bearer ${API_KEY}`,
+              'Authorization': `Bearer ${API_TOKENSL}`,
               'Content-Type': 'application/json',
+              'x-api-key': API_KEY,
             },
           });
 
@@ -332,8 +349,8 @@ export function CatalogRequestTypes() {
                   <input
                     type="text"
                     className="input"
-                    value={formData.request_type_name}
-                    onChange={(e) => setFormData({ ...formData, request_type_name: e.target.value })}
+                    value={formData.Request_type_name}
+                    onChange={(e) => setFormData({ ...formData, Request_type_name: e.target.value })}
                     disabled={loading}
                     required
                     onInvalid={(e) => 
@@ -350,8 +367,8 @@ export function CatalogRequestTypes() {
                     <input
                       type="checkbox"
                       className="checkbox"
-                      checked={formData.status === 1}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 1 : 0 })}
+                      checked={formData.Status === 1}
+                      onChange={(e) => setFormData({ ...formData, Status: e.target.checked ? 1 : 0 })}
                       disabled={loading}
                     />
                     {' '}{t('catalog.status.active')}
