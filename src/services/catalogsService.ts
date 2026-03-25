@@ -19,12 +19,69 @@ export const catalogService = {
         
         const data = await response.json();
         return {
-            message: '',
+            message: data.messageStatus,
             data: data.data || [],
         };     
     },
 
-    async getCountry() {
+    async getServices() {
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/getcatalog/Service`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_TOKENSL}`,
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEYSL,
+        },
+        });
+        if (!response.ok) {
+            throw new Error('Error al cargar servicios');
+        }        
+        const data = await response.json();
+        return {
+            message: data.messageStatus,
+            data: data.data || [],
+        };     
+    },
+
+    async getTypeRequests() {
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/getcatalog/TypeResquet`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_TOKENSL}`,
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEYSL,
+        },
+        });
+        if (!response.ok) {
+            throw new Error('Error al cargar tipos de solicitud');
+        }        
+        const data = await response.json();
+        return {
+            message: data.messageStatus,
+            data: data.data || [],
+        };     
+    },
+
+    async getIncoterms(){
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/getcatalog/Incoterm`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_TOKENSL}`,
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEYSL,
+        },
+        });
+        if (!response.ok) {
+            throw new Error('Error al cargar incoterms');
+        }        
+        const data = await response.json();
+        return {
+            message: data.messageStatus,
+            data: data.data || [],
+        };     
+    },
+
+    async getCountries() {
         const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/getcatalog/Countrie`, {
         method: 'GET',
         headers: {
@@ -34,7 +91,7 @@ export const catalogService = {
         },
         });
         if (!response.ok) {
-            throw new Error('Error al cargar contenedores');
+            throw new Error('Error al cargar paises');
         }
         
         const data = await response.json();
@@ -42,5 +99,26 @@ export const catalogService = {
             message: '',
             data: data.data || [],
         };     
+    },
+
+    async getImos() {
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/getcatalog/Imo`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_TOKENSL}`,
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEYSL,
+        },
+        });
+        if (!response.ok) {
+            throw new Error('Error al cargar Imos');
+        }
+        
+        const data = await response.json();
+        return {
+            message: '',
+            data: data.data || [],
+        };     
+
     }
 }

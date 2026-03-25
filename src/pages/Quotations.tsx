@@ -142,46 +142,31 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     setServices([]);
   }
 
+  const loadImos = async () => {
+    try {
+      const resultImos = await catalogService.getImos();
+      setImoList(resultImos.data.filter((imo: any) => imo.status === 1));            
+    }catch(error) {
+      showError(t('quote.errors.loadCatalogs'));
+    }
+  };
+
   const loadCatalogs = async () => {
     try {
-      setLoading(true);
-      const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
-
-      const [requestTypesRes, servicesRes, incotermsRes, countriesRes, imoRes] = await Promise.all([
-
-        fetch(`${BASE_URL}/functions/v1/catalog-request-types`, {
-          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
-        }),
-        fetch(`${BASE_URL}/functions/v1/catalog-services`, {
-          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
-        }),
-        fetch(`${BASE_URL}/functions/v1/catalog-incoterms`, {
-          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
-        }),
-        fetch(`${BASE_URL}/functions/v1/catalog-countries`, {
-          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
-        }),
-        fetch(`${BASE_URL}/functions/v1/catalog-imo`, {
-          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
-        }),
-      ]);
-
+      setLoading(true);      
       const customersData =  await getCustomers(true);
-      const requestTypesData = await requestTypesRes.json();
-      const servicesData = await servicesRes.json();
+      const requestTypesData = await catalogService.getTypeRequests();
+      const servicesData = await catalogService.getServices();
       const executivesData = await getExecutivesByDepartment('Pricing');
-      const incotermsData = await incotermsRes.json();
-      const countriesData = await countriesRes.json();
-      const imoData = await imoRes.json();
+      const incotermsData = await catalogService.getIncoterms();
+      const countriesData = await catalogService.getCountries();
 
       setCustomers(customersData.filter((c: any) => c.status === 'activo' || c.datastate === 1));
-      setRequestTypes(requestTypesData.filter((r: any) => r.status === 1));
-      setAvailableServices(servicesData.filter((s: any) => s.status === 1)); // && s.category === 1));
+      setRequestTypes(requestTypesData.data.filter((r: any) => r.status === 1));
+      setAvailableServices(servicesData.data.filter((s: any) => s.status === 1)); // && s.category === 1));
       setAvailableExecutives(executivesData.filter((e: any) => e.estado === 1 && e.activo === true));
-      setIncoterms(incotermsData.filter((i: any) => i.status === 1));
-      setCountries(countriesData.filter((co: any) => co.status === 1));
-      setImoList(imoData.filter((imo: any) => imo.status === 1));
+      setIncoterms(incotermsData.data.filter((i: any) => i.status === 1));
+      setCountries(countriesData.data.filter((co: any) => co.status === 1));
     } catch (error) {
       //console.error('Error loading catalogs:', error);
       showError(t('quote.errors.loadCatalogs'));
@@ -193,7 +178,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   const loadQuotation = async (id: string) => {
     try {      
       const data = await quotationService.getById(id);
-      console.log(data.data);
       setFormData({
         referenceRequest: data.data.referenceRequest || '',
         customerId: data.data.customer.idCustomer || '',
@@ -311,6 +295,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       showBulkClassMerch: false,
       showGeneralMerch : false
     })
+
+    if(imoList.length === 0) {
+      loadImos();
+    }
 
     if (cargo) {        
       setByUnitsMerch(cargo?.units?.length === 0 ? false : true)
@@ -535,7 +523,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     setShowContainersModal(true)
     setCurrentServiceId(idServiceItem); 
     setContainers(containersInShipment);
-    console.log('Containers', containers, 'available', availableContainers);
     try {
       if(availableContainers.length === 0) {
         const resultContainers = await catalogService.getContainers();
@@ -628,7 +615,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   };
 
   const updateContainersShipment = (idServiceItem: number, idShipment: number,  containerUpdate : ContainerRequest) => {
-    console.log('update',idServiceItem,containerUpdate)
+    //console.log('update',idServiceItem,containerUpdate)
     setServices(services.map(service => service.idServiceItem=== idServiceItem ? {
       ...service,
       shipments: service.shipments.map(shipment => {
@@ -700,7 +687,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
   }
 
   const handleIncotermChange = (idServiceItem: number, idShipment: number, value: number, text: string) => {
-    console.log(value, text);
+    //console.log(value, text);
     setServices(prevServices => 
       prevServices.map(service => service.idServiceItem === idServiceItem ? {
       ...service,
@@ -737,7 +724,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
   const handleStatusUpdate = async (statusId: number, statusName: string) => {
     try {      
-      const quotationData = {
+      const quotationRequestData = {
         IdRequest: quotationId,
         IdStatusRequest: statusId,
         StatusRequest: statusName,
@@ -749,7 +736,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             : ''
       };
       if (quotationId) {
-        await quotationService.changeStatus(quotationData);
+        await quotationService.changeStatus(quotationRequestData);
         showSuccess(t('quote.success.statusUpdated').replace('{status}', statusName));
       }
 
@@ -996,7 +983,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         showSuccess(t('quote.success.updated'));
       } else {
         result = await quotationService.create(quotationData);
-        console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
+        //console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
         showSuccess(t('quote.success.created'));
       }
 
@@ -1432,7 +1419,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <select
                 value={formData.requestTypeId}
                 onChange={(e) => {
-                  const requestType = requestTypes.find(r => r._id === parseInt(e.target.value));
+                  const requestType = requestTypes.find(r => r._Id === parseInt(e.target.value));
                   setFormData({
                     ...formData,
                     requestTypeId: parseInt(e.target.value),
@@ -1444,7 +1431,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 required>
                 <option value="">{t('quote.selectType')}</option>
                 {requestTypes.map((type) => (
-                  <option key={type._id} value={type._id}>
+                  <option key={type._Id} value={type._Id}>
                     {type.request_type_name}
                   </option>
                 ))}
@@ -1472,35 +1459,30 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           </div>   
           
           <div className={styles.formGrid} style={{ marginTop: '1.5rem' }}>
-            <div className={styles.formGroupWithToggle}>
-              <label className={styles.label}>{t('quote.isPriority')}</label>
-              <button
-                type="button" 
-                className={`${styles.toggleSwitch} ${formData.isPriority ? styles.active : ''}`}
-                onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
-                disabled={mode === 'view' || formData.idStatusRequest >= 2}>
-                <div className={styles.toggleThumb}></div>
-              </button>
-            </div>
+            <div className={styles.formGroupElementsInline}> 
+              <div className={styles.formGroup}>
+                <label className={styles.label}>{t('quote.isBid')}</label>
+                <button
+                  type="button" 
+                  className={`${styles.toggleSwitch} ${formData.isLicitation ? styles.active : ''}`} 
+                  onClick={() => { setFormData({ ...formData, isLicitation: !formData.isLicitation })}}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                  <div className={styles.toggleThumb}></div>
+                </button>
+              </div>
 
-            <div className={styles.formGroupWithToggle}>
-            <label className={styles.label}>{t('quote.isBid')}</label>
-            <button
-              type="button" 
-              className={`${styles.toggleSwitch} ${formData.isLicitation ? styles.active : ''}`} 
-              onClick={() => { setFormData({ ...formData, isLicitation: !formData.isLicitation })}}
-              disabled={mode === 'view' || formData.idStatusRequest >= 2}>
-              <div className={styles.toggleThumb}></div>
-            </button>
-            </div>             
-            
-            {renderResponseDeadline()}     
-                                    
-          </div>
-
-          <div className={styles.formGrid} style={{ marginTop: '1.5rem' }}>  
-            <div className={styles.formGroup}> 
-              <div className={styles.formGroupWithToggle} >
+              <div className={styles.formGroup}>
+                <label className={styles.label}>{t('quote.isPriority')}</label>
+                <button
+                  type="button" 
+                  className={`${styles.toggleSwitch} ${formData.isPriority ? styles.active : ''}`}
+                  onClick={() => setFormData({ ...formData, isPriority: !formData.isPriority })}
+                  disabled={mode === 'view' || formData.idStatusRequest >= 2}>
+                  <div className={styles.toggleThumb}></div>
+                </button>
+              </div>
+             
+              <div className={styles.formGroup}>
                 <label className={styles.label} >{t('quote.prospect')}</label>
                 <button
                   type="button"
@@ -1508,10 +1490,10 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   onClick={() => { setFormData({ ...formData, showProspect: !formData.showProspect }) }}                                  
                   disabled={loading || mode === 'view' || mode === 'edit' || formData.idStatusRequest >= 2} >
                 <div className={styles.toggleThumb}></div>
-                </button>                                    
-              </div> 
+                </button> 
+              </div>       
             </div>
-          
+            
             {!formData.showProspect ? (
               <div className={styles.formGroup}>
                 <label className={styles.label}>
@@ -1556,8 +1538,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   className={styles.input}
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}/>
               </div>
-            )}     
-            
+            )}                 
             {!formData.showProspect ? (
               <div className={styles.formGroup}>
                 <label className={styles.label}>{t('quote.customerCategory')}</label>
@@ -1571,7 +1552,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   <option value={3}>Bronze</option>
                 </select>
               </div>
-            ) :(<div/>)}  
+            ) :(<div/>)}
+                                                 
+          </div>
+
+          <div className={styles.formGrid} style={{ marginTop: '1.5rem' }}>               
+            {renderResponseDeadline()}    
+            <div></div>                  
+            <div></div>
           </div>  
 
           {mode === 'edit' && (
@@ -1710,33 +1698,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}
                   required>
                   <option value="">{t('quote.select')}</option>
-                  {availableServices.filter((service) => service.status === 1 && service.category === 1).map((service_) => (
+                  {availableServices.filter((service) => service.status === 1 /*&& service.category === 1*/).map((service_) => (
                     <option key={service_._id} value={service_.service_name} data-service-id={service_._id}>
                       {service_.service_name}
                     </option>
                   ))}
                 </select>
               </div>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <span className={styles.required}>*</span>
-                  {t('quote.loadType')}
-                </label>
-                <select
-                  value={service.nameService === "Maritimo FCL" || service.nameService === "Terrestre FTL" || service.nameService === "Terrestre FCL"  ? 'Full' : 'Consolidado' }
-                  //onChange={(e) => updateService(service.idService, 'idService', e.target.value)}
-                  className={styles.select}
-                  disabled
-                  required>
-                  <option value="">{t('quote.select')}</option>                
-                    <option key='Consolidado' value='Consolidado'>
-                      Consolidado
-                    </option>  
-                    <option key='Full' value='Full'>
-                      Full
-                    </option>                   
-                </select>
-              </div>
+              
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                   <span className={styles.required}>*</span>
@@ -1744,7 +1713,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 </label>
                 <select
                   value={service.shipments[0].idTypeOperation}
-                  onChange={(e) => //updateShipment(service.idServiceItem, service.shipments[0].idShipment, 'typeOperation', e.target.value)}
+                  onChange={(e) => 
                     handleTypeOperationChange(
                       service.idServiceItem,
                       service.shipments[0].idShipment,
@@ -1904,7 +1873,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                               value={container.quantity}
                               onChange={(e) => 
                                 updateContainersQuantityShipment(service.idServiceItem, 1, container.idContainer || 1,
-                                  {quantity:  parseInt(e.target.value)})}/>
+                                  {quantity:  parseInt(e.target.value)})}
+                              disabled={loading || mode === 'view' || formData.idStatusRequest >= 2} />
                           </div>                                                                     
                           <div className={styles.formGroup}>
                             <label className={styles.label}>{t('quote.totalVolume')}</label>
@@ -1925,7 +1895,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                                     container.idContainer || 1,
                                     {volumeTotal:  Number(e.target.value)})
                                 }}
-                              }/> 
+                              }
+                              disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}/> 
                           </div>                                                                                                                      
                           <div className={styles.formGroup}>
                             <label className={styles.label}>{t('quote.unitVolume')}</label>
@@ -1964,7 +1935,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                                     container.idContainer || 1,
                                     {weigthTotal:  Number(e.target.value)})
                                 }}
-                              }/>                          
+                              }
+                              disabled={loading || mode === 'view' || formData.idStatusRequest >= 2}/>                          
                           </div>
                           <div className={styles.formGroup}> 
                              <label className={styles.label}>{t('quote.unitWeight')}</label>

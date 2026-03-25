@@ -16,7 +16,7 @@ export default function Companies() {
 
   const loadCountries = async () => {
     try {
-      const countriesData = await catalogService.getCountry();
+      const countriesData = await catalogService.getCountries();
       setCountries(countriesData.data.filter((c: any) => c.status === 1));
     } catch (error) {
       console.error('Error loading countries:', error);
