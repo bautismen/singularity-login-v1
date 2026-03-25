@@ -33,15 +33,15 @@ export interface Company {
 }
 
 export interface Contact {
-  _idcontacts?: string;
-  type: string;
-  name: string;
-  email: string;
-  phone: string;
-  position: string;
-  status: 'activo' | 'inactivo';
-  valid_from: string;
-  valid_to: string | null;
+  // _idcontacts?: string;
+  Email: string;
+  Name: string;
+  Phone: string;
+  Position: string;
+  Status: 1 | 2 //'activo' | 'inactivo';
+  Type: string;
+  ValidFrom: string;
+  valiValidTo: string | null;
 }
 
 export interface Address {
@@ -56,7 +56,7 @@ export interface Address {
   valid_to: string | null;
 }
 
-export interface HistoryEntry {
+export interface History {
   date: Date;
   user_id: string;
   user_name: string;
@@ -68,19 +68,19 @@ export interface HistoryEntry {
 }
 
 export interface Customer {
-  _idcustomer?: string;
-  idcustomer?: number;
+  _id: string;
+  // _idcustomer?: string;
+  _idcustomer: number;
   is_branch: boolean;
   branch_name?: string;
-  type: 'fisica' | 'moral';
+  is_national?: boolean;        
+  is_persona_fisica?: boolean; 
+  curp?: string; 
+  // type: 'fisica' | 'moral';
   company_id?: string;
   person_id?: string;
-  nationality: 'nacional' | 'extranjero';
-  is_national?: boolean;        
-  is_persona_fisica?: boolean;  
-  curp?: string;               
-  datastate: number;
-  client_level?: 'oro' | 'plata' | 'bronce';
+  // nationality: 'nacional' | 'extranjero';
+  // client_level?: 'oro' | 'plata' | 'bronce';
   client_level_id?: 1 | 2 | 3;
   fiscal_data: {
     business_name: string;
@@ -90,14 +90,17 @@ export interface Customer {
   };
   contacts: Contact[];
   addresses: Address[];
-  status: 'activo' | 'inactivo';
-  archivado: boolean;
-  history?: HistoryEntry[];
+  is_corresponsal: boolean;
+  history?: History[];
   created_at?: Date;
   created_by?: {
     user_id: string;
     name: string;
   };
+  updated_at?: Date;
+  status: 1 | 0 //'activo' | 'inactivo';
+  archived: boolean;
+  data_state: number;
 }
 
 export interface CustomerFormData {

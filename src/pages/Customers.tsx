@@ -2,10 +2,14 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, Save, Edit2, ChevronDown, ChevronUp, X, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
-import { Customer, Person, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES } from '../types/customer';
+import { Customer, Person, Company, Contact, Address, History, MEXICAN_STATES, CONTACT_TYPES } from '../types/customer';
 import { getCustomers, createCustomer, updateCustomer, getPeople, getCompanies, createCompany } from '../services/customerService';
 import styles from './Customers.module.css';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+
+const API_URL = import.meta.env.VITE_API_CATALOGS;
+const API_KEY = import.meta.env.VITE_APIKEYSL;
+const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 
 export default function Customers() { //{ onNavigate }: { onNavigate: (route: string) => void }
   const { t } = useLanguage();
@@ -18,6 +22,7 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
     general: false,
     address: false,
@@ -34,35 +39,44 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
   } as const;
 
   const [formData, setFormData] = useState({
-    is_branch: false,
-    branch_name: '',
-    is_national: false,
-    is_persona_fisica: false,
-    curp: '',
-    type: 'moral' as 'fisica' | 'moral',
-    company_id: '',
-    person_id: '',
-    nationality: 'nacional' as 'nacional' | 'extranjero',
-    status: 'activo' as 'activo' | 'inactivo',
-    client_level: 'oro' as  'oro' | 'plata' | 'bronce',
-    client_level_id: 1 as 1 | 2 | 3,
-    fiscal_data: {
-      business_name: '',
-      taxid: '',
-      country: 'MX',
-      state: '',
+    Id: '',
+    IdCustomer: 0,
+    IsBranch: false,
+    BranchName: '',
+    IsNational: false,
+    IsPersonaFisica: false,
+    Curp: '',
+    // type: 'moral' as 'fisica' | 'moral',
+    CompanyId: '',
+    PersonId: '',
+    // nationality: 'nacional' as 'nacional' | 'extranjero',
+    // client_level: 'oro' as  'oro' | 'plata' | 'bronce',
+    ClientLevelId: 1 as 1 | 2 | 3,
+    FiscalData: {
+      BusinessName: '',
+      Country: 'MX',
+      State: '',
+      TaxId: '',
     },
-    contacts: [] as Contact[],
-    addresses: [] as Address[],
+    Contacts: [] as Contact[],
+    Addresses: [] as Address[],
+    IsCorresponsal: false,
+    History: [] as History[],
+    CreatedAt: Date,
+    UpdatedAt: null | Date,
+    CreatedBy: {IdUser: user._id, Name: user?.name},
+    Status: 1 as 1 | 0,//'activo' as 'activo' | 'inactivo',
+    Archived: false,
+    DataState: 1
   });
 
-  const getClientLevelMedal = (level: 'oro' | 'plata' | 'bronce') => {
+  const getClientLevelMedal = (level: 1 | 2 | 3) => {
   switch (level) {
-    case 'oro':
+    case 1:
       return '/gold.png';
-    case 'plata':
+    case 2:
       return '/silver.png';
-    case 'bronce':
+    case 3:
       return '/bronze.png';
     default:
       return '';
@@ -116,11 +130,68 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
     };
   }, [showCompanyForm]);
 
+  // async function loadCustomers() {
+  //   try {
+  //     setLoading(true);
+  //     const data = await getCustomers(true);
+  //     setCustomers(data);
+  //   } catch (error) {
+  //     console.error(t('cust.errorLoad'), error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }
+
   async function loadCustomers() {
     try {
-      setLoading(true);
-      const data = await getCustomers(true);
-      setCustomers(data);
+      
+      const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/Customer`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${API_TOKENSL}`,
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al cargar los datos');
+      }
+
+      const data = await response.json();
+      console.log('loadCustomers', data)
+
+      setCustomers(data.data.map((item: any) => ({
+        _id: item.id,
+        _idcustomer: item.idCustomer,
+        is_branch: item.isBranch,
+        branch_name: item.branchName,
+        is_national: item.isNational,
+        is_persona_fisica: item.isPersonaFisica,
+        curp: item.curp,
+        // type: item.type,
+        company_id: item.companyId,
+        person_id: item.personId,
+        // nationality: item.nationality,
+        // client_level: item.clientLevel ?? 'oro',
+        client_level_id: item.clientLevelId,
+        fiscal_data: {
+          business_name: item.fiscalData.businessName,
+          country: item.fiscalData.country,
+          state: item.fiscalData.state,
+          taxid: item.fiscalData.taxId,
+        },
+        contacts: item.contacts,
+        addresses: item.addresses,
+        is_corresponsal: item.isCorresponsal,
+        history: item.history,
+        created_at: item.createdAt ? new Date(item.createdAt) : undefined,
+        created_by: item.createdBy || undefined,
+        updated_at: item.updatedAt ? new Date(item.updatedAt) : undefined,
+        status: item.status,
+        archived: item.archived,
+        data_state: item.dataState,
+      })));
     } catch (error) {
       console.error(t('cust.errorLoad'), error);
     } finally {
@@ -171,26 +242,34 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
   function handleNewCustomer() {
     setEditingCustomer(null);
     setFormData({
-      is_branch: false,
-      branch_name: '',
-      is_national: false,
-      is_persona_fisica: false,
-      curp: '',
-      type: 'moral',
-      company_id: '',
-      person_id: '',
-      nationality: 'nacional',
-      status: 'activo',
-      client_level: 'oro',
-      client_level_id: CLIENT_LEVEL_MAP.oro,
-      fiscal_data: {
-        business_name: '',
-        taxid: '',
-        country: 'MX',
-        state: '',
+      Id: '',
+      IdCustomer: 0,
+      IsBranch: false,
+      BranchName: '',
+      IsNational: false,
+      IsPersonaFisica: false,
+      Curp: '',
+      // type: 'moral',
+      CompanyId: '',
+      PersonId: '',
+      // nationality: 'nacional',
+      // client_level: 'oro',
+      ClientLevelId: CLIENT_LEVEL_MAP.oro,
+      FiscalData: {
+        BusinessName: '',
+        Country: 'MX',
+        State: '',
+        TaxId: '',
       },
-      contacts: [],
-      addresses: [],
+      Contacts: [],
+      Addresses: [],
+      IsCorresponsal: false,
+      History: [],
+      CreatedAt: Date,
+      CreatedBy: {IdUser: user._id, Name: user?.name},
+      Status: 1,
+      Archived: false,
+      DataState: 1
     });
     setIsFormOpen(true);
   }
@@ -201,68 +280,84 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
   const selectedCompany = companies.find(c => c._id === customer.company_id);
 
   setFormData({
-    is_branch: customer.is_branch,
-    branch_name: customer.branch_name || '',
-    is_national: customer.is_national ?? false,
-    is_persona_fisica: customer.is_persona_fisica ?? false,
-    curp: customer.curp || '',
-    type: customer.type,
-    company_id: customer.company_id || '',
-    person_id: customer.person_id || '',
-    nationality: customer.nationality ?? 'nacional',
-    status: customer.status,
-    client_level: customer.client_level ?? 'oro',
-    client_level_id:
-    customer.client_level_id ??
-    CLIENT_LEVEL_MAP[customer.client_level ?? 'oro'],
-    fiscal_data: selectedCompany
-      ? {
-          business_name: selectedCompany.business_name || '',
-          taxid: customer.fiscal_data.taxid || selectedCompany.rfc_taxid || '',
-          country: selectedCompany.country || 'MX',
-          state: selectedCompany.state || '',
-        }
-      : customer.fiscal_data,
-    contacts: customer.contacts || [],
-    addresses: customer.addresses || [],
+    Id: customer._id,
+    IdCustomer: customer._idcustomer,
+    IsBranch: customer.is_branch,
+    BranchName: customer.branch_name || '',
+    IsNational: customer.is_national ?? false,
+    IsPersonaFisica: customer.is_persona_fisica ?? false,
+    Curp: customer.curp || '',
+    // type: customer.type,
+    CompanyId: customer.company_id || '',
+    PersonId: customer.person_id || '',
+    // nationality: customer.nationality ?? 'nacional',
+    // client_level: customer.client_level ?? 'oro',
+    ClientLevelId: customer.client_level_id ?? 1,
+    FiscalData: selectedCompany ?
+        {
+          BusinessName: selectedCompany.business_name || '',
+          Country: selectedCompany.country || 'MX',
+          State: selectedCompany.state || '',
+          TaxId: customer.fiscal_data.taxid || selectedCompany.rfc_taxid || '',
+        } : customer.fiscal_data,
+    Contacts: customer.contacts || [],
+    Addresses: customer.addresses || [],
+    IsCorresponsal: customer.is_corresponsal,
+    History: customer.history,
+    CreatedAt: customer.created_at,
+    CreatedBy: customer.created_by,
+    Status: customer.status,
+    Archived: customer.archived,
+    DataState: customer.data_state,
   });
 
   setIsFormOpen(true);
 }
 
 async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
-  e.preventDefault();
+  
   try {
+    e.preventDefault();
     setLoading(true);
 
-      const selectedCompany = companies.find(c => c._id === formData.company_id);
+      const selectedCompany = companies.find(c => c._id === formData.CompanyId);
 
-      if (!selectedCompany && !formData.person_id) {
+      if (!selectedCompany && !formData.PersonId) {
       showWarning(t('cust.errorLoadCompanyPeople'));
         setLoading(false);
         return;
       }
 
+      //const maxIdDoc = customers.length
+        // .find()
+        // .sort({ idcustomer: -1 })
+        // .limit(1)
+        // .toArray();
+
+      const nextId = customers.length > 0 ? (customers[0]._idcustomer || 0) + 1 : 1;
+
+      setFormData({ ...formData, IdCustomer: nextId })
+
       const dataToSave = {
         ...formData,
-          fiscal_data: selectedCompany ? {
-          business_name: selectedCompany.business_name,
-          taxid: formData.fiscal_data.taxid || selectedCompany.rfc_taxid,
-          country: selectedCompany.country,
-          state: selectedCompany.state,
-        } : formData.fiscal_data,
+          FiscalData: selectedCompany ? {
+          BusinessName: selectedCompany.business_name,
+          Country: selectedCompany.country,
+          State: selectedCompany.state,
+          TaxId: formData.FiscalData.TaxId || selectedCompany.rfc_taxid,
+        } : formData.FiscalData,
       };
 
       const existsDuplicate = customers.some(customer =>
-      customer.company_id === formData.company_id &&
-      customer.status === formData.status &&
-      customer.is_branch === formData.is_branch &&
+      customer.company_id === formData.CompanyId &&
+      customer.status === formData.Status &&
+      customer.is_branch === formData.IsBranch &&
       (
         // matriz
-        !formData.is_branch ||
+        !formData.IsBranch ||
         // sucursal
         customer.branch_name?.trim().toLowerCase() ===
-          formData.branch_name.trim().toLowerCase()
+          formData.BranchName.trim().toLowerCase()
       ) &&
       (
         // si es edición, excluir el mismo registro
@@ -278,9 +373,41 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
     }
 
       if (editingCustomer) {
-        await updateCustomer(editingCustomer._idcustomer!, dataToSave);
+        // await updateCustomer(editingCustomer._idcustomer!, dataToSave);
+        console.log('_id', editingCustomer._id)
+
+        setFormData({ ...formData, Id: editingCustomer._id });     
+        const response = await fetch(`${API_URL}/v1/kl/catalog/update/Customer`, {          
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${API_TOKENSL}`,
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
+          },
+          body: JSON.stringify(dataToSave),
+        });
+
+        if (!response.ok) {
+          showError('Error al actualizar el registro');
+        }
+
       } else {
-        await createCustomer(dataToSave);
+      //   await createCustomer(dataToSave);
+
+        const response = await fetch(`${API_URL}/v1/kl/catalog/add/Customer`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${API_TOKENSL}`,
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
+          },
+          body: JSON.stringify(dataToSave),
+        });
+
+        if (!response.ok) {
+          showError('Error al crear el registro');
+        }
+
       }
 
       await loadCustomers();
@@ -341,14 +468,14 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       handleCompanyChange(created._id!)
       setFormData({ 
         ...formData, 
-        company_id: created._id!,
-        nationality: created.nationality,
-        is_national: created.nationality === 'nacional' ? true : false,
-        fiscal_data: {
-          business_name: created.business_name,
-          taxid: created.rfc_taxid,
-          country: created.country,
-          state: created.state,
+        CompanyId: created._id!,
+        // nationality: created.nationality,
+        IsNational: created.nationality === 'nacional' ? true : false,
+        FiscalData: {
+          BusinessName: created.business_name,
+          Country: created.country,
+          State: created.state,
+          TaxId: created.rfc_taxid,
         },
       });
       handleCloseModal()
@@ -374,29 +501,29 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
 
   function addContact() {
     const newContact: Contact = {
-      type: 'general',
-      name: '',
-      email: '',
-      phone: '',
-      position: '',
-      status: 'activo',
-      valid_from: new Date().toISOString(),
-      valid_to: null,
+      Email: '',
+      Name: '',
+      Phone: '',
+      Position: '',
+      Status: 1, //'activo',
+      Type: 'general',
+      ValidFrom: new Date().toISOString(),
+      valiValidTo: null,
     };
-    setFormData({ ...formData, contacts: [...formData.contacts, newContact] });
+    setFormData({ ...formData, Contacts: [...formData.Contacts, newContact] });
   }
 
   function removeContact(index: number) {
     setFormData({
       ...formData,
-      contacts: formData.contacts.filter((_, i) => i !== index),
+      Contacts: formData.Contacts.filter((_, i) => i !== index),
     });
   }
 
   function updateContact(index: number, field: keyof Contact, value: string) {
-    const updated = [...formData.contacts];
+    const updated = [...formData.Contacts];
     updated[index] = { ...updated[index], [field]: value };
-    setFormData({ ...formData, contacts: updated });
+    setFormData({ ...formData, Contacts: updated });
   }
 
   function addAddress() {
@@ -410,27 +537,27 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       valid_from: new Date().toISOString(),
       valid_to: null,
     };
-    setFormData({ ...formData, addresses: [...formData.addresses, newAddress] });
+    setFormData({ ...formData, Addresses: [...formData.Addresses, newAddress] });
   }
 
   function removeAddress(index: number) {
     setFormData({
       ...formData,
-      addresses: formData.addresses.filter((_, i) => i !== index),
+      Addresses: formData.Addresses.filter((_, i) => i !== index),
     });
   }
 
   function updateAddress(index: number, field: keyof Address, value: string) {
-    const updated = [...formData.addresses];
+    const updated = [...formData.Addresses];
     updated[index] = { ...updated[index], [field]: value };
-    setFormData({ ...formData, addresses: updated });
+    setFormData({ ...formData, Addresses: updated });
   }
 
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch = customer.fiscal_data.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.fiscal_data.taxid.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = statusFilter === 'todos' || customer.status === statusFilter;
+    const matchesStatus = statusFilter === 'todos' || statusFilter === (customer.status === 1 ? 'activo' : 'inactivo');
 
     return matchesSearch && matchesStatus;
   });
@@ -441,13 +568,13 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
     if (!selectedCompany) {
       setFormData({
         ...formData,
-        company_id: '',
-        is_national: false,
-        fiscal_data: {
-          business_name: '',
-          taxid: '',
-          country: 'MX',
-          state: '',
+        CompanyId: '',
+        IsNational: false,
+        FiscalData: {
+          BusinessName: '',
+          Country: 'MX',
+          State: '',
+          TaxId: '',
         },
       });
       return;
@@ -455,15 +582,15 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
 
     setFormData({
       ...formData,
-      company_id: selectedCompanyId,
-      is_national: selectedCompany.nationality === 'nacional' ? true : false,
-      fiscal_data: {
-        business_name: selectedCompany.business_name || '',
-        taxid: selectedCompany.rfc_taxid || '',
-        country: selectedCompany.country || 'MX',
-        state: selectedCompany.state || '',
+      CompanyId: selectedCompanyId,
+      IsNational: selectedCompany.nationality === 'nacional' ? true : false,
+      FiscalData: {
+        BusinessName: selectedCompany.business_name || '',
+        Country: selectedCompany.country || 'MX',
+        State: selectedCompany.state || '',
+        TaxId: selectedCompany.rfc_taxid || '',
       },
-      is_persona_fisica: selectedCompany.rfc_taxid.length === 13 ? true : false,
+      IsPersonaFisica: selectedCompany.rfc_taxid.length === 13 ? true : false,
     });
   }
 
@@ -519,7 +646,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                       {t('cust.selectCompany')}
                   </label>
                   <select
-                    value={formData.company_id}
+                    value={formData.CompanyId}
                     disabled={!!editingCustomer}
                     onChange={(e) => handleCompanyChange(e.target.value)}
                     className={styles.selectInput}
@@ -559,8 +686,8 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   <input
                     type="checkbox"
                     id="is_branch"
-                    checked={formData.is_branch}
-                    onChange={(e) => setFormData({ ...formData, is_branch: e.target.checked })}
+                    checked={formData.IsBranch}
+                    onChange={(e) => setFormData({ ...formData, IsBranch: e.target.checked })}
                     className={styles.checkbox}
                     disabled={loading}
                   />
@@ -571,34 +698,34 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   <input
                     type="checkbox"
                     id="is_national"
-                    checked={formData.is_national}
+                    checked={formData.IsNational}
                     disabled
                     onChange={(e) => setFormData({
                       ...formData,
-                      is_national: e.target.checked,
-                      is_persona_fisica: false,
-                      curp: ''
+                      IsNational: e.target.checked,
+                      IsPersonaFisica: false,
+                      Curp: ''
                     })}
                     className={styles.checkbox}
                   />
                   <label htmlFor="is_national" className={styles.checkboxText}>{t('cust.Isnational')}</label>
                 </div>
 
-                 {formData.is_national && (
+                 {formData.IsNational && (
                   <div className={styles.checkboxField}>
                     <input
                       type="checkbox"
                       id="is_persona_fisica"
-                      checked={formData.is_persona_fisica}
+                      checked={formData.IsPersonaFisica}
                       onChange={(e) => {
                         const checked = e.target.checked;
 
                         setFormData({
                           ...formData,
-                          is_persona_fisica: checked,
-                          type: checked ? 'fisica' : 'moral',
-                          person_id: checked ? formData.person_id : '',
-                          curp: checked ? formData.curp : '',
+                          IsPersonaFisica: checked,
+                          // type: checked ? 'fisica' : 'moral',
+                          PersonId: checked ? formData.PersonId : '',
+                          Curp: checked ? formData.Curp : '',
                         });
                       }}
                       className={styles.checkbox}
@@ -622,12 +749,12 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   </label>
                   <input
                     type="text"
-                    value={formData.fiscal_data.taxid}
+                    value={formData.FiscalData.TaxId}
                     disabled
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        fiscal_data: { ...formData.fiscal_data, taxid: e.target.value }
+                        FiscalData: { ...formData.FiscalData, TaxId: e.target.value }
                       })
                     }
                     className={styles.textInput}
@@ -640,10 +767,10 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   <label className={styles.switch}>
                     <input
                       type="checkbox"
-                      checked={formData.status === 'activo'}
+                      checked={formData.Status === 1}
                       onChange={(e) => setFormData({
                         ...formData,
-                        status: e.target.checked ? 'activo' : 'inactivo'
+                        Status: e.target.checked ? 1 : 0
                       })}
                     />
                     <span className={styles.slider}></span>
@@ -656,35 +783,38 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   </label> */}
 
                   <select
-                    value={formData.client_level}
+                    value={formData.ClientLevelId}
                     onChange={(e) => {
                       const level = e.target.value as 'oro' | 'plata' | 'bronce';
                       setFormData({
                         ...formData,
-                        client_level: level,
-                        client_level_id: CLIENT_LEVEL_MAP[level],
+                        // client_level: level,
+                        ClientLevelId: CLIENT_LEVEL_MAP[level],
                       });
                     }}
                     className={styles.selectInput}
                     required
-                    disabled={formData.status !== 'activo'}
+                    disabled={formData.Status !== 1}
                   >
                     <option value="" disabled>
                       {t('cust.selectLevel')}
                     </option>
-                    <option value="oro">{t('cust.clientLevelGold')}</option>
+                    <option value={1}>{t('cust.clientLevelGold')}</option>
+                    <option value={2}>{t('cust.clientLevelSilver')}</option>
+                    <option value={3}>{t('cust.clientLevelBronze')}</option>
+                    {/* <option value="oro">{t('cust.clientLevelGold')}</option>
                     <option value="plata">{t('cust.clientLevelSilver')}</option>
-                    <option value="bronce">{t('cust.clientLevelBronze')}</option>
+                    <option value="bronce">{t('cust.clientLevelBronze')}</option> */}
                   </select>
 
                 </div>         
-                {formData.is_branch && (
+                {formData.IsBranch && (
                   <div className={styles.fieldGroup}>
                     <label className={styles.fieldLabel}>{t('cust.branchName')}</label>
                     <input
                       type="text"
-                      value={formData.branch_name}
-                      onChange={(e) => setFormData({ ...formData, branch_name: e.target.value })}
+                      value={formData.BranchName}
+                      onChange={(e) => setFormData({ ...formData, BranchName: e.target.value })}
                       className={styles.textInput}
                       placeholder={t('cust.branchName')}
                       disabled={!!editingCustomer}
@@ -692,15 +822,15 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   </div>
                 )}
 
-                {formData.is_national && formData.is_persona_fisica && (
+                {formData.IsNational && formData.IsPersonaFisica && (
                   <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel}>CURP</label>
                   <input
                     type="text"
-                    value={formData.curp}
+                    value={formData.Curp}
                     onChange={(e) => setFormData({
                       ...formData, 
-                      curp: e.target.value.toUpperCase()
+                      Curp: e.target.value.toUpperCase()
                                           .replace(/[^A-Z0-9]/g, "")
                                           .slice(0, 18)
                       })}
@@ -736,7 +866,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   <Plus size={20} />
                   {t('cust.addContact')}
                 </button>
-                {formData.contacts.map((contact, index) => (
+                {formData.Contacts.map((contact, index) => (
                   <div key={index} className={styles.itemCard}>
                     <div className={styles.itemHeader}>
                       <h4>{t('cust.contact')} {index + 1}</h4>
@@ -823,7 +953,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   <Plus size={20} />
                   {t('cust.addAddress')}
                 </button>
-                {formData.addresses.map((address, index) => (
+                {formData.Addresses.map((address, index) => (
                   <div key={index} className={styles.itemCard}>
                     <div className={styles.itemHeader}>
                       <h4>{t('cust.addresses')} {index + 1}</h4>
@@ -1111,8 +1241,8 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       ) : filteredCustomers.length > 0 ? (
         <div className={styles.customerList}>
           {filteredCustomers.map((customer) => {
-            const medalSrc = customer.client_level
-            ? getClientLevelMedal(customer.client_level)
+            const medalSrc = customer.client_level_id
+            ? getClientLevelMedal(customer.client_level_id)
             : null;
 
             return (
@@ -1126,7 +1256,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                         <div className={styles.medalWrapper}>
                           <img
                             src={medalSrc}
-                            alt={customer.client_level}
+                            // alt={customer.client_level}
                             className={styles.medalImage}
                           />
                         </div>
@@ -1137,7 +1267,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                       </h3>
                       <p className={styles.customerType}>
                         <span className={styles.badge}>
-                          {customer.type === 'fisica'
+                          {customer.is_persona_fisica === true
                             ? 'Persona física'
                             : 'Persona moral'}
                         </span>
@@ -1145,12 +1275,15 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                       <p>
                         <span
                           className={
-                            customer.status === 'activo'
+                            customer.status === 1
                               ? styles.statusActive
                               : styles.statusInactive
                           }
                         >
-                          {customer.status}
+                          {customer.status === 1 
+                            ? 'Activo'
+                            : 'Inactivo'
+                          }
                         </span>
                       </p>
                     </div>
@@ -1163,7 +1296,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
 
                     <p className={styles.customerNationality}>
                       <span className={styles.badge}>
-                        {customer.nationality === 'nacional'
+                        {customer.is_national === true
                           ? 'Nacional'
                           : 'Extranjero'}
                       </span>
