@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { Plus, Edit2, Search, RefreshCw, ChevronDown, FileText, Clock, Filter, FilterXIcon, ChevronUp  } from 'lucide-react';
+import { Plus, Edit2, Search, RefreshCw, ChevronDown, FileText, Clock, Filter, FilterXIcon, ChevronUp, Copy  } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -217,6 +217,26 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
         ? prev.filter(id => id !== typeId)
         : [...prev, typeId]
     );
+  };
+
+  const handleCopy = async (id_: String) => {
+    try {         
+     setLoading(true)
+      await quotationService.clone(id_)
+
+
+      setLoading(false)
+
+      showInfo(t('quote.clone'))     
+
+      loadQuotationsRequests();
+
+    } catch (error) {
+      //console.error('Error saving quotation:', error);
+      setLoading(false)
+      showError(t('quote.errors.saveQuotation'));
+    } finally {      
+    }
   };
 
   const handleRequesStatus = (idStatus: string) => {
@@ -870,6 +890,14 @@ useEffect(() => {
                 </div>
 
                 <div className={styles.cardActions}>
+                  <button
+                    className={`${styles.actionButton} ${styles.editButton}`}
+                    onClick={()=> {                         
+                        handleCopy(quotation.id)
+                      }}
+                    title={t('quote.copy')}>
+                    <Copy size={18} />
+                  </button>
                   <button
                     className={`${styles.actionButton} ${styles.editButton}`}
                     onClick={()=> { 
