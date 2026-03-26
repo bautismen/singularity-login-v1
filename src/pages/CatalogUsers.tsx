@@ -6,8 +6,9 @@ import { User } from '../types/user';
 import { useNotification } from '../contexts/NotificationContext';
 import { Modal } from '../components/Modal';
 
-const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/users`;
-const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const API_URL = import.meta.env.VITE_API_CATALOGS;
+const API_KEY = import.meta.env.VITE_APIKEYSL;
+const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 
 export function CatalogUsers() {
   const { t } = useLanguage();
@@ -21,10 +22,11 @@ export function CatalogUsers() {
   const [editingItem, setEditingItem] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    name: '',
-    password: '',
-    roles: ['user'],
+    _Id: '',
+    Email: '',
+    Name: '',
+    Password: '',
+    Roles: ['user'],
   });
   const [modalState, setModalState] = useState<{
       isOpen: boolean;
@@ -51,11 +53,12 @@ export function CatalogUsers() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/User`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          'Authorization': `Bearer ${API_TOKENSL}`,
           'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
         },
       });
 
@@ -64,7 +67,7 @@ export function CatalogUsers() {
       }
 
       const data = await response.json();
-      setItems(data);
+      setItems(data.data);
     } catch (error) {
       console.error('Error loading Users data:', error);
       showError('user.errorLoad');
@@ -94,18 +97,20 @@ export function CatalogUsers() {
     if (item) {
       setEditingItem(item);
       setFormData({
-        email: item.email,
-        name: item.name || '',
-        password: '',
-        roles: item.roles,
+        _Id: item._Id,
+        Email: item.email,
+        Name: item.name || '',
+        Password: '',
+        Roles: item.roles,
       });
     } else {
       setEditingItem(null);
       setFormData({
-        email: '',
-        name: '',
-        password: '',
-        roles: ['user'],
+        _Id: '',
+        Email: '',
+        Name: '',
+        Password: '',
+        Roles: ['user'],
       });
     }
     setShowModal(true);
@@ -115,10 +120,11 @@ export function CatalogUsers() {
     setShowModal(false);
     setEditingItem(null);
     setFormData({
-      email: '',
-      name: '',
-      password: '',
-      roles: ['user'],
+      _Id: '',
+      Email: '',
+      Name: '',
+      Password: '',
+      Roles: ['user'],
     });
   };
 
@@ -132,27 +138,29 @@ export function CatalogUsers() {
       //   return;
       // }
 
-      if (!editingItem && !formData.password) {
+      if (!editingItem && !formData.Password) {
         alert('La contraseña es obligatoria para nuevos usuarios');
         return;
       }
 
-      const payload: any = {
-        email: formData.email,
-        name: formData.name || null,
-        roles: formData.roles,
+      const payload: any = {         
+        Email: formData.Email,
+        Name: formData.Name || null,
+        Roles: formData.Roles,
       };
 
-      if (formData.password) {
-        payload.password = formData.password;
+      if (formData.Password) {
+        payload.PasswordHash = formData.Password;
       }
 
       if (editingItem) {
-        const response = await fetch(`${API_URL}/${editingItem._id}`, {
+        payload._Id = editingItem._Id;
+        const response = await fetch(`${API_URL}/v1/kl/catalog/update/User`, {
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+            'Authorization': `Bearer ${API_TOKENSL}`,
             'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
           },
           body: JSON.stringify(payload),
         });
@@ -162,11 +170,15 @@ export function CatalogUsers() {
         }
 
       } else {
-        const response = await fetch(API_URL, {
+        payload._Id = '';
+        payload.CreatedAt = new Date();
+        payload.UpdatedAt = new Date();
+        const response = await fetch(`${API_URL}/v1/kl/catalog/add/User`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+            'Authorization': `Bearer ${API_TOKENSL}`,
             'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
           },
           body: JSON.stringify(payload),
         });
@@ -227,9 +239,9 @@ export function CatalogUsers() {
   const toggleRole = (role: string) => {
     setFormData(prev => ({
       ...prev,
-      roles: prev.roles.includes(role)
-        ? prev.roles.filter(r => r !== role)
-        : [...prev.roles, role]
+      Roles: prev.Roles.includes(role)
+        ? prev.Roles.filter(r => r !== role)
+        : [...prev.Roles, role]
     }));
   };
 
@@ -337,13 +349,13 @@ export function CatalogUsers() {
                       >
                         <Edit2 size={16} />
                       </button>
-                      <button
+                      {/*<button
                         className="iconButton delete"
                         onClick={() => handleDelete(item._id)}
                         title={t('catalog.delete')}
                       >
                         <Trash2 size={16} />
-                      </button>
+                      </button>*/}
                     </div>
                   </td>
                 </tr>
@@ -383,8 +395,8 @@ export function CatalogUsers() {
                   <input
                     type="email"
                     className="input"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    value={formData.Email}
+                    onChange={(e) => setFormData({ ...formData, Email: e.target.value })}
                     disabled={loading}
                     placeholder="usuario@ejemplo.com"
                     required
@@ -405,10 +417,10 @@ export function CatalogUsers() {
                   <input
                     type="text"
                     className="input"
-                    value={formData.name}
+                    value={formData.Name}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      name: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
+                      Name: e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
                     })}
                     disabled={loading}
                     placeholder={t('user.fullName')}
@@ -430,8 +442,8 @@ export function CatalogUsers() {
                   <input
                     type="password"
                     className="input"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    value={formData.Password}
+                    onChange={(e) => setFormData({ ...formData, Password: e.target.value })}
                     disabled={editingItem ? true : false} 
                     placeholder={t('user.password')}
                     required ={!editingItem}
@@ -451,7 +463,7 @@ export function CatalogUsers() {
                       <input
                         type="checkbox"
                         className="checkbox"
-                        checked={formData.roles.includes('user')}
+                        checked={formData.Roles.includes('user')}
                         onChange={() => toggleRole('user')}
                         disabled={loading}
                       />
@@ -461,7 +473,7 @@ export function CatalogUsers() {
                       <input
                         type="checkbox"
                         className="checkbox"
-                        checked={formData.roles.includes('admin')}
+                        checked={formData.Roles.includes('admin')}
                         onChange={() => toggleRole('admin')}
                         disabled={loading}
                       />
@@ -471,7 +483,7 @@ export function CatalogUsers() {
                       <input
                         type="checkbox"
                         className="checkbox"
-                        checked={formData.roles.includes('pricing')}
+                        checked={formData.Roles.includes('pricing')}
                         onChange={() => toggleRole('pricing')}
                         disabled={loading}
                       />
