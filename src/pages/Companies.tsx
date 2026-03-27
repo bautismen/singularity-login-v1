@@ -12,6 +12,7 @@ import { catalogService } from '../services/catalogsService';
 export default function Companies() {
   const { t } = useLanguage();
   const [countries, setCountries] = useState<any[]>([]);
+  const [sectores, setSectores] = useState<any[]>([]);
   const { user } = useAuth();
 
   const loadCountries = async () => {
@@ -20,6 +21,15 @@ export default function Companies() {
       setCountries(countriesData.data.filter((c: any) => c.status === 1));
     } catch (error) {
       console.error('Error loading countries:', error);
+    }
+  };
+
+  const loadSector = async () => {
+    try {
+      const SectorData = await catalogService.getSector();
+      setSectores(SectorData.data.filter((c: any) => c.status === 1));
+    } catch (error) {
+      console.error('Error loading sector:', error);
     }
   };
 
@@ -51,12 +61,15 @@ async function loadCompanies() {
     Status: 1,
     Archived: false,
     Data_state: 1,    
-    Created_by: {User_id: user._id ,Name: user?.name}
+    Created_by: {User_id: user._id ,Name: user?.name},
+    Sector_id: 0,
+    Sector: ''
   });
 
 useEffect(() => {
   loadCompanies();
   loadCountries();
+  loadSector();
 }, []);
 
 useEffect(() => {
@@ -79,6 +92,8 @@ const handleEditCompanies = (company: Company) => {
     Archived: company.archived,
     Data_state: company.data_state,
     Created_by: company.created_by,
+    Sector_id: company.sector_id,
+    Sector: company.sector,
   });
   setIsFormOpen(true);
 };
@@ -122,7 +137,9 @@ const handleSaveCompany = async (e: React.FormEvent) => {
       Country: formData.Nationality === 'nacional' ? 'MX' : formData.Country,
       Archived: formData.Archived ?? false,
       Data_state: formData.Data_state ?? 1,
-      Created_by: formData.Created_by || {User_id: user._id, Name:user?.name || ''}
+      Created_by: formData.Created_by || {User_id: user._id, Name:user?.name || ''},
+      Sector_id: formData.Sector_id,
+      Sector: formData.Sector
     };
 
 
@@ -147,6 +164,8 @@ const handleSaveCompany = async (e: React.FormEvent) => {
       Archived: false,
       Data_state: 1,
       Created_by: {User_id: user._id ,Name: user?.name},
+      Sector_id: 0,
+      Sector: ''
     });
 
     // Recargar empresas
@@ -190,6 +209,8 @@ function handleNewCompany() {
     Archived: false,
     Data_state: 1,
     Created_by: {User_id: user._id ,Name: user?.name},
+    Sector_id: 0,
+    Sector: ''
   });
   setIsFormOpen(true);
 }
@@ -273,6 +294,39 @@ if (isFormOpen) {
                   {t('comp.Isnational')}
                 </label>
               </div>
+            </div>
+
+            {/* SectoresDeNegocio */}
+            <div className={styles.fieldGroup}>
+              <label className={styles.fieldLabel}>
+                <span className={styles.required}>* </span>{t('supp.selectSector')}
+              </label>
+              <select
+                value={formData.Sector_id}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    Sector_id: parseInt(e.target.value),
+                    Sector: e.target.options[e.target.selectedIndex].text
+                  })
+                }
+                className={styles.selectInput}
+                required
+                onInvalid={(e) =>
+                  e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                }
+                onInput={(e) =>
+                  e.currentTarget.setCustomValidity('')
+                }
+              >
+                <option value="">{t('supp.selectSector')}</option>
+                {sectores.map((sector) => (
+                  <option key={sector._Id} value={sector._Id}>
+                    {sector.name}
+                  </option>
+                ))
+                }
+              </select>
             </div>
           </div>
 

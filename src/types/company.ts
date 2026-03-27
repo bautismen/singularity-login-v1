@@ -13,4 +13,6 @@ export interface Company {
     User_id: string;
     Name: string;
   };
+  Sector_id: number;
+  Sector: string;
 }
