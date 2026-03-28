@@ -24,8 +24,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const [loading, setLoading] = useState(false);
   const [requestData, setRequestData] = useState<any>(null);
-  const [controlData, setControlData] = useState<any>(null);
-  const [countries, setCountries] = useState<any[]>([]);
+  const [controlData, setControlData] = useState<any>(null);  
   const [showModal, setShowModal] = useState(false);
   const [selectsuppliers, setSelectsuppliers] = useState<any[]>([]);
 
@@ -87,36 +86,16 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const [Disabled, setDisabled] = useState(false);
 
   useEffect(() => {
-    loadData();
-    loadCountries();
+    loadData();    
     loadSuppliers();
     loadCustomers();
   }, [requestId, controlId]);
-
-  const loadCountries = async () => {
-    try {
-      const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
-
-      const response = await fetch(`${BASE_URL}/functions/v1/catalog-countries`, {
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const countriesData = await response.json();
-      setCountries(countriesData.filter((c: any) => c.status === 1));
-    } catch (error) {
-      console.error('Error loading countries:', error);
-    }
-  };
 
     const loadCustomers = async () => {
     try {     
 
       const customersData = await getCustomers(true);
-      setCustomers(customersData.filter((c: any) => c.status === 'activo' || c.datastate === 1));
+      setCustomers(customersData.filter((c: any) => c.status === 1 || c.dataState === 1));
     } catch (error) {
       console.error('Error loading customers:', error);
     }
@@ -1122,8 +1101,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                     >
                       <option value="">{t('ctrlpricing.select')}</option>
                      {customers.map((customer) => (
-                      <option key={customer._id} value={customer._id}>
-                        {customer.branch_name ? `${customer.branch_name}, ${customer.fiscal_data?.business_name}` : customer.fiscal_data?.business_name}
+                      <option key={customer.id} value={customer.id}>
+                        {customer.branchName ? `${customer.branchName}, ${customer.fiscalData?.businessName}` : customer.fiscalData?.businessName}
                       </option>
                       ))}                      
                     </select> 
@@ -1144,8 +1123,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                     >
                       <option value="">{t('ctrlpricing.select')}</option>
                      {customers.map((customer) => (
-                      <option key={customer._id} value={customer._id}>
-                        {customer.branch_name ? `${customer.branch_name}, ${customer.fiscal_data?.business_name}` : customer.fiscal_data?.business_name}
+                      <option key={customer.id} value={customer.id}>
+                        {customer.branchName ? `${customer.branchName}, ${customer.fiscalData?.businessName}` : customer.fiscalData?.businessName}
                       </option>
                       ))}                      
                     </select>              
