@@ -1,15 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, Save, Edit2, ChevronDown, ChevronUp, X, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useNotification } from '../contexts/NotificationContext';
-import { Customer, Person, Company, Contact, Address, History, MEXICAN_STATES, CONTACT_TYPES } from '../types/customer';
-import { getCustomers, createCustomer, updateCustomer, getPeople, getCompanies, createCompany } from '../services/customerService';
+import { Customer, Person, Company, Contacts, Address, History, MEXICAN_STATES, CONTACT_TYPES } from '../types/customer';
+import { getCustomers, createCustomer, updateCustomer, getCompanies, createCompany } from '../services/customerService';
 import styles from './Customers.module.css';
+import { useNotification } from '../contexts/NotificationContext';
 import { useAuth } from '../contexts/AuthContext';
-
-const API_URL = import.meta.env.VITE_API_CATALOGS;
-const API_KEY = import.meta.env.VITE_APIKEYSL;
-const API_TOKENSL = import.meta.env.VITE_TOKENSL;
+import { catalogService } from '../services/catalogsService';
 
 export default function Customers() { //{ onNavigate }: { onNavigate: (route: string) => void }
   const { t } = useLanguage();
@@ -22,15 +19,15 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
     general: false,
     address: false,
     contacts: false,
   });
-
+  const { user } = useAuth();
   const [showPersonForm, setShowPersonForm] = useState(false);
   const [showCompanyForm, setShowCompanyForm] = useState(false);
+  const [sectores, setSectores] = useState<any[]>([]);
 
   const CLIENT_LEVEL_MAP = {
     oro: 1,
@@ -46,25 +43,24 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
     IsNational: false,
     IsPersonaFisica: false,
     Curp: '',
-    // type: 'moral' as 'fisica' | 'moral',
     CompanyId: '',
-    PersonId: '',
-    // nationality: 'nacional' as 'nacional' | 'extranjero',
+    PersonId: null,
     // client_level: 'oro' as  'oro' | 'plata' | 'bronce',
     ClientLevelId: 1 as 1 | 2 | 3,
     FiscalData: {
       BusinessName: '',
       Country: 'MX',
-      State: '',
       TaxId: '',
     },
-    Contacts: [] as Contact[],
+    Contacts: [] as Contacts[],
     Addresses: [] as Address[],
-    IsCorresponsal: false,
+    IsCorrespondent: false,
+    Sector_id: 0,
+    Sector: '',
     History: [] as History[],
     CreatedAt: Date,
-    UpdatedAt: null | Date,
-    CreatedBy: {IdUser: user._id, Name: user?.name},
+    UpdatedAt: Date,
+    CreatedBy: {IdUser: user?._id, Name: user?.name},
     Status: 1 as 1 | 0,//'activo' as 'activo' | 'inactivo',
     Archived: false,
     DataState: 1
@@ -94,14 +90,15 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
   });
 
   const [newCompany, setNewCompany] = useState<Partial<Company>>({
-    business_name: '',
-    rfc_taxid: '',
-    nationality: 'nacional',
-    country: 'MX',
-    state: '',
-    status: 'activo',
-    archivado: false,
-    datastate: 1,
+    Business_name: '',
+    Rfc_taxid: '',
+    Nationality: 'nacional',
+    Country: 'MX',
+    Sector_id: 0,
+    Sector: '',
+    Status: 1,
+    Archived: false,
+    Data_state: 1,
   });
 
   const [countries, setCountries] = useState<any[]>([]);
@@ -109,10 +106,14 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
   
   useEffect(() => {
     loadCustomers();
-    loadPeople();
-    loadCompanies();
-    loadCountries();
+     loadCompanies();
   }, []);
+
+  useEffect(() => {
+    // loadPeople();
+    loadCountries();
+    loadSector();
+  }, [searchTerm, statusFilter]);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -130,68 +131,11 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
     };
   }, [showCompanyForm]);
 
-  // async function loadCustomers() {
-  //   try {
-  //     setLoading(true);
-  //     const data = await getCustomers(true);
-  //     setCustomers(data);
-  //   } catch (error) {
-  //     console.error(t('cust.errorLoad'), error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }
-
   async function loadCustomers() {
     try {
-      
-      const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/Customer`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${API_TOKENSL}`,
-          'Content-Type': 'application/json',
-          'x-api-key': API_KEY,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al cargar los datos');
-      }
-
-      const data = await response.json();
-      console.log('loadCustomers', data)
-
-      setCustomers(data.data.map((item: any) => ({
-        _id: item.id,
-        _idcustomer: item.idCustomer,
-        is_branch: item.isBranch,
-        branch_name: item.branchName,
-        is_national: item.isNational,
-        is_persona_fisica: item.isPersonaFisica,
-        curp: item.curp,
-        // type: item.type,
-        company_id: item.companyId,
-        person_id: item.personId,
-        // nationality: item.nationality,
-        // client_level: item.clientLevel ?? 'oro',
-        client_level_id: item.clientLevelId,
-        fiscal_data: {
-          business_name: item.fiscalData.businessName,
-          country: item.fiscalData.country,
-          state: item.fiscalData.state,
-          taxid: item.fiscalData.taxId,
-        },
-        contacts: item.contacts,
-        addresses: item.addresses,
-        is_corresponsal: item.isCorresponsal,
-        history: item.history,
-        created_at: item.createdAt ? new Date(item.createdAt) : undefined,
-        created_by: item.createdBy || undefined,
-        updated_at: item.updatedAt ? new Date(item.updatedAt) : undefined,
-        status: item.status,
-        archived: item.archived,
-        data_state: item.dataState,
-      })));
+      setLoading(true);
+      const data = await getCustomers(true);
+      setCustomers(data);
     } catch (error) {
       console.error(t('cust.errorLoad'), error);
     } finally {
@@ -199,41 +143,51 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
     }
   }
 
-  async function loadPeople() {
-    try {
-      const data = await getPeople();
-      setPeople(data);
-    } catch (error) {
-      console.error(t('cust.errorLoadPeople'), error);
-    }
-  }
+  // async function loadPeople() {
+  //   try {
+  //     const data = await getPeople();
+  //     setPeople(data);
+  //   } catch (error) {
+  //     console.error(t('cust.errorLoadPeople'), error);
+  //   }
+  // }
 
   async function loadCompanies() {
     try {
-      const data = await getCompanies();
-      setCompanies(data);
+      const dataCompanie = await getCompanies();
+      setCompanies(dataCompanie.filter((c: any) => c.status === 1));
+
     } catch (error) {
       console.error('Error loading companies:', error);
     }
   }
 
-  const loadCountries = async () => {
+  async function loadCountries() {
     try {
-      const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${BASE_URL}/functions/v1/catalog-countries`, {
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      // const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      // const response = await fetch(`${BASE_URL}/functions/v1/catalog-countries`, {
+      //   headers: {
+      //     'Authorization': `Bearer ${API_KEY}`,
+      //     'Content-Type': 'application/json'
+      //   }
+      // });
 
-      const countriesData = await response.json();
-      setCountries(countriesData.filter((c: any) => c.status === 1));
+      const countriesData = await catalogService.getCountries();
+      setCountries(countriesData.data.filter((c: any) => c.status === 1));
     } catch (error) {
       console.error('Error loading countries:', error);
     }
   };
+
+  const loadSector = async () => {
+      try {
+        const SectorData = await catalogService.getSector();
+        setSectores(SectorData.data.filter((c: any) => c.status === 1));
+      } catch (error) {
+        console.error('Error loading sector:', error);
+      }
+    };
 
   function toggleSection(section: string) {
     setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -249,23 +203,23 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
       IsNational: false,
       IsPersonaFisica: false,
       Curp: '',
-      // type: 'moral',
       CompanyId: '',
-      PersonId: '',
-      // nationality: 'nacional',
+      PersonId: null,
       // client_level: 'oro',
       ClientLevelId: CLIENT_LEVEL_MAP.oro,
       FiscalData: {
         BusinessName: '',
         Country: 'MX',
-        State: '',
         TaxId: '',
       },
       Contacts: [],
       Addresses: [],
-      IsCorresponsal: false,
+      IsCorrespondent: false,
+      Sector_id: 0,
+      Sector: '',
       History: [],
       CreatedAt: Date,
+      UpdatedAt: Date,
       CreatedBy: {IdUser: user._id, Name: user?.name},
       Status: 1,
       Archived: false,
@@ -275,40 +229,44 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
   }
 
   function handleEditCustomer(customer: Customer) {
+  addHistory
   setEditingCustomer(customer);
 
-  const selectedCompany = companies.find(c => c._id === customer.company_id);
-
+  const selectedCompany = companies.find(c => c._Id === customer.companyId);
+  console.log(customer)
+  
   setFormData({
-    Id: customer._id,
-    IdCustomer: customer._idcustomer,
-    IsBranch: customer.is_branch,
-    BranchName: customer.branch_name || '',
-    IsNational: customer.is_national ?? false,
-    IsPersonaFisica: customer.is_persona_fisica ?? false,
+    Id: customer.id,
+    IdCustomer: customer.idCustomer,
+    IsBranch: customer.isBranch,
+    BranchName: customer.branchName || '',
+    IsNational: customer.isNational ?? false,
+    IsPersonaFisica: customer.isPersonaFisica ?? false,
     Curp: customer.curp || '',
     // type: customer.type,
-    CompanyId: customer.company_id || '',
-    PersonId: customer.person_id || '',
+    CompanyId: customer.companyId || '',
+    PersonId: null,
     // nationality: customer.nationality ?? 'nacional',
     // client_level: customer.client_level ?? 'oro',
-    ClientLevelId: customer.client_level_id ?? 1,
+    ClientLevelId: customer.clientLevelId ?? 1,
     FiscalData: selectedCompany ?
         {
           BusinessName: selectedCompany.business_name || '',
           Country: selectedCompany.country || 'MX',
-          State: selectedCompany.state || '',
-          TaxId: customer.fiscal_data.taxid || selectedCompany.rfc_taxid || '',
-        } : customer.fiscal_data,
+          TaxId: customer.fiscalData.taxId || selectedCompany.rfc_taxid || '',
+        } : customer.fiscalData,
     Contacts: customer.contacts || [],
     Addresses: customer.addresses || [],
-    IsCorresponsal: customer.is_corresponsal,
-    History: customer.history,
-    CreatedAt: customer.created_at,
-    CreatedBy: customer.created_by,
+    IsCorrespondent: customer.isCorrespondent,
+    Sector_id: selectedCompany?.sector_id || customer.sector_id,
+    Sector: selectedCompany?.sector || customer.sector,
+    CreatedAt: new Date(),
+    CreatedBy: customer.createdBy || [],
+    UpdatedAt: new Date(),
     Status: customer.status,
     Archived: customer.archived,
-    DataState: customer.data_state,
+    DataState: customer.dataState,
+    History: [],
   });
 
   setIsFormOpen(true);
@@ -320,7 +278,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
 
-      const selectedCompany = companies.find(c => c._id === formData.CompanyId);
+      const selectedCompany = companies.find(c => c._Id === formData.CompanyId);
 
       if (!selectedCompany && !formData.PersonId) {
       showWarning(t('cust.errorLoadCompanyPeople'));
@@ -328,41 +286,30 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
         return;
       }
 
-      //const maxIdDoc = customers.length
-        // .find()
-        // .sort({ idcustomer: -1 })
-        // .limit(1)
-        // .toArray();
-
-      const nextId = customers.length > 0 ? (customers[0]._idcustomer || 0) + 1 : 1;
-
-      setFormData({ ...formData, IdCustomer: nextId })
-
       const dataToSave = {
         ...formData,
           FiscalData: selectedCompany ? {
           BusinessName: selectedCompany.business_name,
           Country: selectedCompany.country,
-          State: selectedCompany.state,
           TaxId: formData.FiscalData.TaxId || selectedCompany.rfc_taxid,
         } : formData.FiscalData,
       };
 
       const existsDuplicate = customers.some(customer =>
-      customer.company_id === formData.CompanyId &&
-      customer.status === formData.Status &&
-      customer.is_branch === formData.IsBranch &&
+      customer.CompanyId === formData.CompanyId &&
+      customer.Status === formData.Status &&
+      customer.IsBranch === formData.IsBranch &&
       (
         // matriz
         !formData.IsBranch ||
         // sucursal
-        customer.branch_name?.trim().toLowerCase() ===
+        customer.BranchName?.trim().toLowerCase() ===
           formData.BranchName.trim().toLowerCase()
       ) &&
       (
         // si es edición, excluir el mismo registro
         !editingCustomer ||
-        customer._idcustomer !== editingCustomer._idcustomer
+        customer.Id !== editingCustomer.Id
       )
     );
 
@@ -373,40 +320,12 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
     }
 
       if (editingCustomer) {
-        // await updateCustomer(editingCustomer._idcustomer!, dataToSave);
-        console.log('_id', editingCustomer._id)
 
-        setFormData({ ...formData, Id: editingCustomer._id });     
-        const response = await fetch(`${API_URL}/v1/kl/catalog/update/Customer`, {          
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${API_TOKENSL}`,
-            'Content-Type': 'application/json',
-            'x-api-key': API_KEY,
-          },
-          body: JSON.stringify(dataToSave),
-        });
-
-        if (!response.ok) {
-          showError('Error al actualizar el registro');
-        }
+        await updateCustomer(editingCustomer.Id!, dataToSave);
 
       } else {
-      //   await createCustomer(dataToSave);
-
-        const response = await fetch(`${API_URL}/v1/kl/catalog/add/Customer`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${API_TOKENSL}`,
-            'Content-Type': 'application/json',
-            'x-api-key': API_KEY,
-          },
-          body: JSON.stringify(dataToSave),
-        });
-
-        if (!response.ok) {
-          showError('Error al crear el registro');
-        }
+      
+        await createCustomer(dataToSave);
 
       }
 
@@ -461,22 +380,24 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
   async function handleCreateCompany(e: React.FormEvent<HTMLFormElement>) {
 
     try {
-      
+
       e.preventDefault();
       const created = await createCompany(newCompany);
       setCompanies([...companies, created]);
-      handleCompanyChange(created._id!)
+      console.log(created._Id)
+      handleCompanyChange(created._Id!)
       setFormData({ 
         ...formData, 
-        CompanyId: created._id!,
+        CompanyId: created._Id!,
         // nationality: created.nationality,
-        IsNational: created.nationality === 'nacional' ? true : false,
+        IsNational: created.Nationality === 'nacional' ? true : false,
         FiscalData: {
-          BusinessName: created.business_name,
-          Country: created.country,
-          State: created.state,
-          TaxId: created.rfc_taxid,
+          BusinessName: created.Business_name,
+          Country: created.Country,
+          TaxId: created.Rfc_taxid,
         },
+        Sector_id: created.Sector_id,
+        Sector: created.Sector
       });
       handleCloseModal()
     } catch (error) {
@@ -488,26 +409,41 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
   function handleCloseModal(){
     setShowCompanyForm(false);
       setNewCompany({
-        business_name: '',
-        rfc_taxid: '',
-        nationality: undefined,
-        country: '',
-        state: '',
-        status: 'activo',
-        archivado: false,
-        datastate: 1,
+        Business_name: '',
+        Rfc_taxid: '',
+        Nationality: undefined,
+        Country: '',
+        Sector_id: 0,
+        Sector: '',
+        Status: 1,
+        Archived: false,
+        Data_state: 1,
       });
   }
 
+  function addHistory() {
+    const newhistory: History = {
+          userId: user?._id,
+          userName: user?.name,
+          date: new Date().toISOString(),
+          changes: {
+            field: '',
+            oldValue: '',
+            newValue: '',
+          },
+      };
+      setFormData({ ...formData, History: [...formData.History, newhistory] });
+  }
+
   function addContact() {
-    const newContact: Contact = {
-      Email: '',
-      Name: '',
-      Phone: '',
-      Position: '',
-      Status: 1, //'activo',
-      Type: 'general',
-      ValidFrom: new Date().toISOString(),
+    const newContact: Contacts = {
+      email: '',
+      name: '',
+      phone: '',
+      position: '',
+      status: 1, //'activo',
+      type: 'general',
+      validFrom: new Date().toISOString(),
       valiValidTo: null,
     };
     setFormData({ ...formData, Contacts: [...formData.Contacts, newContact] });
@@ -520,7 +456,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
     });
   }
 
-  function updateContact(index: number, field: keyof Contact, value: string) {
+  function updateContact(index: number, field: keyof Contacts, value: string) {
     const updated = [...formData.Contacts];
     updated[index] = { ...updated[index], [field]: value };
     setFormData({ ...formData, Contacts: updated });
@@ -531,11 +467,11 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       street: '',
       city: '',
       state: '',
-      postal_code: '',
+      postalCode: '',
       country: 'MX',
-      status: 'activo',
-      valid_from: new Date().toISOString(),
-      valid_to: null,
+      status: 1,
+      validFrom: new Date().toISOString(),
+      validTo: null,
     };
     setFormData({ ...formData, Addresses: [...formData.Addresses, newAddress] });
   }
@@ -554,8 +490,8 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
   }
 
   const filteredCustomers = customers.filter(customer => {
-    const matchesSearch = customer.fiscal_data.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.fiscal_data.taxid.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = customer.fiscalData.businessName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.fiscalData.taxId?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus = statusFilter === 'todos' || statusFilter === (customer.status === 1 ? 'activo' : 'inactivo');
 
@@ -563,7 +499,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
   });
 
   function handleCompanyChange(selectedCompanyId: string) {
-    const selectedCompany = companies.find(c => c._id === selectedCompanyId);
+    const selectedCompany = companies.find(c => c._Id === selectedCompanyId);
 
     if (!selectedCompany) {
       setFormData({
@@ -573,9 +509,10 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
         FiscalData: {
           BusinessName: '',
           Country: 'MX',
-          State: '',
           TaxId: '',
         },
+        Sector_id: 0,
+        Sector: ''
       });
       return;
     }
@@ -587,10 +524,11 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       FiscalData: {
         BusinessName: selectedCompany.business_name || '',
         Country: selectedCompany.country || 'MX',
-        State: selectedCompany.state || '',
         TaxId: selectedCompany.rfc_taxid || '',
       },
       IsPersonaFisica: selectedCompany.rfc_taxid.length === 13 ? true : false,
+      Sector_id: selectedCompany.sector_id || 0,
+      Sector: selectedCompany.sector || ''
     });
   }
 
@@ -660,7 +598,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   >
                     <option value="">{t('cust.selectCompany')}</option>
                     {companies.map((company) => (
-                      <option key={company._id} value={company._id}>
+                      <option key={company._Id} value={company._Id}>
                         {company.business_name}
                       </option>
                     ))}
@@ -681,6 +619,39 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                   <Plus size={16} />
                   {t('cust.newCompany')}
                 </button>
+
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>
+                    <span className={styles.required}>* </span>{t('supp.selectSector')}
+                  </label>
+                  <select
+                    value={formData.Sector_id}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        Sector_id: parseInt(e.target.value),
+                        Sector: e.target.options[e.target.selectedIndex].text
+                      })
+                    }
+                    className={styles.selectInput}
+                    required
+                    onInvalid={(e) =>
+                      e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                    }
+                    onInput={(e) =>
+                      e.currentTarget.setCustomValidity('')
+                    }
+                    // disabled={!!editingCustomer}
+                  >
+                    <option value="">{t('supp.selectSector')}</option>
+                    {sectores.map((sector) => (
+                      <option key={sector._Id} value={sector._Id}>
+                        {sector.name}
+                      </option>
+                    ))
+                    }
+                  </select>
+                </div>
 
                 <div className={styles.checkboxField}>
                   <input
@@ -724,7 +695,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                           ...formData,
                           IsPersonaFisica: checked,
                           // type: checked ? 'fisica' : 'moral',
-                          PersonId: checked ? formData.PersonId : '',
+                          // PersonId: checked ? formData.PersonId : '',
                           Curp: checked ? formData.Curp : '',
                         });
                       }}
@@ -739,6 +710,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                     </label>
                   </div>
                 )}
+
               </div>
 
               <div className={styles.rightColumn}>
@@ -776,12 +748,12 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                     <span className={styles.slider}></span>
                   </label>
                 </div>
+
                 {/* Nivel de cliente */}
                 <div className={styles.fieldGroup}>
-                  {/* <label className={styles.fieldLabel}>
+                  <label className={styles.fieldLabel}>
                     {t('cust.clientLevel')}
-                  </label> */}
-
+                  </label>
                   <select
                     value={formData.ClientLevelId}
                     onChange={(e) => {
@@ -997,15 +969,15 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                     <div className={styles.formRow}>
                       <label>
                         {t('cust.state')}
-                        <select
+                        <input
+                          type="text"
                           value={address.state}
-                          onChange={(e) => updateAddress(index, 'state', e.target.value)}
-                        >
-                          <option value="">{t('cust.selectstate')}</option>
-                          {MEXICAN_STATES.map((state) => (
-                            <option key={state} value={state}>{state}</option>
-                          ))}
-                        </select>
+                          onChange={(e) => updateAddress(
+                            index, 
+                            'state', 
+                            e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "").replace(/\s{2,}/g, " ")
+                          )}
+                        />
                       </label>
                     </div>
                     <div className={styles.formRow}>
@@ -1013,8 +985,8 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                         {t('cust.postalCode')}
                         <input
                           type="number" 
-                          value={address.postal_code}
-                          onChange={(e) => updateAddress(index, 'postal_code', e.target.value)}
+                          value={address.postalCode}
+                          onChange={(e) => updateAddress(index, 'postalCode', e.target.value)}
                         />
                       </label>
                     </div>
@@ -1046,10 +1018,10 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                       {t('cust.CompanyName')}
                       <input
                         type="text"
-                        value={newCompany.business_name}
+                        value={newCompany.Business_name}
                         onChange={(e) => setNewCompany({ 
                           ...newCompany, 
-                          business_name: e.target.value.replace(/[^A-Za-z0-9ÁÉÍÓÚáéíóúÑñÄ\s.,&'’()+-]/g, "") 
+                          Business_name: e.target.value.replace(/[^A-Za-z0-9ÁÉÍÓÚáéíóúÑñÄ\s.,&'’()+-]/g, "") 
                         })}
                         required
                         onInvalid={(e) =>
@@ -1068,10 +1040,10 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                       RFC
                       <input
                         type="text"
-                        value={newCompany.rfc_taxid}
+                        value={newCompany.Rfc_taxid}
                         onChange={(e) => setNewCompany({ 
                           ...newCompany, 
-                          rfc_taxid: e.target.value
+                          Rfc_taxid: e.target.value
                             .replace(/[^a-zA-Z0-9Ññ&.\-\/ ]/g, '') // caracteres permitidos para RFC y TAX ID internacionales
                             .slice(0, 20)
                         })}
@@ -1094,11 +1066,11 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
 
                   <div className={styles.countryControls}>
                     <select
-                      value={newCompany.country}
+                      value={newCompany.Country}
                       onChange={(e) => setNewCompany({
                         ...newCompany,
-                        country: e.target.value,
-                        nationality: e.target.value === 'MX' ? 'nacional' : 'extranjero'
+                        Country: e.target.value,
+                        Nationality: e.target.value === 'MX' ? 'nacional' : 'extranjero'
                       })}
                       className={styles.textInput}
                       required
@@ -1125,7 +1097,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                         <input
                           type="checkbox"
                           className="checkbox"
-                          checked={newCompany.country === 'MX' ? true : false}
+                          checked={newCompany.Country === 'MX' ? true : false}
                           // onChange={(e) =>
                           // setNewCompany({
                           //   ...newCompany,
@@ -1141,26 +1113,38 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                     </div>
                   </div>{/*País*/}
 
-
                   <div className={styles.formRow}>
                     <label>
-                      {t('cust.state')}
-                      <input
-                        type="text"
-                        value={newCompany.state}
-                        onChange={(e) => setNewCompany({ ...newCompany, state: e.target.value })}
-                      />
-                      {/* <select
-                        value={newCompany.state}
-                        onChange={(e) => setNewCompany({ ...newCompany, state: e.target.value })}
+                      <span className="required">* </span>
+                      Sector
+                      <select
+                        value={newCompany.Sector_id}
+                        onChange={(e) =>
+                          setNewCompany({
+                            ...newCompany,
+                            Sector_id: parseInt(e.target.value),
+                            Sector: e.target.options[e.target.selectedIndex].text
+                          })
+                        }
+                        className={styles.selectInput}
+                        required
+                        onInvalid={(e) =>
+                          e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                        }
+                        onInput={(e) =>
+                          e.currentTarget.setCustomValidity('')
+                        }
                       >
-                        <option value="">Seleccionar estado</option>
-                        {MEXICAN_STATES.map((state) => (
-                          <option key={state} value={state}>{state}</option>
-                        ))}
-                      </select> */}
+                        <option value="">{t('supp.selectSector')}</option>
+                        {sectores.map((sector) => (
+                          <option key={sector._Id} value={sector._Id}>
+                            {sector.name}
+                          </option>
+                        ))
+                        }
+                      </select>
                     </label>
-                  </div> {/*state*/}
+                  </div>
 
                 </div>
 
@@ -1241,12 +1225,12 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       ) : filteredCustomers.length > 0 ? (
         <div className={styles.customerList}>
           {filteredCustomers.map((customer) => {
-            const medalSrc = customer.client_level_id
-            ? getClientLevelMedal(customer.client_level_id)
+            const medalSrc = customer.clientLevelId
+            ? getClientLevelMedal(customer.clientLevelId)
             : null;
 
             return (
-              <div key={customer._idcustomer} className={styles.customerCard}>
+              <div key={customer.id} className={styles.customerCard}>
 
                 <div className={styles.customerRow}>
                   <div className={styles.customerInfo}>
@@ -1263,11 +1247,11 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                       )}
 
                       <h3 className={styles.customerName}>
-                        {customer.fiscal_data.business_name}
+                        {customer.fiscalData.businessName}
                       </h3>
                       <p className={styles.customerType}>
                         <span className={styles.badge}>
-                          {customer.is_persona_fisica === true
+                          {customer.isPersonaFisica === true
                             ? 'Persona física'
                             : 'Persona moral'}
                         </span>
@@ -1291,12 +1275,12 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
 
                   <div className={styles.customerMeta}>
                     <p className={styles.taxId}>
-                      {customer.fiscal_data.taxid}
+                      {customer.fiscalData.taxId}
                     </p>
 
                     <p className={styles.customerNationality}>
                       <span className={styles.badge}>
-                        {customer.is_national === true
+                        {customer.isNational === true
                           ? 'Nacional'
                           : 'Extranjero'}
                       </span>
