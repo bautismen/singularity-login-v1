@@ -826,25 +826,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     try {
       e.preventDefault();
       setSaving(true);
-      const selectedCustomer = customers.find(c => c.id === formData.customerId);
-      const hasAssignedExecutives = executives.length > 0;     
-      
-      /*if(mode === "create" && executives.length === 0) {
-        availableExecutives.filter(exec => exec._Iduser === user?._id).map((executive) => {
-          const ex : Executive = { 
-            idEmployee: executive._Id,            
-            nameEmployee: executive.nombre + ' ' + executive.apellido_paterno + ' ' + executive.apellido_materno,
-            idUser: executive._Iduser            
-          };
-        setExecutives([...executives, ex]);
-        console.log('new',ex , executives)
-        })
-      }*/
+      const selectedCustomer = customers.find(c => c.id === formData.customerId);      
 
       const quotationData = {
         referenceRequest: formData.referenceRequest,
         idStatusRequest: 1,
-        statusRequest: 'Creada', //hasAssignedExecutives ? 'Asignada'  
+        statusRequest: 'Creada', 
         dateRequest: new Date(formData.created),
         dateDeadline: formData.isLicitation === false && formData.created ? 
           calculateDateResponseDeadline() : 
@@ -866,14 +853,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
           customerCategory: formData.customerCategory,
         } : { prospectName : formData.prospect},       
 
-        assignedTo: executives.length === 0 && mode === 'create' ? 
-          availableExecutives.filter(exec => exec._Iduser === user?._id).map(executive => 
-              ({ 
-                idEmployee: executive._Id,            
-                nameEmployee: executive.nombre + ' ' + executive.apellido_paterno + ' ' + executive.apellido_materno,
-                idUser: executive._Iduser            
-              })) :
-          executives.map(exec => ({
+        assignedTo: executives.map(exec => ({
             idEmployee: exec.idEmployee,
             nameEmployee: exec.nameEmployee,
             idUser: exec.idUser
@@ -1003,7 +983,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         showSuccess(t('quote.success.updated'));
       } else {
         result = await quotationService.create(quotationData);
-        console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
+        //console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
         showSuccess(t('quote.success.created'));
       }
 
@@ -1044,7 +1024,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
   const renderZipCodesOriginDestination =  (service : Service) => {
     const isPort = [1, 2].includes(service.idService); //Maritimo FCL y LCL
-    console.log(service);
     switch(true) {
       //Terrestre FTL Terrestre LTL Terrestre FCL Terrestre LCL || 1 Door To Door
       case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : 
