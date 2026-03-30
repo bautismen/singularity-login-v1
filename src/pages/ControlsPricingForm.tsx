@@ -523,8 +523,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       setLoadingContainers(true);
       setShowContainersModal(true)
       setCurrentServiceId(idServiceItem); 
-      setContainers(containersInShipment);
-      console.log('Containers', containers, 'available', availableContainers);
+      setContainers(containersInShipment);      
       try {
         if(availableContainers.length === 0) {
           const resultContainers = await catalogService.getContainers();
@@ -1480,15 +1479,14 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                                                   quantity: 1
                                                 })
                                             }>
-                                            <span>{containerAvailable.name_type}</span>
-                                            <span>{containerAvailable.description}</span>
+                                            <span>{containerAvailable.name_type}</span>                                            
                                             <Plus size={18} className={styles.addIcon} />
                                         </div>
                                       ))}
                                                   
                                       {availableContainers.filter(cont => containers?.some(container => container.idContainer === cont._Id)).length === 0 && (
                                         <div className={styles.noExecutivesMessage}>
-                                          {t('quote.allExecutivesAdded')}
+                                          {t('quote.allContainersAdded')}
                                         </div>
                                       )}
                                     </div>
