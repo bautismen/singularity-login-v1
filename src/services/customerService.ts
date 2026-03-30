@@ -206,7 +206,7 @@ export async function getCompanies(): Promise<Company[]> {
 }
 
 
-export async function createCompany(company: Partial<Company>): Promise<Company> {
+export async function createCompany(company: Partial<Company>) {
   try {
     const response = await fetch(`${API_URL}/v1/kl/catalog/add/Companie`, {
       method: 'POST',
@@ -214,20 +214,13 @@ export async function createCompany(company: Partial<Company>): Promise<Company>
       body: JSON.stringify(company),
     });
 
-    const responseText = await response.text();
-
     if (!response.ok) {
-      let errorMessage = 'Failed to create company';
-      try {
-        const errorData = JSON.parse(responseText);
-        errorMessage = errorData.error || errorMessage;
-      } catch (e) {
-        errorMessage = responseText || errorMessage;
-      }
-      throw new Error(errorMessage);
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || 'Failed to create company');
     }
 
-    return JSON.parse(responseText);
+    return await response.json();
+
   } catch (error) {
     console.error('Error creating company:', error);
     throw error;

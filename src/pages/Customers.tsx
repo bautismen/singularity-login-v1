@@ -233,7 +233,7 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
   setEditingCustomer(customer);
 
   const selectedCompany = companies.find(c => c._Id === customer.companyId);
-  console.log(customer)
+  // console.log(customer)
   
   setFormData({
     Id: customer.id,
@@ -380,24 +380,23 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
   async function handleCreateCompany(e: React.FormEvent<HTMLFormElement>) {
 
     try {
-
       e.preventDefault();
       const created = await createCompany(newCompany);
-      setCompanies([...companies, created]);
-      console.log(created._Id)
-      handleCompanyChange(created._Id!)
+      await loadCompanies();
+      // setCompanies([...companies]);
+      handleCompanyChange(created.atrribute.value);
       setFormData({ 
         ...formData, 
-        CompanyId: created._Id!,
+        CompanyId: created.atrribute.value!,
         // nationality: created.nationality,
-        IsNational: created.Nationality === 'nacional' ? true : false,
+        IsNational: newCompany.Nationality === 'nacional' ? true : false,
         FiscalData: {
-          BusinessName: created.Business_name,
-          Country: created.Country,
-          TaxId: created.Rfc_taxid,
+          BusinessName: newCompany.Business_name,
+          Country: newCompany.Country,
+          TaxId: newCompany.Rfc_taxid,
         },
-        Sector_id: created.Sector_id,
-        Sector: created.Sector
+        Sector_id: newCompany.Sector_id,
+        Sector: newCompany.Sector
       });
       handleCloseModal()
     } catch (error) {
@@ -500,7 +499,6 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
 
   function handleCompanyChange(selectedCompanyId: string) {
     const selectedCompany = companies.find(c => c._Id === selectedCompanyId);
-
     if (!selectedCompany) {
       setFormData({
         ...formData,
@@ -710,6 +708,18 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                     </label>
                   </div>
                 )}
+
+                <div className={styles.checkboxField}>
+                  <input
+                    type="checkbox"
+                    id="is_correspondent"
+                    checked={formData.IsCorrespondent}
+                    onChange={(e) => setFormData({ ...formData, IsCorrespondent: e.target.checked })}
+                    className={styles.checkbox}
+                    disabled={loading}
+                  />
+                  <label htmlFor="is_correspondent" className={styles.checkboxText}>{t('cust.isCorrespondent')}</label>
+                </div>
 
               </div>
 
