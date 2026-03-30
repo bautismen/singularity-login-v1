@@ -24,7 +24,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const [loading, setLoading] = useState(false);
   const [requestData, setRequestData] = useState<any>(null);
-  const [controlData, setControlData] = useState<any>(null);  
+  const [controlData, setControlData] = useState<any>(null);
+   const [countries, setCountries] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectsuppliers, setSelectsuppliers] = useState<any[]>([]);
 
@@ -82,11 +83,12 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const [showContainersModal, setShowContainersModal] = useState(false);
   const [currentServiceId, setCurrentServiceId] = useState<number | null>(null);
   const [availableContainers , setAvailableContainers] = useState<Container[]>([]);
-  const [ControlServices, setControlServices] = useState<any[]>([]);
+  const [ControlServices, setControlServices] = useState<any[]>([]);  
   const [Disabled, setDisabled] = useState(false);
 
   useEffect(() => {
-    loadData();    
+    loadData();
+    loadCountries(); 
     loadSuppliers();
     loadCustomers();
   }, [requestId, controlId]);
@@ -101,6 +103,15 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     }
   };
   
+  const loadCountries = async () => {
+    try {     
+
+      const countriesData = await catalogService.getCountries();
+      setCountries(countriesData.data.filter((c: any) => c.status === 1));
+    } catch (error) {
+      console.error('Error loading countries:', error);
+    }
+  };
 
    async function loadSuppliers() {
     try {
@@ -125,8 +136,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         setControlData(control);
         setSuppliers(control.suppliers || []);
         setSuppliersAPI(control.suppliers || []);
-        setSelectedServices(control.services || []);
-        setControlServices(control.services || []);
+        setSelectedServices(control.services || []);        
         setStatusControl(control.status_control);       
         setGeneralData({
           network: control.network || '',
@@ -153,6 +163,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
         const request = await pricingControlService.getResquetById(control.idrequest);
         setRequestData(request);
+        setControlServices(request.services || []);
         setPriority(request.priority === 1);
         setBidding(request.licitation === 1);
 
@@ -171,6 +182,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       } else {
         const request = await pricingControlService.getResquetById(requestId);
         setRequestData(request);
+        setControlServices(request.services || []);
         setPriority(request.priority === 1);
         setBidding(request.licitation === 1);
 
@@ -453,7 +465,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       }; 
     })
     }: service));
-    setControlServices(ControlServices.map(service => service.idServiceItem=== idServiceItem ? {
+     setControlServices(ControlServices.map(service => service.idServiceItem=== idServiceItem ? {
       ...service,
       shipments: service.shipments.map(shipment => {
        if(shipment.idShipment !== idShipment) return shipment;
@@ -490,7 +502,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     })
     }: service));
 
-    setControlServices(ControlServices.map(service => service.idServiceItem=== idServiceItem ? {
+     setControlServices(ControlServices.map(service => service.idServiceItem=== idServiceItem ? {
       ...service,
       shipments: service.shipments.map(shipment => {
        if(shipment.idShipment !== idShipment) return shipment;
