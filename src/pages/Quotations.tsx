@@ -161,7 +161,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       const incotermsData = await catalogService.getIncoterms();
       const countriesData = await catalogService.getCountries();
 
-      setCustomers(customersData.filter((c: any) => c.status === 'activo' || c.datastate === 1));
+      setCustomers(customersData.filter((c: any) => c.status === 1 || c.dataState === 1));
       setRequestTypes(requestTypesData.data.filter((r: any) => r.status === 1));
       setAvailableServices(servicesData.data.filter((s: any) => s.status === 1)); // && s.category === 1));
       setAvailableExecutives(executivesData.filter((e: any) => e.estado === 1 && e.activo === true));
@@ -826,13 +826,25 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
     try {
       e.preventDefault();
       setSaving(true);
-      const selectedCustomer = customers.find(c => c._id === formData.customerId);
-      const hasAssignedExecutives = executives.length > 0;   
+      const selectedCustomer = customers.find(c => c.id === formData.customerId);
+      const hasAssignedExecutives = executives.length > 0;     
+      
+      /*if(mode === "create" && executives.length === 0) {
+        availableExecutives.filter(exec => exec._Iduser === user?._id).map((executive) => {
+          const ex : Executive = { 
+            idEmployee: executive._Id,            
+            nameEmployee: executive.nombre + ' ' + executive.apellido_paterno + ' ' + executive.apellido_materno,
+            idUser: executive._Iduser            
+          };
+        setExecutives([...executives, ex]);
+        console.log('new',ex , executives)
+        })
+      }*/
 
       const quotationData = {
         referenceRequest: formData.referenceRequest,
-        idStatusRequest: hasAssignedExecutives ? 3 : 1,
-        statusRequest: hasAssignedExecutives ? 'Asignada' : 'Creada', 
+        idStatusRequest: 1,
+        statusRequest: 'Creada', //hasAssignedExecutives ? 'Asignada'  
         dateRequest: new Date(formData.created),
         dateDeadline: formData.isLicitation === false && formData.created ? 
           calculateDateResponseDeadline() : 
@@ -850,15 +862,22 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         },
         customer : formData.showProspect === false ? {
           idCustomer: formData.customerId,
-          customerName: selectedCustomer?.fiscal_data?.business_name,
+          customerName: selectedCustomer?.fiscalData?.businessName,
           customerCategory: formData.customerCategory,
-        } : { prospectName : formData.prospect},
+        } : { prospectName : formData.prospect},       
 
-        assignedTo: executives.map(exec => ({
-          idEmployee: exec.idEmployee,
-          nameEmployee: exec.nameEmployee,
-          idUser: exec.idUser
-        })),       
+        assignedTo: executives.length === 0 && mode === 'create' ? 
+          availableExecutives.filter(exec => exec._Iduser === user?._id).map(executive => 
+              ({ 
+                idEmployee: executive._Id,            
+                nameEmployee: executive.nombre + ' ' + executive.apellido_paterno + ' ' + executive.apellido_materno,
+                idUser: executive._Iduser            
+              })) :
+          executives.map(exec => ({
+            idEmployee: exec.idEmployee,
+            nameEmployee: exec.nameEmployee,
+            idUser: exec.idUser
+          })),       
                               
         services: services.map((service, idx) => {                                                                         
           const shipmentsInService = service.shipments.map((shipment, index) => {            
@@ -925,12 +944,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             }            
           })
 
-          const selectedService = availableServices.find(s => s.service_name === service.nameService); 
+          //const selectedService = availableServices.find(s => s.service_name === service.nameService); 
                                         
           return {
             idServiceItem: idx + 1,
-            idService: selectedService?._id,
-            nameService: selectedService.service_name,
+            idService: service.idService,
+            nameService: service.nameService,
             ...(mode === 'create' && { used: false }),
             shipments : shipmentsInService            
           };
@@ -948,10 +967,11 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         setSaving(false);
         return;
       }
-      else 
-        if(quotationData.services.find(service => service.shipments.find(ship => ship.cargo.length === 0) 
-        && ![2, 3, 10].includes(service.idService))) { //mercancia es obligatoria si el servicio no es maritimo fcl, terr fcl y terr ftl
-        setModalState({
+      /*else 
+        if(quotationData.services.find(service => service.shipments.find(ship => ship.cargo.length === 0)           
+        && ![2, 3, 10].includes(service.idService) && console.log('idService',service.idService) )) { //mercancia es obligatoria si el servicio no es maritimo fcl, terr fcl y terr ftl
+        
+          setModalState({
           isOpen : true,
           type: 'warning',
           title: t('quote.merchaddtitle'),
@@ -960,7 +980,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         });
         setSaving(false);
         return;
-      }   
+      } */  
      
       await performSave(quotationData);
 
@@ -983,7 +1003,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
         showSuccess(t('quote.success.updated'));
       } else {
         result = await quotationService.create(quotationData);
-        //console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
+        console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
         showSuccess(t('quote.success.created'));
       }
 
@@ -1024,6 +1044,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
   const renderZipCodesOriginDestination =  (service : Service) => {
     const isPort = [1, 2].includes(service.idService); //Maritimo FCL y LCL
+    console.log(service);
     switch(true) {
       //Terrestre FTL Terrestre LTL Terrestre FCL Terrestre LCL || 1 Door To Door
       case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : 
@@ -1502,12 +1523,12 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                 <select
                   value={formData.customerId}
                   onChange={(e) => {
-                    const customer = customers.find(c => c._id === e.target.value);
+                    const customer = customers.find(c => c.id === e.target.value);
                     setFormData({
                       ...formData,
                       customerId: e.target.value,
-                      client: customer?.fiscal_data?.business_name || '',
-                      customerCategory: customer?.client_level_id
+                      client: customer?.fiscalData?.businessName || '',
+                      customerCategory: customer?.clientLevelId
                     });
                   }}
                   className={styles.clientSelect}              
@@ -1515,8 +1536,8 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   required>
                   <option value="">{t('quote.selectClient')}</option>
                   {customers.map((customer) => (
-                    <option key={customer._id} value={customer._id}>
-                      {customer.branch_name ? `${customer.branch_name}, ${customer.fiscal_data?.business_name}` : customer.fiscal_data?.business_name}
+                    <option key={customer.id} value={customer.id}>
+                      {customer.branchName ? `${customer.branchName}, ${customer.fiscalData?.businessName}` : customer.fiscalData?.businessName}
                     </option>
                   ))}
                 </select>
@@ -1681,7 +1702,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                   <span className={styles.required}>*</span>
-                  {t('quote.trafficType')}
+                  {t('quote.serviceType')}
                 </label>
                 <select
                   value={service.nameService}
@@ -1689,7 +1710,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     updateService(
                       service.idServiceItem, 
                       {
-                        idService: parseInt(e.target.selectedOptions[0].dataset.serviceId!, 0) ,
+                        idService: parseInt(e.target.selectedOptions[0].dataset.serviceId!),
                         nameService: e.target.value
                       }
                     );
@@ -1699,7 +1720,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   required>
                   <option value="">{t('quote.select')}</option>
                   {availableServices.filter((service) => service.status === 1 /*&& service.category === 1*/).map((service_) => (
-                    <option key={service_._id} value={service_.service_name} data-service-id={service_._id}>
+                    <option key={service_._Id} value={service_.service_name} data-service-id={service_._Id}>
                       {service_.service_name}
                     </option>
                   ))}
@@ -1752,7 +1773,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   required>
                   <option value="">{t('quote.select')}</option>
                   {incoterms.map((inc) => (
-                    <option key={inc._id} value={inc._id}>
+                    <option key={inc._Id} value={inc._Id}>
                       {inc.incoterm}
                     </option>
                   ))}
@@ -1814,7 +1835,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   required >
                   <option value="">{t('quote.select')}</option>
                   {countries.map((country) => (
-                    <option key={country._id} value={country._id} data-shipment-origin-country-name={country.country_code} >
+                    <option key={country._Id} value={country._Id} data-shipment-origin-country-name={country.country_code} >
                       {country.name_country} ({country.country_code})
                     </option>
                   ))}
@@ -1837,7 +1858,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   required>
                   <option value="">{t('quote.select')}</option>
                   {countries.map((country) => (
-                    <option key={country._id} value={country._id} data-shipment-destination-country-name={country.country_code} >
+                    <option key={country._Id} value={country._Id} data-shipment-destination-country-name={country.country_code} >
                       {country.name_country} ({country.country_code})
                     </option>                    
                   ))}
@@ -2781,19 +2802,19 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
             </div>
             <div className={styles.modalBody}>
               <div className={styles.executiveSelectionList}>
-                {availableExecutives.filter(exec => !executives.some(e => e.idEmployee === exec._id)).map((executive) => (
+                {availableExecutives.filter(exec => !executives.some(e => e.idEmployee === exec._Id)).map((executive) => (
                     <div
                       key={executive._id}
                       className={styles.executiveSelectionItem}
                       onClick={() => addExecutive({ 
-                        idEmployee: executive._id, 
+                        idEmployee: executive._Id, 
                         nameEmployee: `${executive.nombre} ${executive.apellido_paterno} ${executive.apellido_materno}`,
-                        idUser: executive._iduser })}>
+                        idUser: executive._Iduser })}>
                       <span>{executive.nombre} {executive.apellido_paterno} {executive.apellido_materno}</span>
                       <Plus size={18} className={styles.addIcon} />
                     </div>
                   ))}
-                {availableExecutives.filter(exec => !executives.some(e => e.idEmployee === exec._id)).length === 0 && (
+                {availableExecutives.filter(exec => !executives.some(e => e.idEmployee === exec._Id)).length === 0 && (
                   <div className={styles.noExecutivesMessage}>
                     {t('quote.allExecutivesAdded')}
                   </div>
