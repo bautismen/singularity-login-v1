@@ -4,7 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import styles from './QuotationsList.module.css';
-import {QuotationRequest} from '../types/requestQuotation';
+import {CreateByRequest, QuotationRequest} from '../types/requestQuotation';
 import { quotationService } from '../services/quotationService';
 import { getDocumentsByReference, downloadDocumentByReference
 } from "../services/digitizationService";
@@ -222,7 +222,13 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
   const handleCopy = async (id_: String) => {
     try {         
      setLoading(true)
-      await quotationService.clone(id_)
+     
+     const data: Executive = {
+      IdEmployee: user?._id || '',
+      nameEmployee: user?.name || '',
+     }
+     
+      await quotationService.clone(id_,data)
 
 
       setLoading(false)
