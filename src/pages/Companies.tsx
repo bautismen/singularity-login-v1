@@ -270,6 +270,7 @@ if (isFormOpen) {
                 onInput={(e) =>
                   e.currentTarget.setCustomValidity('') /* se limpia msj si ya se capturo */
                 }
+                disabled={!!editingCompany} // No se puede editar el nombre de la empresa una vez creada
               />
             </div> {/* CompanyName */}
 
@@ -289,6 +290,7 @@ if (isFormOpen) {
                     })
                   }
                   className={styles.checkbox}
+                  disabled={!!editingCompany} // No se puede cambiar la nacionalidad una vez creada la empresa
                 />
                 <label htmlFor="is_national" className={styles.checkboxText}>
                   {t('comp.Isnational')}
@@ -354,6 +356,7 @@ if (isFormOpen) {
                 onInput={(e) =>
                   e.currentTarget.setCustomValidity('') /* se limpia msj si ya se capturo */
                 }
+                disabled={!!editingCompany} // No se puede editar el RFC/TAXID una vez creada la empresa
               />
             </div> {/* RFC / TAXID */}
 
@@ -365,7 +368,7 @@ if (isFormOpen) {
                   setFormData({ ...formData, Country: e.target.value })
                 }
                 className={styles.textInput}
-                disabled={formData.Nationality === 'nacional'}
+                disabled={!!editingCompany || formData.Nationality === 'nacional'} // No se puede editar el país si la empresa es nacional o si ya se creó
                 required={formData.Nationality === 'extranjero'} // solo required si es extranjero
               >
                 <option value="">{t('comp.SelectCountry')}</option>
