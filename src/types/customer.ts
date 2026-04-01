@@ -16,91 +16,94 @@ export interface Person {
 }
 
 export interface Company {
-  _id?: string;
-  business_name: string;
-  rfc_taxid: string;
-  nationality: 'nacional' | 'extranjero'; 
-  country: string;
-  state: string;
-  status: 'activo' | 'inactivo' | 'eliminado';
-  archivado: boolean;
-  datastate: number;
-  created_at?: Date;
-  created_by?: {
-    user_id: string;
-    name: string;
+  _Id?: string;
+  Business_name: string;
+  Rfc_taxid: string;
+  Nationality: 'nacional' | 'extranjero';
+  Country: string;  
+  Status: number;
+  Archived: boolean;
+  Data_state: number;
+  Created_at?: Date;
+  Created_by?: {
+    User_id: string;
+    Name: string;
   };
+  Sector_id: number;
+  Sector_name: string;
 }
 
-export interface Contact {
+
+export interface Contacts {
   // _idcontacts?: string;
-  Email: string;
-  Name: string;
-  Phone: string;
-  Position: string;
-  Status: 1 | 2 //'activo' | 'inactivo';
-  Type: string;
-  ValidFrom: string;
+  email: string;
+  name: string;
+  phone: string;
+  position: string;
+  status: number //'activo' | 'inactivo';
+  type: string;
+  validFrom: string;
   valiValidTo: string | null;
 }
 
 export interface Address {
-  _idaddress?: string;
+  // _idaddress?: string;
   street: string;
   city: string;
   state: string;
-  postal_code: string;
+  postalCode: string;
   country: string;
-  status: 'activo' | 'inactivo';
-  valid_from: string;
-  valid_to: string | null;
+  status: 1 | 2 //'activo' | 'inactivo';
+  validFrom: string;
+  validTo: string | null;
 }
 
 export interface History {
-  date: Date;
-  user_id: string;
-  user_name: string;
-  changes: {
-    field: string;
-    old_value: string;
-    new_value: string;
+  UserId: string;
+  UserName: string;
+  Date: Date;
+  Changes: {
+    Field: string;
+    OldValue: string;
+    NewValue: string;
   };
 }
 
 export interface Customer {
-  _id: string;
+  Id: string;
   // _idcustomer?: string;
-  _idcustomer: number;
-  is_branch: boolean;
-  branch_name?: string;
-  is_national?: boolean;        
-  is_persona_fisica?: boolean; 
-  curp?: string; 
+  IdCustomer: number;
+  IsBranch: boolean;
+  BranchName?: string;
+  IsNational?: boolean;        
+  IsPersonaFisica?: boolean; 
+  Curp?: string; 
   // type: 'fisica' | 'moral';
-  company_id?: string;
-  person_id?: string;
+  CompanyId?: string;
+  PersonId?: string;
   // nationality: 'nacional' | 'extranjero';
   // client_level?: 'oro' | 'plata' | 'bronce';
-  client_level_id?: 1 | 2 | 3;
-  fiscal_data: {
-    business_name: string;
-    taxid: string;
-    country: string;
-    state: string;
+  ClientLevelId?: 1 | 2 | 3;
+  FiscalData: {
+    BusinessName: string;
+    TaxId: string;
+    Country: string;
   };
-  contacts: Contact[];
-  addresses: Address[];
-  is_corresponsal: boolean;
-  history?: History[];
-  created_at?: Date;
-  created_by?: {
-    user_id: string;
-    name: string;
+  Contacts: Contacts[];
+  Addresses: Address[];
+  IsCorrespondent: boolean;
+  Sector_id: number;
+  Sector_name: string;
+  History?: History[];
+  CreatedAt?: Date;
+  CreatedBy?: {
+    IdUser: string;
+    Name: string;
   };
-  updated_at?: Date;
-  status: 1 | 0 //'activo' | 'inactivo';
-  archived: boolean;
-  data_state: number;
+  UpdatedAt: Date;
+  Status: 1 | 0 //'activo' | 'inactivo';
+  Archived: boolean;
+  DataState: number;
 }
 
 export interface CustomerFormData {
@@ -116,7 +119,7 @@ export interface CustomerFormData {
     country: string;
     state: string;
   };
-  contacts: Contact[];
+  contacts: Contacts[];
   addresses: Address[];
 }
 

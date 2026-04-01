@@ -56,7 +56,7 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
     Addresses: [] as Address[],
     IsCorrespondent: false,
     Sector_id: 0,
-    Sector: '',
+    Sector_name: '',
     History: [] as History[],
     CreatedAt: Date,
     UpdatedAt: Date,
@@ -95,7 +95,7 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
     Nationality: 'nacional',
     Country: 'MX',
     Sector_id: 0,
-    Sector: '',
+    Sector_name: '',
     Status: 1,
     Archived: false,
     Data_state: 1,
@@ -216,7 +216,7 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
       Addresses: [],
       IsCorrespondent: false,
       Sector_id: 0,
-      Sector: '',
+      Sector_name: '',
       History: [],
       CreatedAt: Date,
       UpdatedAt: Date,
@@ -258,8 +258,8 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
     Contacts: customer.contacts || [],
     Addresses: customer.addresses || [],
     IsCorrespondent: customer.isCorrespondent,
-    Sector_id: selectedCompany?.sector_id || customer.sector_id,
-    Sector: selectedCompany?.sector || customer.sector,
+    Sector_id: selectedCompany.sector_id || customer.sector_id,
+    Sector_name: selectedCompany.sector|| customer.sector_name,
     CreatedAt: new Date(),
     CreatedBy: customer.createdBy || [],
     UpdatedAt: new Date(),
@@ -396,7 +396,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
           TaxId: newCompany.Rfc_taxid,
         },
         Sector_id: newCompany.Sector_id,
-        Sector: newCompany.Sector
+        Sector_name: newCompany.Sector_name
       });
       handleCloseModal()
     } catch (error) {
@@ -413,7 +413,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
         Nationality: undefined,
         Country: '',
         Sector_id: 0,
-        Sector: '',
+        Sector_name: '',
         Status: 1,
         Archived: false,
         Data_state: 1,
@@ -510,7 +510,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
           TaxId: '',
         },
         Sector_id: 0,
-        Sector: ''
+        Sector_name: ''
       });
       return;
     }
@@ -526,7 +526,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       },
       IsPersonaFisica: selectedCompany.rfc_taxid.length === 13 ? true : false,
       Sector_id: selectedCompany.sector_id || 0,
-      Sector: selectedCompany.sector || ''
+      Sector_name: selectedCompany.sector_name || ''
     });
   }
 
@@ -628,7 +628,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                       setFormData({
                         ...formData,
                         Sector_id: parseInt(e.target.value),
-                        Sector: e.target.options[e.target.selectedIndex].text
+                        Sector_name: e.target.options[e.target.selectedIndex].text
                       })
                     }
                     className={styles.selectInput}
@@ -1133,7 +1133,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                           setNewCompany({
                             ...newCompany,
                             Sector_id: parseInt(e.target.value),
-                            Sector: e.target.options[e.target.selectedIndex].text
+                            Sector_name: e.target.options[e.target.selectedIndex].text
                           })
                         }
                         className={styles.selectInput}
