@@ -1048,7 +1048,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
               <div className={styles.formGroup}>
                 <label className={styles.label}>
-                  <span className={styles.required}>*</span>{t('quote.originZip')}
+                  {t('quote.originZip')}
                 </label>
                 <input
                   type="number"
@@ -1068,7 +1068,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   }}
                   className={styles.input}
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}
-                  required
                 />   
               </div>           
             </div>    
@@ -1092,7 +1091,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               
               <div className={styles.formGroup}>
                 <label className={styles.label}>
-                  <span className={styles.required}>*</span>
                   {t('quote.destinationZip')}
                 </label>
                 <input
@@ -1115,7 +1113,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   }}
                   className={styles.input}
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}
-                  required
                 />
               </div> 
             </div>               
@@ -1177,7 +1174,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               
               <div className={styles.formGroup}>
                 <label className={styles.label}>
-                <span className={styles.required}>*</span>
                   {t('quote.originZip')}
                 </label>
                 <input
@@ -1194,7 +1190,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                     }}
                   }                
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}
-                  required/>
+                />
               </div>              
             </div>
             <div className={styles.formGroup}>
@@ -1252,7 +1248,6 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
 
               <div className={styles.formGroup}>
                 <label className={styles.label}>
-                  <span className={styles.required}>*</span>
                   {t('quote.destinationZip')}
                 </label>
                 <input
@@ -1273,7 +1268,7 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
                   }
                   className={styles.input}
                   disabled={mode === 'view' || formData.idStatusRequest >= 2}
-                  required/>
+                  />
               </div>
             </div>                
           </div>
