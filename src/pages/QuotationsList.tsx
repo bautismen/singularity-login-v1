@@ -471,6 +471,15 @@ useEffect(() => {
               <label className={styles.radioLabel}>
                 <input
                   type="checkbox"
+                  value="4"
+                  checked={statusFilter.includes('4')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.partialquoted')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
                   value="5"
                   checked={statusFilter.includes('5')}
                   onChange={(e) => handleRequesStatus(e.target.value)}
@@ -485,6 +494,24 @@ useEffect(() => {
                   onChange={(e) => handleRequesStatus(e.target.value)}
                 />
                 <span>{t('quote.declined')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="8"
+                  checked={statusFilter.includes('8')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.accepted')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="9"
+                  checked={statusFilter.includes('9')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.rejected')}</span>
               </label>
               <label className={styles.radioLabel}>
                 <input
