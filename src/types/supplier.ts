@@ -16,44 +16,45 @@ export interface Person {
 }
 
 export interface Company {
-  _id?: string;
-  business_name: string;
-  rfc_taxid: string;
-  nationality: 'nacional' | 'extranjero';
-  country: string;
-  state: string;
-  status: 'activo' | 'inactivo' | 'eliminado';
-  archivado: boolean;
-  datastate: number;
-  created_at?: Date;
-  created_by?: {
-    user_id: string;
-    name: string;
+  _Id?: string;
+  Business_name: string;
+  Rfc_taxid: string;
+  Nationality: 'nacional' | 'extranjero';
+  Country: string;  
+  Status: number;
+  Archived: boolean;
+  Data_state: number;
+  Created_at?: Date;
+  Created_by?: {
+    User_id: string;
+    Name: string;
   };
+  Sector_id: number;
+  Sector: string;
 }
 
 export interface Contact {
-  _idcontacts?: string;
+  // _idcontacts?: string;
   type: string;
   name: string;
   email: string;
   phone: string;
   position: string;
-  status: 'activo' | 'inactivo';
-  valid_from: string;
-  valid_to: string | null;
+  status: 1 | 0; // 1: activo, 0: inactivo
+  validFrom: string;
+  validTo: string | null;
 }
 
 export interface Address {
-  _idaddress?: string;
+  // _idaddress?: string;
   street: string;
   city: string;
   state: string;
-  postal_code: string;
+  postalCode: string;
   country: string;
-  status: 'activo' | 'inactivo';
-  valid_from: string;
-  valid_to: string | null;
+  status: 1 | 0; // 1: activo, 0: inactivo
+  validFrom: string;
+  validTo: string | null;
 }
 
 export interface SectorOfBusiness {
@@ -74,31 +75,35 @@ export interface HistoryEntry {
 }
 
 export interface Supplier {
-  _id?: string;
-  _idsupplier?: number;
-  is_persona_fisica?: boolean;
-  curp?: string; 
-  company_id?: string;
-  is_national?: boolean;
-  fiscal_data: {
-    business_name: string;
-    rfc_taxid: string;
-    country: string;
-    state: string;
+  Id?: string;
+  IdSupplier?: number;
+  IsPersonaFisica?: boolean;
+  Curp?: string; 
+  CompanyId?: string;
+  IsNational?: boolean;
+  FiscalData: {
+    BusinessName: string;
+    RFCTaxId: string;
+    Country: string;
   };
-  serctor_id: string;
-  sector: string;
-  contacts: Contact[];
-  addresses: Address[];
-  history?: HistoryEntry[];
-  created_at?: Date;
-  created_by?: {
-    user_id: string;
-    name: string;
+  SectorId: number;
+  Sector_name: string;
+  Contacts: Contact[];
+  Addresses: Address[];
+  History?: HistoryEntry[];
+  CreatedAt?: Date;
+  CreatedBy?: {
+    IdUser: string;
+    Name: string;
   };
-  status: 'activo' | 'inactivo';
-  archivado: boolean;
-  datastate: number;
+  UpdatedAt: Date;
+  UpdatedBy: {
+    IdUser: string;
+    Name: string;
+  };
+  Status: 1 | 2; // 1: activo, 2: inactivo, 
+  Archived: boolean;
+  DataState: number;
 }
 
 export interface SupplierFormData {

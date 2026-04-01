@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, Save, Edit2, ChevronDown, ChevronUp, X, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useNotification } from '../contexts/NotificationContext';
 import { Supplier, Company, Contact, Address, MEXICAN_STATES, CONTACT_TYPES, SectorOfBusiness } from '../types/supplier';
-import { getSuppliers, createSupplier, updateSupplier, getCompanies, getSector, createCompany } from '../services/supplierService';
+import { getSuppliers, createSupplier, updateSupplier, getCompanies, createCompany } from '../services/supplierService';
 import styles from './Suppliers.module.css';
+import { useNotification } from '../contexts/NotificationContext';
+import { useAuth } from '../contexts/AuthContext';
+import { catalogService } from '../services/catalogsService';
 
 export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: string) => void }
   const { t } = useLanguage();
@@ -12,7 +14,7 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   //const [people, setPeople] = useState<Person[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [sector, setSector] = useState<SectorOfBusiness[]>([]);
+  const [sector, setSectores] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -25,24 +27,30 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
   });
   //const [showPersonForm, setShowPersonForm] = useState(false);
   const [showCompanyForm, setShowCompanyForm] = useState(false);
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState({
-    is_persona_fisica: false,
-    curp: '',
-    company_id: '',
-    is_national: false,
+    IsPersonaFisica: false,
+    Curp: '',
+    CompanyId: '',
+    IsNational: false,
     //person_id: '',
-    status: 'activo' as 'activo' | 'inactivo',
-    fiscal_data: {
-      business_name: '',
-      rfc_taxid: '',
-      country: 'MX',
-      state: '',
+    FiscalData: {
+      BusinessName: '',
+      RFCTaxId: '',
+      Country: 'MX',
     },
-    serctor_id: '',
-    sector: '',
-    contacts: [] as Contact[],
-    addresses: [] as Address[],
+    SectorId: 0,
+    Sector_name: '',
+    Contacts: [] as Contact[],
+    Addresses: [] as Address[],
+    History: [] as History[],
+    CreatedAt: Date,
+    UpdatedAt: Date,
+    CreatedBy: {IdUser: user?._id, Name: user?.name},
+    Status: 1 as 1 | 0,//'activo' as 'activo' | 'inactivo',
+    Archived: false,
+    DataState: 1
   });
 
   // const [newPerson, setNewPerson] = useState<Partial<Person>>({
@@ -57,14 +65,15 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
   // });
 
   const [newCompany, setNewCompany] = useState<Partial<Company>>({
-    business_name: '',
-    rfc_taxid: '',
-    nationality: 'nacional',
-    country: 'MX',
-    state: '',
-    status: 'activo',
-    archivado: false,
-    datastate: 1,
+    Business_name: '',
+    Rfc_taxid: '',
+    Nationality: 'nacional',
+    Country: 'MX',
+    Sector_id: 0,
+    Sector: '',
+    Status: 1,
+    Archived: false,
+    Data_state: 1,
   });
 
   const [countries, setCountries] = useState<any[]>([]);
@@ -73,9 +82,12 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
     loadSuppliers();
     //loadPeople();
     loadCompanies();
+  }, []);
+
+  useEffect(() => {
     loadSector();
     loadCountries();
-  }, []);
+  }, [searchTerm, statusFilter])
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -118,7 +130,8 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
   async function loadCompanies() {
     try {
       const data = await getCompanies();
-      setCompanies(data);
+      setCompanies(data.filter((c: any) => c.status === 1));
+
     } catch (error) {
       console.error('Error loading companies:', error);
     }
@@ -126,8 +139,8 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
 
   async function loadSector() {
     try {
-      const data = (await getSector());
-      setSector(data);
+      const sectorData = await catalogService.getSector();
+      setSectores(sectorData.data.filter((c: any) => c.status === 1));
     } catch (error) {
       console.error('Error loading sector:', error);
     }
@@ -135,17 +148,17 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
 
   const loadCountries = async () => {
     try {
-      const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${BASE_URL}/functions/v1/catalog-countries`, {
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      // const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      // const response = await fetch(`${BASE_URL}/functions/v1/catalog-countries`, {
+      //   headers: {
+      //     'Authorization': `Bearer ${API_KEY}`,
+      //     'Content-Type': 'application/json'
+      //   }
+      // });
 
-      const countriesData = await response.json();
-      setCountries(countriesData.filter((c: any) => c.status === 1));
+      const countriesData = await catalogService.getCountries();
+      setCountries(countriesData.data.filter((c: any) => c.status === 1));
     } catch (error) {
       console.error('Error loading countries:', error);
     }
@@ -158,47 +171,62 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
   function handleNewSupplier() {
     setEditingSupplier(null);
     setFormData({
-      is_persona_fisica: false,
-      curp: '',
-      company_id: '',
-      is_national: false,
+      Id: '',
+      IdSupplier: 0,
+      IsPersonaFisica: false,
+      Curp: '',
+      CompanyId: '',
+      IsNational: false,
       //person_id: '',
-      status: 'activo',
-      fiscal_data: {
-        business_name: '',
-        rfc_taxid: '',
-        country: 'MX',
-        state: '',
+      FiscalData: {
+        BusinessName: '',
+        RFCTaxId: '',
+        Country: 'MX',
       },
-      serctor_id: '',
-      sector: '',
-      contacts: [],
-      addresses: [],
+      SectorId: 0,
+      Sector_name: '',
+      Contacts: [],
+      Addresses: [],
+      History: [],
+      CreatedAt: Date,
+      UpdatedAt: Date,
+      CreatedBy: {IdUser: user._id, Name: user?.name},
+      Status: 1,
+      Archived: false,
+      DataState: 1
     });
     setIsFormOpen(true);
   }
 
   function handleEditSupplier(supplier: Supplier) {
     setEditingSupplier(supplier);
-    //const selectedCompany = companies.find(c => c._id === supplier.company_id);
+    
+    const selectedCompany = companies.find(c => c._Id === supplier.companyId);
+
     setFormData({
-      is_persona_fisica: supplier.is_persona_fisica || false,
-      curp: supplier.curp || '',
-      company_id: supplier.company_id || '',
-      is_national: supplier.is_national || false,
-      status: supplier.status || 'activo',
-      fiscal_data: supplier.fiscal_data,
-      // fiscal_data: selectedCompany ? {
-      //   business_name: selectedCompany.business_name || '',
-      //   rfc_taxid: selectedCompany.rfc_taxid || '',
-      //   country: selectedCompany.country || 'MX',
-      //   state: selectedCompany.state || '',
-      // } : supplier.fiscal_data,
+      Id: supplier.id || '',
+      IdSupplier: supplier.idSupplier || 0,
+      IsPersonaFisica: supplier.isPersonaFisica || false,
+      Curp: supplier.curp || '',
+      CompanyId: supplier.companyId || '',
+      IsNational: supplier.isNational || false,
+      FiscalData: selectedCompany ? {
+        BusinessName: selectedCompany.business_name || '',
+        RFCTaxId: selectedCompany.rfc_taxid || '',
+        Country: selectedCompany.country || 'MX',
+      } : supplier.fiscalData,
       //person_id: supplier.person_id || '',
-      serctor_id: supplier.serctor_id || '',
-      sector: supplier.sector || '',
-      contacts: supplier.contacts || [],
-      addresses: supplier.addresses || [],
+      SectorId: supplier.sectorId || 0,
+      Sector_name: supplier.sector_name || '',
+      Contacts: supplier.contacts || [],
+      Addresses: supplier.addresses || [],
+      CreatedAt: new Date(),
+      CreatedBy: supplier.createdBy || [],
+      UpdatedAt: new Date(),
+      Status: supplier.status,
+      Archived: supplier.archived || false,
+      DataState: supplier.data_State || 1,
+      History: [],
     });
     setIsFormOpen(true);
   }
@@ -208,36 +236,29 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
       setLoading(true);
       e.preventDefault();
 
-      const selectedCompany = companies.find(c => c._id === formData.company_id);
-
-      // if (!selectedCompany) {
-      //   showWarning('Debe seleccionar una empresa');
-      //   setLoading(false);
-      //   return;
-      // }
+      const selectedCompany = companies.find(c => c._Id === formData.CompanyId);
 
       const dataToSave = {
         ...formData,
-          fiscal_data: selectedCompany ? {
-          business_name: selectedCompany.business_name,
-          rfc_taxid: selectedCompany.rfc_taxid,
-          country: selectedCompany.country,
-          state: selectedCompany.state,
-        } : formData.fiscal_data,
+          FiscalData: selectedCompany ? {
+          BusinessName: selectedCompany.business_name,
+          RFCTaxId: selectedCompany.rfc_taxid,
+          Country: selectedCompany.country,
+        } : formData.FiscalData,
       };
 
-      const existe = suppliers.filter(supplier =>
-        supplier.company_id === formData.company_id && supplier._id !== editingSupplier?._id
+      const existe = suppliers.some(supplier =>
+        supplier.CompanyId === formData.CompanyId && supplier.Id !== editingSupplier?.Id
       );
 
-      if (formData.company_id === selectedCompany?._id && existe.length > 0) {
+      if (formData.CompanyId === selectedCompany?._Id && existe) {
         showError('Ya existe un proveedor con esta empresa');
         setLoading(false);
         return;
       }
 
       if (editingSupplier) {
-        await updateSupplier(editingSupplier._id!, dataToSave);
+        await updateSupplier(editingSupplier._Id!, dataToSave);
       } else {
         await createSupplier(dataToSave);
       }
@@ -297,18 +318,20 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
 
       e.preventDefault();
       const created = await createCompany(newCompany);
-      setCompanies([...companies, created]);
-      handleCompanyChange(created._id!)
+      await loadCompanies();
+      // setCompanies([...companies, created]);
+      handleCompanyChange(created.atrribute.value)
       setFormData({
         ...formData, 
-        company_id: created._id!,
-        is_national: created.nationality === 'nacional' ? true : false,
-        fiscal_data: {
-          business_name: created.business_name,
-          rfc_taxid: created.rfc_taxid,
-          country: created.country,
-          state: created.state,
+        CompanyId: created.atrribute.value!,
+        IsNational: newCompany.Nationality === 'nacional' ? true : false,
+        FiscalData: {
+          BusinessName: newCompany.Business_name,
+          RFCTaxId: newCompany.Rfc_taxid,
+          Country: newCompany.Country || 'MX',
         },
+        SectorId: newCompany.Sector_id || 0,
+        Sector_name: newCompany.Sector || ''
       });
       handleCloseModal()
       
@@ -321,47 +344,48 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
   function handleCloseModal(){
     setShowCompanyForm(false);
       setNewCompany({
-        business_name: '',
-        rfc_taxid: '',
-        nationality: undefined,
-        country: '',
-        state: '',
-        status: 'activo',
-        archivado: false,
-        datastate: 1,
+        Business_name: '',
+        Rfc_taxid: '',
+        Nationality: undefined,
+        Country: '',
+        Sector_id: 0,
+        Sector: '',
+        Status: 1,
+        Archived: false,
+        Data_state: 1,
       });
   }
 
   function handleCompanyChange(selectedCompanyId: string) {
-    const selectedCompany = companies.find(c => c._id === selectedCompanyId);
+    const selectedCompany = companies.find(c => c._Id === selectedCompanyId);
 
     if (!selectedCompany) {
       setFormData({
         ...formData,
-        serctor_id: '', 
-        sector: '',     //para que tambien limpie si ya selecciono alguno.
-        company_id: '',
-        is_national: false,
-        fiscal_data: {
-          business_name: '',
-          rfc_taxid: '',
-          country: 'MX',
-          state: '',
-        },
-      });
+          CompanyId: '',
+          IsNational: false,
+          FiscalData: {
+            BusinessName: '',
+            Country: 'MX',
+            Rfc_taxid: '',
+          },
+          SectorId: 0,
+          Sector_name: ''
+        });
       return;
     }
 
     setFormData({
       ...formData,
-      company_id: selectedCompanyId,
-      is_national: selectedCompany.nationality === 'nacional' ? true : false,
-      fiscal_data: {
-        business_name: selectedCompany.business_name || '',
-        rfc_taxid: selectedCompany.rfc_taxid || '',
-        country: selectedCompany.country || 'MX',
-        state: selectedCompany.state || '',
+      CompanyId: selectedCompanyId,
+      IsNational: selectedCompany.nationality === 'nacional' ? true : false,
+      FiscalData: {
+        BusinessName: selectedCompany.business_name || '',
+        RFCTaxId: selectedCompany.rfc_taxid || '',
+        Country: selectedCompany.country || 'MX',
       },
+      SectorId: selectedCompany.sector_id || 0,
+      Sector_name: selectedCompany.sector_name || ''
     });
   }
 
@@ -372,24 +396,24 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
       email: '',
       phone: '',
       position: '',
-      status: 'activo',
-      valid_from: new Date().toISOString(),
-      valid_to: null,
+      status: 1,
+      validFrom: new Date().toISOString(),
+      validTo: null,
     };
-    setFormData({ ...formData, contacts: [...formData.contacts, newContact] });
+    setFormData({ ...formData, Contacts: [...formData.Contacts, newContact] });
   }
 
   function removeContact(index: number) {
     setFormData({
       ...formData,
-      contacts: formData.contacts.filter((_, i) => i !== index),
+      Contacts: formData.Contacts.filter((_, i) => i !== index),
     });
   }
 
   function updateContact(index: number, field: keyof Contact, value: string) {
-    const updated = [...formData.contacts];
+    const updated = [...formData.Contacts];
     updated[index] = { ...updated[index], [field]: value };
-    setFormData({ ...formData, contacts: updated });
+    setFormData({ ...formData, Contacts: updated });
   }
 
   function addAddress() {
@@ -397,31 +421,31 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
       street: '',
       city: '',
       state: '',
-      postal_code: '',
+      postalCode: '',
       country: 'MX',
-      status: 'activo',
-      valid_from: new Date().toISOString(),
-      valid_to: null,
+      status: 1,
+      validFrom: new Date().toISOString(),
+      validTo: null,
     };
-    setFormData({ ...formData, addresses: [...formData.addresses, newAddress] });
+    setFormData({ ...formData, Addresses: [...formData.Addresses, newAddress] });
   }
 
   function removeAddress(index: number) {
     setFormData({
       ...formData,
-      addresses: formData.addresses.filter((_, i) => i !== index),
+      Addresses: formData.Addresses.filter((_, i) => i !== index),
     });
   }
 
   function updateAddress(index: number, field: keyof Address, value: string) {
-    const updated = [...formData.addresses];
+    const updated = [...formData.Addresses];
     updated[index] = { ...updated[index], [field]: value };
-    setFormData({ ...formData, addresses: updated });
+    setFormData({ ...formData, Addresses: updated });
   }
 
   const filteredSuppliers = suppliers.filter(supplier => {
-    const matchesSearch = supplier.fiscal_data.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.fiscal_data.rfc_taxid.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = supplier.fiscalData.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.fiscalData.rfcTaxId.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus = statusFilter === 'todos' || supplier.status === statusFilter;
 
@@ -467,7 +491,7 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                       <span className={styles.required}>* </span>{t('supp.selectCompany')}
                     </label>
                     <select
-                      value={formData.company_id}
+                      value={formData.CompanyId}
                       onChange={(e) => handleCompanyChange(e.target.value)}
                       className={styles.selectInput}
                       required
@@ -481,7 +505,7 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                       >
                       <option value="">{t('supp.selectCompany')}</option>
                       {companies.map((company) => (
-                        <option key={company._id} value={company._id}>
+                        <option key={company._Id} value={company._Id}>
                           {company.business_name}
                         </option>
                       ))}
@@ -507,12 +531,12 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                     <input
                       type="checkbox"
                       id="is_national"
-                      checked={formData.is_national}
+                      checked={formData.IsNational}
                       onChange={(e) => setFormData({
                         ...formData,
-                        is_national: e.target.checked,
-                        is_persona_fisica: false,
-                        curp: ''
+                        IsNational: e.target.checked,
+                        IsPersonaFisica: false,
+                        Curp: ''
                       })}
                       className={styles.checkbox}
                       disabled
@@ -525,12 +549,12 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                       <span className={styles.required}>* </span>{t('supp.selectSector')}
                       </label>
                     <select
-                      value={formData.serctor_id}
+                      value={formData.SectorId}
                       onChange={(e) => 
                         setFormData({ 
                           ...formData, 
-                          serctor_id: e.target.value,
-                          sector: e.target.options[e.target.selectedIndex].text
+                          SectorId: Number(e.target.value),
+                          Sector_name: e.target.options[e.target.selectedIndex].text
                         })
                       }
                       className={styles.selectInput}
@@ -544,7 +568,7 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                     >
                       <option value="">{t('supp.selectSector')}</option>
                       {sector.map((sector) => (
-                        <option key={sector._id} value={sector._id}>
+                        <option key={sector._Id} value={sector._Id}>
                           {sector.name}
                         </option>
                       ))
@@ -560,11 +584,12 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                       <span className={styles.required}>* </span>RFC/TAXID</label>
                     <input
                       type="text"
-                      value={formData.fiscal_data.rfc_taxid}
+                      value={formData.FiscalData.RFCTaxId}
                       onChange={(e) => {
                         setFormData({
                           ...formData,
-                          fiscal_data: { ...formData.fiscal_data, rfc_taxid: e.target.value }})
+                          FiscalData: { ...formData.FiscalData, RFCTaxId: e.target.value }
+                        })
                       }}                     
                       className={styles.textInput}
                       placeholder="RFC/TAXID"
@@ -577,27 +602,27 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                     <label className={styles.switch}>
                       <input
                         type="checkbox"
-                        checked={formData.status === 'activo'}
+                        checked={formData.Status === 1}
                         onChange={(e) => setFormData({
                           ...formData,
-                          status: e.target.checked ? 'activo' : 'inactivo'
+                          Status: e.target.checked ? 1 : 0
                         })}
                       />
                       <span className={styles.slider}></span>
                     </label>
                   </div>
 
-                  {formData.is_national && (
+                  {formData.IsNational && (
                     <div className={styles.checkboxField}>
                       <input
                         type="checkbox"
                         id="is_persona_fisica"
-                        checked={formData.is_persona_fisica}
+                        checked={formData.IsPersonaFisica}
                         onChange={(e) => setFormData({
                           ...formData,
-                          is_persona_fisica: e.target.checked,
-                          curp: e.target.checked ? formData.curp : ''
-                        })}
+                          IsPersonaFisica: e.target.checked
+                        }
+                      )}
                         className={styles.checkbox}
                         disabled = {editingSupplier ? true : false}
                       />
@@ -607,16 +632,17 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                     </div>
                   )}
 
-                  {formData.is_national && formData.is_persona_fisica && (
+                  {formData.IsNational && formData.IsPersonaFisica && (
                     <div className={styles.fieldGroup}>
                       <label className={styles.fieldLabel}>
                         <span className={styles.required}></span>CURP</label>
                       <input
                         type="text"
-                        value={formData.curp}
+                        value={formData.Curp}
                         onChange={(e) => setFormData({ 
                           ...formData, 
-                          curp: e.target.value.toUpperCase()
+                          Curp: formData.IsPersonaFisica === false ? '' :
+                                 e.target.value.toUpperCase()
                                               .replace(/[^A-Z0-9]/g, "")
                                               .slice(0, 18)
                         })}
@@ -650,7 +676,7 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                     <Plus size={20} />
                     {t('supp.addContact')}
                   </button>
-                  {formData.contacts.map((contact, index) => (
+                  {formData.Contacts.map((contact, index) => (
                     <div key={index} className={styles.itemCard}>
                       <div className={styles.itemHeader}>
                         <h4>{t('supp.contact')} {index + 1}</h4>
@@ -737,7 +763,7 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                     <Plus size={20} />
                     {t('supp.addAddress')}
                   </button>
-                  {formData.addresses.map((address, index) => (
+                  {formData.Addresses.map((address, index) => (
                     <div key={index} className={styles.itemCard}>
                       <div className={styles.itemHeader}>
                         <h4>{t('supp.address')} {index + 1}</h4>
@@ -775,27 +801,25 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                           />
                         </label>
                       </div>
+
                       <div className={styles.formRow}>
                         <label>
                           {t('supp.state')}
-                          <select
+                          <input
+                            type="text"
                             value={address.state}
                             onChange={(e) => updateAddress(index, 'state', e.target.value)}
-                          >
-                            <option value="">Seleccionar estado</option>
-                            {MEXICAN_STATES.map((state) => (
-                              <option key={state} value={state}>{state}</option>
-                            ))}
-                          </select>
+                          />
                         </label>
-                      </div>
+                      </div> {/*state*/}
+
                       <div className={styles.formRow}>
                         <label>
                           {t('supp.postalCode')}
                           <input
                             type="number" 
-                            value={address.postal_code}
-                            onChange={(e) => updateAddress(index, 'postal_code', e.target.value)}
+                            value={address.postalCode}
+                            onChange={(e) => updateAddress(index, 'postalCode', e.target.value)}
                           />
                         </label>
                       </div>
@@ -827,10 +851,10 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                       {t('cust.CompanyName')}
                       <input
                         type="text"
-                        value={newCompany.business_name}
+                        value={newCompany.BusinessName}
                         onChange={(e) => setNewCompany({ 
                           ...newCompany, 
-                          business_name: e.target.value.replace(/[^A-Za-z0-9ÁÉÍÓÚáéíóúÑñÄ\s.,&'’()+-]/g, "")
+                          Business_name: e.target.value.replace(/[^A-Za-z0-9ÁÉÍÓÚáéíóúÑñÄ\s.,&'’()+-]/g, "")
                         })}
                         required
                         onInvalid={(e) =>
@@ -849,10 +873,10 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                       RFC
                       <input
                         type="text"
-                        value={newCompany.rfc_taxid}
+                        value={newCompany.Rfc_taxid}
                         onChange={(e) => setNewCompany({ 
                           ...newCompany, 
-                          rfc_taxid: e.target.value.replace(/[^a-zA-Z0-9Ññ&.\-\/ ]/g, '') // solo letras y números
+                          Rfc_taxid: e.target.value.replace(/[^a-zA-Z0-9Ññ&.\-\/ ]/g, '') // solo letras y números
                                                    .slice(0, 20) // máximo 13 caracteres
 
                         })}
@@ -875,11 +899,11 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
 
                   <div className={styles.countryControls}>
                     <select
-                      value={newCompany.country}
+                      value={newCompany.Country}
                       onChange={(e) => setNewCompany({
                         ...newCompany,
-                        country: e.target.value,
-                        nationality: e.target.value === 'MX' ? 'nacional' : 'extranjero'
+                        Country: e.target.value,
+                        Nationality: e.target.value === 'MX' ? 'nacional' : 'extranjero'
                       })}
                       className={styles.textInput}
                       required
@@ -906,12 +930,12 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
                         <input
                           type="checkbox"
                           className="checkbox"
-                          checked={newCompany.country === 'MX' ? true : false}
+                          checked={newCompany.Country === 'MX' ? true : false}
                           // onChange={(e) =>
                           // setNewCompany({
                           //   ...newCompany,
-                          //   nationality: e.target.value ? "extranjero" : 'nacional',
-                          //   country: e.target.checked ? 'MX' : '',
+                          //   Nationality: e.target.value ? "extranjero" : 'nacional',
+                          //   Country: e.target.checked ? 'MX' : '',
                           // })
                           // }
                           disabled
@@ -925,23 +949,36 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
 
                   <div className={styles.formRow}>
                     <label>
-                      {t('cust.state')}
-                      <input
-                        type="text"
-                        value={newCompany.state}
-                        onChange={(e) => setNewCompany({ ...newCompany, state: e.target.value })}
-                      />
-                      {/* <select
-                        value={newCompany.state}
-                        onChange={(e) => setNewCompany({ ...newCompany, state: e.target.value })}
+                      <span className="required">* </span>
+                      Sector
+                      <select
+                        value={newCompany.Sector_id}
+                        onChange={(e) => 
+                          setNewCompany({ 
+                            ...newCompany, 
+                            Sector_id: Number(e.target.value),
+                            Sector: e.target.options[e.target.selectedIndex].text
+                          })
+                        }
+                        className={styles.selectInput}
+                        required
+                        onInvalid={(e) => 
+                          e.currentTarget.setCustomValidity(t('catalog.requiredFields'))
+                        }
+                        onInput={(e) =>
+                          e.currentTarget.setCustomValidity('')
+                        }
                       >
-                        <option value="">Seleccionar estado</option>
-                        {MEXICAN_STATES.map((state) => (
-                          <option key={state} value={state}>{state}</option>
-                        ))}
-                      </select> */}
+                        <option value="">{t('supp.selectSector')}</option>
+                        {sector.map((sector) => (
+                          <option key={sector._Id} value={sector._Id}>
+                            {sector.name}
+                          </option>
+                        ))
+                        }
+                      </select>
                     </label>
-                  </div> {/*state*/}
+                  </div> 
 
                 </div>
 
@@ -1020,41 +1057,44 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
       ) : filteredSuppliers.length > 0 ? (
         <div className={styles.supplierList}>
           {filteredSuppliers.map((supplier) => (
-            <div key={supplier._id} className={styles.supplierCard}>            
+            <div key={supplier.Id} className={styles.supplierCard}>            
               <div className={styles.supplierRow}>
                 <div className={styles.supplierInfo}>
                   <div className={styles.supplierNameWrapper}>
 
                     <h3 className={styles.supplierName}>
-                      {supplier.fiscal_data.business_name}
+                      {supplier.fiscalData.businessName}
                     </h3>
                       
                     <p className={styles.supplierType}>
                       <span className={styles.badge}>
-                        {supplier.is_persona_fisica === true 
+                        {supplier.isPersonaFisica === true 
                           ? 'Persona física' 
                           : 'Persona moral'
                         } 
                       </span>
                     </p>
 
-                    <span className={supplier.status === 'activo'
+                    <span className={supplier.status === 1
                       ? styles.statusActive
                       : styles.statusInactive
                       } >
-                      {supplier.status}
+                      {supplier.status === 1 
+                            ? 'Activo'
+                            : 'Inactivo'
+                      }
                     </span>
                   </div>
                 </div>
 
                 <div className={styles.supplierMeta}>
                   <p className={styles.taxId}>
-                    {supplier.fiscal_data.rfc_taxid}
+                    {supplier.fiscalData.rfcTaxId}
                   </p>
 
                   <p className={styles.supplierNationality}>
                     <span className={styles.badge}>
-                      {supplier.is_national === true
+                      {supplier.isNational === true
                         ? 'Nacional'
                         : 'Extranjero'
                       }
