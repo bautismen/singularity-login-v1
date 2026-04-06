@@ -61,7 +61,7 @@ export function CatalogServices() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/Service`, {
+      const response = await fetch(`${API_URL}/v1/kl/catalog/operations/Service`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${API_TOKENSL}`,
@@ -163,7 +163,7 @@ export function CatalogServices() {
 
       if (editingItem) {
         setFormData({ ...formData, _Id: editingItem.id });
-        const response = await fetch(`${API_URL}/v1/kl/catalog/update/Service`, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/operations/Service`, {
           method: 'PUT',
           headers: {
              'Authorization': `Bearer ${API_TOKENSL}`,
@@ -178,7 +178,7 @@ export function CatalogServices() {
         }
       } else {
         console.log(JSON.stringify(formData));
-        const response = await fetch(`${API_URL}/v1/kl/catalog/add/Service`, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/operations/add/Service`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -215,7 +215,7 @@ export function CatalogServices() {
       onConfirm: async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${API_URL}/v1/kl/catalog/deletelogic/view=Service&id=${id}`, {
+          const response = await fetch(`${API_URL}/v1/kl/catalog/operations/view=Service&id=${id}`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${API_TOKENSL}`,
