@@ -53,7 +53,7 @@ export function CatalogUsers() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/User`, {
+      const response = await fetch(`${API_URL}/v1/kl/catalog/general/User`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${API_TOKENSL}`,
@@ -155,7 +155,7 @@ export function CatalogUsers() {
 
       if (editingItem) {
         payload._Id = editingItem._Id;
-        const response = await fetch(`${API_URL}/v1/kl/catalog/update/User`, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/general/User`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -173,7 +173,7 @@ export function CatalogUsers() {
         payload._Id = '';
         payload.CreatedAt = new Date();
         payload.UpdatedAt = new Date();
-        const response = await fetch(`${API_URL}/v1/kl/catalog/add/User`, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/general/add/User`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
