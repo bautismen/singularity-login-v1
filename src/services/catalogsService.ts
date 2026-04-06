@@ -5,7 +5,7 @@ const API_KEYSL = import.meta.env.VITE_APIKEYSL;
 
 export const catalogService = {
     async getContainers() {
-        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/getcatalog/Container`, {
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/operations/Container`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -25,7 +25,7 @@ export const catalogService = {
     },
 
     async getServices() {
-        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/getcatalog/Service`, {
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/operations/Service`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -44,7 +44,7 @@ export const catalogService = {
     },
 
     async getTypeRequests() {
-        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/getcatalog/TypeResquet`, {
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/operations/TypeResquet`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -63,7 +63,7 @@ export const catalogService = {
     },
 
     async getIncoterms(){
-        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/getcatalog/Incoterm`, {
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/operations/Incoterm`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -82,7 +82,7 @@ export const catalogService = {
     },
 
     async getCountries() {
-        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/getcatalog/Countrie`, {
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/operations/Countrie`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -102,7 +102,7 @@ export const catalogService = {
     },
 
     async getImos() {
-        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/getcatalog/Imo`, {
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/operations/Imo`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -123,7 +123,7 @@ export const catalogService = {
     },
 
     async getSector() {
-        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/getcatalog/SectorOfBusiness`, {
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/general/SectorOfBusiness`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
