@@ -7,8 +7,9 @@ import styles from './Executives.module.css';
 import { useNotification } from '../contexts/NotificationContext';
 import { Modal } from '../components/Modal';
 
-const USERS_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/users`;
-const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const API_URL = import.meta.env.VITE_API_CATALOGS;
+const API_KEY = import.meta.env.VITE_APIKEYSL;
+const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 
 export function Executives() {
   const { t } = useLanguage();
@@ -246,11 +247,12 @@ export function Executives() {
 
   const loadUsers = async () => {
     try {
-      const response = await fetch(USERS_API_URL, {
+      const response = await fetch(`${API_URL}/v1/kl/catalog/general/User`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          'Authorization': `Bearer ${API_TOKENSL}`,
           'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
         },
       });
 
@@ -259,7 +261,7 @@ export function Executives() {
       }
 
       const data = await response.json();
-      setUsers(data);
+      setUsers(data.data);
     } catch (error) {
       console.error('Error loading users:', error);
     }

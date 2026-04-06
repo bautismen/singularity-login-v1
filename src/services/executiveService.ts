@@ -12,7 +12,7 @@ const headers = {
 
 export async function createExecutive(executive: Omit<Executive, '_id'>) {
   try {    
-    const response = await fetch(`${API_URL}/v1/kl/catalog/add/Executive`, {
+    const response = await fetch(`${API_URL}/v1/kl/catalog/general/add/Executive`, {
       method: 'POST',
       headers,
       body: JSON.stringify(executive),
@@ -31,7 +31,7 @@ export async function createExecutive(executive: Omit<Executive, '_id'>) {
 
 export async function getExecutives(includeArchived = false): Promise<Executive[]> {
   try {
-    const url = `${API_URL}/v1/kl/catalog/getcatalog/Executive`;
+    const url = `${API_URL}/v1/kl/catalog/general/Executive`;
     const response = await fetch(url, { headers });
 
     if (!response.ok) {
@@ -49,7 +49,7 @@ export async function getExecutives(includeArchived = false): Promise<Executive[
 
 export async function getExecutiveById(id: string): Promise<Executive | null> {
   try {
-    const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalogfiltrer/view=Executive&filtrer=${id}`, { headers });
+    const response = await fetch(`${API_URL}/v1/kl/catalog/general/view=Executive&filtrer=${id}`, { headers });
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -70,7 +70,7 @@ export async function getExecutiveById(id: string): Promise<Executive | null> {
 
 export async function getExecutivesByDepartment(department : string): Promise<Executive[]>{
   try {    
-    const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalogfiltrer/view=Executive&filtrer=${department}`, {headers});
+    const response = await fetch(`${API_URL}/v1/kl/catalog/general/view=Executive&filtrer=${department}`, {headers});
 
     if(!response.ok) {
       console.log('ERROR fetch: ',response)
@@ -88,7 +88,7 @@ export async function getExecutivesByDepartment(department : string): Promise<Ex
 
 export async function updateExecutive(id: string, updates: Executive): Promise<Executive | null> {
   try {
-    const response = await fetch(`${API_URL}/v1/kl/catalog/update/Executive`, {
+    const response = await fetch(`${API_URL}/v1/kl/catalog/general/Executive`, {
       method: 'PUT',
       headers,
       body: JSON.stringify(updates),
@@ -110,7 +110,7 @@ export async function updateExecutive(id: string, updates: Executive): Promise<E
 
 export async function deleteExecutive(id: string): Promise<boolean> {
   try {
-    const response = await fetch(`${API_URL}/v1/kl/catalog/deleteidobjet/view=Executive&id=${id}`, {
+    const response = await fetch(`${API_URL}/v1/kl/catalog/general/delete/view=Executive&id=${id}`, {
       method: 'PUT',
       headers,
     });
