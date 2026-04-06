@@ -57,7 +57,7 @@ export function CatalogIMO() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/Imo`, {
+      const response = await fetch(`${API_URL}/v1/kl/catalog/operations/Imo`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${API_TOKENSL}`,
@@ -156,7 +156,7 @@ export function CatalogIMO() {
 
       if (editingItem) {
         setFormData({ ...formData, _Id: editingItem.id });     
-        const response = await fetch(`${API_URL}/v1/kl/catalog/update/Imo`, {          
+        const response = await fetch(`${API_URL}/v1/kl/catalog/operations/Imo`, {          
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -178,7 +178,7 @@ export function CatalogIMO() {
           return;
         }
 
-        const response = await fetch(`${API_URL}/v1/kl/catalog/add/Imo`, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/operations/add/Imo`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -216,7 +216,7 @@ export function CatalogIMO() {
       onConfirm: async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${API_URL}/v1/kl/catalog/deletelogic/view=Imo&id=${id}`, {
+          const response = await fetch(`${API_URL}/v1/kl/catalog/operations/view=Imo&id=${id}`, {
             method: 'PUT',
             headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
