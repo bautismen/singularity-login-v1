@@ -1,16 +1,8 @@
 import { Customer, Person, Company } from '../types/customer';
 
-// const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-// const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
 const API_URL = import.meta.env.VITE_API_CATALOGS;
 const API_KEY = import.meta.env.VITE_APIKEYSL;
 const API_TOKENSL = import.meta.env.VITE_TOKENSL;
-
-// const headers = {
-//   'Authorization': `Bearer ${SUPABASE_KEY}`,
-//   'Content-Type': 'application/json',
-// };
 
 const headers = {
   'Authorization': `Bearer ${API_TOKENSL}`,
@@ -18,26 +10,9 @@ const headers = {
   'x-api-key': API_KEY,
 };
 
-//Obtener clientes
-// export async function getCustomers(includeArchived = false): Promise<Customer[]> {
-//   try {
-//     const url = `${SUPABASE_URL}/functions/v1/customers?includeArchived=${true}`;
-//     const response = await fetch(url, { headers });
-
-//     if (!response.ok) {
-//       throw new Error('Failed to fetch customers');
-//     }
-
-//     return await response.json();
-//   } catch (error) {
-//     console.error('Error fetching customers:', error);
-//     throw new Error('Failed to fetch customers');
-//   }
-// }
-
 export async function getCustomers(includeArchived = false): Promise<Customer[]> {
   try {
-    const url = `${API_URL}/v1/kl/catalog/getcatalog/Customer`;
+    const url = `${API_URL}/v1/kl/catalog/general/Customer`;
     const response = await fetch(url, { headers });
 
     if (!response.ok) {
@@ -53,28 +28,10 @@ export async function getCustomers(includeArchived = false): Promise<Customer[]>
   }
 }
 
-
-
-// export async function getCustomerById(id: string): Promise<Customer | null> {
-//   try {
-//     const response = await fetch(`${SUPABASE_URL}/functions/v1/customers/${id}`, { headers });
-
-//     if (!response.ok) {
-//       if (response.status === 404) return null;
-//       throw new Error('Failed to fetch customer');
-//     }
-
-//     return await response.json();
-//   } catch (error) {
-//     console.error('Error fetching customer:', error);
-//     throw new Error('Failed to fetch customer');
-//   }
-// }
-
 export async function createCustomer(customer: Partial<Customer>): Promise<Customer> {
   
   try {
-    const response = await fetch(`${API_URL}/v1/kl/catalog/add/Customer`, {
+    const response = await fetch(`${API_URL}/v1/kl/catalog/general/add/Customer`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -98,7 +55,7 @@ export async function createCustomer(customer: Partial<Customer>): Promise<Custo
 
 export async function updateCustomer(id: string, updates: Partial<Customer>): Promise<Customer | null> {   
   try {
-    const response = await fetch(`${API_URL}/v1/kl/catalog/update/Customer/`, {
+    const response = await fetch(`${API_URL}/v1/kl/catalog/general/Customer/`, {
       method: 'PUT',
       headers,
       body: JSON.stringify(updates),
@@ -196,7 +153,7 @@ export async function updateCustomer(id: string, updates: Partial<Customer>): Pr
 // }
 
 export async function getCompanies(): Promise<Company[]> {
-  const url = `${API_URL}/v1/kl/catalog/getcatalog/Companie`;
+  const url = `${API_URL}/v1/kl/catalog/general/Companie`;
 
   const response = await fetch(url, { headers });
   if (!response.ok) throw new Error('Error al obtener companies');
@@ -208,7 +165,7 @@ export async function getCompanies(): Promise<Company[]> {
 
 export async function createCompany(company: Partial<Company>) {
   try {
-    const response = await fetch(`${API_URL}/v1/kl/catalog/add/Companie`, {
+    const response = await fetch(`${API_URL}/v1/kl/catalog/general/add/Companie`, {
       method: 'POST',
       headers,
       body: JSON.stringify(company),
