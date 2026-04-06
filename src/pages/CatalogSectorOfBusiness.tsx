@@ -55,7 +55,7 @@ export function CatalogSectorOfBusiness() {
   const loadData = async () => {
     try {
       setLoading(true);
-     const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/SectorOfBusiness`, {
+     const response = await fetch(`${API_URL}/v1/kl/catalog/general/SectorOfBusiness`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${API_TOKENSL}`,
@@ -149,7 +149,7 @@ export function CatalogSectorOfBusiness() {
 
       if (editingItem) {
         setFormData({ ...formData, _Id: editingItem.id });
-        const response = await fetch(`${API_URL}/v1/kl/catalog/update/SectorOfBusiness`, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/general/SectorOfBusiness`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -164,7 +164,7 @@ export function CatalogSectorOfBusiness() {
         }
 
       } else {
-        const response = await fetch(`${API_URL}/v1/kl/catalog/add/SectorOfBusiness`, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/general/add/SectorOfBusiness`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -202,7 +202,7 @@ export function CatalogSectorOfBusiness() {
       onConfirm: async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${API_URL}/v1/kl/catalog/deletelogic/view=SectorOfBusiness&id=${id}`, {
+          const response = await fetch(`${API_URL}/v1/kl/catalog/general/view=SectorOfBusiness&id=${id}`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${API_TOKENSL}`,
