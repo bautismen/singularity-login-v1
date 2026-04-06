@@ -55,7 +55,7 @@ export function CatalogRequestTypes() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/TypeResquet`, {
+      const response = await fetch(`${API_URL}/v1/kl/catalog/operations/TypeResquet`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${API_TOKENSL}`,
@@ -143,7 +143,7 @@ export function CatalogRequestTypes() {
       setLoading(true);
 
       if (editingItem) {
-        const response = await fetch(`${API_URL}/v1/kl/catalog/update/TypeResquet`, {          
+        const response = await fetch(`${API_URL}/v1/kl/catalog/operations/TypeResquet`, {          
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -158,7 +158,7 @@ export function CatalogRequestTypes() {
         }
 
       } else {
-        const response = await fetch(`${API_URL}/v1/kl/catalog/add/TypeResquet`, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/operations/add/TypeResquet`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -196,7 +196,7 @@ export function CatalogRequestTypes() {
       onConfirm: async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${API_URL}/v1/kl/catalog/deletelogic/view=TypeResquet&id=${id}`, {
+          const response = await fetch(`${API_URL}/v1/kl/catalog/operations/view=TypeResquet&id=${id}`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${API_TOKENSL}`,
