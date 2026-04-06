@@ -23,7 +23,7 @@ export async function getCompanies(status: 'activo' | 'inactivo' = 'activo'): Pr
 */
 
 export async function getCompanies(): Promise<Company[]> {
-  const url = `${API_URL}/v1/kl/catalog/getcatalog/Companie`;
+  const url = `${API_URL}/v1/kl/catalog/general/Companie`;
 
   const response = await fetch(url, { headers });
   if (!response.ok) throw new Error('Error al obtener companies');
@@ -37,7 +37,7 @@ export async function getCompanies(): Promise<Company[]> {
 
 export async function createCompany(company: Partial<Company>): Promise<Company> {
   try {
-    const response = await fetch(`${API_URL}/v1/kl/catalog/add/Companie`, {
+    const response = await fetch(`${API_URL}/v1/kl/catalog/general/add/Companie`, {
       method: 'POST',
       headers,
       body: JSON.stringify(company),
@@ -67,7 +67,7 @@ export async function createCompany(company: Partial<Company>): Promise<Company>
 export async function updateCompany(id: string, updates: Partial<Company>): Promise<Company | null> {
   updates._Id =id
   try {
-    const response = await fetch(`${API_URL}/v1/kl/catalog/update/Companie`, {
+    const response = await fetch(`${API_URL}/v1/kl/catalog/general/Companie`, {
       method: 'PUT',
       headers,
       body: JSON.stringify(updates),
