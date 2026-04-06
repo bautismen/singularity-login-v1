@@ -57,7 +57,7 @@ export function CatalogCountries() {
   const loadData = async () => {
     try {
       setLoading(true);
-     const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/Countrie`, {
+     const response = await fetch(`${API_URL}/v1/kl/catalog/operations/Countrie`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${API_TOKENSL}`,
@@ -159,10 +159,9 @@ export function CatalogCountries() {
       )
 
       if (editingItem) {
-         setFormData({ ...formData, _Id: editingItem._id });
-         console.log(`${API_URL}/v1/kl/catalog/update/Countrie`)
+         setFormData({ ...formData, _Id: editingItem._id });         
         console.log(JSON.stringify(formData))
-        const response = await fetch(`${API_URL}/v1/kl/catalog/update/Countrie`, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/operations/Countrie`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -184,7 +183,7 @@ export function CatalogCountries() {
           return;
         }
 
-        const response = await fetch(`${API_URL}/v1/kl/catalog/add/Countrie`, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/operations/add/Countrie`, {
 
           method: 'POST',
           headers: {
@@ -223,7 +222,7 @@ export function CatalogCountries() {
       onConfirm: async () => {
         try {
           setLoading(true);
-         const response = await fetch(`${API_URL}/v1/kl/catalog/deletelogic/view=Countrie&id=${id}`, {
+         const response = await fetch(`${API_URL}/v1/kl/catalog/operations/view=Countrie&id=${id}`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${API_TOKENSL}`,
