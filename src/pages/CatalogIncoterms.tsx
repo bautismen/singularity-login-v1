@@ -56,7 +56,7 @@ export function CatalogIncoterms() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/v1/kl/catalog/getcatalog/Incoterm`, {
+      const response = await fetch(`${API_URL}/v1/kl/catalog/operations/Incoterm`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${API_TOKENSL}`,
@@ -150,7 +150,7 @@ export function CatalogIncoterms() {
 
       if (editingItem) {
         setFormData({ ...formData, _Id: editingItem.id });
-        const response = await fetch(`${API_URL}/v1/kl/catalog/update/Incoterm`, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/operations/Incoterm`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -172,7 +172,7 @@ export function CatalogIncoterms() {
           return;
         }
 
-        const response = await fetch(`${API_URL}/v1/kl/catalog/add/Incoterm`, {
+        const response = await fetch(`${API_URL}/v1/kl/catalog/operations/add/Incoterm`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
@@ -209,7 +209,7 @@ export function CatalogIncoterms() {
       onConfirm: async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${API_URL}/v1/kl/catalog/deletelogic/view=Incoterm&id=${id}`, {
+          const response = await fetch(`${API_URL}/v1/kl/catalog/operations/view=Incoterm&id=${id}`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${API_TOKENSL}`,
