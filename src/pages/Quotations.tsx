@@ -11,6 +11,7 @@ import { getExecutivesByDepartment} from '../services/executiveService';
 import styles from './Quotations.module.css';
 import {Container} from '../types/container';
 import {QuotationRequest, Service, Executive, Shipment, Cargo, ContainerRequest} from '../types/requestQuotation';
+import { pricingControlService } from '../services/pricingControlService';
 
 /*
  * CLASIFICACION MERCANCIAS
@@ -737,6 +738,9 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
       };
       if (quotationId) {
         await quotationService.changeStatus(quotationRequestData);
+        if (statusId === 8) { // Aceptada
+          await pricingControlService.AcceptControl(quotationId);          
+        }
         showSuccess(t('quote.success.statusUpdated').replace('{status}', statusName));
       }
 

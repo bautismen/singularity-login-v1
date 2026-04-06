@@ -955,7 +955,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                     const statusMap: any = {
                       'Asignada': { id_status_control: 3, status_control_name: 'Asignada' },                    
                       'Cotizada': { id_status_control: 5, status_control_name: 'Cotizada' },
-                      'Declinada': { id_status_control: 6, status_control_name: 'Declinada' }
+                      'Declinada': { id_status_control: 6, status_control_name: 'Declinada' },
+                      'Aceptada': { id_status_control: 6, status_control_name: 'Aceptada' }
                     };
                     setStatusControl(statusMap[e.target.value] || statusControl);
                   }}
@@ -965,6 +966,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   <option>Asignada</option>
                   <option>Cotizada</option>
                   <option>Declinada</option>
+                  <option>Aceptada</option>
                 </select>
               </div>
               <div className={styles.formGroup}>

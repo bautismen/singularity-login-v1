@@ -8,6 +8,7 @@ import { ResquetQuote } from '../types/pricingControl';
 import { ControlsPricingForm } from './ControlsPricingForm';
 import { useAuth } from '../contexts/AuthContext';
 import styles from './ControlsPricing.module.css';
+import { getExecutivesByDepartment } from '../services/executiveService';
 
   //se añade parte de los documentos
 import {DocumentTypeDTO,  SectionDTO} from "../types/digitization";
@@ -96,20 +97,10 @@ const setDefaultFilters = () => {
 
   const loadUsers = async () => {
     try {
-       //setLoading(true);
-       const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
-      const [ executivesRes] = await Promise.all([       
-        fetch(`${BASE_URL}/functions/v1/executives?departamento=Pricing`, {
-          headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' }
-        }),        
-      ]);
+       //setLoading(true);     
+      const executivesRes = await getExecutivesByDepartment('Pricing');      
 
-      if (!executivesRes.ok) {
-        throw new Error('Error al cargar ejecutivos');
-      }
-
-      const data = await executivesRes.json();      
+      const data = executivesRes;      
       setUsers(data);
     } catch (error) {
       console.error('Error loading users:', error);
