@@ -45,7 +45,7 @@ Deno.serve(async (req: Request) => {
     console.log('MongoDB connected');
     
     const db = client.db(DB_NAME);
-    const users = db.collection('users');
+    const users = db.collection('Cat001Users');
     const sessions = db.collection('sessions');
 
     if (url.pathname.includes('/signup') && req.method === 'POST') {
