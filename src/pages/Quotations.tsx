@@ -881,14 +881,14 @@ export function Quotations({ mode = 'create', quotationId, onBack }: QuotationsP
               origin: {
                 idCountry : shipment.origin.idCountry,
                 countryCode: shipment.origin.countryCode, 
-                ...((shipment.origin.zipCode && [1, 3, 4].includes(shipment.idTypeShipment)) && {city: shipment.origin.city, zipCode : shipment.origin.zipCode}) ,
+                ...((shipment.origin.city && [1, 3, 4].includes(shipment.idTypeShipment)) && {city: shipment.origin.city, zipCode : shipment.origin.zipCode}) ,
                 ...((shipment.origin.portCode && [2, 4].includes(shipment.idTypeShipment) && [1, 2].includes(service.idService)) && {portCode : shipment.origin.portCode}),
                 ...((shipment.origin.airportCode && [2, 4].includes(shipment.idTypeShipment) && [5].includes(service.idService)) && {airportCode : shipment.origin.airportCode})                 
               } ,
               destination: {
                 idCountry: shipment.destination.idCountry,
                 countryCode: shipment.destination.countryCode,
-                ...((shipment.destination.zipCode && [1, 3, 4].includes(shipment.idTypeShipment)) && {city: shipment.destination.city, zipCode : shipment.destination.zipCode}) ,
+                ...((shipment.destination.city && [1, 3, 4].includes(shipment.idTypeShipment)) && {city: shipment.destination.city, zipCode : shipment.destination.zipCode}) ,
                 ...((shipment.destination.portCode && [2, 3].includes(shipment.idTypeShipment) && [1, 2].includes(service.idService)) && {portCode : shipment.destination.portCode}),
                 ...((shipment.destination.airportCode && [2, 3].includes(shipment.idTypeShipment) && [5].includes(service.idService)) && {airportCode : shipment.destination.airportCode})
               },
