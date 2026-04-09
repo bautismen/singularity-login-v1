@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchDashboardStats, type DashboardStats } from "../services/dashboardService";
+import { fetchDashboardStatsNew, type DashboardStats } from "../services/dashboardService";
 import { DonutChart } from "../components/DonutChart";
 import { useLanguage } from "../contexts/LanguageContext";
 import { EyeIcon } from "lucide-react";
@@ -72,7 +72,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
     async function loadStats() {
       try {
         setLoading(true);
-        const stats = await fetchDashboardStats();
+        const stats = await fetchDashboardStatsNew();
         setData(stats);
         setError(null);
       } catch (err) {
