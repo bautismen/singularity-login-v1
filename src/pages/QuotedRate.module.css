@@ -1,0 +1,1914 @@
+
+
+.container {
+  flex: 1;
+  min-width: 0;   
+  max-width: 100%;
+  padding: 2rem;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.contentWrapper {
+ display: flex;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden; 
+}
+
+.contentWrapper > div {
+  flex: 1;
+  min-width: 0;  
+}
+
+/* ===============================
+   HEADER
+================================ */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.title {
+ font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.buttonGroup {
+  display: inline-flex;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Botones */
+.buttonGroup {
+  display: inline-flex;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Botón estilo grupo */
+.headerButton {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* espacio icono-texto */
+  padding: 0 12px;
+  height: 44px;
+  background: #038C7F;
+  color: white;
+  border: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+/* Quitar borde al último */
+.headerButton:last-child {
+  border-right: none;
+}
+
+/* Hover */
+.headerButton:hover {
+  background: #037F8C;
+}
+
+/* Click */
+.headerButton:active {
+  transform: scale(0.97);
+}
+
+/* Iconos */
+.headerButton svg {
+  flex-shrink: 0;
+}
+
+/* Control Pricing */
+.titleGroup {
+  display: flex;
+  flex-direction: row; 
+  align-items: baseline;
+  gap: 10px; /* espacio entre texto */
+  line-height: 1.2;
+  margin: 0;
+  white-space: nowrap; 
+}
+
+.leftTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* derecha */
+.rightTitle {
+display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.langBlock {
+  display: flex;
+  align-items: center;
+}
+/* fila superior (borrador) */
+.rightTopRow {
+display: flex;
+  align-items: center;
+  gap: 35px;
+}
+
+
+.badgeStatusIdioma {
+  font-size: 12px;
+  font-weight:600;
+  color: var(--text-secondary);
+}
+.titleSmall {
+  font-size: 22px;
+  font-weight: 600;
+  color:var(--text-primary);
+}
+
+.titleBig {
+  font-size: 22px;
+  font-weight: 900;
+  color:var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+/* --- bodyGeneral inicia  --- */ 
+.bodyGeneral {
+  margin-top: 10px;
+}
+
+
+/* ===============================
+CARD 1 inicia-  cardGeneral*/
+/*================================ */
+
+.cardGeneral {
+  position: relative;
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+/* layout */
+.cardContent {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  background: var(--border);
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+/* LEFT */
+.leftSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.badgestittle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 5px;
+
+}
+
+.titleSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-left: 12px;
+  border-left: 4px solid #038c7f;
+  flex-wrap: wrap;
+}
+
+/* language combobox */
+/* CONTENEDOR */
+.langSelect {
+  position: relative;
+  display: inline-block;
+  min-width: 120px;  
+}
+
+/* SELECT */
+.langSelect select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  height: 28px;
+  width: 100%;                 
+  padding: 0 32px 0 10px;   
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--titleCard);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* HOVER igual que exchange */
+.langSelect select:hover {
+  border-color: #cbd5f5;
+}
+
+/* FOCUS igual que exchange */
+.langSelect select:focus {
+  outline: none;
+  border-color: #038c7f;
+  box-shadow: 0 0 0 2px rgba(3, 140, 127, 0.15);
+}
+
+/* FLECHA */
+.langSelect::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-40%);
+
+  width: 0;
+  height: 0;
+
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #038c7f; 
+
+  pointer-events: none;
+}
+
+.badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.badgePrimary {
+  font-size: 17px;
+  font-weight: 700;
+  padding: 4px 8px;
+  color:var(--titleCard);
+  border-radius: 6px;
+}
+
+
+.badgeStatus {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  background: #eab308;
+  color:var(--hover);
+  border-radius: 999px;
+}
+
+.badgeLang {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;   /* gris suave */
+  color: #334155;        /* texto más neutro */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.clientName {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+/* GRID */
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.infoItem label {
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+}
+
+.infoItem label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.executename  {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--titleCard);
+}
+
+.mono {
+  color: var(--titleCard);
+  padding: 20px;
+  font-size: 16px;      
+  font-weight: 700;     
+}
+
+/* RIGHT */
+.rightSection {
+  width: 450px;
+}
+
+.summaryCard {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* header */
+.summaryHeader {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+}
+.quoteBlock {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.labelMini {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 4px; 
+  line-height: 1;
+}
+
+.quoteId {
+  font-size: 17px;
+  font-weight: 900;
+  color:var(--titleCard);
+}
+
+.version {
+  background: #038c7f;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.exchangeBlock {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.exchange {
+  display: flex;
+  align-items: center;
+}
+
+.exchangeLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.exchangeRow {
+  display: flex;
+  align-items: flex-end; 
+  gap: 10px;
+}
+.exchangeTCBlock {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.exchangeInput {
+  height: 28px;
+  width: 70px;
+  padding: 0 8px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--titleCard);
+  transition: all 0.2s ease;
+}
+
+.exchangeInput:hover {
+  border-color: #cbd5f5;
+}
+
+.exchangeInput:focus {
+  outline: none;
+  border-color: #038c7f;
+  box-shadow: 0 0 0 2px rgba(3, 140, 127, 0.15);
+}
+
+/* quitar flechas */
+.exchangeInput::-webkit-outer-spin-button,
+.exchangeInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.exchangeInput {
+  -moz-appearance: textfield;
+}
+.exchange {
+  display: flex;
+  align-items: center;
+}
+
+.exchangeRateBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+/* CONTENEDOR (igual que langSelect) */
+.exchangeSelectWrapper {
+  position: relative;
+  display: inline-block;
+  min-width: 90px; /* ajusta si quieres más ancho */
+}
+
+/* SELECT */
+.exchangeSelect {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  height: 28px;
+  width: 100%;
+  padding: 0 32px 0 10px; 
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--titleCard);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* hover */
+.exchangeSelect:hover {
+  border-color: #cbd5f5;
+}
+
+/* focus */
+.exchangeSelect:focus {
+  outline: none;
+  border-color: #038c7f;
+  box-shadow: 0 0 0 2px rgba(3, 140, 127, 0.15);
+}
+
+/* TRIANGULITO VERDE */
+.exchangeSelectWrapper::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-40%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #038c7f;
+  pointer-events: none;
+}
+/* fechas */
+.dateBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dateInputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--text-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px 58px;
+  transition: all 0.2s ease;
+}
+
+
+/* inputs estilo limpio */
+.dateField {
+  border: none;
+  outline: none;
+  background: var(--text-tertiary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+/* focus UX */
+.dateField:focus {
+  background: rgba(80, 228, 213, 0.08);
+}
+
+/* separador */
+.separator {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* modo oscuro fix calendario */
+.dark .dateField::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.8;
+}
+
+/* estado */
+.statusRow {
+  padding-top: 10px;
+}
+
+.statusBadge {
+  background: #038c7f;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+
+/* ===============================
+CARD 1 finaliza-  cardGeneral*/
+/*================================ */
+
+/* ===============================
+ CARD 2 inicia -  .cardServices */
+/*================================ */
+
+
+.cardServices {
+  margin-top: 20px;
+  padding: 24px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid #e5e7eb;
+}
+
+.servicesTitle {
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: #6b7280;
+}
+
+/* lista */
+.servicesList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* card */
+.serviceCard {
+  background: var(--border);
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+/* header */
+.serviceHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.serviceLeft {
+  display: flex;
+  gap: 10px;
+}
+
+.serviceIcon {
+  background: rgba(3, 140, 127, 0.1);
+  padding: 6px;
+  border-radius: 6px;
+  color: #03A678;
+  background-color: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.serviceName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.serviceTags {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.tagPrimary {
+  font-size: 10px;
+  background: #038c7f;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.tagSecondary {
+  font-size: 10px;
+  background: #e5e7eb;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.serviceRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px; 
+}
+
+.incoterm {
+  font-weight: 900;
+  color: #03A678;
+}
+
+/* body */
+.serviceBody {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  min-width: 0;
+}
+
+.serviceBody > div {
+  min-width: 0;
+}
+/* ruta */
+.route {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.location {
+  font-weight: 700;
+  color:var(--text-secondary);
+}
+
+.subLabel {
+  font-size: 10px;
+  color: #6b7280;
+  display: block;
+}
+
+.route {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* punto (origen/destino) */
+.routePoint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* circulito */
+.routeDot {
+  width: 10px;
+  height: 10px;
+  background: #038c7f;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(3, 140, 127, 0.15);
+}
+
+/* destino diferente */
+.routeDotEnd {
+  background: #3CA64C;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+}
+
+/* línea */
+.routeLine {
+  flex: 1;
+  height: 2px;
+  background: var(--text-tertiary);
+  position: relative;
+}
+
+/* progreso tipo viaje */
+.routeProgress {
+  position: absolute;
+  height: 100%;
+  width: 60%; /* puedes hacerlo dinámico */
+  background: linear-gradient(90deg, #038c7f, #06b6d4);
+  border-radius: 2px;
+}
+
+/* textos */
+.location {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.subLabelLocation {
+  font-size: 10px;
+  color:var(--text-secondary);
+  display: block;
+}
+
+/* asociados */
+.associated {
+  margin-top: 10px;
+}
+
+.associated p {
+  margin-bottom: 10px; /* espacio entre título y badges */
+}
+
+.badgeList {
+  display: flex;
+  gap:5px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  padding: 4px 8px;
+  background: var(--surface);
+  border-radius: 6px;
+  font-weight: 700;
+  color: #03A678;
+}
+
+/* carga */
+.cargo {
+  font-size: 13px;
+}
+
+.cargoStats {
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* contenedor general */
+.cargoBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* fila principal */
+.cargoRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--border);
+  border: 1px solid var(--text-tertiary);
+  padding: 14px 16px;
+  border-radius: 10px;
+  width: 100%;    
+  box-sizing: border-box;
+}
+
+/* mercancía (parte izquierda fuerte) */
+.cargoItemMain {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+}
+
+.cargoLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.cargoValue {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-secondary);
+    word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* divisor */
+.cargoDivider {
+  width: 1px;
+  height: 32px;
+  background: #e5e7eb;
+}
+
+/* métricas */
+.cargoItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 70px;
+}
+
+/* número grande */
+.cargoNumber {
+  font-size: 14px;
+  font-weight: 900;
+  color: #038c7f;
+}
+
+/* unidad */
+.cargoUnit {
+  font-size: 10px;
+  font-weight: 700;
+  color:var(--text-secondary);
+}
+
+/* grupo derecho */
+.cargoRight {
+  display: flex;
+  gap: 20px;
+}
+
+/* opcional: alinear mejor */
+.cargoItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;  
+  min-width: 70px;
+}
+
+/* CARD 2 finaliza -  .cardServices */
+
+/* --- bodyGeneral finaliza  --- */ 
+
+/* ===============================
+   CARD CONCEPTS inicia
+================================ */
+.cardConcepts {
+  margin-top: 20px;
+  padding: 24px;
+  border-radius: 12px;
+  background:  var(--surface);
+  border: 1px solid #e5e7eb;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* ===== TABS ===== */
+.tabs {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 6px;
+  position: relative;
+
+}
+
+/* tabs como texto plano */
+.tabItem {
+  position: relative;
+  padding: 8px 2px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+/* hover solo cambia color */
+.tabItem:hover {
+  color: #aab239;
+}
+
+/* activo */
+.active {
+  color: #037F8C;
+  font-weight: 600;
+}
+
+/* underline animado */
+.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -7px;
+  width: 100%;
+  height: 2px;
+  background: #037F8C;
+  border-radius: 2px;
+  animation: underline 0.25s ease;
+}
+
+/* animación */
+@keyframes underline {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+/* ===== WRAPPER ===== */
+
+.tableWrapper {
+  width: 100%;
+  margin-top: 16px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* ===== TITLE ===== */
+.tableWrapper h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+}
+
+/* ===== TABLE ===== */
+.table {
+  border-collapse: collapse;
+  background:  var(--surface);
+  border-radius: 10px;
+  overflow: hidden;
+  width: max-content; /* o 100% dependiendo del caso */
+  min-width: 100%;
+  table-layout: fixed; /* clave para evitar expansión */
+  
+}
+
+
+.cardGeneral,
+.cardServices,
+.cardConcepts,
+.bodyGeneral {
+  min-width: 0;
+}
+
+.leftSection,
+.rightSection {
+  min-width: 0;
+}
+/* header */
+.table th {
+  background: var(--surface);
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 12px 10px;
+  color:var(--text-secondary);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* rows */
+.table td {
+  padding: 4px;
+  font-size: 12px;
+  border-bottom: 1px solid #f1f1f1;
+  color: var(--text-secondary)
+}
+
+/* hover row */
+.table tbody tr:hover {
+  background:var(--surface);
+}
+
+.inputConcept,
+.inputContainer {
+  width: 100%;
+  padding: 6px 6px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  color: var(--text-secondary);
+  outline: none;
+  transition: 0.2s;
+   box-sizing: border-box;
+}
+
+/* hover + focus con resaltado verde */
+.inputConcept:hover,
+.inputConcept:focus,
+.inputContainer:hover,
+.inputContainer:focus {
+  background:var(--border);
+  border-radius: 6px;
+}
+
+.inputBase,
+.inputUnit,
+.inputSubtotal {
+  width:100%;
+  padding: 6px 6px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  color: var(--text-secondary);
+  outline: none;
+  transition: 0.2s;
+}
+
+/* hover + focus con resaltado verde */
+.inputBase:hover,
+.inputBase:focus,
+.inputUnit:hover,
+.inputUnit:focus,
+.inputSubtotal:hover,
+.inputSubtotal:focus
+ {
+  background:var(--border);
+  border-radius: 6px;
+}
+
+
+.selectCargo,
+.selectContainer,
+.selectIVA {
+  background: transparent;
+  border: 1px solid tr;
+  padding: 6px 5px;
+  border-radius: 8px;
+  font-size: 12px;
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.selectCargo:hover,
+.selectContainer:hover,
+.selectIVA:hover  {
+  border-color: #3CA64C;
+}
+
+.selectCargo:focus,
+.selectContainer:focus,
+.selectIVA:focus
+{
+  border-color: #3CA64C;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.selectCargo option,
+.selectContainer option,
+.selectIVA option
+{
+  color:var(--text-secondary); /* color del texto */
+  background-color:var(--hover); /* fondo de cada item */
+}
+
+.selectCargo option:checked,
+.selectContainer option:checked,
+.selectIVA option:checked
+{
+  background-color:var(--backcolor);
+  color: white;
+}
+
+
+/* ===== ACTION BUTTONS ===== */
+.editBtn,
+.deleteBtn,
+.duplicateBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+/* ICON COLORS */
+.editBtn svg {
+  color: #3CA64C; /* azul */
+}
+
+.deleteBtn svg {
+  color: #ef4444; /* rojo */
+}
+
+.duplicateBtn svg {
+  color: #3383b9; /* azul */
+}
+
+/* HOVER EFFECT (soft background) */
+.editBtn:hover {
+  background: rgba(141, 214, 56, 0.08);
+}
+
+.deleteBtn:hover {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.duplicateBtn:hover {
+  background: rgba(123, 222, 222, 0.08);
+}
+
+
+/* optional active press effect */
+.editBtn:active,
+.deleteBtn:active,
+.duplicateBtn:active{
+  transform: scale(0.95);
+}
+/* ===== ADD BUTTON ===== */
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #039c88;
+  font-weight: 700;
+  font-size: 12px;
+  margin-top: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.addBtn:hover {
+  text-decoration: underline;
+}
+
+
+/* conceptos maritimos tabla */
+
+.tableConceptsMaritime {
+  table-layout: fixed;
+  width: 100%;
+}
+.tableConceptsMaritime input,
+.tableConceptsMaritime select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+/* Cargo */
+.tableConceptsMaritime th:nth-child(1),
+.tableConceptsMaritime td:nth-child(1) {
+  width: 140px;
+}
+
+/* Concept (flexible pero controlado) */
+.tableConceptsMaritime th:nth-child(2),
+.tableConceptsMaritime td:nth-child(2) {
+  width: 200px;
+}
+
+/* Base */
+.tableConceptsMaritime th:nth-child(3),
+.tableConceptsMaritime td:nth-child(3) {
+  width: 90px;
+}
+
+/* Container */
+.tableConceptsMaritime th:nth-child(4),
+.tableConceptsMaritime td:nth-child(4) {
+  width: 100px;
+}
+
+/* Unit */
+.tableConceptsMaritime th:nth-child(5),
+.tableConceptsMaritime td:nth-child(5) {
+  width: 80px;
+}
+
+/* IVA */
+.tableConceptsMaritime th:nth-child(6),
+.tableConceptsMaritime td:nth-child(6) {
+  width: 90px;
+}
+
+/* Subtotal */
+.tableConceptsMaritime th:nth-child(7),
+.tableConceptsMaritime td:nth-child(7) {
+  width: 80px;
+}
+
+/* Total */
+.tableConceptsMaritime th:nth-child(8),
+.tableConceptsMaritime td:nth-child(8) {
+  width: 110px;
+}
+
+/* Actions */
+.tableConceptsMaritime th:nth-child(9),
+.tableConceptsMaritime td:nth-child(9) {
+  width: 100px;
+}
+
+
+.scrollX {
+ width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.tableAirCosts {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.tableWrapperAir {
+  margin-top: 16px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.tableWrapperAir h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+}
+
+
+
+/* tabla muy ancha para activar scroll */
+.tableAirCosts {
+  table-layout: fixed;
+  min-width: 1000px;
+}
+
+/* scroll horizontal solo tabla pesada */
+.scrollX {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tableAirCosts input,
+.tableAirCosts select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* 1. Concept */
+.tableAirCosts th:nth-child(1),
+.tableAirCosts td:nth-child(1) {
+  width: 120px;
+}
+
+/* 2. Airline */
+.tableAirCosts th:nth-child(2),
+.tableAirCosts td:nth-child(2) {
+  width: 100px;
+}
+
+/* 3. Route */
+.tableAirCosts th:nth-child(3),
+.tableAirCosts td:nth-child(3) {
+  width: 100px;
+}
+
+/* 4. Transit */
+.tableAirCosts th:nth-child(4),
+.tableAirCosts td:nth-child(4) {
+  width: 80px;
+}
+
+/* 5. Rate KG */
+.tableAirCosts th:nth-child(5),
+.tableAirCosts td:nth-child(5) {
+  width: 70px;
+}
+
+/* 6. FCS */
+.tableAirCosts th:nth-child(6),
+.tableAirCosts td:nth-child(6) {
+  width: 50px;
+}
+
+/* 7. SSC */
+.tableAirCosts th:nth-child(7),
+.tableAirCosts td:nth-child(7) {
+  width: 50px;
+}
+
+/* 8. MCC */
+.tableAirCosts th:nth-child(8),
+.tableAirCosts td:nth-child(8) {
+  width: 50px;
+}
+
+/* 9. CW */
+.tableAirCosts th:nth-child(9),
+.tableAirCosts td:nth-child(9) {
+  width: 50px;;
+}
+
+/* 10. Subtotal */
+.tableAirCosts th:nth-child(10),
+.tableAirCosts td:nth-child(10) {
+  width: 80px;
+}
+
+/* 11. VAT */
+.tableAirCosts th:nth-child(11),
+.tableAirCosts td:nth-child(11) {
+  width: 80px;
+}
+
+/* 12. Total */
+.tableAirCosts th:nth-child(12),
+.tableAirCosts td:nth-child(12) {
+  width: 80px;
+}
+
+/* 13. Actions */
+.tableAirCosts th:nth-child(13),
+.tableAirCosts td:nth-child(13) {
+  width: 100px;
+}
+/* conceptos aereo operativo tabla */
+
+.tableConceptsAereoOperativo {
+  table-layout: fixed;
+  min-width: 1010px;
+}
+
+.tableConceptsAereoOperativo input,
+.tableConceptsAereoOperativo select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cargo */
+.tableConceptsAereoOperativo th:nth-child(1),
+.tableConceptsAereoOperativo td:nth-child(1) {
+  width: 80px;
+}
+
+/* Concept */
+.tableConceptsAereoOperativo th:nth-child(2),
+.tableConceptsAereoOperativo td:nth-child(2) {
+  width: 140px;
+}
+
+/* Base */
+.tableConceptsAereoOperativo th:nth-child(3),
+.tableConceptsAereoOperativo td:nth-child(3) {
+  width: 100px;
+}
+
+/* IVA */
+.tableConceptsAereoOperativo th:nth-child(4),
+.tableConceptsAereoOperativo td:nth-child(4) {
+  width: 70px;
+}
+
+/* Subtotal */
+.tableConceptsAereoOperativo th:nth-child(5),
+.tableConceptsAereoOperativo td:nth-child(5) {
+  width: 80px;
+}
+
+/* Total */
+.tableConceptsAereoOperativo th:nth-child(6),
+.tableConceptsAereoOperativo td:nth-child(6) {
+  width: 80px;
+}
+
+/* Actions */
+.tableConceptsAereoOperativo th:nth-child(7),
+.tableConceptsAereoOperativo td:nth-child(7) {
+  width: 60px;
+}
+
+/* conceptos terrestres tabla */
+
+.tableConceptsTerrestrial {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.tableConceptsTerrestrial input,
+.tableConceptsTerrestrial select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cargo */
+.tableConceptsTerrestrial th:nth-child(1),
+.tableConceptsTerrestrial td:nth-child(1) {
+  width: 140px;
+}
+
+/* Concept */
+.tableConceptsTerrestrial th:nth-child(2),
+.tableConceptsTerrestrial td:nth-child(2) {
+  width: 200px;
+}
+
+/* Base */
+.tableConceptsTerrestrial th:nth-child(3),
+.tableConceptsTerrestrial td:nth-child(3) {
+  width: 100px;
+}
+
+/* Unit */
+.tableConceptsTerrestrial th:nth-child(4),
+.tableConceptsTerrestrial td:nth-child(4) {
+  width: 90px;
+}
+
+/* IVA */
+.tableConceptsTerrestrial th:nth-child(5),
+.tableConceptsTerrestrial td:nth-child(5) {
+  width: 90px;
+}
+
+/* Subtotal */
+.tableConceptsTerrestrial th:nth-child(6),
+.tableConceptsTerrestrial td:nth-child(6) {
+  width: 90px;
+}
+
+/* Total */
+.tableConceptsTerrestrial th:nth-child(7),
+.tableConceptsTerrestrial td:nth-child(7) {
+  width: 110px;
+}
+
+/* Actions */
+.tableConceptsTerrestrial th:nth-child(8),
+.tableConceptsTerrestrial td:nth-child(8) {
+  width: 100px;
+}
+
+/* ===============================
+   CARD CONCEPTS finaliza
+================================ */
+/* ===============================
+   CARD cardBreakdown desglose de conceptos inicia
+================================ */
+
+.cardBreakdown {
+  margin-top: 20px;
+  padding: 24px;  
+  border-radius: 12px;
+  background: var(--background);
+}
+
+/* quitamos caja */
+.breakdownTable {
+  background: transparent;
+  border: none;
+}
+
+/* HEADER más sutil */
+.breakdownHeader {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  padding: 6px 0;
+  font-size: 12px;
+  color: #9ca3af;
+  letter-spacing: 0.5px;
+}
+
+/* primera columna (Cargo) a la izquierda */
+.breakdownHeader span:first-child {
+  text-align: left;
+}
+
+/* columnas numéricas a la derecha */
+.breakdownHeader span:not(:first-child) {
+  text-align: right;
+}
+
+/* filas limpias */
+.breakdownRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+/* solo línea sutil entre filas */
+.breakdownRow:not(:last-child) {
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+/* cargo */
+.breakdownCargo {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* números alineados */
+.breakdownRow span:not(.breakdownCargo) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* total más marcado */
+.breakdownTotal {
+  font-weight: 600;
+  color:var(--text-secondary);
+}
+
+/* opcional: hover elegante */
+.breakdownRow:hover {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 4px;
+}
+/* ===============================
+   CARD cardBreakdown  desglose de conceptos finaliza
+================================ */
+/* ===============================
+   CARD totalsSection inicia
+================================ */
+.totalsSection {
+  border-top: 1px solid var(--border);
+  padding: 24px;  
+  border-radius: 12px;
+}
+
+.totalsContainer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.totalsBox {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.totalLabel {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+.totalValue {
+  font-weight: 700;
+  color:var(--text-secondary);
+}
+
+.totalRowFinal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.totalLabelFinal {
+  font-weight: 900;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.totalValueFinal {
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--text-secondary);
+}
+/* ===============================
+   CARD totalsSection finaliza
+================================ */
+/* ===============================
+   CARD COMMENTS inicia
+================================ */
+
+.cardcomments {
+  margin-top: 20px;
+  padding: 24px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+/* título */
+.commentsTitle {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--border);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* textarea */
+.commentsTextarea {
+  width: 100%;
+  min-height: 120px;
+  background:  var(--border);
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  outline: none;
+  resize: vertical;
+  transition: all 0.2s ease;
+}
+
+/* focus estilo ERP */
+.commentsTextarea:focus {
+  border-color: #038c7f;
+  box-shadow: 0 0 0 2px rgba(3, 140, 127, 0.15);
+}
+
+/* placeholder */
+.commentsTextarea::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* ===============================
+   CARD COMMENTS finaliza
+================================ */
+/* =========================
+   TERMS CARD INICIA
+========================= */
+
+.cardTerms {
+  margin-top: 20px;
+  padding: 24px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid #e5e7eb;
+}
+
+/* HEADER */
+.termsHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--surface-container);
+}
+
+.termsIcon {
+  font-family: "Material Symbols Outlined";
+  color: #038c7f;
+  font-size: 18px;
+}
+
+.termsTitle {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--on-surface);
+}
+
+/* TEXTAREA */
+.termsTextarea {
+  width: 100%;
+  background: var(--border);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  outline: none;
+  resize: none;
+  white-space: pre-line;
+}
+
+.termsTextarea:focus {
+  border-color: #038c7f;
+  box-shadow: 0 0 0 2px rgba(3, 140, 127, 0.15);
+}
+
+.searchBox {
+   position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;  
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  color: #9ca3af;
+}
+
+
+.termsSearch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+
+.termsSearchInput {
+  width: 100%;
+  padding: 10px 10px 10px 34px;
+  background: var(--border);     
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.termsSearchInput:focus {
+  border-color: #038c7f;
+  box-shadow: 0 0 0 2px rgba(3, 140, 127, 0.15);
+}
+
+.addBtnTerm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  border: none;
+  color: #038c7f;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.addBtnTerm:hover {
+  transform: translateY(-1px);
+}
+
+.addBtnTerm:active {
+  transform: scale(0.92);
+}
+
+.addBtnTerm svg {
+  width: 32px;
+  height: 32px;
+}
+
+ /*card comments*/
+ .editorToolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+  background: var(--border);
+}
+
+.editorToolbar button {
+  padding: 6px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.editorToolbar button:hover {
+  background: #f1f5f9;
+  color: #2563eb;
+}
+
+.editorToolbar button {
+  padding: 6px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-secondary); 
+  transition: all 0.2s ease;
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background: #ddd;
+  margin: 0 6px;
+}
+
+.autoSave {
+  margin-left: auto;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.editorContainer {
+  padding: 16px;
+  background: #fafafa;
+}
+
+.editor {
+  background: var(--border);
+  color: var(--text-secondary);
+  padding: 16px;
+  min-height: 150px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  outline: none;
+}
+
+.editor:focus {
+  border-color: #038c7f;
+  box-shadow: 0 0 0 2px rgba(3, 140, 127, 0.15);
+}
+
+.commentsTable {
+  margin-top: 20px;
+}
+
+.commentsTable table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.commentsTable th,
+.commentsTable td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+}
+
+.editor ul {
+  list-style: disc !important;
+  padding-left: 20px;
+}
+
+.editor ol {
+  list-style: decimal !important;
+  padding-left: 20px;
+}
+/* =========================
+   TERMS CARD FINALIZA
+========================= */
+
