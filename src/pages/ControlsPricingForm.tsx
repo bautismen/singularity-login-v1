@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Save, RefreshCw, Trash2, Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Save, RefreshCw, Trash2, Plus, X, ChevronDown, ChevronUp,FileText  } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { pricingControlService } from '../services/pricingControlService';
 import { PricingControlSupplier } from '../types/pricingControl';
 import { PricingControlSupplierAPI } from '../types/pricingControl';
 import styles from './ControlsPricingForm.module.css';
+import SellRate from './SellRate';
 import { useAuth } from '../contexts/AuthContext';
 import { getSuppliers } from '../services/supplierService';
 import { getCustomers} from '../services/customerService';
@@ -21,7 +22,7 @@ interface ControlsPricingFormProps {
 export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPricingFormProps) {
   const { t } = useLanguage();
   const { showSuccess, showError } = useNotification();
-
+  const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [requestData, setRequestData] = useState<any>(null);
   const [controlData, setControlData] = useState<any>(null);
@@ -92,6 +93,10 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     loadSuppliers();
     loadCustomers();
   }, [requestId, controlId]);
+
+     if (showForm) {
+   return <SellRate onClose={() => setShowForm(false)} />;
+   }
 
     const loadCustomers = async () => {
     try {     
@@ -888,6 +893,16 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 >
                   {t('ctrlpricing.quoted')}
                 </button>
+                <button
+                  type="button"
+                  className={styles.btnGenerateSale}
+                  disabled={loading}
+                  hidden={controlId ? false : true}
+                  onClick={() => setShowForm(true)}
+                >
+                  <FileText size={16} />
+                  {t('ctrlpricing.generateSaleRate')}
+                </button>     
               </div>
             </div>
 

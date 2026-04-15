@@ -2614,3 +2614,34 @@
   border-radius: 0.375rem;
   margin-bottom: 0.75rem;
 }
+
+/* boton tarifa de venta final */ 
+.btnGenerateSale {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;  
+  background-color: #038C7F;
+  color: white;
+  padding: 6px 10px; 
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btnGenerateSale:hover {
+  background-color: #037F8C;
+}
+
+.btnGenerateSale:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.btnGenerateSale span {
+  font-size: 16px;
+}
+
+/* boton tarifa de venta final */ 
