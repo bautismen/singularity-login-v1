@@ -6,7 +6,7 @@ import { pricingControlService } from '../services/pricingControlService';
 import { PricingControlSupplier } from '../types/pricingControl';
 import { PricingControlSupplierAPI } from '../types/pricingControl';
 import styles from './ControlsPricingForm.module.css';
-import SellRate from './SellRate';
+import QuotedRate from './QuotedRate';
 import { useAuth } from '../contexts/AuthContext';
 import { getSuppliers } from '../services/supplierService';
 import { getCustomers} from '../services/customerService';
@@ -95,7 +95,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   }, [requestId, controlId]);
 
      if (showForm) {
-   return <SellRate onClose={() => setShowForm(false)} />;
+   return <QuotedRate onClose={() => setShowForm(false)} />;
    }
 
     const loadCustomers = async () => {
