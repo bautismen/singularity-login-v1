@@ -50,4 +50,24 @@ export interface SectorOfBusiness extends BaseCatalog {
   category?: number; 
 }
 
-export type CatalogType = 'imo' | 'incoterms' | 'services' | 'request_types' | 'status' | 'countries' | 'sector_of_business';
+export interface Clauses extends BaseCatalog {
+  _id: string;
+  _idclausula: number;
+  tags: string[];
+  title: string;
+  conditions: {
+    en: string;
+    es: string;
+  };
+  created_at: string;
+  created_by: { 
+    user_id: string 
+    name: string;
+  };
+  updated_at: string;
+  status: number;
+  archived: boolean;
+  data_state: number;
+}
+
+export type CatalogType = 'imo' | 'incoterms' | 'services' | 'request_types' | 'status' | 'countries' | 'sector_of_business' | 'clauses';
