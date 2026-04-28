@@ -276,6 +276,11 @@ export function CatalogClauses() {
       e.preventDefault();
       setLoading(true);
 
+      if (!formData.Tags || formData.Tags.length === 0 ) {
+        showError(t('catalog.requiredFields'));
+        return;
+      }
+
       if (editingItem) {
         setFormData({ ...formData, _Id: editingItem._id });
 
@@ -335,7 +340,7 @@ export function CatalogClauses() {
       onConfirm: async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${API_URL}/v1/kl/catalog/deletelogic/view=Clausule&id=${id}`, {
+          const response = await fetch(`${API_URL}/v1/kl/catalog/operations/view=Clause&id=${id}`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${API_TOKENSL}`,
