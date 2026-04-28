@@ -380,17 +380,18 @@ export function CatalogIncoterms() {
                 </div>
 
                 <div className="formGroup">
-                  <label className="label">
+                  <label className="switch">
                     <input
                       type="checkbox"
-                      className="checkbox"
                       checked={formData.Status === 1}
                       onChange={(e) => setFormData({ ...formData, Status: e.target.checked ? 1 : 0 })}
                       disabled={loading}
                     />
-                    {' '}{t('catalog.status.active')}
+                    <span className="slider"></span>
                   </label>
+                  <span className="statusText">{' '}{t('catalog.status.active')}</span>
                 </div>
+                
               </div>
 
               <div className="modalFooter">
