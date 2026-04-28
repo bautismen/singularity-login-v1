@@ -17,7 +17,6 @@ export function CatalogClauses() {
   const { showSuccess, showError } = useNotification();
   const [items, setItems] = useState<Clauses[]>([]);
   const [filteredItems, setFilteredItems] = useState<Clauses[]>([]);
-  //const { showNotification } = useNotification();
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [showModal, setShowModal] = useState(false);
@@ -29,14 +28,13 @@ export function CatalogClauses() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [tags, setTags] = useState<any[]>([]);
-  const listRef = useRef<HTMLDivElement>(null);
-  //const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const listRef = useRef<Array<HTMLDivElement | null>>([]);
   const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
   
   const [formData, setFormData] = useState({
     _Id: "",
     _Idclausula: 0,
-    Tags: [''],
+    Tags: [],
     Title: '',
     Conditions: {
       En: '',
@@ -96,7 +94,7 @@ export function CatalogClauses() {
 
     const filtered = tags.filter(tag =>
       tag.tag.toLowerCase().includes(tagInput.toLowerCase()) &&
-      !formData.Tags?.some(t => t.tag === tag.tag) // 🚫 evita duplicados
+      !formData.Tags?.some(t => t.tag === tag.tag) // evitamos duplicados
     );
 
     setFilteredTags(filtered);
@@ -198,19 +196,6 @@ export function CatalogClauses() {
     setFilteredItems(filtered);
   };
 
-  // const toggleTag = (tag: string) => {
-  //   setFormData(t => {
-  //     const hasTag = t.Tags.includes(tag);
-  //     const newTags = hasTag ? t.Tags.filter(t => t !== tag) : [...t.Tags, tag];
-  //     return { ...t, Tags: newTags };
-  //   });
-  //   // if (formData.Tags.includes(tag)) {
-  //   //   setFormData({ ...formData, Tags: formData.Tags.filter(t => t !== tag) });
-  //   // } else {
-  //   //   setFormData({ ...formData, Tags: [...formData.Tags, tag] });
-  //   // }
-  // };
-
   const openModal = (item?: Clauses) => {
     loadTags();
 
@@ -227,7 +212,7 @@ export function CatalogClauses() {
         },
         Created_at: item.created_at.toString() ? new Date(item.created_at) : new Date(),
         Created_by: item.created_by ? {
-          user_id: item.created_by.userId,
+          user_id: item.created_by.user_id,
           name: item.created_by.name,
         } : { user_id: '', name: '' },
         Updated_at: new Date(),
@@ -240,7 +225,7 @@ export function CatalogClauses() {
       setFormData({
         _Id: "",
         _Idclausula: 0,
-        Tags: [''],
+        Tags: [],
         Title: '',
         Conditions: {
           En: '',
@@ -266,7 +251,7 @@ export function CatalogClauses() {
     setFormData({
       _Id: "",
       _Idclausula: 0,
-      Tags: [''],
+      Tags: [],
       Title: '',
       Conditions: {
         En: '',
@@ -291,11 +276,6 @@ export function CatalogClauses() {
       e.preventDefault();
       setLoading(true);
 
-      // const exists = items.some( c =>
-      //   c.title === formData.Title 
-      //   // && c._id !== formData._Id     
-      // )
-
       if (editingItem) {
         setFormData({ ...formData, _Id: editingItem._id });
 
@@ -315,12 +295,6 @@ export function CatalogClauses() {
         }
 
       } else {
-
-        // if (exists) {
-        //   showError(t('catalog.exists').replace('{name}', t('catalog.clause.version').toLowerCase()));
-        //   setLoading(false);
-        //   return;
-        // }
 
         const response = await fetch(`${API_URL}/v1/kl/catalog/operations/add/Clause`, {
 
@@ -411,12 +385,6 @@ export function CatalogClauses() {
 
   }
 
-  // const showCreateOption =
-  //   tagInput.trim() &&
-  //   !filteredTags.some(
-  //     t => t.tag.toLowerCase() === tagInput.toLowerCase()
-  //   );
-
   return (
     <div className="container">
       <div className="header">
@@ -475,7 +443,7 @@ export function CatalogClauses() {
         <table className="table">
           <thead>
             <tr>
-              <th>{t('catalog.clause.tags')}</th>
+              {/* <th>{t('catalog.clause.tags')}</th> */}
               <th>{t('catalog.clause.title')}</th>
               <th>{t('catalog.clause.es')}</th>
               <th>{t('catalog.status.active')}</th>
@@ -505,7 +473,7 @@ export function CatalogClauses() {
                       </button>
                       <button
                         className="iconButton delete"
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => handleDelete(item._idclausula)}
                         title={t('catalog.delete')}
                       >
                         <Trash2 size={16} />
@@ -531,12 +499,12 @@ export function CatalogClauses() {
             if (e.key === 'Enter') {
               const input = e.target as HTMLElement;
 
-              // ✅ Permitir Enter en los input por salto de linea o para añadir tags
+              // Permitir Enter en los input por salto de linea o para añadir tags
               if (input.id === "tag-input" || input.id === "textarea-es" || input.id === "textarea-en") {
                 return;
               }
 
-              // 🚫 Bloquear submit para que no se cierre el modal al dar enter
+              // Bloquear para que no se cierre el modal al dar enter
               e.preventDefault();
             }
           }}
@@ -738,42 +706,21 @@ export function CatalogClauses() {
                       </div>
                     )}
 
-                    {/* {showCreateOption && (
-                      <>
-                        <div className="h-px bg-gray-300 dark:bg-gray-600 my-1"></div>
-
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            selectTag(tagInput);
-                          }}
-                          className="w-full text-left px-3 py-2 text-sm
-                                     text-primary font-semibold
-                                     hover:bg-gray-100 dark:hover:bg-[#374151]
-                                    "
-                        >
-                         
-                        <span> + Crear </span> "{tagInput}"
-                        </button>
-                      </>
-                    )} */}
-
                   </div>
 
                 </div>
 
                 <div className="formGroup">
-                  <label className="label">
+                  <label className="switch">
                     <input
                       type="checkbox"
-                      className="checkbox"
                       checked={formData.Status === 1}
                       onChange={(e) => setFormData({ ...formData, Status: e.target.checked ? 1 : 0 })}
                       disabled={loading}
                     />
-                    {' '}{t('catalog.status.active')}
+                    <span className="slider"></span>
                   </label>
+                  <span className="statusText">{' '}{t('catalog.status.active')}</span>
                 </div>
 
               </div>
