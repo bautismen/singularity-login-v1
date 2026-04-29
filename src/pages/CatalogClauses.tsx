@@ -459,7 +459,7 @@ export function CatalogClauses() {
             {filteredItems.length > 0 ? (
               filteredItems.map((item) => (
                 <tr key={item._id}>
-                  <td>{item.tags.join(', ')}</td>
+                  {/* <td>{item.tags.join(', ')}</td> */}
                   <td>{item.title}</td>
                   <td className='textareaClausula'>{item.conditions.es}</td>
                   <td>
