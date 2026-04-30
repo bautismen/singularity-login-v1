@@ -174,7 +174,30 @@ class PricingControlService {
       console.error('Fetch error:', error);
       throw new Error(error.message || 'Error de conexión al crear control de pricing');
     }
-  } 
+  }
+  
+   async ChangeStatusControl(id: string, status: string): Promise<PricingControl> {        
+    try {      
+        const response = await fetch(
+            `${PRICING_API_URL}/operations/v1/kl/controlnumbers/${id}/${status}/changestatus`,
+            {
+              method: 'PUT',
+              headers: this.getHeaders2(),              
+            }
+          );    
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Error al actualizar control de pricing');
+        }
+
+        return response.json();
+    } catch (error: any) {
+      console.error('Fetch error:', error);
+      throw new Error(error.message || 'Error de conexión al crear control de pricing');
+    }
+  }
+  
 }
 
 export const pricingControlService = new PricingControlService();
