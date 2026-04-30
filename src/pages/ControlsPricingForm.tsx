@@ -12,6 +12,7 @@ import { getSuppliers } from '../services/supplierService';
 import { getCustomers} from '../services/customerService';
 import { ContainerRequest} from '../types/requestQuotation';
 import { catalogService } from '../services/catalogsService';
+import { GetQuotedRateByQuotationRequestAndControlInfo } from "../services/quotedRateServices";
 
 interface ControlsPricingFormProps {
   requestId: string | null;
@@ -86,6 +87,10 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const [availableContainers , setAvailableContainers] = useState<Container[]>([]);
   const [ControlServices, setControlServices] = useState<any[]>([]);  
   const [Disabled, setDisabled] = useState(false);
+  const [pricingToQuote, setPricingToQuote] = useState<any>(null);
+  const [pricingQuotationRequest, setpricingQuotationRequest] = useState<any>(null);
+  const [quotedratedata, setquotedratedata] = useState<any>(null);
+
 
   useEffect(() => {
     loadData();
@@ -94,10 +99,18 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     loadCustomers();
   }, [requestId, controlId]);
 
-     if (showForm) {
-   return <QuotedRate onClose={() => setShowForm(false)} />;
-   }
+  useEffect(() => {
+    if (requestData?.referenceRequest && controlData?.control) {
+      loadQuotedRateData();
+    }
+  }, [requestData, controlData]);
 
+  if (showForm) {
+    return <QuotedRate onClose={() => setShowForm(false)}
+    pricingData={pricingToQuote}
+    quotationRequestData = {pricingQuotationRequest}
+    />;
+  }
     const loadCustomers = async () => {
     try {     
 
@@ -203,6 +216,23 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       setLoading(false);
     }
   };
+
+  const loadQuotedRateData = async () => {
+  try {
+    const response = await GetQuotedRateByQuotationRequestAndControlInfo(
+      requestData.referenceRequest,
+      controlData.control
+    );
+
+    console.log("QUOTED RATE RESPONSE:", response);
+
+    setquotedratedata(response?.data?.[0] || null);
+
+  } catch (error) {
+    console.error('Error loading quoted rate:', error);
+    setquotedratedata(null);
+  }
+};
 
   const addSupplier = () => {  
     
@@ -897,11 +927,27 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   type="button"
                   className={styles.btnGenerateSale}
                   disabled={loading}
-                  hidden={controlId ? false : true}
-                  onClick={() => setShowForm(true)}
+                  hidden={!controlId}
+                  onClick={() => {
+                    if (!controlData) {
+                      showError("Aún no se carga el control");
+                      return;
+                    }
+
+                    if (!requestData) {
+                      showError("Aún no se carga el request");
+                      return;
+                    }
+
+                    setPricingToQuote(controlData);
+                    setpricingQuotationRequest(requestData);  
+                    setShowForm(true);
+                  }}
                 >
                   <FileText size={16} />
-                  {t('ctrlpricing.generateSaleRate')}
+                  {quotedratedata?.quote_number
+                  ? `Ver ${quotedratedata.quote_number}`
+                  : t('ctrlpricing.generateSaleRate')}
                 </button>     
               </div>
             </div>

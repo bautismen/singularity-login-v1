@@ -108,22 +108,22 @@
 
 /* derecha */
 .rightTitle {
-display: flex;
+  display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 6px;
+  gap: 4px; /* un poco más compacto */
 }
 .langBlock {
   display: flex;
   align-items: center;
 }
-/* fila superior (borrador) */
 .rightTopRow {
-display: flex;
+  display: flex;
   align-items: center;
-  gap: 35px;
+  justify-content: space-between;  
+  width: 100%;
+  gap: 10px;
 }
-
 
 .badgeStatusIdioma {
   font-size: 12px;
@@ -332,7 +332,7 @@ CARD 1 inicia-  cardGeneral*/
 
 /* RIGHT */
 .rightSection {
-  width: 450px;
+  width: 480px;
 }
 
 .summaryCard {
@@ -646,7 +646,7 @@ CARD 1 finaliza-  cardGeneral*/
   margin-top: 4px;
 }
 
-.tagPrimary {
+.tagtypeOperation {
   font-size: 10px;
   background: #038c7f;
   color: white;
@@ -654,7 +654,7 @@ CARD 1 finaliza-  cardGeneral*/
   border-radius: 4px;
 }
 
-.tagSecondary {
+.tagtypeShipment {
   font-size: 10px;
   background: #e5e7eb;
   padding: 2px 6px;
@@ -693,7 +693,26 @@ CARD 1 finaliza-  cardGeneral*/
 
 .location {
   font-weight: 700;
-  color:var(--text-secondary);
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.locationBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.subLocation {
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.85;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .subLabel {
@@ -711,8 +730,9 @@ CARD 1 finaliza-  cardGeneral*/
 /* punto (origen/destino) */
 .routePoint {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;  
+  gap: 10px;
+  max-width: 180px;
 }
 
 /* circulito */
@@ -721,13 +741,13 @@ CARD 1 finaliza-  cardGeneral*/
   height: 10px;
   background: #038c7f;
   border-radius: 50%;
-  box-shadow: 0 0 0 3px rgba(3, 140, 127, 0.15);
+  margin-top: 4px;
+  box-shadow: 0 0 0 4px rgba(3, 140, 127, 0.12);
 }
 
-/* destino diferente */
 .routeDotEnd {
-  background: #3CA64C;
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
 }
 
 /* línea */
@@ -941,7 +961,7 @@ CARD 1 finaliza-  cardGeneral*/
   left: 0;
   bottom: -7px;
   width: 100%;
-  height: 2px;
+  height: 4px;
   background: #037F8C;
   border-radius: 2px;
   animation: underline 0.25s ease;
@@ -1018,9 +1038,26 @@ CARD 1 finaliza-  cardGeneral*/
   color: var(--text-secondary)
 }
 
-/* hover row */
-.table tbody tr:hover {
-  background:var(--surface);
+.table thead th {
+  background: #c7d2e3; 
+  color: #1f2937;
+}
+
+.table tbody td {
+    border-bottom: 1px solid #cbd5e1; /* mismo rango del header */
+  background-color: var(--border);
+}
+
+.emptyCell {
+  text-align: center;
+  padding: 18px;
+}
+
+.emptyText {
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
 .inputConcept,
@@ -1041,7 +1078,7 @@ CARD 1 finaliza-  cardGeneral*/
 .inputConcept:focus,
 .inputContainer:hover,
 .inputContainer:focus {
-  background:var(--border);
+  background: var(--inputTable);
   border-radius: 6px;
 }
 
@@ -1066,7 +1103,7 @@ CARD 1 finaliza-  cardGeneral*/
 .inputSubtotal:hover,
 .inputSubtotal:focus
  {
-  background:var(--border);
+  background: var(--inputTable);
   border-radius: 6px;
 }
 
@@ -1114,6 +1151,39 @@ CARD 1 finaliza-  cardGeneral*/
   color: white;
 }
 
+/* INPUT containers */
+.selectContainer {
+  width: 100%;
+  height: 28px;
+  padding: 0 10px;
+  max-width: 120px; 
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--titleCard);
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+/* hover */
+.selectContainer:hover {
+  border-color: #cbd5f5;
+}
+
+/* focus estilo consistente */
+.selectContainer:focus {
+  border-color: #038c7f;
+  box-shadow: 0 0 0 2px rgba(3, 140, 127, 0.15);
+}
+
+/* placeholder */
+.selectContainer::placeholder {
+  color: #9ca3af;
+  font-weight: 500;
+}
 
 /* ===== ACTION BUTTONS ===== */
 .editBtn,
@@ -1199,13 +1269,13 @@ CARD 1 finaliza-  cardGeneral*/
 /* Cargo */
 .tableConceptsMaritime th:nth-child(1),
 .tableConceptsMaritime td:nth-child(1) {
-  width: 140px;
+  width: 145px;
 }
 
 /* Concept (flexible pero controlado) */
 .tableConceptsMaritime th:nth-child(2),
 .tableConceptsMaritime td:nth-child(2) {
-  width: 200px;
+  width: 170px;
 }
 
 /* Base */
@@ -1217,7 +1287,7 @@ CARD 1 finaliza-  cardGeneral*/
 /* Container */
 .tableConceptsMaritime th:nth-child(4),
 .tableConceptsMaritime td:nth-child(4) {
-  width: 100px;
+  width: 180px;
 }
 
 /* Unit */
@@ -1226,22 +1296,23 @@ CARD 1 finaliza-  cardGeneral*/
   width: 80px;
 }
 
-/* IVA */
+/* Subtotal */
 .tableConceptsMaritime th:nth-child(6),
 .tableConceptsMaritime td:nth-child(6) {
-  width: 90px;
-}
-
-/* Subtotal */
-.tableConceptsMaritime th:nth-child(7),
-.tableConceptsMaritime td:nth-child(7) {
   width: 80px;
 }
+
+/* IVA */
+.tableConceptsMaritime th:nth-child(7),
+.tableConceptsMaritime td:nth-child(7) {
+  width: 60px;
+}
+
 
 /* Total */
 .tableConceptsMaritime th:nth-child(8),
 .tableConceptsMaritime td:nth-child(8) {
-  width: 110px;
+  width: 100px;
 }
 
 /* Actions */
@@ -1362,7 +1433,7 @@ CARD 1 finaliza-  cardGeneral*/
 /* 11. VAT */
 .tableAirCosts th:nth-child(11),
 .tableAirCosts td:nth-child(11) {
-  width: 80px;
+  width: 55px;
 }
 
 /* 12. Total */
@@ -1394,7 +1465,7 @@ CARD 1 finaliza-  cardGeneral*/
 /* Cargo */
 .tableConceptsAereoOperativo th:nth-child(1),
 .tableConceptsAereoOperativo td:nth-child(1) {
-  width: 80px;
+  width: 100px;
 }
 
 /* Concept */
@@ -1409,16 +1480,16 @@ CARD 1 finaliza-  cardGeneral*/
   width: 100px;
 }
 
-/* IVA */
+/* Subtotal */
 .tableConceptsAereoOperativo th:nth-child(4),
 .tableConceptsAereoOperativo td:nth-child(4) {
-  width: 70px;
+  width: 80px;
 }
 
-/* Subtotal */
+/* IVA */
 .tableConceptsAereoOperativo th:nth-child(5),
 .tableConceptsAereoOperativo td:nth-child(5) {
-  width: 80px;
+  width: 40px;
 }
 
 /* Total */
@@ -1472,16 +1543,16 @@ CARD 1 finaliza-  cardGeneral*/
   width: 90px;
 }
 
-/* IVA */
+/* Subtotal */
 .tableConceptsTerrestrial th:nth-child(5),
 .tableConceptsTerrestrial td:nth-child(5) {
   width: 90px;
 }
 
-/* Subtotal */
+/* IVA */
 .tableConceptsTerrestrial th:nth-child(6),
 .tableConceptsTerrestrial td:nth-child(6) {
-  width: 90px;
+  width: 50px;
 }
 
 /* Total */
@@ -1495,6 +1566,70 @@ CARD 1 finaliza-  cardGeneral*/
 .tableConceptsTerrestrial td:nth-child(8) {
   width: 100px;
 }
+
+/* conceptos asesoriales tabla */
+
+.tableConceptsAsesorial {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.tableConceptsAsesorial input,
+.tableConceptsAsesorial select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cargo */
+.tableConceptsAsesorial th:nth-child(1),
+.tableConceptsAsesorial td:nth-child(1) {
+  width: 140px;
+}
+
+/* Concept */
+.tableConceptsAsesorial th:nth-child(2),
+.tableConceptsAsesorial td:nth-child(2) {
+  width: 200px;
+}
+
+/* Base */
+.tableConceptsAsesorial th:nth-child(3),
+.tableConceptsAsesorial td:nth-child(3) {
+  width: 100px;
+}
+
+/* Unit */
+.tableConceptsAsesorial th:nth-child(4),
+.tableConceptsAsesorial td:nth-child(4) {
+  width: 90px;
+}
+
+/* Subtotal */
+.tableConceptsAsesorial th:nth-child(5),
+.tableConceptsAsesorial td:nth-child(5) {
+  width: 90px;
+}
+
+/* IVA */
+.tableConceptsAsesorial th:nth-child(6),
+.tableConceptsAsesorial td:nth-child(6) {
+  width: 50px;
+}
+
+/* Total */
+.tableConceptsAsesorial th:nth-child(7),
+.tableConceptsAsesorial td:nth-child(7) {
+  width: 110px;
+}
+
+/* Actions */
+.tableConceptsAsesorial th:nth-child(8),
+.tableConceptsAsesorial td:nth-child(8) {
+  width: 100px;
+}
+
 
 /* ===============================
    CARD CONCEPTS finaliza
@@ -1518,17 +1653,18 @@ CARD 1 finaliza-  cardGeneral*/
 
 /* HEADER más sutil */
 .breakdownHeader {
+  font-weight: 650;
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
   padding: 6px 0;
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-secondary);
   letter-spacing: 0.5px;
 }
 
 /* primera columna (Cargo) a la izquierda */
 .breakdownHeader span:first-child {
-  text-align: left;
+  text-align: right;
 }
 
 /* columnas numéricas a la derecha */
@@ -1542,6 +1678,7 @@ CARD 1 finaliza-  cardGeneral*/
   grid-template-columns: 2fr 1fr 1fr 1fr;
   padding: 6px 0;
   font-size: 13px;
+  color:var(--text-secondary)
 }
 
 /* solo línea sutil entre filas */
@@ -1751,10 +1888,10 @@ CARD 1 finaliza-  cardGeneral*/
 }
 
 .searchBox {
-   position: relative;
+  position: relative;
   display: flex;
   align-items: center;
-  flex: 1;  
+  flex: 1;
 }
 
 .searchIcon {
@@ -1763,6 +1900,20 @@ CARD 1 finaliza-  cardGeneral*/
   color: #9ca3af;
 }
 
+.tagsResults {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  background: var(--inputTable);
+  border: 1px solid var(--titleCard);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  max-height: 160px;
+  overflow-y: auto;
+  z-index: 10;
+  padding: 4px;
+}
 
 .termsSearch {
   display: flex;
@@ -1770,6 +1921,32 @@ CARD 1 finaliza-  cardGeneral*/
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
+}
+.tagItem {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--text-primary) ;
+    background-color: var(--inputTable);
+}
+
+.tagTitle {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.tagPreview {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+.noResults {
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
 }
 
 
