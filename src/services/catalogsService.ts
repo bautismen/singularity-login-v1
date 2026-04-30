@@ -162,5 +162,46 @@ export const catalogService = {
             data: data.data || [],
         };     
 
+    },
+
+    async getClauses() {
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/operations/Clause`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_TOKENSL}`,
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEYSL,
+        },
+        });
+        if (!response.ok) {
+            throw new Error('Error al cargar las clausulas');
+        }
+        
+        const data = await response.json();
+        return {
+            message: '',
+            data: data.data || [],
+        };     
+
+    },
+
+
+    async getCharges() {
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/operations/Charges`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_TOKENSL}`,
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEYSL,
+        },
+        });
+        if (!response.ok) {
+            throw new Error('Error al cargar los cargos');
+        }        
+        const data = await response.json();
+        return {
+            message: data.messageStatus,
+            data: data.data || [],
+        };     
     }
 }
