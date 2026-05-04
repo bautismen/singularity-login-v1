@@ -477,7 +477,7 @@ const closeDocumentsModal = () => {
         r.referenceRequest?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.customer?.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.customer?.prospectName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.assignedTo.some(assigned => assigned.pricingControlNumbers?.some(controlNumber => controlNumber?.control?.toLowerCase().includes(searchQuery.toLowerCase())))
+        r.assignedTo?.some(assigned => assigned.pricingControlNumbers?.some(controlNumber => controlNumber?.control?.toLowerCase().includes(searchQuery.toLowerCase())))
       );
     }
 
