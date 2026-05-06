@@ -100,13 +100,20 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   }, [requestId, controlId]);
 
   useEffect(() => {
-    if (requestData?.referenceRequest && controlData?.control) {
-      loadQuotedRateData();
-    }
-  }, [requestData, controlData]);
+  if (!requestData || !controlData) return;
+  console.log("referenceRequest:", requestData.referenceRequest);
+  console.log("controlData:", controlData);
+
+  loadQuotedRateData();
+
+}, [requestData?.referenceRequest, controlData?.control]);
 
   if (showForm) {
-    return <QuotedRate onClose={() => setShowForm(false)}
+    return <QuotedRate 
+    onClose={() => {
+      setShowForm(false);
+      loadQuotedRateData();  
+    }}
     pricingData={pricingToQuote}
     quotationRequestData = {pricingQuotationRequest}
     />;
@@ -217,7 +224,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     }
   };
 
-  const loadQuotedRateData = async () => {
+  async function loadQuotedRateData() {
   try {
     const response = await GetQuotedRateByQuotationRequestAndControlInfo(
       requestData.referenceRequest,
@@ -945,10 +952,14 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   }}
                 >
                   <FileText size={16} />
-                  {quotedratedata?.quote_number
-                  ? `Ver ${quotedratedata.quote_number}`
-                  : t('ctrlpricing.generateSaleRate')}
-                </button>     
+                {quotedratedata?.quote_number
+                ? `Ver ${quotedratedata.quote_number}/${
+                    quotedratedata?.version != null
+                      ? String(quotedratedata.version).padStart(2, '0')
+                      : ''
+                  }`
+                : t('ctrlpricing.generateSaleRate')}
+                </button>    
               </div>
             </div>
 

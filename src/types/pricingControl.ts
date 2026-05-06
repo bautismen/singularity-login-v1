@@ -140,3 +140,9 @@ export interface ResquetQuote {
   AssignedTo: any[];
   Services: any[];
 }
+
+export interface ApiResponse {
+  codeStatus: number;
+  messageStatus: string;
+  atrribute: any;
+};

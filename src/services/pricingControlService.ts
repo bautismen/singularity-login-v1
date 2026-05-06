@@ -1,4 +1,4 @@
-import { PricingControl,CreatePricingControlAPI,QuotedControlRequest,ResquetQuote } from '../types/pricingControl';
+import { PricingControl,CreatePricingControlAPI,QuotedControlRequest,ResquetQuote, ApiResponse } from '../types/pricingControl';
 
 const PRICING_API_URL = import.meta.env.VITE_API_URL;
 const API_TOKENSL = import.meta.env.VITE_TOKENSL;
@@ -176,7 +176,7 @@ class PricingControlService {
     }
   }
   
-   async ChangeStatusControl(id: string, status: string): Promise<PricingControl> {        
+   async ChangeStatusControl(id: string, status: string): Promise<ApiResponse> {        
     try {      
         const response = await fetch(
             `${PRICING_API_URL}/operations/v1/kl/controlnumbers/${id}/${status}/changestatus`,
