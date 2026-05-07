@@ -203,5 +203,45 @@ export const catalogService = {
             message: data.messageStatus,
             data: data.data || [],
         };     
+    },
+
+    async getPorts() {
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/operations/Port`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_TOKENSL}`,
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEYSL,
+        },
+        });
+        if (!response.ok) {
+            throw new Error('Error al cargar paises');
+        }
+        
+        const data = await response.json();
+        return {
+            message: '',
+            data: data.data || [],
+        };     
+    },
+
+    async getAirports() {
+        const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/operations/AirPort`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_TOKENSL}`,
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEYSL,
+        },
+        });
+        if (!response.ok) {
+            throw new Error('Error al cargar paises');
+        }
+        
+        const data = await response.json();
+        return {
+            message: '',
+            data: data.data || [],
+        };     
     }
 }
