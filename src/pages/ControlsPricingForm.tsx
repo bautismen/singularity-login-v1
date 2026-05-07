@@ -978,8 +978,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                     >
                       <option value="">{t('ctrlpricing.select')}</option>
                       {selectsuppliers.map((suppliers) => (
-                        <option key={suppliers._id} value={suppliers._id}>
-                          {suppliers.fiscal_data?.business_name}
+                        <option key={suppliers.id} value={suppliers.id}>
+                          {suppliers.fiscalData?.businessName}
                         </option>
                       ))
                       }
