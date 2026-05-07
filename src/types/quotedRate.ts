@@ -14,9 +14,12 @@ export interface QuotedRate {
   prospect: string;
   _id_customer: string;
   customer_business_name: string;
+  customer_address: string;
+  customer_contact: CustomerContact;
   status_control: StatusControl;
   currency: string;
   exchange: number;
+  targetcurrecy: string;
   environmentid: number;
   environment: string;
   details: QuoteDetail[];
@@ -32,7 +35,7 @@ export interface QuotedRate {
   status_cuote_name: string;
   id_language: number;
   language: string;
-  previous_version_id: number | null;
+  previous_version_id: string | null;
   previous_version_cuote: number | null;
   archived: boolean;
   data_state: number;
@@ -70,12 +73,20 @@ export interface Shipment {
 }
 
 export interface Location {
-  _id_country: string;
-  country_code: string;
-  city: string;
-  zip_code: number;
-  port_code: string;
-  airport_code: string;
+  // snake_case (DB/API)
+  _id_country?: string;
+  country_code?: string;
+  zip_code?: number;
+  port_code?: string;
+  airport_code?: string;
+  // camelCase (frontend)
+  idCountry?: string;
+  countryCode?: string;
+  zipCode?: number;
+  portCode?: string;
+  airportCode?: string;
+  // comunes
+  city?: string;
 }
 
 export interface ServiceAssociated {
@@ -123,7 +134,7 @@ export interface AirCharges {
 }
 
 export interface AirlineCost {
-  type_of_charge: string;
+  concept: string;
   airline: string;
   route: string;
   transit_days: string;
@@ -174,6 +185,13 @@ export interface CreatedBy {
 export interface StatusControl {
   id_status_control: number;
   status_control_name: string;
+}
+
+export interface CustomerContact {
+  type: string;
+  name: string;
+  email: string;
+  phone: string;
 }
 
 /* ==============================

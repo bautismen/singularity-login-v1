@@ -77,6 +77,39 @@ export const updateQuotedRate = async (
   }
 };
 
+
+export const updateStatusQuotedRate = async (
+  id_: string,
+  data: QuotedRate
+) => {
+  try {
+    const url = `${VITE_API_QUOTEDRATE}/idquoterate/${id_}/update`;
+
+
+    console.log("JSON FORMATEADO UPDATE:");
+    console.log(JSON.stringify(data, null, 2));
+    console.log(url);
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error?.message || "Error al actualizar status quoted rate");
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error("updateQuotedRate error:", error);
+    throw error;
+  }
+};
+
+
 export const GetQuotedRateByQuotationRequestAndControlInfo = async (
   quotationrequest_: string,
   controlnumber_: string

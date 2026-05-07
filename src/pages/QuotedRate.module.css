@@ -177,7 +177,7 @@ CARD 1 inicia-  cardGeneral*/
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
 }
 
 .badgestittle {
@@ -217,7 +217,7 @@ CARD 1 inicia-  cardGeneral*/
   border-radius: 10px;
   border: 1px solid #e5e7eb;
   background: var(--surface);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--titleCard);
   cursor: pointer;
@@ -270,7 +270,7 @@ CARD 1 inicia-  cardGeneral*/
 
 
 .badgeStatus {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   padding: 4px 10px;
   background: #eab308;
@@ -279,7 +279,7 @@ CARD 1 inicia-  cardGeneral*/
 }
 
 .badgeLang {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 999px;
@@ -296,11 +296,33 @@ CARD 1 inicia-  cardGeneral*/
   color: var(--text-primary);
 }
 
+.clientAddress {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-top: 0px;
+  line-height: 1.4;
+  max-width: 420px;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+
 /* GRID */
 .infoGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+}
+
+.fullWidth {
+  grid-column: span 2;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .infoItem label {
@@ -323,9 +345,8 @@ CARD 1 inicia-  cardGeneral*/
   color: var(--titleCard);
 }
 
-.mono {
+.quotationRequestNumber {
   color: var(--titleCard);
-  padding: 20px;
   font-size: 16px;      
   font-weight: 700;     
 }
@@ -349,7 +370,7 @@ CARD 1 inicia-  cardGeneral*/
 .summaryHeader {
   display: flex;
   align-items: flex-end;
-  gap: 14px;
+  gap: 10px;
 }
 .quoteBlock {
   display: flex;
@@ -363,6 +384,7 @@ CARD 1 inicia-  cardGeneral*/
   color: var(--text-secondary);
   margin-bottom: 4px; 
   line-height: 1;
+  white-space: nowrap;
 }
 
 .quoteId {
@@ -383,7 +405,9 @@ CARD 1 inicia-  cardGeneral*/
   justify-content: flex-end;
 }
 
-.exchangeBlock {
+.exchangeBlock
+.exchangeConvertBlock
+{
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -400,7 +424,8 @@ CARD 1 inicia-  cardGeneral*/
   color: var(--text-secondary);
 }
 
-.exchangeRow {
+.exchangeRow
+.exchangeConvertRow {
   display: flex;
   align-items: flex-end; 
   gap: 10px;
@@ -412,7 +437,7 @@ CARD 1 inicia-  cardGeneral*/
 }
 .exchangeInput {
   height: 28px;
-  width: 70px;
+  width: 62px;
   padding: 0 8px;
   border-radius: 10px;
   border: 1px solid #e5e7eb;
@@ -458,7 +483,7 @@ CARD 1 inicia-  cardGeneral*/
 .exchangeSelectWrapper {
   position: relative;
   display: inline-block;
-  min-width: 90px; /* ajusta si quieres más ancho */
+  min-width: 75px; /* ajusta si quieres más ancho */
 }
 
 /* SELECT */
@@ -466,7 +491,6 @@ CARD 1 inicia-  cardGeneral*/
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-
   height: 28px;
   width: 100%;
   padding: 0 32px 0 10px; 
@@ -496,7 +520,7 @@ CARD 1 inicia-  cardGeneral*/
 .exchangeSelectWrapper::after {
   content: "";
   position: absolute;
-  right: 12px;
+  right: 5px;
   top: 50%;
   transform: translateY(-40%);
   width: 0;
@@ -565,11 +589,73 @@ CARD 1 inicia-  cardGeneral*/
   color: white;
   padding: 6px 12px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 900;
 }
+/* contenedor tipo langSelect */
+.contactSelectWrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  min-width: 150px;
+}
 
+/* select */
+.contactSelect {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  height: 32px;
+  background: transparent;
+  border: 1px solid transparent; /* corregido (tenías "tr") */
+  padding: 6px 32px 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--titleCard);
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
 
+/* hover */
+.contactSelect:hover {
+  border-color: var(--on-surface)
+}
+
+/* focus */
+.contactSelect:focus {
+  border-color: #3CA64C;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+/* options */
+.contactSelect option {
+  color: var(--text-secondary);
+  background-color: var(--hover);
+}
+
+/* option seleccionado */
+.contactSelect option:checked {
+  background-color: var(--backcolor);
+  color: white;
+}
+
+/* flechita */
+.contactSelectWrapper::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-40%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #3CA64C; /* igualado al hover */
+  pointer-events: none;
+}
 /* ===============================
 CARD 1 finaliza-  cardGeneral*/
 /*================================ */
@@ -769,8 +855,8 @@ CARD 1 finaliza-  cardGeneral*/
 
 /* textos */
 .location {
-  font-weight: 700;
-  font-size: 13px;
+  font-weight: 600;
+  font-size: 12px;
 }
 
 .subLabelLocation {
@@ -1269,7 +1355,7 @@ CARD 1 finaliza-  cardGeneral*/
 /* Cargo */
 .tableConceptsMaritime th:nth-child(1),
 .tableConceptsMaritime td:nth-child(1) {
-  width: 145px;
+  width: 135px;
 }
 
 /* Concept (flexible pero controlado) */
@@ -1281,7 +1367,7 @@ CARD 1 finaliza-  cardGeneral*/
 /* Base */
 .tableConceptsMaritime th:nth-child(3),
 .tableConceptsMaritime td:nth-child(3) {
-  width: 90px;
+  width: 120px;
 }
 
 /* Container */
@@ -1293,7 +1379,7 @@ CARD 1 finaliza-  cardGeneral*/
 /* Unit */
 .tableConceptsMaritime th:nth-child(5),
 .tableConceptsMaritime td:nth-child(5) {
-  width: 80px;
+  width: 60px;
 }
 
 /* Subtotal */
@@ -1318,7 +1404,7 @@ CARD 1 finaliza-  cardGeneral*/
 /* Actions */
 .tableConceptsMaritime th:nth-child(9),
 .tableConceptsMaritime td:nth-child(9) {
-  width: 100px;
+  width: 80px;
 }
 
 
