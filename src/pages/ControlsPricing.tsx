@@ -413,7 +413,8 @@ const closeDocumentsModal = () => {
         "magali.tamayo@kromlogistica.com",        
         "guadalupe.dimas@kromlogistica.com",
         "beatriz.gonzalez@kromlogistica.com",
-        "erick.barrientos@kromlogistica.com"     
+        "erick.barrientos@kromlogistica.com"  ,
+        "elsa.caicero@kromlogistica.com"
       ];
 
       if (!excludedEmails.includes(user.email)) {

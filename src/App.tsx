@@ -17,6 +17,7 @@ import { CatalogUsers } from './pages/CatalogUsers';
 import { CatalogSectorOfBusiness } from './pages/CatalogSectorOfBusiness';
 import { Layout } from './components/Layout';
 import Companies from './pages/Companies';
+import { PricingScore } from './pages/PricingScore';
 import { DashboardStats } from './components/DashboardStats';
 import Digitization from './pages/Digitization';
 import { CatalogClauses } from './pages/CatalogClauses';
@@ -83,6 +84,8 @@ function App() {
           return <DashboardStats onNavigate={handleNavigate} />;
         case 'catalogs/clauses':
           return <CatalogClauses />;
+        case 'dashboard/pricing-score':
+          return <PricingScore />;
         default:
           return (
             <div className="p-8">

@@ -1,3 +1,6 @@
+import { Port } from '../types/port';
+import { Airport } from '../types/airport';
+
 
 const API_CATALOGS = import.meta.env.VITE_API_CATALOGS;
 const API_TOKENSL = import.meta.env.VITE_TOKENSL;
@@ -243,5 +246,56 @@ export const catalogService = {
             message: '',
             data: data.data || [],
         };     
-    }
+    },  
+    
+    async getPortsByIdCountry(idCountry: string) : Promise<Port[] | null> {
+        try {
+            const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/operations/view=Port&filtrer=${idCountry}`, 
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${API_TOKENSL}`,
+                    'Content-Type': 'application/json',
+                    'x-api-key': API_KEYSL,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al cargar ports');
+            }
+        
+            const data = await response.json();
+            return data.data;
+
+        } catch (error) {
+            console.log('ERROR: ', error);
+            throw new Error('Failed to fetch');             
+        }
+    },
+
+    async getAirportsByIdCountry(idCountry: string) : Promise <Airport[] | null> {
+
+        try{
+            const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/operations/view=AirPort&filtrer=${idCountry}`, 
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${API_TOKENSL}`,
+                    'Content-Type': 'application/json',
+                    'x-api-key': API_KEYSL,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Error al cargar AirPorts');
+            }
+        
+            const data = await response.json();
+            return data.data;
+            
+        }catch(error){
+            console.log('ERROR: ', error);
+            throw new Error('Failed to fetch');        
+        }        
+    },
+    
 }

@@ -196,6 +196,43 @@
   gap: 1.25rem;
 }
 
+.formGridService {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-areas:
+    "service operation incoterm shipping"
+    "date date . ."
+    "origin origin destination destination"
+    "services services services services"
+    "comments comments comments comments";
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.serviceType { grid-area: service; }
+.operation { grid-area: operation; }
+.incoterm { grid-area: incoterm; }
+.shippingType { grid-area: shipping; }
+.departureDate { grid-area: date; }
+.origin { grid-area: origin; }
+.destination { grid-area: destination; }
+.services { grid-area: services; }
+.comments { grid-area: comments; }
+
+.formGridShipmentFields {
+  display: grid;
+  grid-template-columns:  repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.formGroupServiceSmall {
+  grid-column: 1; /* ocupa poco */
+}
+
+.shipmentFields {
+ grid-column: 2;
+}
+
 .formGridCityZipcode {
   display: grid;
   grid-template-columns:  1fr 1fr;
@@ -348,6 +385,13 @@
   flex: 1;
   min-width: 0; /* 👈 evita overflow en flex */
 }
+
+.fieldError {
+  color: #c62828;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
 
 .select {
   padding: 0.625rem 0.875rem;

@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, Edit2, Search, RefreshCw, ChevronDown, FileText, Clock, Filter, FilterXIcon, ChevronUp, Copy  } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import styles from './QuotationsList.module.css';
-import {CreateByRequest, QuotationRequest} from '../types/requestQuotation';
+import { QuotationRequest} from '../types/requestQuotation';
 import { quotationService } from '../services/quotationService';
 import { getDocumentsByReference, downloadDocumentByReference
 } from "../services/digitizationService";
@@ -241,8 +241,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
       //console.error('Error saving quotation:', error);
       setLoading(false)
       showError(t('quote.errors.saveQuotation'));
-    } finally {      
-    }
+    } 
   };
 
   const handleRequesStatus = (idStatus: string) => {
@@ -410,7 +409,7 @@ useEffect(() => {
 
       saveAs(zipBlob, `${quotation.referenceRequest}.zip`);
 
-    } catch (error: any) {
+    } catch (error) {
       showError(error.message || t('dig.downloadError'));
     }
   };
@@ -843,7 +842,7 @@ useEffect(() => {
                       <div className={styles.rightInfo}>
                         {quotation.services && quotation.services.length > 0 && (
                           <div className={styles.location}>
-                            {quotation.services[0].shipments[0].origin?.countryCode || 'NA'} - {quotation.services[0].shipments[0].destination?.countryCode || 'NA'}
+                            {quotation.services[0].shipments?.[0].origin?.countryCode || 'NA'} - {quotation.services[0].shipments?.[0].destination?.countryCode || 'NA'}
                           </div>
                         )}
                       </div>

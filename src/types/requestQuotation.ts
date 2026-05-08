@@ -16,7 +16,7 @@ export interface QuotationRequest {
     idCustomer: string;
     customerName: string;
     customerCategory: number;
-    prospectName: String;
+    prospectName: string;
   };
   assignedTo : Executive[];
   services: Service[];
@@ -27,7 +27,8 @@ export interface Service {
   idService: number;
   nameService: string;
   used?: boolean;  
-  shipments: Shipment[];
+  shipments?: Shipment[];
+  orderService?: OrderService;
 }
 
 export interface Shipment{
@@ -46,6 +47,28 @@ export interface Shipment{
   containers?: ContainerRequest[];
   servicesAsociated?: any[];
   cargo : any[];  
+}
+
+export interface OrderService {
+  origin?: any;
+  destination?: any;
+  idTypeShipment?: number;
+  typeShipment?: string;
+  idTypeOperation?: number;
+  typeOperation?: string;
+  departureDateAproximate?: string;
+  projectionShipment?: any; 
+  comments?: string;
+  cargo? : Cargo[]; 
+}
+
+export interface LocationPlace {
+  idCountry : string;
+  countryCode: string;
+  City? : string;
+  zipCode? : number;
+  portCode?: string;
+  airportCode?: string;
 }
 
 export interface Cargo {
@@ -102,3 +125,29 @@ export interface AsignateToRequest {
   IdRequest: string;
   Employees: any[];
 }
+
+export enum StatusRequestQuotation {
+  Creada = 1,
+  Enviada = 2,
+  Asignada = 3,
+  Parcialmente = 4,
+  Cotizada = 5,
+  Declinada = 6,
+  Expirada = 7,
+  Aceptada = 8,
+  Rechazada = 9,
+  Cancelada = 10
+}
+
+export const StatusRequestQuotationLabel: Record<StatusRequestQuotation, string> = {
+  [StatusRequestQuotation.Creada]: "Creada",
+  [StatusRequestQuotation.Enviada]: "Enviada",
+  [StatusRequestQuotation.Asignada]: "Asignada",
+  [StatusRequestQuotation.Parcialmente]: "Parcialmente Cotizada",
+  [StatusRequestQuotation.Cotizada]: "Cotizada",
+  [StatusRequestQuotation.Declinada]: "Declinada",
+  [StatusRequestQuotation.Expirada]: "Expirada",
+  [StatusRequestQuotation.Aceptada]: "Aceptada",
+  [StatusRequestQuotation.Rechazada]: "Rechazada",
+  [StatusRequestQuotation.Cancelada]: "Cancelada"
+};

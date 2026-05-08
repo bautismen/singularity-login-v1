@@ -1,28 +1,34 @@
-import React from 'react';
+
 import { X, AlertCircle, CheckCircle, Info } from 'lucide-react';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm?: () => void;
+  onNoAction?: () => void;
   title: string;
   message: string;
   type?: 'info' | 'warning' | 'error' | 'success' | 'confirm';
   confirmText?: string;
   cancelText?: string;
+  noActionText?: string;
   showCancel?: boolean;
+  showNoAction?: boolean;
 }
 
 export function Modal({
   isOpen,
   onClose,
   onConfirm,
+  onNoAction,
   title,
   message,
   type = 'info',
   confirmText = 'Aceptar',
   cancelText = 'Cancelar',
-  showCancel = false
+  noActionText= 'No',
+  showCancel = false,
+  showNoAction = false
 }: ModalProps) {
   if (!isOpen) return null;
 
@@ -82,15 +88,21 @@ export function Modal({
             {showCancel && (
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
+                className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                 {cancelText}
+              </button>
+            )}
+            {showNoAction && (
+              <button 
+                onClick={onNoAction}
+                className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                {noActionText}
               </button>
             )}
             <button
               onClick={handleConfirm}
               className={`
-                ${showCancel ? 'flex-1' : 'w-full'}
+                ${(showCancel || showNoAction ) ? 'flex-1' : 'w-full'}
                 px-4 py-2.5 rounded-lg font-medium transition-colors
                 ${type === 'error'
                   ? 'bg-[#038C7F] hover:bg-[#037F8C] text-white'
