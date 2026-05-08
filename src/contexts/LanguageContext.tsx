@@ -760,7 +760,6 @@ const translations = {
     "tvf.Contact":"Contacto",
     "tvf.NoName":"Sin nombre",
     "tvf.NoCharge":"Sin cargo",
-    "tvf.UpdateError": "Ocurrio un error al actualizar la arifa de venta actualizada",
     "score.scoreQuotations" : "Score Cotizaciones",
     "score.scoreQuotationsResume" : "Seguimiento en tiempo real del estado y desempeño del equipo de Pricing en el proceso de cotizaciones.",
     "score.print" : "Imprimir",
@@ -1518,7 +1517,6 @@ const translations = {
     "tvf.Contact":"Contact",
     "tvf.NoName":"Unnamed",
     "tvf.NoCharge":"No charge",
-    
     "score.scoreQuotations": "Quotation Score",
     "score.scoreQuotationsResume": "Real-time tracking of the status and performance of the Pricing team in the quotation process.",
     "score.print": "Print",
