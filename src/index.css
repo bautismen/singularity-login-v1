@@ -116,3 +116,9 @@ body {
     font-size: 1.75rem !important;
   }
 }
+
+@media print {
+  body {
+    transform: scale(1.00);    
+  }
+}

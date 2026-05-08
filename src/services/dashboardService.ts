@@ -1,3 +1,6 @@
+import { ScorePricing } from '../types/scorePricing';
+
+
 export interface StatusPercentage {
   statusId: number;
   statusName: string;
@@ -73,6 +76,7 @@ export interface DashboardStats {
   quotations: QuotationStats;
 }
 
+
 export async function fetchDashboardStats(): Promise<DashboardStats> {
   const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dashboard-stats`;
 
@@ -97,15 +101,15 @@ const DASHBOARD_API_URL = import.meta.env.VITE_API_DASHBOARD;
 const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 const API_KEYSL = import.meta.env.VITE_APIKEYSL;
 
-export async function fetchDashboardStatsNew(): Promise<DashboardStats> {
-  const apiUrl1 = `${DASHBOARD_API_URL}/v1/kl/dashboard/panelinicial/1`;
-  const apiUrl2 = `${DASHBOARD_API_URL}/v1/kl/dashboard/panelinicial/2`;
-
-  const headers = {
+const headers = {
       'Authorization': `Bearer ${API_TOKENSL}`,
       'Content-Type': 'application/json',
       'x-api-key': API_KEYSL,
   };
+
+export async function fetchDashboardStatsNew(): Promise<DashboardStats> {
+  const apiUrl1 = `${DASHBOARD_API_URL}/v1/kl/dashboard/panelinicial/1`;
+  const apiUrl2 = `${DASHBOARD_API_URL}/v1/kl/dashboard/panelinicial/2`;  
 
   const response1 = await fetch(apiUrl1, {
     method: 'GET',
@@ -167,4 +171,21 @@ export async function fetchDashboardStatsNew(): Promise<DashboardStats> {
 
   return  result;
 
+}
+
+export async function fetchScorePricing(year: number, month: number, idExecutive: string) : Promise<ScorePricing> {
+  try{
+    const response = await fetch(`${DASHBOARD_API_URL}/v1/kl/dashboard/score/${year}/${month}/${idExecutive}`, {headers});
+
+    if(!response.ok) {      
+      throw new Error('Failed to fetch score');
+    }
+
+    const data = await response.json();
+    return data.data;
+
+  }catch(error){
+    console.log('ERROR: ', error);
+    throw new Error('Failed to fetch executive');
+  }
 }

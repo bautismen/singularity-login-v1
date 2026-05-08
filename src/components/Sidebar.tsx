@@ -19,7 +19,7 @@ import styles from './Sidebar.module.css';
 import { useAuth } from '../contexts/AuthContext';
 
 const menuItems = [
-  { key: 'nav.dashboard', icon: Layout, route: 'dashboard' },
+ // { key: 'nav.dashboard', icon: Layout, route: 'dashboard' },
   { key: 'nav.quotations', icon: FileCheck, route: 'quotations' },
   { key: 'nav.controlsPricing', icon: DollarSign, route: 'controls-pricing' },
   { key: 'nav.trackingMonitor', icon: MapPin, route: 'tracking-monitor' },
@@ -38,11 +38,11 @@ interface SidebarProps {
 export function Sidebar({ onCollapsedChange, currentRoute = 'dashboard', onNavigate }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [catalogsExpanded, setCatalogsExpanded] = useState(false);
+  const [dashboardsExpanded, setDashboardsExpanded] = useState(false);
   const { t } = useLanguage();
   const { user } = useAuth();
   const rolAdmin = ["admin"] // Roles que puuedo ir agregando para validar los botones del menu/admin
   const isAdmin = user?.roles?.every(() => true) && rolAdmin.every(v => user?.roles?.includes(v));
-
 
   const handleCollapse = () => {
     const newState = !collapsed;
@@ -60,13 +60,40 @@ export function Sidebar({ onCollapsedChange, currentRoute = 'dashboard', onNavig
       </div>
 
       <nav className={styles.nav}>
+        <div className={styles.catalogSection}>
+          <button
+            onClick={()=> { onNavigate?.('dashboard')}}
+            className={styles.catalogsButton}
+            title={collapsed ? t('nav.dashboard') : ''}>               
+              <Layout size={20} />                                                            
+                {!collapsed && (
+                  <>    
+                    <span>{t('nav.dashboard')}</span>              
+                    <div onClick={(e) => { e.stopPropagation(); setDashboardsExpanded(!dashboardsExpanded); }}> 
+                      {dashboardsExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                    </div>                  
+                  </>
+                )}
+          </button>
+
+          {!collapsed && dashboardsExpanded && (
+            <div className={styles.submenu}>
+              <button 
+                onClick={() => onNavigate?.('dashboard/pricing-score')}               
+                className={`${styles.submenuButton} 
+                ${currentRoute === 'dashboard/pricing-score' ? styles.active : '' }`}>
+                <span>Pricing Score</span>
+              </button>
+            </div>  
+          )}
+        </div>
+
         {menuItems.map(({ key, icon: Icon, route }) => (
           <button
             key={key}
             onClick={() => onNavigate?.(route)}
             className={`${styles.navButton} ${currentRoute === route ? styles.active : ''}`}
-            title={collapsed ? t(key) : ''}
-          >
+            title={collapsed ? t(key) : ''}>
             <Icon size={20} />
             {!collapsed && <span>{t(key)}</span>}
           </button>
@@ -76,23 +103,22 @@ export function Sidebar({ onCollapsedChange, currentRoute = 'dashboard', onNavig
           <button
             onClick={() => !collapsed && setCatalogsExpanded(!catalogsExpanded)}
             className={styles.catalogsButton}
-            title={collapsed ? t('nav.catalogs') : ''}
-          >
-            <FolderOpen size={20} />
-            {!collapsed && (
-              <>
-                <span>{t('nav.catalogs')}</span>
-                {catalogsExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              </>
-            )}
+            title={collapsed ? t('nav.catalogs') : ''}>
+              <FolderOpen size={20} />
+                {!collapsed && (
+                  <>
+                    <span>{t('nav.catalogs')}</span>
+                    {catalogsExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                  </>
+                )}
           </button>
 
           {!collapsed && catalogsExpanded && (
             <div className={styles.submenu}>
               <button
                 onClick={() => onNavigate?.('catalogs/imo')}
-                className={`${styles.submenuButton} ${currentRoute === 'catalogs/imo' ? styles.active : ''}`}
-              >
+                className={`${styles.submenuButton} 
+                ${currentRoute === 'catalogs/imo' ? styles.active : ''}`} >
                 <span>{t('nav.catalogs.imo')}</span>
               </button>
               <button
