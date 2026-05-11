@@ -14,11 +14,13 @@ import { catalogService } from '../services/catalogsService';
 import { GeneratePreviewQuotedRate } from '../services/pdfGeneratorService';
 import {pricingControlService } from '../services/pricingControlService';
 import { getCustomers} from '../services/customerService';
+import { uploadDocuments,getDocumentTypes, getSections , deleteDocumentById,getRecentDocuments} from "../services/digitizationService";
 //interfaz o modelo
-import type { VatOption, LanguageOption, CurrencyOption, StatusQuote,
+import type { VatOption, LanguageOption, CurrencyOption, ServiceTypeOption, StatusQuote,
     QuotedRate, ServiceItem , Shipment,
     Location, ServiceAssociated, CargoItem, Container
 } from '../types/quotedRate';
+import { UploadResponse } from "../types/digitization";
 import { pdfGeneratorQuotedRate } from "../types/pdfGenerator";
 //Servicio de la API
 import { uploadQuotedRate, updateQuotedRate,
@@ -26,7 +28,7 @@ import { uploadQuotedRate, updateQuotedRate,
 // Icons
 import {
         ArrowLeft, Save, Eye, FileText, User, Tag, Ship, Truck, Plane, Package, PlusCircle, Trash2, Search,
-        Copy, Bold, Italic, Underline, List, ListOrdered, Image, Shield, Warehouse ,UserCheck
+        Copy, Bold, Italic, Underline, List, ListOrdered, Image, Shield, Warehouse ,UserCheck,Puzzle  
 } from "lucide-react";
 
 export default function QuotedRate({ 
@@ -36,9 +38,9 @@ export default function QuotedRate({
 }: any) {
 
 const { t, language } = useLanguage();
-const { showError, showSuccess } = useNotification();
+const { showError, showSuccess, showNotification } = useNotification();
 const { user } = useAuth();
-const [activeTab, setActiveTab] = useState<'MARITIMO' | 'AEREO' | 'TERRESTRE'| 'ASESORIAL'>('MARITIMO');
+const [activeTab, setActiveTab] = useState<'MARITIMO' | 'AEREO' | 'TERRESTRE'| 'ACCESORIAL'>('MARITIMO');
 
 const [servicesCategory1, setServicesCategory1] = useState<any[]>([]);
 const [servicesCategory2, setServicesCategory2] = useState<any[]>([]);
@@ -65,24 +67,29 @@ const [idLanguage, setIdLanguage] = useState<number>(1);
 const [termsValue, setTermsValue] = useState<string>("");
 const [quotedRateRegistradaInfo, setQuotedRateInfo] = useState<any>(null);
 const idPrevious = !!quotedRateRegistradaInfo?.data?.[0]?._id;
+const [loadingPreview, setLoadingPreview] = useState(false);
+
 const [validFrom, setValidFrom] = useState("");
 const [validUntil, setValidUntil] = useState("");
 const [previousVersionId, setPreviousVersionId] = useState<string | null>(null);
 const [previousVersionCuote, setPreviousVersionCuote] = useState<number>(0);
 const [selectedContact, setSelectedContact] = useState<any>(null);
 
+const [documentTypes, setDocumentTypes] = useState<any[]>([]);
+const [sections, setSections] = useState<any[]>([]);
+
 const [modalState, setModalState] = useState<{
-  isOpen: boolean;
-  type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
-  title: string;
-  message: string;
-  onConfirm?: () => void;
-  showCancel?: boolean;
-  }>({
-    isOpen: false,
-    type: 'info',
-    title: '',
-    message: ''
+    isOpen: boolean;
+    type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+    showCancel?: boolean;
+    }>({
+        isOpen: false,
+        type: 'info',
+        title: '',
+        message: ''
 });
 
 const [searchTerm, setSearchTerm] = useState('');
@@ -97,6 +104,8 @@ useEffect(() => {
     loadCountries()// cargamos los paises
     loadPorts()// cargamos los puertos
     loadAirports()// cargamos los aeropuertos
+    loadDocumentTypes(); //cargamos tipos documentos
+    loadSections(); // cargamos secciones
 }, []);
 
 // --------------  consultamos si hay una tarifa existente ------------------- //
@@ -124,12 +133,15 @@ const consultarQuotedRateViva = async () => {
 // --------------  construimos la direccion completa ------------------- //
 
 const buildLocationString = (loc?: Location) => {
-    console.log("Location RAW:", loc);
-
-    if (!loc) return "N/A";
+    if (!loc) {
+        return {
+            main: "N/A",
+            extra: ""
+        };
+    }
 
     // ====== NORMALIZACIÓN ======
-    const idCountry = loc.idCountry ?? loc._id_country ;
+    const idCountry = loc.idCountry ?? loc._id_country;
     const countryCode = loc.countryCode ?? loc.country_code;
     const zip = loc.zipCode ?? loc.zip_code;
     const portCode = loc.portCode ?? loc.port_code;
@@ -143,30 +155,32 @@ const buildLocationString = (loc?: Location) => {
     const countryName = country?.name_country || countryCode || "N/A";
 
     // ====== PORT ======
-    const port = Ports.find((p) => p.port_code === portCode );
-
-    // ====== AIRPORT ======
-   // const airport = Airports.find( (a) => a.airport_code === airportCode );
+    const port = Ports.find(
+        (p) => p.port_code === portCode
+    );
 
     // ====== MAIN ======
     const main = [
         loc.city,
         countryName
-    ].filter(Boolean).join(", ");
+    ]
+    .filter(Boolean)
+    .join(", ");
 
-    // ====== EXTRAS ======
+    // ====== EXTRA INFO ======
     const extras = [
         zip && `CP ${zip}`,
-        port && `${port.name_port} (${port.port_code})`,
-        airportCode
-       // airport && `${airport.name_airport} (${airport.airport_code})`
+        portCode && `Puerto ${portCode}`,
+        airportCode && `Aeropuerto ${airportCode}`
     ]
     .filter(Boolean)
     .join(" • ");
 
-    return extras ? `${main} | ${extras}` : main || "N/A";
+    return {
+        main,
+        extra: extras
+    };
 };
-
 
 // --------------  cargamos el catalogo de los servicios ------------------- //
 const loadServices = async () => {
@@ -307,6 +321,33 @@ useEffect(() => {
     }
 }, [customerContacts]);
 
+const loadDocumentTypes = async () => {
+    try {
+
+        const data = await getDocumentTypes();
+
+        if (!data) return;
+
+        setDocumentTypes(data);
+
+    } catch (error) {
+        console.error("Error loading document types:", error);
+    }
+};
+
+const loadSections = async () => {
+    try {
+
+        const data = await getSections();
+
+        if (!data) return;
+
+        setSections(data);
+
+    } catch (error) {
+        console.error("Error loading sections:", error);
+    }
+};
 // --------------  cargamos  el catalogo de clausulas ------------------- //
 
 async function loadClauses() {
@@ -335,11 +376,11 @@ const filteredTags = useMemo(() => {
 
 /*          Catalogo del IVA             */
 const VAT_OPTIONS: VatOption[] = [
-    {idVar:1, label: "N/A", value: -1 },  
-    {idVar:2, label: "0%", value: 0 },
-    {idVar:3, label: "4%", value: 4 },
-    {idVar:4, label: "8%", value: 8 },
-    {idVar:5, label: "16%", value: 16 }
+    { idVar: 1, label: "N/A", rate: 0, value: -1 },
+    { idVar: 2, label: "0%",  rate: 0, value: 0 },
+    { idVar: 3, label: "4%",  rate: 4, value: 4 },
+    { idVar: 4, label: "8%",  rate: 0, value: 8 },
+    { idVar: 5, label: "16%", rate: 0, value: 16 }
 ];
 
 /*          Catalogo de idiomas             */
@@ -367,6 +408,16 @@ const CURRENCY_OPTIONS:CurrencyOption[] = [
     { idCurrency: 1, label: "MXN", value: "MXN" }
     ,{ idCurrency: 2, label: "USD", value: "USD" }
     //,{ idCurrency: 3, label: "EUR", value: "EUR" }
+];
+
+
+/*          Catalogo de Servicios             */
+const SERVICES_OPTIONS: ServiceTypeOption[] = [
+    { idSer: 0, label: "None"},
+    { idSer: 1, label: "Maritime"},
+    { idSer: 2, label: "Air"},
+    { idSer: 3, label: "Land"},
+    { idSer: 4, label: "Accessories"}
 ];
 
 // -------------- catalogo de iconos de servicios , categoria 1 y 2------------------- //
@@ -428,15 +479,22 @@ useEffect(() => {
 
     const safeNum = (n: any) => Number(n ?? 0);
     const safeVat = (v: any) => String(v ?? "-1");
+    const safeRate = (r: any) => Number(r ?? 0);
 
     const mapCommon = (c: any, i: number) => ({
         id: `${Date.now()}-${i}`,
-        type_of_charge: c.type_of_charge ? Number(c.type_of_charge) : "",
+        _id_type_of_charge: c._id_type_of_charge
+            ? Number(c._id_type_of_charge)
+            : "",
+        type_of_charge: c.type_of_charge
+            ? String(c.type_of_charge)
+            : "",
         concept: c.concept ?? "",
         billing_base: c.billing_base ?? "",
         unit: safeNum(c.unit),
         subtotal: safeNum(c.subtotal),
         vat: safeVat(c.vat),
+        rate: safeRate(c.rate), 
         total: safeNum(c.total)
     });
 
@@ -527,6 +585,7 @@ useEffect(() => {
             chargeable_weight: c.chargeable_weight ?? "",
             subtotal: safeNum(c.subtotal),
             vat: safeVat(c.vat),
+            rate: safeRate(c.rate),
             total: safeNum(c.total)
         }))
     );
@@ -593,17 +652,21 @@ const handleAddGeneric = (setList: Function, template: any) => {
 // Se usan en handleAddGeneric para inicializar cada fila con valores por defecto.
 
 const maritimeTemplate = {
-    type_of_charge: 0,
+    service_type: 1,
+    _id_type_of_charge: 0,
+    type_of_charge: "",
     concept: "",
     billing_base: "",
     container_type: "",
     unit: 0,
     subtotal: 0,
-    vat: "-1",
+    vat: -1,
+    rate: 0,
     total: 0
 };
 
 const airTemplate = {
+    service_type: 2,
     concept: "",
     airline: "",
     route: "",
@@ -614,36 +677,46 @@ const airTemplate = {
     miscellaneous_charges: 0,
     chargeable_weight:0,
     subtotal: 0,
-    vat: "-1",
+    vat: -1,
+    rate: 0,
     total: 0
 };
 
 const airOperationalTemplate = {
-    type_of_charge: 0,
+    service_type: 2,
+    _id_type_of_charge: 0,
+    type_of_charge: "",
     concept: "",
     billing_base: "",
     subtotal: 0,
-    vat: "-1",
+    vat: -1,
+    rate: 0,
     total: 0
 };
 
 const landTemplate = {
-    type_of_charge: 0,
+    service_type: 3,
+    _id_type_of_charge: 3,
+    type_of_charge: "",
     concept: "",
     billing_base: "",
     unit: 0,
     subtotal: 0,
-    vat: "-1",
+    vat: -1,
+    rate: 0,
     total: 0
 };
 
 const consultingServicesTemplate = {
-    type_of_charge: 0,
+    service_type: 4,
+    _id_type_of_charge: 0,
+    type_of_charge: "",
     concept: "",
     billing_base: "",
     unit: 0,
     subtotal: 0,
-    vat:"-1",
+    vat:-1,
+    rate: 0,
     total: 0
 };
 
@@ -696,13 +769,13 @@ const breakdownByCharge = useMemo(() => {
 
     allConcepts.forEach((c) => {
 
-        const key = c.type_of_charge != null && c.type_of_charge !== ""
-            ? String(c.type_of_charge)
+        const key = c._id_type_of_charge != null && c._id_type_of_charge !== ""
+            ? String(c._id_type_of_charge)
             : "SIN_CARGO";
 
         if (!map[key]) {
             map[key] = {
-                type_of_charge: key,
+                _id_type_of_charge: key,
                 subtotal: 0,
                 vat: 0,
                 total: 0
@@ -835,6 +908,47 @@ const editor = editorRef.current;
     document.execCommand(command, false);
 };
 
+// modifica el tamaño del texto
+const changeFontSize = (size: string) => {
+    const selection = window.getSelection();
+
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+
+    // Si NO hay texto seleccionado
+    if (range.collapsed) {
+        const span = document.createElement("span");
+        span.style.fontSize = size;
+        span.innerHTML = "&#8203;"; // caracter invisible
+        range.insertNode(span);
+
+        // mover cursor dentro del span
+        const newRange = document.createRange();
+        newRange.setStart(span.firstChild!, 1);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+        editorRef.current?.focus();
+
+        return;
+    }
+
+    // Si SÍ hay texto seleccionado
+    const selectedContent = range.extractContents();
+    const span = document.createElement("span");
+    span.style.fontSize = size;
+    span.appendChild(selectedContent);
+    range.insertNode(span);
+
+    // restaurar selección
+    selection.removeAllRanges();
+
+    const newRange = document.createRange();
+    newRange.selectNodeContents(span);
+    selection.addRange(newRange);
+    editorRef.current?.focus();
+};
 // ================== preparamos el modelo================== //
 const mapServicesFromPricing = (
     services: any[] = []
@@ -928,23 +1042,113 @@ const handleSaveQuotedRate = async (
 
     if (!validateTotal()) return;
 
-    const current = quotedRateRegistradaInfo?.data?.[0];
+    const current = quotedRateRegistradaInfo?.data?.[0]; //registro anterior
 
     const idQuoteRate = current?._id ?? null;
 
     const statusToUse = statusOverride || selectedStatus;
 
     const isGenerate = statusToUse.idStatusQ === 2; // Active = Generate
+    
+    const validationErrors = validateRequiredFields();
+
+    const calculatedVersion = idPrevious //obtener la nueva version o no, dependiendo de la modalidad
+    ? isGenerate
+        ? (current?.version || 0) + 1
+        : (current?.version || 0)
+    : 0;
+
+    let _iddoc = "";
+
+    if (validationErrors.length > 0) {
+
+        showNotification('warning',
+            validationErrors[0]
+        );
+
+        return;
+    }
+
+    if (isGenerate) {
+
+            try {
+                // 1. Generar PDF SIN watermark
+                const blob = await generatePdfBlob(false);
+
+                if (!blob) {
+                    throw new Error("No se pudo generar el PDF");
+                }
+
+                const current = quotedRateRegistradaInfo?.data?.[0];
+
+                // 2. Convertir a File
+                const file = new File(
+                    [blob],
+                    `QuotedRate_${current?.quote_number || "TEMP"}_v${calculatedVersion}.pdf`,
+                    { type: "application/pdf" }
+                );
+
+                // 3. Definir section y documentType (ajústalo a tu catálogo)
+                const sectionId = sections.find(
+                (s) => s.section === "Pricing"
+                )?.sectionid;
+
+                const documentTypeId = documentTypes.find(
+                (d) => d.documentkey === "TarVen"
+                )?.documenttypeid;
+
+                if (!sectionId || !documentTypeId) {
+                    throw new Error("No hay sección o tipo de documento");
+                }
+
+                // 4. Subir documento
+                try {
+                    const response: UploadResponse = await uploadDocuments(
+                        quotationRequestData?.referenceRequest,
+                        sectionId,
+                        documentTypeId,
+                        {
+                            iduser: user?._id || "",
+                            nameemployee: user?.name || ""
+                        },
+                        [file]
+                    );
+
+                    if (response.codeStatus === 201) { //Documento registrado
+
+                        const documentId = response.atrribute?.value;
+
+                        _iddoc = documentId || "";
+
+                        handlePreviewQuotedRate(false) // ya no es preview
+
+                        console.log("Documento registrado con ID:", documentId);
+                        showSuccess("PDF generado y subido correctamente");
+
+                    } else {
+                        console.error("Respuesta inesperada:", response);
+                        showError("No se pudo subir el documento");
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                }
+
+            } catch (err) {
+                console.error("Upload error:", err);
+
+                showNotification(
+                    "warning",
+                    "La cotización se generó pero el PDF no se pudo subir"
+                );
+            }
+    }
 
     const payload: QuotedRate = {
         _id: current?._id || null,
         _idcuote: current?._idcuote || null,
         quote_number: current?.quote_number || null,
-        version: idPrevious
-        ? isGenerate
-            ? (current?.version || 0) + 1
-            : (current?.version || 0)
-        : 0,
+        version: calculatedVersion,
         _id_control: pricingData?.id || "",
         control_number: pricingData?.control || "",
         _idreferencerequest: quotationRequestData?.id || "",
@@ -970,6 +1174,7 @@ const handleSaveQuotedRate = async (
             id_status_control: pricingData?.status_control?.id_status_control ?? 0,
             status_control_name: pricingData?.status_control?.status_control_name ?? "",
         },
+        _iddocument: _iddoc || null,
         currency: currency,
         exchange: exchangeRate,
         targetcurrecy: currencyTo,
@@ -1043,19 +1248,41 @@ const handleSaveQuotedRate = async (
         
         } else if (isGenerateAction && previousVersionId !== null && isGenerate) {   
         console.log("----CREATE MODE----");
-
+            //codigo 201 registrado
         response = await uploadQuotedRate(
             quotationRequestData?.referenceRequest || "",
             pricingData?.control || "",
             payload
         );
 
-        responseUpdateStatus = await updateStatusQuotedRate(
+        responseUpdateStatus = await updateStatusQuotedRate( // se manda a Reemplazada
             current?._id,
-            payload
+            4
         );
 
+        //se debe borrar el documento anterior en gcs y datastate 0
+        try {
+
+            if (current?._iddocument == null || current?._iddocument === "") {
+                throw new Error("El id del documento es obligatorio");
+            }
+
+            const response = await deleteDocumentById(current?._iddocument);
+
+            if (![200, 204].includes(response.codeStatus)) {
+                throw new Error(response.messageStatus);
+            }
+
+            showSuccess(t('dig.deleteSuccess'));
+
+            await getRecentDocuments(18);
+
+        } catch (error: any) {
+            showError(t('dig.deleteError'));
         }
+
+        }
+
         else if (isGenerateAction && previousVersionId == null && isGenerate) {   
         console.log("----CREATE MODE----");
 
@@ -1065,10 +1292,30 @@ const handleSaveQuotedRate = async (
             payload
         );
 
-        responseUpdateStatus = await updateStatusQuotedRate(
+        responseUpdateStatus = await updateStatusQuotedRate( // se manda a Reemplazada
             current?._id,
-            payload
+            4
         );
+
+        //se debe borrar el documento anterior en gcs y datastate 0
+        try {
+
+            if (current?._iddocument == null || current?._iddocument === "") {
+
+                throw new Error("El id del documento es obligatorio");
+            }
+
+            const response = await deleteDocumentById(current?._iddocument);
+
+            if (![200, 204].includes(response.codeStatus)) {
+                throw new Error(response.messageStatus);
+            }
+
+            showSuccess(t('dig.deleteSuccess'));
+
+        } catch (error: any) {
+            showError(t('dig.deleteError'));
+        }
 
         }
 
@@ -1126,6 +1373,51 @@ const handleSaveQuotedRate = async (
   }
 };
 
+const validateRequiredFields = () => {
+    const errors: string[] = [];
+
+    // =========================
+    // GENERALES
+    // =========================
+    if (!selectedContact?.email) {
+        errors.push(t('tvf.ContactRequired'));
+    }
+
+    if (!currency) {
+        errors.push(t('tvf.CurrencyRequired'));
+    }
+
+    if (!currencyTo) {
+        errors.push(t('tvf.CurrencyToRequired'));
+    }
+
+    if (!exchangeRate || exchangeRate <= 0) {
+        errors.push(t('tvf.ExchangeRateRequired'));
+    }
+
+    if (!validFrom) {
+        errors.push(t('tvf.ValidFromRequired'));
+    }
+
+    if (!validUntil) {
+        errors.push(t('tvf.ValidUntilRequired'));
+    }
+
+    // validar que la fecha final no sea menor a la inicial
+    if ( 
+        validFrom &&
+        validUntil &&
+        new Date(validUntil) < new Date(validFrom)
+    ) {
+        errors.push(t('tvf.ValidUntilMustBeGreater'));
+    }
+
+    if (!termsValue) {
+        errors.push(t('tvf.termsValueRequired'));
+    }
+    
+    return errors;
+};
 // ================ si hay algun concepto capturado con importe mayor a< 0================== //
 const validateTotal = () => {
     if (!totals.total || totals.total <= 0) {
@@ -1137,20 +1429,142 @@ const validateTotal = () => {
 
 // ================== Preview de la tarifa de venta================== //
 
-const handlePreviewQuotedRate = async () => {
+const handlePreviewQuotedRate = async (isPreview: boolean) => {  
     try {
         // si hay conceptos capturados con importes mayores a 0
         if (!validateTotal()) return;
 
-        //abrimos una pestaña en blanco
+        // abrimos pestaña en blanco
         const newTab = window.open("", "_blank");
 
-        const payload = buildPreviewPayload();
+        if (newTab) {
+            newTab.document.write(`
+                <html>
+                    <head>
+                        <title>Generando PDF...</title>
 
-         // console JSON pruebas
+                        <style>
+                            body {
+                                margin: 0;
+                                font-family: sans-serif;
+                            }
+
+                            .previewPdfContainerLoading {
+                                width: 100%;
+                                min-height: 100vh;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                padding: 2rem;
+                                background: #f8fafc;
+                            }
+
+                            .previewPdfLoadingCard {
+                                width: 100%;
+                                max-width: 420px;
+                                background: white;
+                                border: 1px solid #e5e7eb;
+                                border-radius: 20px;
+                                padding: 40px 32px;
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                text-align: center;
+                                box-shadow:
+                                    0 10px 25px rgba(0, 0, 0, 0.05),
+                                    0 4px 10px rgba(0, 0, 0, 0.03);
+                            }
+
+                            .previewPdfLoadingTitle {
+                                margin-top: 22px;
+                                font-size: 24px;
+                                font-weight: 800;
+                                color: #111827;
+                            }
+
+                            .previewPdfLoadingText {
+                                margin-top: 10px;
+                                max-width: 260px;
+                                font-size: 14px;
+                                line-height: 1.5;
+                                color: #6b7280;
+                            }
+
+                            .previewPdfSpinner {
+                                width: 72px;
+                                height: 72px;
+                                border-radius: 50%;
+                                border: 6px solid #e5e7eb;
+                                border-top-color: #038c7f;
+                                animation: previewPdfSpin 0.9s linear infinite;
+                            }
+
+                            @keyframes previewPdfSpin {
+                                to {
+                                    transform: rotate(360deg);
+                                }
+                            }
+                        </style>
+                    </head>
+
+                    <body>
+                        <div class="previewPdfContainerLoading">
+                            <div class="previewPdfLoadingCard">
+
+                                <div class="previewPdfSpinner"></div>
+
+                                <h2 class="previewPdfLoadingTitle">
+                                    Generando PDF...
+                                </h2>
+
+                                <p class="previewPdfLoadingText">
+                                    Espere un momento ...
+                                </p>
+
+                            </div>
+                        </div>
+                    </body>
+                </html>
+            `);
+
+            newTab.document.close();
+        }
+
+        const payload = buildPreviewPayload(isPreview);
+
         console.log("Payload:", JSON.stringify(payload, null, 2));
 
-        const blob = await GeneratePreviewQuotedRate(payload);
+        let blob: Blob | null = null;
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        // reintentos automáticos
+        while (!blob && attempts < maxAttempts) {
+            try {
+                blob = await GeneratePreviewQuotedRate(payload);
+                
+                // validar que realmente venga PDF
+                if (!blob || blob.size === 0) {
+                    throw new Error("PDF vacío");
+                }
+
+            } catch (err) {
+                attempts++;
+
+                // esperar 2 segundos antes de reintentar
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+            }
+        }
+
+        // si nunca se generó
+        if (!blob) {
+            if (newTab) {
+                newTab.close();
+            }
+            showError("Error al generar preview tarifa venta");
+            return;
+        }
 
         const fileURL = window.URL.createObjectURL(blob);
 
@@ -1163,15 +1577,42 @@ const handlePreviewQuotedRate = async () => {
     }
 };
 
-const buildPreviewPayload = (): pdfGeneratorQuotedRate => {
+const generatePdfBlob = async (isPreview: boolean): Promise<Blob | null> => {
+    const payload = buildPreviewPayload(isPreview);
+
+    let blob: Blob | null = null;
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    while (!blob && attempts < maxAttempts) {
+        try {
+            blob = await GeneratePreviewQuotedRate(payload);
+
+            if (!blob || blob.size === 0) {
+                throw new Error("PDF vacío");
+            }
+
+        } catch {
+            attempts++;
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+    }
+
+    return blob;
+};
+
+const buildPreviewPayload = (
+    isPreview: boolean
+): pdfGeneratorQuotedRate => {
     
     const current = quotedRateRegistradaInfo?.data?.[0];
 
     return {
         typeOfDocument: "QuotedRate",
         typeOfLanguage: languageFormat || "Mx",
-        inline: true,
-
+        inline: false,
+        includeWatermark: isPreview,
+        watermarkText:"SIN VALIDEZ OFICIAL",
         data: {
             Header: {
                 QuoteNumber: current?.quote_number || "TEMP",
@@ -1191,15 +1632,21 @@ const buildPreviewPayload = (): pdfGeneratorQuotedRate => {
                     ? toUTCDate(validUntil)
                     : new Date().toISOString(),
 
-                QuotedRateUserName: user?.name || ""
+                QuotedRateUserName: pricingData?.complete_name_pricing || "",
+                QuotedRateUserContact: selectedContact
+                ? [
+                    selectedContact.name,selectedContact.email, selectedContact.phone
+                ]
+                    .filter((value) => value && value.trim() !== "")
+                    .join(" | ")
+                : "",
             },
-
             Services: (pricingData?.services || []).flatMap((s: any) =>
                 (s.shipments || []).map((sh: any) => ({
                     Category: s.category ?? 1,
                     ServiceName: s.nameService,
-                    Origin: buildLocationString(sh?.origin),
-                    Destination: buildLocationString(sh?.destination),
+                    Origin: `${buildLocationString(sh?.origin).main} ${buildLocationString(sh?.origin).extra}`,
+                    Destination: `${buildLocationString(sh?.destination).main} ${buildLocationString(sh?.destination).extra}`,
                     ShipmentTypeName: sh.typeShipment || "",
                     Operation: sh.typeOperation || "",
                     Incoterm: sh.incoterm || "",
@@ -1217,10 +1664,13 @@ const buildPreviewPayload = (): pdfGeneratorQuotedRate => {
                 ...(landConcepts || []),
                 ...(consultingServicesConcepts || [])
             ].map((c: any) => ({
+                ServiceType: c.service_type ?? c.ServiceType ?? 0,
+                Charge: c.type_of_charge || "",
                 Concept: c.concept || "",
-                Description: c.description || "",
-                Quantity: c.quantity || 0,
-                Price: c.price || 0,
+                Base: c.billing_base || "",
+                Container: c.container_type || "",
+                Quantity: c.unit || 0,
+                SubTotal: c.subtotal || 0,
                 Rate: c.rate || 0,
                 Total: c.total || 0
             })),
@@ -1233,7 +1683,30 @@ const buildPreviewPayload = (): pdfGeneratorQuotedRate => {
     };
 };
 
+// loading preview
+if (loadingPreview) {
+    return (
+        <div className={styles.contentWrapper}>
+            <div className={styles.containerLoading}>
 
+                <div className={styles.loadingCard}>
+
+                    <div className={styles.spinner}></div>
+
+                    <h2 className={styles.loadingTitle}>
+                        Generando PDF...
+                    </h2>
+
+                    <p className={styles.loadingText}>
+                        Espere un momento por favor.
+                    </p>
+
+                </div>
+
+            </div>
+        </div>
+    );
+}
  /* ===================================== EMPIEZA EL DISEÑO FRONT ========================================= */
 return (
     <div className={styles.contentWrapper}>
@@ -1256,19 +1729,19 @@ return (
 
                     <button 
                         className={styles.headerButton}
-                        onClick={handlePreviewQuotedRate}
+                        onClick={() => handlePreviewQuotedRate(true)}
                     >
                         <Eye size={18} />
                         <span>{t('tvf.Preview')}</span>
                     </button>
 
                     {idPrevious && (
-                    <button 
-                        className={styles.headerButton} 
-                        onClick={handleGenerateWithConfirm}
-                    >
-                        <FileText size={18} />
-                        <span>{t('tvf.Generate')}</span>
+                    <button
+                            className={styles.headerButton}
+                            onClick={handleGenerateWithConfirm}
+                        >
+                            <FileText size={18} />
+                            <span>{t('tvf.Generate')}</span>
                     </button>
                     )}
                 </div>
@@ -1368,6 +1841,7 @@ return (
                                         );
                                         setSelectedContact(contact);
                                     }}
+                                    required
                                 >
                                     {customerContacts.length === 0 && (
                                         <option value="">{t('tvf.NoContacts')}</option>
@@ -1375,7 +1849,7 @@ return (
 
                                     {customerContacts.map((c: any, index: number) => (
                                         <option key={index} value={c.email}>
-                                            {`${c.name || t('tvf.NoName')} - ${c.email}`}
+                                            {`${c.name || t('tvf.NoName')} | ${c.email || t('tvf.NoEmail')} | ${c.phone || t('tvf.NoPhone')}`}
                                         </option>
                                     ))}
                                 </select>
@@ -1416,6 +1890,7 @@ return (
                                             className={styles.exchangeSelect}
                                             value={currency}
                                             onChange={(e) => setCurrency(e.target.value)}
+                                            required
                                             >
                                             {CURRENCY_OPTIONS.map((c: CurrencyOption) => (
                                                 <option key={c.idCurrency} value={c.value}>
@@ -1433,6 +1908,7 @@ return (
                                             step="0.01"
                                             value={exchangeRate}
                                             onChange={(e) => setExchangeRate(Number(e.target.value) || 1.0000)}
+                                            required
                                             className={styles.exchangeInput}
                                             />
                                 </div>
@@ -1444,6 +1920,7 @@ return (
                                                 className={styles.exchangeSelect}
                                                 value={currencyTo}  
                                                 onChange={(e) => setCurrencyTo(e.target.value)}
+                                                required
                                             >
                                                 {CURRENCY_OPTIONS.map((c: CurrencyOption) => (
                                                     <option key={c.idCurrency} value={c.value}>
@@ -1472,6 +1949,7 @@ return (
                             className={styles.dateField}
                             value={validFrom}
                             onChange={(e) => setValidFrom(e.target.value)}
+                            required                        
                             />
 
                             <span className={styles.separator}>→</span>
@@ -1481,6 +1959,7 @@ return (
                             className={styles.dateField}
                             value={validUntil}
                             onChange={(e) => setValidUntil(e.target.value)}
+                            required                    
                             />
                             </div>
                         </div>
@@ -1500,16 +1979,16 @@ return (
                    {pricingData?.services?.map((service: any) => {
 
                     const shipment = service.shipments?.[0];
-                    const originText = useMemo(() => 
+                    const originData = useMemo(() => 
                         buildLocationString(shipment?.origin),
                         [shipment?.origin, Countries, Ports, Airports]
                     );
 
-                    const destinationText = useMemo(() => 
+                    const destinationData = useMemo(() => 
                         buildLocationString(shipment?.destination),
                         [shipment?.destination, Countries, Ports, Airports]
                     );  
-                    const getIcon = () => {
+                                        const getIcon = () => {
                         return serviceIconsCategory1ById[service.idService] || <Package size={18} />;
                     };
 
@@ -1564,9 +2043,15 @@ return (
 
                                     <div className={styles.locationBlock}>
 
-                                        <span className={styles.location}>
-                                            {originText}
-                                        </span>
+                                        {/* ciudad + país */}
+                                        <div className={styles.location}>
+                                            {originData.main}
+                                        </div>
+
+                                        {/* cp / puerto / aeropuerto */}
+                                        <div className={styles.locationExtra}>
+                                            {originData.extra}
+                                        </div>
 
                                         <span className={styles.subLabelLocation}>
                                             {t('tvf.Origen')}
@@ -1586,9 +2071,13 @@ return (
 
                                     <div className={styles.locationBlock}>
 
-                                        <span className={styles.location}>
-                                            {destinationText}
-                                        </span>
+                                        <div className={styles.location}>
+                                            {destinationData.main}
+                                        </div>
+
+                                        <div className={styles.locationExtra}>
+                                            {destinationData.extra}
+                                        </div>
 
                                         <span className={styles.subLabelLocation}>
                                             {t('tvf.Destino')}
@@ -1696,10 +2185,10 @@ return (
                             <Truck size={18} />    {t('tvf.Land')}
                         </div>
                         <div
-                            className={`${styles.tabItem} ${activeTab === 'ASESORIAL' ? styles.active : ''}`}
-                            onClick={() => setActiveTab('ASESORIAL')}
+                            className={`${styles.tabItem} ${activeTab === 'ACCESORIAL' ? styles.active : ''}`}
+                            onClick={() => setActiveTab('ACCESORIAL')}
                         >
-                            <UserCheck  size={18} />    {t('tvf.Advisory')}
+                            <Puzzle   size={18} />    {t('tvf.Advisory')}
                         </div>
                     </div>
                     {activeTab === 'MARITIMO' && (
@@ -1737,8 +2226,19 @@ return (
                                     <td>
                                     <select
                                         className={styles.selectCargo}
-                                        value={row.type_of_charge ?? ""}
-                                        onChange={(e) => handleChange(index, 'type_of_charge', Number(e.target.value))}
+                                        value={row._id_type_of_charge ?? ""}
+                                        onChange={(e) => {
+                                            const selectedId = Number(e.target.value);
+                                            const selectedText =
+                                                e.target.options[e.target.selectedIndex].text;
+
+                                            handleChange(index, 'service_type', 1);    
+
+                                            handleChange(index, '_id_type_of_charge', selectedId);
+
+                                            handleChange(index, 'type_of_charge', selectedText);
+
+                                        }}
                                     >
                                         <option value="">{t('tvf.Elegir')}</option>
                                         {charges.map((c: any) => (
@@ -1814,7 +2314,14 @@ return (
                                     <select
                                         className={styles.selectIVA}
                                         value={row.vat}
-                                        onChange={(e) => handleChange(index, 'vat', e.target.value)}
+                                        onChange={(e) => {
+                                            const selectedVat = VAT_OPTIONS.find(
+                                                v => String(v.value) === e.target.value
+                                            );
+
+                                            handleChange(index, 'vat', selectedVat?.value ?? -1);
+                                            handleChange(index, 'rate', selectedVat?.rate ?? 0);
+                                        }}
                                     >
                                         {VAT_OPTIONS.map((v) => (
                                         <option key={v.label} value={v.value}>
@@ -1918,7 +2425,12 @@ return (
                                     <input
                                         className={styles.inputConcept}
                                         value={row.concept}
-                                        onChange={(e) => handleChangeAir(index, 'concept', e.target.value)}
+                                        onChange={(e) => {
+                                            handleChangeAir(index, 'service_type', 2);
+
+                                            handleChangeAir(index, 'concept', e.target.value);
+                                            
+                                        }}
                                     />
                                     </td>
 
@@ -2008,7 +2520,14 @@ return (
                                     <select
                                         className={styles.selectIVA}
                                         value={row.vat}
-                                        onChange={(e) => handleChangeAir(index, 'vat', e.target.value)}
+                                        onChange={(e) => {
+                                            const selectedVat = VAT_OPTIONS.find(
+                                                v => String(v.value) === e.target.value
+                                            );
+
+                                            handleChangeAir(index, 'vat', selectedVat?.value ?? -1);
+                                            handleChangeAir(index, 'rate', selectedVat?.rate ?? 0);
+                                        }}
                                     >
                                         {VAT_OPTIONS.map((v) => (
                                         <option key={v.label} value={v.value}>
@@ -2103,8 +2622,19 @@ return (
                                 <td>
                                     <select
                                         className={styles.selectCargo}
-                                        value={row.type_of_charge ?? ""}
-                                        onChange={(e) => handleChangeAirOperational(index, 'type_of_charge', Number(e.target.value))}
+                                        value={row._id_type_of_charge ?? ""}
+                                        onChange={(e) => {
+                                            const selectedId = Number(e.target.value);
+                                            const selectedText =
+                                                e.target.options[e.target.selectedIndex].text;
+
+                                            handleChangeAirOperational(index, 'service_type', 2);
+
+                                            handleChangeAirOperational(index, '_id_type_of_charge', selectedId);
+
+                                            handleChangeAirOperational(index, 'type_of_charge', selectedText);
+
+                                        }}
                                     >
                                         <option value="">{t('tvf.Elegir')}</option>
                                         {charges.map((c: any) => (
@@ -2147,7 +2677,14 @@ return (
                                     <select
                                         className={styles.selectIVA}
                                         value={row.vat}
-                                        onChange={(e) => handleChangeAirOperational(index, 'vat', e.target.value)}
+                                        onChange={(e) => {
+                                            const selectedVat = VAT_OPTIONS.find(
+                                                v => String(v.value) === e.target.value
+                                            );
+
+                                            handleChangeAirOperational(index, 'vat', selectedVat?.value ?? -1);
+                                            handleChangeAirOperational(index, 'rate', selectedVat?.rate ?? 0);
+                                        }}
                                     >
                                         {VAT_OPTIONS.map((v) => (
                                         <option key={v.label} value={v.value}>
@@ -2244,8 +2781,19 @@ return (
                                     <td>
                                     <select
                                         className={styles.selectCargo}
-                                        value={row.type_of_charge ?? ""}
-                                        onChange={(e) => handleChangeLand(index, 'type_of_charge', Number(e.target.value))}
+                                        value={row._id_type_of_charge ?? ""}
+                                        onChange={(e) => {
+                                            const selectedId = Number(e.target.value);
+                                            const selectedText =
+                                                e.target.options[e.target.selectedIndex].text;
+                                            
+                                            handleChangeLand(index, 'service_type', 3);
+
+                                            handleChangeLand(index, '_id_type_of_charge', selectedId);
+
+                                            handleChangeLand(index, 'type_of_charge', selectedText);
+
+                                        }}
                                     >
                                         <option value="">{t('tvf.Elegir')}</option>
                                         {charges.map((c: any) => (
@@ -2297,7 +2845,14 @@ return (
                                         <select
                                             className={styles.selectIVA}
                                             value={row.vat}
-                                            onChange={(e) => handleChangeLand(index, 'vat', e.target.value)}
+                                            onChange={(e) => {
+                                            const selectedVat = VAT_OPTIONS.find(
+                                                v => String(v.value) === e.target.value
+                                            );
+
+                                            handleChangeLand(index, 'vat', selectedVat?.value ?? -1);
+                                            handleChangeLand(index, 'rate', selectedVat?.rate ?? 0);
+                                        }}
                                         >
                                             {VAT_OPTIONS.map((v) => (
                                             <option key={v.label} value={v.value}>
@@ -2357,7 +2912,7 @@ return (
                         </button>
                     </div>
                     )}
-                    {activeTab === 'ASESORIAL' && (
+                    {activeTab === 'ACCESORIAL' && (
                     <div className={styles.tableWrapper}>
                         <h3>{t('tvf.ConsultingServicesConcepts')}</h3>
 
@@ -2392,8 +2947,19 @@ return (
                                     <td>
                                     <select
                                         className={styles.selectCargo}
-                                        value={row.type_of_charge ?? ""}
-                                        onChange={(e) => handleChangeConsultingServices(index, 'type_of_charge', Number(e.target.value))}
+                                        value={row._id_type_of_charge ?? ""}
+                                        onChange={(e) => {
+                                            const selectedId = Number(e.target.value);
+                                            const selectedText =
+                                                e.target.options[e.target.selectedIndex].text;
+
+                                            handleChangeConsultingServices(index, 'service_type', 4);
+
+                                            handleChangeConsultingServices(index, '_id_type_of_charge', selectedId);
+
+                                            handleChangeConsultingServices(index, 'type_of_charge', selectedText);
+
+                                        }}
                                     >
                                         <option value="">{t('tvf.Elegir')}</option>
                                         {charges.map((c: any) => (
@@ -2445,7 +3011,14 @@ return (
                                         <select
                                             className={styles.selectIVA}
                                             value={row.vat}
-                                            onChange={(e) => handleChangeConsultingServices(index, 'vat', e.target.value)}
+                                            onChange={(e) => {
+                                            const selectedVat = VAT_OPTIONS.find(
+                                                v => String(v.value) === e.target.value
+                                            );
+
+                                            handleChangeConsultingServices(index, 'vat', selectedVat?.value ?? -1);
+                                            handleChangeConsultingServices(index, 'rate', selectedVat?.rate ?? 0);
+                                        }}
                                         >
                                             {VAT_OPTIONS.map((v) => (
                                             <option key={v.label} value={v.value}>
@@ -2522,7 +3095,7 @@ return (
 
                     {breakdownByCharge.map((row, index) => (
                     <div key={index} className={styles.breakdownRow}>
-                        <span>{getChargeName(row.type_of_charge)}</span>
+                        <span>{getChargeName(row._id_type_of_charge)}</span>
                         <span>${row.subtotal.toFixed(2)}</span>
                         <span>${row.vat.toFixed(2)}</span>
                         <span>${row.total.toFixed(2)}</span>

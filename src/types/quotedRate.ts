@@ -17,6 +17,7 @@ export interface QuotedRate {
   customer_address: string;
   customer_contact: CustomerContact;
   status_control: StatusControl;
+ _iddocument: string | null;
   currency: string;
   exchange: number;
   targetcurrecy: string;
@@ -118,13 +119,15 @@ export interface Charges {
 }
 
 export interface MaritimeCharge {
-  type_of_charge: number;
+  _id_type_of_charge: number;
+  type_of_charge: string;
   concept: string;
   billing_base: string;
   container_type: string;
   unit: number;
   subtotal: number;
-  vat: string; // Viene como string "16" en el JSON
+  vat: number; 
+  rate: string;
   total: number;
 }
 
@@ -144,36 +147,43 @@ export interface AirlineCost {
   miscellaneous_charges: number;
   chargeable_weight: number;
   subtotal: number;
-  vat: string;
+  vat: number; 
+  rate: string;
   total: number;
 }
 
 export interface OperationalCost {
-  type_of_charge: number;
+  _id_type_of_charge: number;
+  type_of_charge: string;
   concept: string;
   billing_base: string;
   subtotal: number;
-  vat: string;
+  vat: number; 
+  rate: string;
   total: number;
 }
 
 export interface LandCharge {
-  type_of_charge: number;
+  _id_type_of_charge: number;
+  type_of_charge: string;
   concept: string;
   billing_base: string;
   unit: number;
   subtotal: number;
-  vat: string;
+  vat: number; 
+  rate: string;
   total: number;
 }
 
 export interface ConsultingServices {
-  type_of_charge: number;
+  _id_type_of_charge: number;
+  type_of_charge: string;
   concept: string;
   billing_base: string;
   unit: number;
   subtotal: number;
-  vat: string;
+  vat: number; 
+  rate: string;
   total: number;
 }
 
@@ -201,9 +211,14 @@ export interface CustomerContact {
 export type VatOption = {
   idVar: number;
   label: string;
+  rate: number;
   value: number;
 };
 
+export type ServiceTypeOption = {
+  idSer: number;
+  label: string;
+};
 
 export type LanguageOption = {
   idLang: number;

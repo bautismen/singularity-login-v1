@@ -16,6 +16,9 @@
   --backcolor: #038C7F;
   --titleCard:#03738C;
   --inputTable:  #f9fafbcc;
+  --border--primary: #e5e7eb;
+  --border--secondary: #e5e7ebec;
+
   background: linear-gradient(135deg, 
   rgba(3, 115, 140, 1) 0%, 
   rgba(3, 127, 140, 1) 40%, 
@@ -34,6 +37,8 @@
   --backcolor: #03738C;
   --titleCard:#03A678;
   --inputTable: #4e5c74;
+  --border--primary: #4b5563;
+  --border--secondary: #3e4856;
 }
 
 .input-login-autofill:-webkit-autofill,

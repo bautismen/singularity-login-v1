@@ -79,21 +79,15 @@ export const updateQuotedRate = async (
 
 
 export const updateStatusQuotedRate = async (
-  id_: string,
-  data: QuotedRate
+  idquotedrate_: string,
+  idstatusquote_: Number
 ) => {
   try {
-    const url = `${VITE_API_QUOTEDRATE}/idquoterate/${id_}/update`;
-
-
-    console.log("JSON FORMATEADO UPDATE:");
-    console.log(JSON.stringify(data, null, 2));
-    console.log(url);
+    const url = `${VITE_API_QUOTEDRATE}/idquotedrate/${idquotedrate_}/statusquoterate/${idstatusquote_}/update`;
 
     const response = await fetch(url, {
       method: "PUT",
-      headers,
-      body: JSON.stringify(data),
+      headers
     });
 
     if (!response.ok) {
