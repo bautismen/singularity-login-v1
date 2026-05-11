@@ -82,6 +82,16 @@ export interface DownloadResponse {
   };
 }
 
+export interface UploadResponse {
+  codeStatus: number;
+  messageStatus?: string;
+  atrribute?: {
+    type: string;
+    name: string;
+    value: string;
+  };
+}
+
 /* ==============================
  * Catalogos Digitization
  * ============================== */

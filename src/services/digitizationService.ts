@@ -301,6 +301,39 @@ export async function deleteDocument(
   return data;
 }
 
+export async function deleteDocumentById(
+  id: string
+): Promise<{ codeStatus: number; messageStatus?: string }> {
+
+  const response = await fetch(
+    `${API_DIGITIZATION}docs/iddoc/${id}/delete`,
+    {
+      method: "DELETE",
+      headers,
+    }
+  );
+
+  //  Si es 204 → éxito directo (no hay body)
+  if (response.status === 204) {
+    return {
+      codeStatus: 204,
+      messageStatus: "Eliminado correctamente"
+    };
+  }
+
+  //  Si no es 204, intentar leer JSON
+  const data = await response.json().catch(() => ({}));
+
+  if (data.codeStatus !== 204 && data.codeStatus !== 200) {
+    throw new Error(
+      data.messageStatus || "Error al eliminar documento"
+    );
+  }
+
+  return data;
+}
+
+
 /* ==============================
  * CATALOGOS
  * ============================== */
