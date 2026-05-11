@@ -652,6 +652,77 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           default: return null;
         }
       }
+      else{
+        switch(true){       
+          case [3, 4, 10, 11].includes(service.idService) || service.orderService?.idTypeShipment === 1 : return (          
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                    {t('ctrlpricing.cityo')}
+                </label>
+                <input
+                  type="text"
+                  value={service.orderService?.origin.city ?? ''}                
+                  className={styles.input}
+                  disabled/>                          
+              </div>    
+            );
+          case service.orderService?.idTypeShipment === 2: return (          
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {isPort ? t('ctrlpricing.portO') : t('ctrlpricing.airportO')}
+                </label>
+                <input
+                  className={`${styles.input} ${styles.inputUppercase}`}
+                  type="text"
+                  placeholder={isPort ? 'MXVER' : 'MXMEX'}
+                  value={
+                    (
+                      isPort
+                        ? service?.orderService?.origin?.portCode
+                        : service?.orderService?.origin?.airportCode
+                    ) ?? ''
+                  }
+                  disabled/>
+              </div>           
+          )
+          case service.orderService?.idTypeShipment === 3 : return (          
+              <div className={styles.formGroup}>             
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                    {t('ctrlpricing.cityo')}
+                </label>
+                <input
+                  type="text"
+                  value={service.orderService?.origin.city ?? ''}                
+                  className={styles.input}
+                  disabled/>                
+              </div>
+              );      
+          case service.orderService?.idTypeShipment === 4: return(             
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {isPort ? t('ctrlpricing.portO') : t('ctrlpricing.airportO')}
+                </label>
+                <input
+                  type="text"
+                  placeholder={isPort ? 'MXVER' : 'MXMEX'}
+                  value={
+                    (
+                      isPort
+                        ? service?.orderService?.origin?.portCode
+                        : service?.orderService?.origin?.airportCode
+                    ) ?? ''
+                  }
+                  className={styles.input}
+                  disabled/>
+              </div>         
+          )
+          default: return null;
+        }
+      }
     }
 
     const renderCityDestination =  (service : any) => {
@@ -726,6 +797,75 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           default: return null;
         }
       }
+      else{
+        switch(true){
+          case [3, 4, 10, 11].includes(service.idService) || service.orderService?.idTypeShipment === 1 : return (           
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                    {t('ctrlpricing.cityd')}
+                </label>
+                <input
+                  type="text"
+                  value={service.orderService?.destination.city}                
+                  className={styles.input}
+                  disabled/>              
+              </div>);
+          case service.orderService?.idTypeShipment === 2: return (          
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {isPort ? t('ctrlpricing.portD') : t('ctrlpricing.airportD')}
+                </label>
+                <input
+                  type="text"
+                  placeholder={isPort ? 'MXVER' : 'MXMEX'}
+                  value={
+                    (
+                      isPort
+                        ? service?.orderService?.destination?.portCode
+                        : service?.orderService?.destination?.airportCode
+                    ) ?? ''
+                  }
+                  className={styles.input}
+                  disabled/>
+              </div>          
+          )
+          case service.orderService?.idTypeShipment === 3 : return (          
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {isPort ? t('ctrlpricing.portD') : t('ctrlpricing.airportD')}
+                </label>
+                <input
+                  type="text"
+                  placeholder={isPort ? 'MXVER' : 'MXMEX'}
+                  value={
+                    (
+                      isPort
+                        ? service?.orderService?.destination?.portCode
+                        : service?.orderService?.destination?.airportCode
+                    ) ?? ''
+                  }
+                  className={styles.input}
+                  disabled/>
+              </div>);      
+          case service.orderService?.idTypeShipment === 4: return(                       
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                    {t('ctrlpricing.cityd')}
+                </label>
+                <input
+                  type="text"
+                  value={service.orderService?.destination.city ?? ''}                
+                  className={styles.input}
+                  disabled/>             
+              </div>          
+          )
+          default: return null;
+        }
+      }
     }
 
     const renderZipCodesOrigin =  (service : any) => {
@@ -762,6 +902,37 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           default: return null;
         }
       }
+      else{
+        switch(true){
+          case [3, 4, 10, 11].includes(service.idService) || service.orderService?.idTypeShipment === 1 : return (          
+              <div className={styles.formGroup}>              
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                    {t('ctrlpricing.cpo')}
+                  </label>
+                <input
+                  type="number"
+                  value={service.orderService?.origin.zipCode ?? ''}                
+                  className={styles.input}
+                  disabled/>              
+              </div>    
+            );        
+          case service.orderService?.idTypeShipment === 3 : return (          
+              <div className={styles.formGroup}>                           
+                  <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {t('ctrlpricing.cpo')}
+                </label>
+                <input
+                  type="number"
+                  value={service.orderService?.origin.zipCode ?? ''}                
+                  className={styles.input}
+                  disabled/>
+              </div>
+              );       
+          default: return null;
+        }
+      }
     }
 
     const renderZipCodesDestination =  (service : any) => {
@@ -790,6 +961,36 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 <input
                   type="number"
                   value={service.shipments[0]?.destination.zipCode ?? ''}                
+                  className={styles.input}
+                  disabled/>
+              </div>          
+          )
+          default: return null;
+        }
+      }
+      else{
+        switch(true){
+          case [3, 4, 10, 11].includes(service.idService) || service.orderService?.idTypeShipment === 1 : return (           
+              <div className={styles.formGroup}>              
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {t('ctrlpricing.cpd')}
+                </label>
+                <input
+                  type="number"
+                  value={service.orderService?.destination.zipCode ?? ''}                
+                  className={styles.input}
+                  disabled/>
+              </div>);             
+          case service.orderService?.idTypeShipment === 4: return(                       
+              <div className={styles.formGroup}>            
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {t('ctrlpricing.cpd')}
+                </label>
+                <input
+                  type="number"
+                  value={service.orderService?.destination.zipCode ?? ''}                
                   className={styles.input}
                   disabled/>
               </div>          
@@ -1368,7 +1569,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                             <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.operation')}</label>
                             <input
                               type="text"
-                              value={orderservice.typeOperation ?? ''}
+                              value={orderservice?.typeOperation ?? ''}
                               className={styles.formInput}
                               disabled
                             />
