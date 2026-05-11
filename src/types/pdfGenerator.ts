@@ -2,6 +2,8 @@ export interface pdfGeneratorQuotedRate {
     typeOfDocument: string;
     typeOfLanguage: string;
     inline: boolean;
+    includeWatermark: boolean;
+    watermarkText: string;
     data: Data;
 }
 
@@ -22,6 +24,7 @@ export interface Header {
     ValidFrom: string; // ISO date
     ValidUntil: string; // ISO date
     QuotedRateUserName: string;
+    QuotedRateUserContact: string;
 }
 
 export interface ExchangeRate {
@@ -43,10 +46,13 @@ export interface Service {
 }
 
 export interface Concept {
+    ServiceType: number;
+    Charge: string;
     Concept: string;
-    Description: string;
+    Base: string;
+    Container: string;
     Quantity: number;
-    Price: number;
+    SubTotal: number;
     Rate: number;
     Total: number;
 }
