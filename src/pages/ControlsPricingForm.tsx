@@ -579,187 +579,223 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     } 
 
     const renderCityOrigin =  (service : any) => {
-      const isPort = service.idService === 1 || service.idService === 2 ? true : false;    
-      switch(true){
-        case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : return (          
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                  {t('ctrlpricing.cityo')}
-              </label>
-              <input
-                type="text"
-                value={service.shipments[0].origin.city}                
-                className={styles.input}
-                disabled/>                          
-            </div>    
-          );
-        case service.shipments[0].idTypeShipment === 2: return (          
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                {isPort ? t('ctrlpricing.portO') : t('ctrlpricing.airportO')}
-              </label>
-              <input
-                className={`${styles.input} ${styles.inputUppercase}`}
-                type="text"
-                placeholder={isPort ? 'MXVER' : 'MXMEX'}
-                value={isPort ? service.shipments[0].origin.portCode : service.shipments[0].origin.airportCode }                
-                disabled/>
-            </div>           
-        )
-        case service.shipments[0].idTypeShipment === 3 : return (          
-            <div className={styles.formGroup}>             
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                  {t('ctrlpricing.cityo')}
-              </label>
-              <input
-                type="text"
-                value={service.shipments[0].origin.city}                
-                className={styles.input}
-                disabled/>                
-            </div>
-            );      
-        case service.shipments[0].idTypeShipment === 4: return(             
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                {isPort ? t('ctrlpricing.portO') : t('ctrlpricing.airportO')}
-              </label>
-              <input
-                type="text"
-                placeholder={isPort ? 'MXVER' : 'MXMEX'}
-                value={isPort ? service.shipments[0].origin.portCode : service.shipments[0].origin.airportCode }                
-                className={styles.input}
-                disabled/>
-            </div>         
-        )
-        default: return null;
+      const isPort = service.idService === 1 || service.idService === 2 ? true : false;   
+      const isshipment = service.shipments?.length > 0 ? true : false;                      
+      if(isshipment===true){
+        switch(true){       
+          case [3, 4, 10, 11].includes(service.idService) || service.shipments[0]?.idTypeShipment === 1 : return (          
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                    {t('ctrlpricing.cityo')}
+                </label>
+                <input
+                  type="text"
+                  value={service.shipments[0]?.origin.city ?? ''}                
+                  className={styles.input}
+                  disabled/>                          
+              </div>    
+            );
+          case service.shipments[0]?.idTypeShipment === 2: return (          
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {isPort ? t('ctrlpricing.portO') : t('ctrlpricing.airportO')}
+                </label>
+                <input
+                  className={`${styles.input} ${styles.inputUppercase}`}
+                  type="text"
+                  placeholder={isPort ? 'MXVER' : 'MXMEX'}
+                  value={
+                    (
+                      isPort
+                        ? service?.shipments?.[0]?.origin?.portCode
+                        : service?.shipments?.[0]?.origin?.airportCode
+                    ) ?? ''
+                  }
+                  disabled/>
+              </div>           
+          )
+          case service.shipments[0]?.idTypeShipment === 3 : return (          
+              <div className={styles.formGroup}>             
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                    {t('ctrlpricing.cityo')}
+                </label>
+                <input
+                  type="text"
+                  value={service.shipments[0]?.origin.city ?? ''}                
+                  className={styles.input}
+                  disabled/>                
+              </div>
+              );      
+          case service.shipments[0]?.idTypeShipment === 4: return(             
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {isPort ? t('ctrlpricing.portO') : t('ctrlpricing.airportO')}
+                </label>
+                <input
+                  type="text"
+                  placeholder={isPort ? 'MXVER' : 'MXMEX'}
+                  value={
+                    (
+                      isPort
+                        ? service?.shipments?.[0]?.origin?.portCode
+                        : service?.shipments?.[0]?.origin?.airportCode
+                    ) ?? ''
+                  }
+                  className={styles.input}
+                  disabled/>
+              </div>         
+          )
+          default: return null;
+        }
       }
     }
 
     const renderCityDestination =  (service : any) => {
-      const isPort = service.idService === 1 || service.idService === 2 ? true : false;    
-      switch(true){
-        case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : return (           
-            <div className={styles.formGroup}>
-               <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                  {t('ctrlpricing.cityd')}
-              </label>
-              <input
-                type="text"
-                value={service.shipments[0].destination.city}                
-                className={styles.input}
-                disabled/>              
-            </div>);
-        case service.shipments[0].idTypeShipment === 2: return (          
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                {isPort ? t('ctrlpricing.portD') : t('ctrlpricing.airportD')}
-              </label>
-              <input
-                type="text"
-                placeholder={isPort ? 'MXVER' : 'MXMEX'}
-                value={isPort ? service.shipments[0].destination.portCode : service.shipments[0].destination.airportCode }                
-                className={styles.input}
-                disabled/>
-            </div>          
-        )
-        case service.shipments[0].idTypeShipment === 3 : return (          
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                {isPort ? t('ctrlpricing.portD') : t('ctrlpricing.airportD')}
-              </label>
-              <input
-                type="text"
-                placeholder={isPort ? 'MXVER' : 'MXMEX'}
-                value={isPort ? service.shipments[0].destination.portCode : service.shipments[0].destination.airportCode }                
-                className={styles.input}
-                disabled/>
-            </div>);      
-        case service.shipments[0].idTypeShipment === 4: return(                       
-            <div className={styles.formGroup}>
-               <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                  {t('ctrlpricing.cityd')}
-              </label>
-              <input
-                type="text"
-                value={service.shipments[0].destination.city}                
-                className={styles.input}
-                disabled/>             
-            </div>          
-        )
-        default: return null;
+      const isPort = service.idService === 1 || service.idService === 2 ? true : false;
+      const isshipment = service.shipments?.length > 0 ? true : false;                      
+      if(isshipment===true){
+        switch(true){
+          case [3, 4, 10, 11].includes(service.idService) || service.shipments[0]?.idTypeShipment === 1 : return (           
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                    {t('ctrlpricing.cityd')}
+                </label>
+                <input
+                  type="text"
+                  value={service.shipments[0]?.destination.city}                
+                  className={styles.input}
+                  disabled/>              
+              </div>);
+          case service.shipments[0]?.idTypeShipment === 2: return (          
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {isPort ? t('ctrlpricing.portD') : t('ctrlpricing.airportD')}
+                </label>
+                <input
+                  type="text"
+                  placeholder={isPort ? 'MXVER' : 'MXMEX'}
+                  value={
+                    (
+                      isPort
+                        ? service?.shipments?.[0]?.destination?.portCode
+                        : service?.shipments?.[0]?.destination?.airportCode
+                    ) ?? ''
+                  }
+                  className={styles.input}
+                  disabled/>
+              </div>          
+          )
+          case service.shipments[0]?.idTypeShipment === 3 : return (          
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {isPort ? t('ctrlpricing.portD') : t('ctrlpricing.airportD')}
+                </label>
+                <input
+                  type="text"
+                  placeholder={isPort ? 'MXVER' : 'MXMEX'}
+                  value={
+                    (
+                      isPort
+                        ? service?.shipments?.[0]?.destination?.portCode
+                        : service?.shipments?.[0]?.destination?.airportCode
+                    ) ?? ''
+                  }
+                  className={styles.input}
+                  disabled/>
+              </div>);      
+          case service.shipments[0]?.idTypeShipment === 4: return(                       
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                    {t('ctrlpricing.cityd')}
+                </label>
+                <input
+                  type="text"
+                  value={service.shipments[0]?.destination.city ?? ''}                
+                  className={styles.input}
+                  disabled/>             
+              </div>          
+          )
+          default: return null;
+        }
       }
     }
 
     const renderZipCodesOrigin =  (service : any) => {
-      const isPort = service.idService === 1 || service.idService === 2 ? true : false;    
-      switch(true){
-        case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : return (          
-            <div className={styles.formGroup}>              
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
+      const isPort = service.idService === 1 || service.idService === 2 ? true : false;
+      const isshipment = service.shipments?.length > 0 ? true : false;                      
+      if(isshipment===true){
+        switch(true){
+          case [3, 4, 10, 11].includes(service.idService) || service.shipments[0]?.idTypeShipment === 1 : return (          
+              <div className={styles.formGroup}>              
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                    {t('ctrlpricing.cpo')}
+                  </label>
+                <input
+                  type="number"
+                  value={service.shipments[0]?.origin.zipCode ?? ''}                
+                  className={styles.input}
+                  disabled/>              
+              </div>    
+            );        
+          case service.shipments[0]?.idTypeShipment === 3 : return (          
+              <div className={styles.formGroup}>                           
+                  <label className={styles.label}>
+                  <span className={styles.required}>*</span>
                   {t('ctrlpricing.cpo')}
                 </label>
-              <input
-                type="number"
-                value={service.shipments[0].origin.zipCode}                
-                className={styles.input}
-                disabled/>              
-            </div>    
-          );        
-        case service.shipments[0].idTypeShipment === 3 : return (          
-            <div className={styles.formGroup}>                           
-                 <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                {t('ctrlpricing.cpo')}
-              </label>
-              <input
-                type="number"
-                value={service.shipments[0].origin.zipCode}                
-                className={styles.input}
-                disabled/>
-            </div>
-            );       
-        default: return null;
+                <input
+                  type="number"
+                  value={service.shipments[0]?.origin.zipCode ?? ''}                
+                  className={styles.input}
+                  disabled/>
+              </div>
+              );       
+          default: return null;
+        }
       }
     }
 
     const renderZipCodesDestination =  (service : any) => {
-      const isPort = service.idService === 1 || service.idService === 2 ? true : false;    
-      switch(true){
-        case [3, 4, 10, 11].includes(service.idService) || service.shipments[0].idTypeShipment === 1 : return (           
-            <div className={styles.formGroup}>              
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                {t('ctrlpricing.cpd')}
-              </label>
-              <input
-                type="number"
-                value={service.shipments[0].destination.zipCode}                
-                className={styles.input}
-                disabled/>
-            </div>);             
-        case service.shipments[0].idTypeShipment === 4: return(                       
-            <div className={styles.formGroup}>            
-              <label className={styles.label}>
-                <span className={styles.required}>*</span>
-                {t('ctrlpricing.cpd')}
-              </label>
-              <input
-                type="number"
-                value={service.shipments[0].destination.zipCode}                
-                className={styles.input}
-                disabled/>
-            </div>          
-        )
-        default: return null;
+      const isPort = service.idService === 1 || service.idService === 2 ? true : false;
+      const isshipment = service.shipments?.length > 0 ? true : false;                      
+      if(isshipment===true){    
+        switch(true){
+          case [3, 4, 10, 11].includes(service.idService) || service.shipments[0]?.idTypeShipment === 1 : return (           
+              <div className={styles.formGroup}>              
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {t('ctrlpricing.cpd')}
+                </label>
+                <input
+                  type="number"
+                  value={service.shipments[0]?.destination.zipCode ?? ''}                
+                  className={styles.input}
+                  disabled/>
+              </div>);             
+          case service.shipments[0]?.idTypeShipment === 4: return(                       
+              <div className={styles.formGroup}>            
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {t('ctrlpricing.cpd')}
+                </label>
+                <input
+                  type="number"
+                  value={service.shipments[0]?.destination.zipCode ?? ''}                
+                  className={styles.input}
+                  disabled/>
+              </div>          
+          )
+          default: return null;
+        }
       }
     }
 
@@ -1257,7 +1293,12 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 const isUsed = (service.used && controlId === null) || (service.used && (Disabled)) ;
                 const isExpanded = expandedServices.has(serviceId);
 
-                const shipment = service.shipments && service.shipments.length > 0 ? service.shipments[0] : {};
+                const shipment = service.shipments?.length > 0 ? service.shipments[0] : {};
+                const isshipment = service.shipments?.length > 0 ? true : false;
+                const orderservice = service?.orderService &&
+                Object.keys(service.orderService).length > 0 ? service.orderService : null;
+                const isorderservice = service?.orderService &&
+                Object.keys(service.orderService).length > 0 ? true : false;
 
                 return (
                   <div
@@ -1314,48 +1355,66 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               disabled
                             />
                           </div>
-                          <div className={styles.formGroup}>
+                          <div className={styles.formGroup} hidden={isorderservice}>
                             <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.operation')}</label>
                             <input
                               type="text"
-                              value={shipment.typeOperation || ''}
+                              value={shipment.typeOperation ?? ''}
                               className={styles.formInput}
                               disabled
                             />
                           </div>
-                          <div className={styles.formGroup}>
+                          <div className={styles.formGroup} hidden={isshipment}>
+                            <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.operation')}</label>
+                            <input
+                              type="text"
+                              value={orderservice.typeOperation ?? ''}
+                              className={styles.formInput}
+                              disabled
+                            />
+                          </div>
+                          <div className={styles.formGroup} hidden={isorderservice}>
                             <label className={styles.label}><span className={styles.required}>*</span> Incoterms</label>
                             <input
                               type="text"
-                              value={shipment.incoterm_name || shipment.incoterm || ''}
+                              value={shipment?.incoterm_name ?? shipment?.incoterm ?? ''}
                               className={styles.formInput}
                               disabled
                             />
                           </div>
-                          <div className={styles.formGroup}>
+                          <div className={styles.formGroup} hidden={isorderservice}>
                             <label className={styles.label}>{t('ctrlpricing.expecteddeparture')}</label>
                             <input
                               type="date"
-                              value={shipment.departureDateAproximate ? new Date(shipment.departureDateAproximate.$date || shipment.departureDateAproximate).toISOString().split('T')[0] : ''}
+                              value={shipment?.departureDateAproximate ? new Date(shipment.departureDateAproximate.$date || shipment.departureDateAproximate).toISOString().split('T')[0] : ''}
                               className={styles.formInput}
                               disabled
                             />
                           </div>
-                          <div className={styles.formGroup}>
+                           <div className={styles.formGroup} hidden={isshipment}>
+                            <label className={styles.label}>{t('ctrlpricing.expecteddeparture')}</label>
+                            <input
+                              type="date"
+                              value={orderservice?.departureDateAproximate ? new Date(orderservice.departureDateAproximate.$date || orderservice.departureDateAproximate).toISOString().split('T')[0] : ''}
+                              className={styles.formInput}
+                              disabled
+                            />
+                          </div>
+                          <div className={styles.formGroup} hidden={isorderservice}>
                             <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.shippingtype')}</label>
                             <input
                               type="text"
-                              value={shipment.typeShipment || ''}
+                              value={shipment?.typeShipment ?? ''}
                               className={styles.formInput}
                               disabled
                             />
                           </div>
-                          <div className={styles.formGroup}>
+                          <div className={styles.formGroup} hidden={isorderservice}>
                             <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.origin')}</label>
                             <input
                               type="text"
                               value={(() => {
-                                const countryCode = shipment.origin_country_name || shipment.origin?.countryCode || shipment.origin?.zipCode || '';
+                                const countryCode = shipment?.origin_country_name || shipment?.origin?.countryCode || shipment?.origin?.zipCode || '';
                                 const country = countries.find(c => c.country_code === countryCode);
                                 return country ? `(${country.country_code}) ${country.name_country}` : countryCode;
                               })()}
@@ -1363,12 +1422,12 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               disabled
                             />
                           </div>                         
-                          <div className={styles.formGroup}>
+                          <div className={styles.formGroup} hidden={isorderservice}>
                             <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.destination')}</label>
                             <input
                               type="text"
                               value={(() => {
-                                const countryCode = shipment.destination_country_name || shipment.destination?.countryCode || shipment.destination?.zipCode || '';
+                                const countryCode = shipment?.destination_country_name || shipment?.destination?.countryCode || shipment?.destination?.zipCode || '';
                                 const country = countries.find(c => c.country_code === countryCode);
                                 return country ? `(${country.country_code}) ${country.name_country}` : countryCode;
                               })()}
@@ -1397,7 +1456,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                             </label>
                             <div className={styles.containerCard}>
                               <div className={styles.containerList}>
-                                {service.shipments[0].containers?.map((container) => (
+                                {service.shipments[0]?.containers?.map((container) => (
                                   <div key={container.idContainer} className={styles.itemSimpleList}>
                                     <div className={styles.formGroupElementsInline}>                       
                                       <div className={styles.formGroup}>
@@ -1515,7 +1574,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               </div>
                               <button type="button" 
                                 className={styles.addExecutiveButton} 
-                                onClick={()=> openContainerModal(service.idServiceItem, service.shipments[0].containers || [])}
+                                onClick={()=> openContainerModal(service.idServiceItem, service.shipments[0]?.containers || [])}
                                 disabled={loading ||Disabled}>
                                 <Plus size={16} />
                                 {t('quote.container')}
@@ -1570,7 +1629,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                             </div>
                           )}
 
-                        <div className={styles.associatedServices}>
+                        <div className={styles.associatedServices} hidden ={isorderservice}>
                           <label className={styles.label}>{t('ctrlpricing.associatedServices')}</label>
                           <div className={styles.servicesChips}>
                             {(shipment.servicesAsociated || shipment.services_asociated) && (shipment.servicesAsociated || shipment.services_asociated).length > 0 ? (
@@ -1584,7 +1643,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                             )}
                           </div>
                         </div>                       
-                        <div className={styles.formGroup}>
+                        <div className={styles.formGroup} hidden={isorderservice}>
                           <label className={styles.label}>{t('ctrlpricing.comments')}</label>
                           <textarea
                             value={shipment.comment || shipment.comments || ''}
@@ -1595,7 +1654,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           />
                         </div>
 
-                        <div className={styles.frequencySection}>
+                        <div className={styles.frequencySection} hidden={isorderservice}>
                           <label className={styles.checkboxLabel}>
                             <input
                               type="checkbox"
@@ -1637,7 +1696,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                           )}
                         </div>
 
-                        <div className={styles.merchandiseSection}>
+                        <div className={styles.merchandiseSection} hidden={isorderservice}>
                           <h4 className={styles.merchandiseTitle}>{t('ctrlpricing.commodity')}</h4>
                           {shipment.cargo && shipment.cargo.length > 0 ? (
                             <div className={styles.merchandiseTable}>

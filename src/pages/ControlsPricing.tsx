@@ -567,13 +567,27 @@ const closeDocumentsModal = () => {
 
   const getOperationType = (services: any[]) => {
     if (!services || services.length === 0) return '';
-    return services[0].shipments[0].typeOperation === 1 ? 'importación' : 'exportación';
+
+    const typeOperation =
+      services[0]?.shipments?.[0]?.typeOperation ??
+      services[0]?.orderService?.typeOperation;
+
+    if (typeOperation == null) return '';
+
+    return typeOperation === 1 ? 'importación' : 'exportación';
   };
 
   const getCountries = (services: any[]) => {
     if (!services || services.length === 0) return '';
-    const origin = services[0].shipments[0].origin?.countryCode || 'NA';
-    const destination = services[0].shipments[0]?.destination?.countryCode || 'NA';
+    const origin =
+  services[0]?.shipments?.[0]?.origin?.countryCode ??
+  services[0]?.orderService?.origin?.countryCode ??
+  'NA';
+
+const destination =
+  services[0]?.shipments?.[0]?.destination?.countryCode ??
+  services[0]?.orderService?.destination?.countryCode ??
+  'NA';
     return `${origin} - ${destination}`;
   };
 
