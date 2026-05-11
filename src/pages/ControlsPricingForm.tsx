@@ -1138,9 +1138,9 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                       </div>
                     </div>
                     {controlData && (
-                      <div className={styles.clientControl}>
-                        <span className={styles.controlLabel}>Control</span>
-                        <span className={styles.controlBadge}>{controlData.control}</span>
+                      <div className={styles.clientControl}>                        
+                        <span className={styles.controlBadge}>{controlData.control}</span>                        
+                        <span className={styles.controlBadge}>{controlData.status_control?.status_control_name}</span>
                       </div>
                     )}
                   </div>
@@ -1159,14 +1159,14 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   {t('ctrlpricing.decline')}
                   
                 </button>
-                <button type="button"
+                {/*<button type="button"
                   className={styles.btnQuote}
                   onClick={handleMarkAsQuoted}
                   disabled={loading ||Disabled}
                   hidden={controlId ? false : true}
                 >
                   {t('ctrlpricing.quoted')}
-                </button>
+                </button>*/}
                 <button
                   type="button"
                   className={styles.btnGenerateSale}
@@ -1256,7 +1256,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           <div className={styles.generalSection}>
             <h3 className={styles.sectionTitle}>General</h3>
             <div className={styles.formGrid}>
-              <div className={styles.formGroup}>
+              {/*<div className={styles.formGroup}>
                 <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.status')}</label>
                 <select required
                   value={statusControl.status_control_name}
@@ -1277,7 +1277,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   <option>Declinada</option>
                   <option>Aceptada</option>
                 </select>
-              </div>
+              </div>*/}
               <div className={styles.formGroup}>
                 <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.network')}</label>
                 <select
@@ -1610,12 +1610,34 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               disabled
                             />
                           </div>
+                          <div className={styles.formGroup} hidden={isshipment}>
+                            <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.shippingtype')}</label>
+                            <input
+                              type="text"
+                              value={orderservice?.typeShipment ?? ''}
+                              className={styles.formInput}
+                              disabled
+                            />
+                          </div>
                           <div className={styles.formGroup} hidden={isorderservice}>
                             <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.origin')}</label>
                             <input
                               type="text"
                               value={(() => {
                                 const countryCode = shipment?.origin_country_name || shipment?.origin?.countryCode || shipment?.origin?.zipCode || '';
+                                const country = countries.find(c => c.country_code === countryCode);
+                                return country ? `(${country.country_code}) ${country.name_country}` : countryCode;
+                              })()}
+                              className={styles.formInput}
+                              disabled
+                            />
+                          </div>
+                          <div className={styles.formGroup} hidden={isshipment}>
+                            <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.origin')}</label>
+                            <input
+                              type="text"
+                              value={(() => {
+                                const countryCode = orderservice?.origin_country_name || orderservice?.origin?.countryCode || orderservice?.origin?.zipCode || '';
                                 const country = countries.find(c => c.country_code === countryCode);
                                 return country ? `(${country.country_code}) ${country.name_country}` : countryCode;
                               })()}
@@ -1629,6 +1651,19 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               type="text"
                               value={(() => {
                                 const countryCode = shipment?.destination_country_name || shipment?.destination?.countryCode || shipment?.destination?.zipCode || '';
+                                const country = countries.find(c => c.country_code === countryCode);
+                                return country ? `(${country.country_code}) ${country.name_country}` : countryCode;
+                              })()}
+                              className={styles.formInput}
+                              disabled
+                            />
+                          </div>
+                           <div className={styles.formGroup} hidden={isshipment}>
+                            <label className={styles.label}><span className={styles.required}>*</span> {t('ctrlpricing.destination')}</label>
+                            <input
+                              type="text"
+                              value={(() => {
+                                const countryCode = orderservice?.destination_country_name || orderservice?.destination?.countryCode || orderservice?.destination?.zipCode || '';
                                 const country = countries.find(c => c.country_code === countryCode);
                                 return country ? `(${country.country_code}) ${country.name_country}` : countryCode;
                               })()}
@@ -1843,11 +1878,21 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                               <span style={{color: '#9ca3af', fontSize: '14px'}}>{t('ctrlpricing.noassociatedservices')}</span>
                             )}
                           </div>
-                        </div>                       
+                        </div>                    
                         <div className={styles.formGroup} hidden={isorderservice}>
                           <label className={styles.label}>{t('ctrlpricing.comments')}</label>
                           <textarea
                             value={shipment.comment || shipment.comments || ''}
+                            className={styles.formTextarea}
+                            rows={2}
+                            disabled
+                            placeholder={t('ctrlpricing.nocomments')}
+                          />
+                        </div>
+                        <div className={styles.formGroup} hidden={isshipment}>
+                          <label className={styles.label}>{t('ctrlpricing.comments')}</label>
+                          <textarea
+                            value={orderservice?.comment || orderservice?.comments || ''}
                             className={styles.formTextarea}
                             rows={2}
                             disabled
@@ -1914,6 +1959,39 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                                 </thead>
                                 <tbody>
                                   {shipment.cargo.map((carg: any) => (
+                                    <tr key={carg.name}>
+                                      <td>{carg.name}</td>
+                                      <td>{carg.classification.idClassificationMerchandise === 5 ? 'Sí' : 'No'}</td>
+                                      <td>{carg.classification.idClassificationMerchandise === 4 ? 'Refrigerada' : 'General'}</td>
+                                      <td>{carg.stowable ? 'Sí' : 'No'}</td>
+                                      <td>{carg.volumeTotal ? `${carg.volumeTotal} ${carg.unitMeasurement || ''}` : '0'} KG</td>
+                                      <td>{carg.weigthTotal ? `${carg.weigthTotal} ${carg.unitWeight   || ''}` : '0'} KG</td>                        
+                                    </tr>
+                                  ))}                                
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : (
+                            <p style={{color: '#9ca3af', fontSize: '14px', marginTop: '8px'}}>Sin mercancía registrada</p>
+                          )}
+                        </div>
+                        <div className={styles.merchandiseSection} hidden={isshipment}>
+                          <h4 className={styles.merchandiseTitle}>{t('ctrlpricing.commodity')}</h4>
+                          {orderservice?.cargo && orderservice?.cargo.length > 0 ? (
+                            <div className={styles.merchandiseTable}>
+                              <table className={styles.simpleTable}>
+                                <thead>
+                                  <tr>
+                                    <th>{t('ctrlpricing.commodity')}</th>
+                                    <th>{t('ctrlpricing.dangerous')}</th>
+                                    <th>{t('ctrlpricing.classification')}</th>
+                                    <th>{t('ctrlpricing.stackable')}</th>
+                                    <th>{t('ctrlpricing.totalVolume')}</th>
+                                    <th>{t('ctrlpricing.totalWeight')}</th>                            
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {orderservice?.cargo.map((carg: any) => (
                                     <tr key={carg.name}>
                                       <td>{carg.name}</td>
                                       <td>{carg.classification.idClassificationMerchandise === 5 ? 'Sí' : 'No'}</td>
