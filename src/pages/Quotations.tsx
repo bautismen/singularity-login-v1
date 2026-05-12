@@ -1056,6 +1056,10 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
           // Aceptada
           await pricingControlService.AcceptControl(quotationId);
         }
+        if (statusId === 9) {
+          // Rechazada
+          await pricingControlService.RejectControl(quotationId, quotationRequestData.statusComment);
+        }
         showSuccess(
           t("quote.success.statusUpdated").replace("{status}", statusName),
         );
