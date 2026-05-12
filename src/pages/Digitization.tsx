@@ -34,7 +34,7 @@ import {
   SearchDocumentsByNameReferenceCustomer,
   downloadDocument,
   uploadDocuments,
-  deleteDocument,
+  deleteDocumentById,
   getDocumentTypes,
   getSections
 } from "../services/digitizationService";
@@ -56,7 +56,7 @@ const Digitization = () => {
   const { user } = useAuth();
   const [documents, setDocuments] = useState<DigitizationDocument[]>([]);
   const [recentDocuments, setRecentDocuments] = useState<DigitizationDocument[]>([]);
-  const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]);
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [seccionFilter, setSeccionFilter] = useState<number | "">("");
@@ -111,7 +111,7 @@ const refDocType = useRef<HTMLDivElement>(null);
 
   if (!selectAll) {
     setSelectedDocuments(
-      recentDocuments.map(doc => doc.documentId)
+      recentDocuments.map(doc => doc.id)
     );
   } else {
     setSelectedDocuments([]);
@@ -121,7 +121,7 @@ const refDocType = useRef<HTMLDivElement>(null);
 };
 
   /* ================= DELETE ================= */
-const handleDelete = (id: number, name: string) => {
+const handleDelete = (id: string, name: string) => {
 
   setModalState({
     isOpen: true,
@@ -134,7 +134,7 @@ const handleDelete = (id: number, name: string) => {
 
       try {
 
-        const response = await deleteDocument(id);
+        const response = await deleteDocumentById(id);
 
         if (![200, 204].includes(response.codeStatus)) {
           throw new Error(response.messageStatus);
@@ -276,7 +276,7 @@ const fetchDocuments = async () => {
     setRecentDocuments(sorted);
     setIsSearchResult(true);
 
-    setSelectedDocuments(sorted.map(doc => doc.documentId));
+    setSelectedDocuments(sorted.map(doc => doc.id));
     setSelectAll(sorted.length > 0);
 
   } catch (err: any) {
@@ -338,7 +338,7 @@ const fetchDocuments = async () => {
 
   /* ================= DOWNLOAD ================= */
 
-  const handleDownload = async (id: number) => {
+  const handleDownload = async (id: string) => {
     try {
       const response = await downloadDocument(id);
 
@@ -904,7 +904,7 @@ const getFileIcon = (name?: string) => {
                   try {
 
                     for (const id of selectedDocuments) {
-                      await deleteDocument(id);
+                      await deleteDocumentById(id);
                     }
 
                     showSuccess(t('dig.deleteDocumentsSuccess'));
@@ -950,13 +950,13 @@ const getFileIcon = (name?: string) => {
                   <input
                     type="checkbox"
                     className={styles.cardCheckbox}
-                    checked={selectedDocuments.includes(doc.documentId)}
+                    checked={selectedDocuments.includes(doc.id)}
                     onChange={() => {
                       setSelectedDocuments(prev => {
-                        if (prev.includes(doc.documentId)) {
-                          return prev.filter(id => id !== doc.documentId);
+                        if (prev.includes(doc.id)) {
+                          return prev.filter(id => id !== doc.id);
                         }
-                        return [...prev, doc.documentId];
+                        return [...prev, doc.id];
                       });
                     }}
                   />
@@ -979,7 +979,7 @@ const getFileIcon = (name?: string) => {
                 <div className={styles.cardActions}>
                   <button
                     className={styles.actionButton}
-                    onClick={() => handleDownload(doc.documentId)}
+                    onClick={() => handleDownload(doc.id)}
                   >
                     <GrCloudDownload size={20} />
                     <span className={styles.tooltipdig}>
@@ -990,7 +990,7 @@ const getFileIcon = (name?: string) => {
                   <button
                     className={styles.actionButtonDelete}
                     onClick={() =>
-                      handleDelete(doc.documentId, doc.documentName)
+                      handleDelete(doc.id, doc.documentName)
                     }
                   >
                     <Trash2 size={20} />
