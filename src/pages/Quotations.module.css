@@ -263,6 +263,12 @@
   color: var(--text-secondary);
 }
 
+.scoreLabelSmall {
+  font-size: 0.575rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
 .labelInfoRed {
   display: flex;
   flex : auto;
@@ -309,11 +315,14 @@
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
-/* .dark .input {
-  background-color: #374151;
-  border-color: #4b5563;
+.statusRequest {
+  padding: 0.25rem 0.75rem;
+  background: #037F8C;
   color: white;
-} */
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
 
 .dark .input:focus {
   border-color: #14b8a6;
@@ -1066,6 +1075,12 @@
   margin: 0;
 }
 
+.scoreLabelMid {
+  font-size: 1.0rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
 /* .dark .modalTitle {
   color: white;
 } */
@@ -1871,6 +1886,15 @@
   .sendButton {
     width: 100%;
   }
+
+  .scoreLabelMid {
+    font-size: 0.8125rem;    
+  }
+
+  .scoreLabelSmall {
+  font-size: 0.8125rem;;
+  }
+
 }
 
 @media (max-width: 480px) {
@@ -1935,6 +1959,7 @@
   .modalTitle {
     font-size: 1.125rem;
   }
+  
 
   .inputUppercase {
   text-transform: uppercase;
