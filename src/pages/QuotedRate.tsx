@@ -14,7 +14,7 @@ import { catalogService } from '../services/catalogsService';
 import { GeneratePreviewQuotedRate } from '../services/pdfGeneratorService';
 import {pricingControlService } from '../services/pricingControlService';
 import { getCustomers} from '../services/customerService';
-import { uploadDocuments,getDocumentTypes, getSections , deleteDocumentById,getRecentDocuments} from "../services/digitizationService";
+import { uploadDocuments,getDocumentTypes, getSections , deleteDocumentById} from "../services/digitizationService";
 //interfaz o modelo
 import type { VatOption, LanguageOption, CurrencyOption, ServiceTypeOption, StatusQuote,
     QuotedRate, ServiceItem , Shipment,
@@ -85,11 +85,13 @@ const [modalState, setModalState] = useState<{
     message: string;
     onConfirm?: () => void;
     showCancel?: boolean;
-    }>({
-        isOpen: false,
-        type: 'info',
-        title: '',
-        message: ''
+    confirmText?: string;
+    cancelText?: string;
+}>({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: ''
 });
 
 const [searchTerm, setSearchTerm] = useState('');
@@ -1113,19 +1115,64 @@ const toUTCDate = (dateStr: string) => {
     return new Date(dateStr + "T00:00:00").toISOString();
 };
 
+//modal que notifica que se va a generar una nueva tarifa de venta
 const handleGenerateWithConfirm = () => {
     setModalState({
         isOpen: true,
         type: 'confirm',
         title: t('tvf.GenerateTitle'),
-        message: t('tvf.GenerateConfirmMessage'), // "Se creará una nueva versión y tarifa de venta"
+        message: t('tvf.GenerateConfirmMessage'),
         showCancel: true,
+        confirmText: t('tvf.Generate'),         
+        cancelText: t('tvf.GenerateCancel'),
         onConfirm: async () => {
-        await handleSaveQuotedRate(STATUS_QUOTE[1], true); // Active = Generate
+            await handleSaveQuotedRate(STATUS_QUOTE[1], true);
         }
     });
 };
 
+//modal que notifica que se va a planchar el estatus anterior (activo o aceptado por el cliente)
+const handleDraftWithValidation = () => {
+    const current = quotedRateRegistradaInfo?.data?.[0];
+
+    const currentStatusId = current?._id_status_quote;
+
+    // buscar el estatus en tu catálogo
+    const statusObj = STATUS_QUOTE.find(s => s.idStatusQ === currentStatusId);
+
+    // obtener label según idioma
+    const statusLabel = language === "es"
+        ? statusObj?.labelSpanish
+        : statusObj?.labelEnglish;
+
+    // Si ya está Activo o Aceptado
+    if (currentStatusId === 2 || currentStatusId === 5) {
+
+        const message =
+            t('tvf.ChangeStatusToDraftMessagept1') +
+            (statusLabel || '') +
+            '. ' +
+            t('tvf.ChangeStatusToDraftMessagept2');
+
+        setModalState({
+            isOpen: true,
+            type: 'confirm',
+            title: t('tvf.WarningTitle'),
+            message: message,
+            showCancel: true,
+            confirmText: t('tvf.UpdateToDraft'),  
+            cancelText: t('tvf.Cancel'),
+            onConfirm: async () => {
+                await handleSaveQuotedRate(STATUS_QUOTE[0], false);
+            }
+        });
+
+        return;
+    }
+
+    // Si no hay conflicto → guardar directo
+    handleSaveQuotedRate(STATUS_QUOTE[0], false);
+};
 const handleSaveQuotedRate = async (
     statusOverride?: StatusQuote,
     isGenerateAction: boolean = false
@@ -1165,7 +1212,7 @@ const handleSaveQuotedRate = async (
 
             try {
                 // 1. Generar PDF SIN watermark
-                const blob = await generatePdfBlob(false);
+                const blob = await generatePdfBlob(false, calculatedVersion);
 
                 if (!blob) {
                     throw new Error("No se pudo generar el PDF");
@@ -1173,14 +1220,14 @@ const handleSaveQuotedRate = async (
 
                 const current = quotedRateRegistradaInfo?.data?.[0];
 
-                // 2. Convertir a File
+                // 2. Convertir a File y se asigna nomenclatura doc
                 const file = new File(
                     [blob],
                     `QuotedRate_${current?.quote_number || "TEMP"}_v${calculatedVersion}.pdf`,
                     { type: "application/pdf" }
                 );
 
-                // 3. Definir section y documentType (ajústalo a tu catálogo)
+                // 3. Definir section y documentType
                 const sectionId = sections.find(
                 (s) => s.section === "Pricing"
                 )?.sectionid;
@@ -1212,7 +1259,7 @@ const handleSaveQuotedRate = async (
 
                         _iddoc = documentId || "";
 
-                        handlePreviewQuotedRate(false) // ya no es preview
+                        handlePreviewQuotedRate(false, calculatedVersion) // ya no es preview
 
                         console.log("Documento registrado con ID:", documentId);
                         showSuccess("PDF generado y subido correctamente");
@@ -1266,7 +1313,7 @@ const handleSaveQuotedRate = async (
             id_status_control: pricingData?.status_control?.id_status_control ?? 0,
             status_control_name: pricingData?.status_control?.status_control_name ?? "",
         },
-        _iddocument: _iddoc || null,
+        _iddocument: _iddoc || current?._iddocument,
         currency: currency,
         exchange: exchangeRate,
         targetcurrecy: currencyTo,
@@ -1353,25 +1400,21 @@ const handleSaveQuotedRate = async (
             4
         );
 
-        //se debe borrar el documento anterior en gcs y datastate 0
-        try {
+        // se debe borrar el documento anterior en gcs y datastate 0
+        if (current?._iddocument) {
+            try {
+                const response = await deleteDocumentById(current._iddocument);
 
-            if (current?._iddocument == null || current?._iddocument === "") {
-                throw new Error("El id del documento es obligatorio");
+                if ([200, 204].includes(response.codeStatus)) {
+                    showSuccess(t('dig.deleteSuccess'));
+                } else {
+                    throw new Error(response.messageStatus || 'Error al eliminar');
+                }
+
+            } catch (error: any) {
+                console.error(error);
+                showError(error?.message || t('dig.deleteError'));
             }
-
-            const response = await deleteDocumentById(current?._iddocument);
-
-            if (![200, 204].includes(response.codeStatus)) {
-                throw new Error(response.messageStatus);
-            }
-
-            showSuccess(t('dig.deleteSuccess'));
-
-            await getRecentDocuments(18);
-
-        } catch (error: any) {
-            showError(t('dig.deleteError'));
         }
 
         }
@@ -1390,24 +1433,21 @@ const handleSaveQuotedRate = async (
             4
         );
 
-        //se debe borrar el documento anterior en gcs y datastate 0
-        try {
+        // se debe borrar el documento anterior en gcs y datastate 0
+        if (current?._iddocument) {
+            try {
+                const response = await deleteDocumentById(current._iddocument);
 
-            if (current?._iddocument == null || current?._iddocument === "") {
+                if ([200, 204].includes(response.codeStatus)) {
+                    showSuccess(t('dig.deleteSuccess'));
+                } else {
+                    throw new Error(response.messageStatus || 'Error al eliminar');
+                }
 
-                throw new Error("El id del documento es obligatorio");
+            } catch (error: any) {
+                console.error(error);
+                showError(error?.message || t('dig.deleteError'));
             }
-
-            const response = await deleteDocumentById(current?._iddocument);
-
-            if (![200, 204].includes(response.codeStatus)) {
-                throw new Error(response.messageStatus);
-            }
-
-            showSuccess(t('dig.deleteSuccess'));
-
-        } catch (error: any) {
-            showError(t('dig.deleteError'));
         }
 
         }
@@ -1522,7 +1562,7 @@ const validateTotal = () => {
 
 // ================== Preview de la tarifa de venta================== //
 
-const handlePreviewQuotedRate = async (isPreview: boolean) => {  
+const handlePreviewQuotedRate = async (isPreview: boolean,  version: number ) => {  
     try {
         // si hay conceptos capturados con importes mayores a 0
         if (!validateTotal()) return;
@@ -1624,7 +1664,7 @@ const handlePreviewQuotedRate = async (isPreview: boolean) => {
             newTab.document.close();
         }
 
-        const payload = buildPreviewPayload(isPreview);
+        const payload = buildPreviewPayload(isPreview, version );
 
         console.log("Payload:", JSON.stringify(payload, null, 2));
 
@@ -1670,8 +1710,8 @@ const handlePreviewQuotedRate = async (isPreview: boolean) => {
     }
 };
 
-const generatePdfBlob = async (isPreview: boolean): Promise<Blob | null> => {
-    const payload = buildPreviewPayload(isPreview);
+const generatePdfBlob = async (isPreview: boolean,  version: number): Promise<Blob | null> => {
+    const payload = buildPreviewPayload(isPreview, version);
 
     let blob: Blob | null = null;
     let attempts = 0;
@@ -1695,7 +1735,8 @@ const generatePdfBlob = async (isPreview: boolean): Promise<Blob | null> => {
 };
 
 const buildPreviewPayload = (
-    isPreview: boolean
+    isPreview: boolean,
+    version: number
 ): pdfGeneratorQuotedRate => {
     
     const current = quotedRateRegistradaInfo?.data?.[0];
@@ -1709,7 +1750,7 @@ const buildPreviewPayload = (
         data: {
             Header: {
                 QuoteNumber: current?.quote_number || "TEMP",
-                QuotedRateVersion: current?.version || 0,
+                QuotedRateVersion: version,
                 CostumerProspect: pricingData?.customer_business_name || "",
                 Adress: customerAddress || "",
                 ExchangeRate: {
@@ -1834,7 +1875,7 @@ return (
                         <ArrowLeft size={18} />
                     </button>
 
-                    <button className={styles.headerButton} onClick={() => handleSaveQuotedRate(STATUS_QUOTE[0], false)} >  
+                    <button className={styles.headerButton} onClick={handleDraftWithValidation} >  
                         <Save size={18} />
                         <span>
                             {t('tvf.Draft')}
@@ -1843,7 +1884,7 @@ return (
 
                     <button 
                         className={styles.headerButton}
-                        onClick={() => handlePreviewQuotedRate(true)}
+                        onClick={() => handlePreviewQuotedRate(true, quotedRateRegistradaInfo?.data?.[0]?.version  ?? 0)}
                     >
                         <Eye size={18} />
                         <span>{t('tvf.Preview')}</span>
@@ -3392,8 +3433,20 @@ return (
                                                 key={item._id}
                                                 className={styles.tagItem}
                                                 onMouseDown={() => {
+                                                    const formattedText = conditionText
+                                                        .split('\n')
+                                                        .map((line: string) => {
+                                                            const clean = line.trim();
+                                                            if (!clean) return '';
+                                                            // Detecta si ya tiene viñeta, número o guion
+                                                            if (/^([•\-*]|\d+\.)\s+/.test(clean)) {
+                                                                return clean; // ya está formateado
+                                                            }
+                                                            return `• ${clean}`;
+                                                        })
+                                                        .join('\n');
                                                     setTermsValue(prev =>
-                                                        prev + conditionText + '\n\n'
+                                                        prev + formattedText + '\n\n'
                                                     );
                                                     setSearchTerm('');
                                                 }}
@@ -3441,8 +3494,8 @@ return (
             message={modalState.message}
             type={modalState.type}
             showCancel={modalState.showCancel}
-            confirmText={t('tvf.Generate')}
-            cancelText={t('tvf.GenerateCancel')}
+            confirmText={modalState.confirmText || t('tvf.Confirm')}
+            cancelText={modalState.cancelText || t('tvf.Cancel')}
             />
     </div>
 

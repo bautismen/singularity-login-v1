@@ -1478,7 +1478,7 @@ CARD 1 finaliza-  cardGeneral*/
 /* 3. Route */
 .tableAirCosts th:nth-child(3),
 .tableAirCosts td:nth-child(3) {
-  width: 120px;
+  width: 100px;
 }
 
 /* 4. Transit */
