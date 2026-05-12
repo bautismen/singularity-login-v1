@@ -842,7 +842,7 @@ useEffect(() => {
                       <div className={styles.rightInfo}>
                         {quotation.services && quotation.services.length > 0 && (
                           <div className={styles.location}>
-                            {quotation.services[0].shipments?.[0].origin?.countryCode || 'NA'} - {quotation.services[0].shipments?.[0].destination?.countryCode || 'NA'}
+                            {quotation.services[0].shipments?.[0]?.origin?.countryCode ?? 'NA'} - {quotation.services[0].shipments?.[0]?.destination?.countryCode ?? 'NA'}
                           </div>
                         )}
                       </div>

@@ -116,7 +116,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
 }) => {
 
   const isDisabled     = mode === 'view' || idStatusRequest >= 2;
-  const showProjection = projectionShipmentState[service.idServiceItem] ?? (!!service.shipments?.[0].projectionShipment || !!service.orderService?.projectionShipment);
+  const showProjection = projectionShipmentState[service.idServiceItem] ?? (!!service.shipments?.[0]?.projectionShipment || !!service.orderService?.projectionShipment);
 
   // Props base — los recibe cualquier ShipmentForm
   const baseProps: OrderBaseFormProps = {
