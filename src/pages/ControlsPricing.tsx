@@ -859,6 +859,7 @@ const destination =
                           <div className={styles.documentsActions}>
 
                             {/* Upload */}
+                            {/* ya no se ocupara el boton upload, ya que desde la tarifa de venta ya se sube a GCS
                             <button
                               className={`${styles.cloudButton} ${styles.upload}`}
                               onClick={() => handleOpenDocuments(request)}
@@ -869,6 +870,7 @@ const destination =
                                 {t('dig.upload')}
                               </span>
                             </button>
+                             */}
 
                           {/* Download */}
                           {(documentCounts[request.referenceRequest] ?? 0) > 0 && (
