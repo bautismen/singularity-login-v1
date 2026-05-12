@@ -17,6 +17,7 @@ import { GeneralDataSection } from "../components/requestQuotation/GeneralDataSe
 import { ExecutivesSection } from "../components/requestQuotation/ExecutivesSection"
 import { ServiceCard } from "../components/requestQuotation/ServiceCard"
 import { quotationService } from "../services/quotationService";
+import { updateStatusQuotedRatebyRequestQuotation } from "../services/quotedRateServices";
 import styles from "./Quotations.module.css";
 import {
   QuotationRequest,
@@ -47,7 +48,8 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
   const formRef = useRef<HTMLFormElement>(null);
   const { showSuccess, showError, showWarning } = useNotification();  
   // Hooks
-  const {    
+  const {
+    loadingCatalogs,    
     customers,
     requestTypes,
     availableServices,
@@ -73,6 +75,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
     updateContainersQuantityShipment, removeMerchandise, saveMerchandise} = useServices(); 
   //estado local
   const [loading, setLoading] = useState(false);
+  const isLoading = loading || loadingCatalogs;
   const [loadingContainers, setLoadingContainers] = useState(false);
   const [saving, setSaving] = useState(false);
   //const [services, setServices] = useState<Service[]>([]);
@@ -158,12 +161,14 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
     if (mode !== "create" && quotationId) {
       loadQuotation(quotationId);
     } else if (mode === "create") {
+      
       updateRequestFormData({
         ...formData,
         responseDeadline: calculateDateResponseDeadline()
           .toISOString()
           .split("T")[0],
       });
+      
     }
   }, [mode, quotationId]);
 
@@ -258,6 +263,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
 
   const loadQuotation = async (id: string) => {
     try {
+      setLoading(true)
       const data = await quotationService.getById(id);
       setRequestFormData(data.data);
       /* setFormData({
@@ -320,7 +326,9 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
     } catch (error) {
       //console.error('Error loading quotation:', error);
       showError(t("quote.errors.loadQuotation"));
-    }
+    } finally {
+      setLoading(false);
+    }    
   };
 
   /*const addService = () => {
@@ -1030,7 +1038,9 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
   };*/
 
   const handleStatusUpdate = async (statusId: number, statusName: string) => {
+    if(saving) return;
     try {
+      setSaving(true);
       const quotationRequestData = {
         IdRequest: quotationId,
         IdStatusRequest: statusId,
@@ -1052,14 +1062,13 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
       };
       if (quotationId) {
         await quotationService.changeStatus(quotationRequestData);
-        if (statusId === 8) {
-          // Aceptada
+        if (statusId === 8) {  // Aceptada         
           await pricingControlService.AcceptControl(quotationId);
-        }
-        if (statusId === 9) {
-          // Rechazada
+          await updateStatusQuotedRatebyRequestQuotation(quotationId, 5);
+        } else if (statusId === 9) { //rechazada
           await pricingControlService.RejectControl(quotationId, quotationRequestData.statusComment);
-        }
+          await updateStatusQuotedRatebyRequestQuotation(quotationId, 6);
+        }       
         showSuccess(
           t("quote.success.statusUpdated").replace("{status}", statusName),
         );
@@ -1078,6 +1087,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
 
   const handleAsignateto = async () => {
     try {
+      setSaving(true);
       const quotationData = {
         IdRequest: quotationId,
         Employees: executives.map((exec) => ({
@@ -1128,6 +1138,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
   };
 
   const handleCancelQuotation = () => {
+
     setModalState({
       isOpen: true,
       type: "confirm",
@@ -1434,7 +1445,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
     }
   };
 
-  const handleSendQuotationRequest = async () => {       
+  const handleSendQuotationRequest = async () => {     
     setSaving(true);   
     if(!formRef.current?.reportValidity()) {
       setSaving(false) 
@@ -1474,7 +1485,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
         showSuccess(t("quote.success.updated"));
       } else {
         result = await quotationService.create(quotationData);
-        console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
+        //console.log(JSON.stringify(quotationData, null, 2), 'Create result:', result);
         showSuccess(t("quote.success.created"));
       }
 
@@ -1948,6 +1959,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
             {onBack && (
               <button
                 type="button"
+                disabled={saving}  
                 onClick={() => onBack()}
                 className={styles.backButton}
                 title="Volver a lista">
@@ -1971,6 +1983,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
             {mode === "create" && (
               <button
                 type="button"
+                disabled={saving}  
                 className={styles.actionBarResetButton}
                 onClick={resetForm}>
                 <RotateCcw size={18} />
@@ -1987,15 +2000,20 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
             </button>
           </div>
         </div>
-        {loading ? (
+        {isLoading ? (
           <div className={styles.loading}> <div className={styles.spinner}/></div>
         ) : 
         (
           <div>
+            {mode !== "create" && formData.idStatusRequest && (
+              <div style={{ marginBottom: '1.25rem' }} >
+                <span className={styles.statusRequest}>{StatusRequestQuotationLabel[formData.idStatusRequest]} </span>
+              </div>
+            )}
             <GeneralDataSection 
               formData={formData}
               mode={mode}
-              loading={loading}
+              loading={isLoading}
               customers={customers}
               requestTypes={requestTypes}
               onChangeFormData={updateRequestFormData}
@@ -2286,7 +2304,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
                     {showCancelQuotationRequestModal && (
                       <div
                         className={styles.modalOverlay}
-                        onClick={() => {setShowCancelQuotationRequestModal(false);}}>
+                        onClick={() => {if(!saving) setShowCancelQuotationRequestModal(false);}}>
                         <div
                           className={styles.modalContentSmall}
                           onClick={(e) => e.stopPropagation()}>
@@ -2296,6 +2314,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
                             </h2>
                             <button
                               type="button"
+                              disabled={saving}
                               className={styles.closeButton}
                               onClick={() => {setShowCancelQuotationRequestModal(false);}}>
                               <X size={24} />
@@ -2315,10 +2334,11 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
                                 placeholder="" />
                               <div className={styles.modalFooter}>
                                 <button
-                                  type="button"
+                                  type="button" 
+                                  disabled={saving}                                  
                                   className={styles.saveModalButton}
-                                  onClick={() =>handleStatusUpdate(10, "Cancelada")}>
-                                  {t("quote.save")}
+                                  onClick={() => {handleStatusUpdate(10, "Cancelada")}}>
+                                  {saving ? t('quote.saving') : t("quote.save")}                                                                
                                 </button>
                               </div>
                             </div>
@@ -2352,7 +2372,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
                     {showRejectQuotationRequestModal && (
                       <div
                         className={styles.modalOverlay}
-                        onClick={() => {setShowRejectQuotationRequestModal(false);}}>
+                        onClick={() => {if(!saving) setShowRejectQuotationRequestModal(false);}}>
                         <div
                           className={styles.modalContentSmall}
                           onClick={(e) => e.stopPropagation()}>
@@ -2362,6 +2382,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
                             </h2>
                             <button
                               type="button"
+                              disabled={saving}
                               className={styles.closeButton}
                               onClick={() => {setShowRejectQuotationRequestModal(false);}}>
                               <X size={24} />
@@ -2383,8 +2404,9 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
                                 <button
                                   type="button"
                                   className={styles.saveModalButton}
+                                  disabled={saving}
                                   onClick={() =>handleStatusUpdate(9, "Rechazada")}>
-                                  {t("quote.save")}
+                                  {saving ? t("quote.saving") :t("quote.save")}
                                 </button>
                               </div>
                             </div>

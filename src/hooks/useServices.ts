@@ -59,14 +59,15 @@ export const useServices = () => {
 
   /** Hidrata los servicios con datos del API (modo edit/view) */
   const setAllServices = (rawServices: any[]) => {
+    console.log(rawServices);
     const loaded: Service[] = rawServices.map((service: any, idx: number) => ({
       idServiceItem: idx + 1,
 
       idService: service.idService,
       nameService: service.nameService || '',
       used: service.used || false,
-      ...(service.shipments !== undefined ? 
-        { shipments: service.shipments.map((shipment: any) => {
+      ...(service.shipments?.length ? 
+        { shipments: service.shipments?.map((shipment: any) => {
           if ('projectionShipment' in shipment) {
             setProjectionShipmentState(prev => ({
               ...prev,
