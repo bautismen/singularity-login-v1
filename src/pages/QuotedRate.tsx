@@ -951,59 +951,151 @@ const changeFontSize = (size: string) => {
 };
 // ================== preparamos el modelo================== //
 const mapServicesFromPricing = (
-    services: any[] = []
-    ): ServiceItem[] => {
-    return services.map((s): ServiceItem => ({
-        id_service_item: s.idServiceItem,
-        _id_service: s.idService,
-        category: getCategoryByServiceId(s.idService),
-        service_name: s.nameService,
-        shipments: (s.shipments || []).map((sh: any): Shipment => ({
-        id_shipment: sh.idShipment,
-        origin: {
-            _id_country: sh.origin?.idCountry ?? "",
-            country_code: sh.origin?.countryCode ?? "",
-            city: sh.origin?.city ?? "",
-            zip_code: sh.origin?.zipCode ?? 0,
-            port_code: sh.origin?.portCode ?? "",
-            airport_code: sh.origin?.airportCode ?? "",
-        },
-        destination: {
-            _id_country: sh.destination?.idCountry ?? "",
-            country_code: sh.destination?.countryCode ?? "",
-            city: sh.destination?.city ?? "",
-            zip_code: sh.destination?.zipCode ?? 0,
-            port_code: sh.destination?.portCode ?? "",
-            airport_code: sh.destination?.airportCode ?? "",
-        },
-        _id_shipment_type: sh.idTypeShipment ?? 0,
-        shipment_type_name: sh.typeShipment ?? "",
-        _id_operation_type: sh.idTypeOperation ?? 0,
-        operation_type_name: sh.typeOperation ?? "",
-        _id_incoterm: sh.idIncoterm ?? 0,
-        incoterm: sh.incoterm ?? "",
-        services_asociated: (sh.servicesAsociated || []).map(
-            (a: any): ServiceAssociated => ({
-            _id_service_associated: a.idServiceAsociated,
-            service_associated_name: a.serviceAsociatedName,
-            })
-        ),
-        cargo: (sh.cargo || []).map((c: any): CargoItem => ({
-            merchandise: c.name ?? "",
-            weight_total: c.weigthTotal ?? 0,
-            unit_weight: c.unitWeight ?? "",
-            volume_total: c.volumeTotal ?? 0,
-            unit_measurement: c.unitMeasurement ?? "",
-        })),
-        containers: (sh.containers || []).map((c: any): Container => ({
-            _id_container: c.containerId,
-            name_type: c.nameType,
-            quantity: c.quantity,
-            gross_weight: c.grossWeight,
-            comodity: c.commodity,
-        })),
-        })),
-    }));
+  services: any[] = []
+): ServiceItem[] => {
+
+  // 🔎 log una sola vez
+  console.log("SERVICES ARRAY:", JSON.stringify(services, null, 2));
+
+  return services.map((s, index): ServiceItem => {
+
+    console.log(`SERVICE [${index}]:`, JSON.stringify(s, null, 2));
+
+    const hasShipments = Array.isArray(s.shipments) && s.shipments.length > 0;
+
+    return {
+      id_service_item: s.idServiceItem,
+      _id_service: s.idService,
+      category: getCategoryByServiceId(s.idService),
+      service_name: s.nameService,
+
+      // =========================
+      // SHIPMENTS
+      // =========================
+      shipments: hasShipments
+        ? s.shipments.map((sh: any, i: number): Shipment => {
+
+            console.log(`  SHIPMENT [${index}-${i}]:`, JSON.stringify(sh, null, 2));
+
+            return {
+              id_shipment: sh.idShipment,
+              origin: {
+                _id_country: sh.origin?.idCountry ?? "",
+                country_code: sh.origin?.countryCode ?? "",
+                city: sh.origin?.city ?? "",
+                zip_code: sh.origin?.zipCode ?? 0,
+                port_code: sh.origin?.portCode ?? "",
+                airport_code: sh.origin?.airportCode ?? "",
+              },
+              destination: {
+                _id_country: sh.destination?.idCountry ?? "",
+                country_code: sh.destination?.countryCode ?? "",
+                city: sh.destination?.city ?? "",
+                zip_code: sh.destination?.zipCode ?? 0,
+                port_code: sh.destination?.portCode ?? "",
+                airport_code: sh.destination?.airportCode ?? "",
+              },
+              _id_shipment_type: sh.idTypeShipment ?? 0,
+              shipment_type_name: sh.typeShipment ?? "",
+              _id_operation_type: sh.idTypeOperation ?? 0,
+              operation_type_name: sh.typeOperation ?? "",
+              _id_incoterm: sh.idIncoterm ?? 0,
+              incoterm: sh.incoterm ?? "",
+              services_asociated: Array.isArray(sh.servicesAsociated)
+                ? sh.servicesAsociated.map((a: any): ServiceAssociated => ({
+                    _id_service_associated: a.idServiceAsociated,
+                    service_associated_name: a.serviceAsociatedName,
+                  }))
+                : [],
+              cargo: Array.isArray(sh.cargo)
+                ? sh.cargo.map((c: any): CargoItem => ({
+                    merchandise: c.name ?? "",
+                    weight_total: c.weigthTotal ?? 0,
+                    unit_weight: c.unitWeight ?? "",
+                    volume_total: c.volumeTotal ?? 0,
+                    unit_measurement: c.unitMeasurement ?? "",
+                  }))
+                : [],
+              containers: Array.isArray(sh.containers)
+                ? sh.containers.map((c: any): Container => ({
+                    _id_container: c.containerId,
+                    name_type: c.nameType,
+                    quantity: c.quantity,
+                    gross_weight: c.grossWeight,
+                    comodity: c.commodity,
+                  }))
+                : [],
+            };
+          })
+        : [],
+
+      // =========================
+      // ORDER SERVICE
+      // =========================
+      order_service: !hasShipments && s.orderService
+        ? (() => {
+
+            console.log( `  ORDER SERVICE [${index}]:`,JSON.stringify(s.orderService, null, 2));
+
+            const os = s.orderService;
+
+            return {
+              origin: {
+                _id_country: os.origin?.idCountry ?? "",
+                country_code: os.origin?.countryCode ?? "",
+                city: os.origin?.city ?? "",
+                zip_code: os.origin?.zipCode ?? 0,
+                port_code: os.origin?.portCode ?? "",
+                airport_code: os.origin?.airportCode ?? "",
+              },
+
+              destination: os.destination
+                ? {
+                    _id_country: os.destination?.idCountry ?? "",
+                    country_code: os.destination?.countryCode ?? "",
+                    city: os.destination?.city ?? "",
+                    zip_code: os.destination?.zipCode ?? 0,
+                    port_code: os.destination?.portCode ?? "",
+                    airport_code: os.destination?.airportCode ?? "",
+                  }
+                : undefined,
+
+              _id_shipment_type: os.idTypeShipment ?? null,
+              shipment_type_name: os.typeShipment ?? "",
+              _id_operation_type: os.idTypeOperation ?? null,
+              operation_type_name: os.typeOperation ?? "",
+
+              departure_date_approximate:
+                os.departureDateAproximate ?? undefined,
+
+              projection_shipment: os.projectionShipment
+                ? {
+                    num: os.projectionShipment.num ?? null,
+                    _id_measurement_frequency:
+                      os.projectionShipment._id_measurement_frequency ?? null,
+                    measurement_frequency:
+                      os.projectionShipment.measurement_frequency ?? "",
+                    frequency:
+                      os.projectionShipment.frequency ?? "",
+                  }
+                : undefined,
+
+              comments: os.comments ?? "",
+
+              cargo: Array.isArray(os.cargo)
+                ? os.cargo.map((c: any): CargoItem => ({
+                    merchandise: c.name ?? "",
+                    weight_total: c.weigthTotal ?? 0,
+                    unit_weight: c.unitWeight ?? "",
+                    volume_total: c.volumeTotal ?? 0,
+                    unit_measurement: c.unitMeasurement ?? "",
+                  }))
+                : [],
+            };
+          })()
+        : undefined,
+    };
+  });
 };
 
 // obtener cual es la categoria dependiendo de mi idservicio
@@ -1183,7 +1275,6 @@ const handleSaveQuotedRate = async (
         details: [
             {
             services: mapServicesFromPricing(pricingData?.services || []),
-           // services: mapServicesFromPricing(pricingData?.services || []),
             charges: {
                 maritime: maritimeConcepts || [],
                 air: {
@@ -1223,6 +1314,8 @@ const handleSaveQuotedRate = async (
         archived: false,
         data_state: 1
         };
+        //pruebas 
+        console.log("Payload:", JSON.stringify(payload, null, 2));
 
         // ============================
         // SWITCH CREATE / UPDATE
@@ -1641,8 +1734,11 @@ const buildPreviewPayload = (
                     .join(" | ")
                 : "",
             },
-            Services: (pricingData?.services || []).flatMap((s: any) =>
-                (s.shipments || []).map((sh: any) => ({
+            Services: (pricingData?.services || []).flatMap((s: any) => {
+            const hasShipments = s.shipments?.length > 0;
+            // SHIPMENTS
+            if (hasShipments) {
+                return s.shipments.map((sh: any) => ({
                     Category: s.category ?? 1,
                     ServiceName: s.nameService,
                     Origin: `${buildLocationString(sh?.origin).main} ${buildLocationString(sh?.origin).extra}`,
@@ -1654,9 +1750,27 @@ const buildPreviewPayload = (
                     ServicesAsociated: (sh.servicesAsociated || []).map(
                         (a: any) => a.serviceAsociatedName || ""
                     )
-                }))
-            ),
-
+                }));
+            }
+            // ORDER SERVICE
+            if (s.orderService) {
+                const os = s.orderService;
+                return [
+                    {
+                        Category: s.category ?? 1,
+                        ServiceName: s.nameService,
+                        Origin: `${buildLocationString(os?.origin).main} ${buildLocationString(os?.origin).extra}`,
+                        Destination: `${buildLocationString(os?.destination).main} ${buildLocationString(os?.destination).extra}`,
+                        ShipmentTypeName: os.typeShipment || "",
+                        Operation: os.typeOperation || "",
+                        Incoterm: "", // no aplica
+                        Cargo: (os.cargo || []).map((c: any) => c.name || ""),
+                        ServicesAsociated: [] // no aplica
+                    }
+                ];
+            }
+            return [];
+            }),
             Concepts: [
                 ...(maritimeConcepts || []),
                 ...(airConcepts || []),
@@ -1976,19 +2090,52 @@ return (
                     </div>
 
                 <div className={styles.servicesList}>
-                   {pricingData?.services?.map((service: any) => {
+                    {pricingData?.services?.map((service: any) => {
 
-                    const shipment = service.shipments?.[0];
+                    const shipment = service.shipments?.[0]; //nodo de shipment
+                    const order = service.orderService;; //nodo de orden de servicio
+
+                    const unifiedShipment = shipment
+                    ? {
+                        origin: shipment.origin,
+                        destination: shipment.destination,
+                        typeOperation: shipment.typeOperation,
+                        typeShipment: shipment.typeShipment,
+                        incoterm: shipment.incoterm,
+                        servicesAsociated: shipment.servicesAsociated,
+                        cargo: shipment.cargo,
+                        }
+                    : order
+                    ? {
+                        origin: order.origin,
+                        destination: order.destination,
+                        typeOperation: order.typeOperation,
+                        typeShipment: order.typeShipment,
+                        incoterm: 'N/A',
+                        servicesAsociated: [],
+                        cargo: order.cargo,
+                        }
+                    : null;
+
+                    function normalizeLocation(loc: any) {
+                    return {
+                        countryCode: loc?.countryCode || loc?.country_code,
+                        zipCode: loc?.zipCode || loc?.zip_code,
+                        portCode: loc?.portCode || loc?.port_code,
+                        airportCode: loc?.airportCode || loc?.airport_code,
+                        city: loc?.city,
+                    };
+                    }
                     const originData = useMemo(() => 
-                        buildLocationString(shipment?.origin),
-                        [shipment?.origin, Countries, Ports, Airports]
+                    buildLocationString(normalizeLocation(unifiedShipment?.origin)),
+                    [unifiedShipment?.origin, Countries, Ports, Airports]
                     );
 
                     const destinationData = useMemo(() => 
-                        buildLocationString(shipment?.destination),
-                        [shipment?.destination, Countries, Ports, Airports]
-                    );  
-                                        const getIcon = () => {
+                    buildLocationString(normalizeLocation(unifiedShipment?.destination)),
+                    [unifiedShipment?.destination, Countries, Ports, Airports]
+                    ); 
+                    const getIcon = () => {
                         return serviceIconsCategory1ById[service.idService] || <Package size={18} />;
                     };
 
@@ -2010,10 +2157,10 @@ return (
 
                                 <div className={styles.serviceTags}>
                                 <span className={styles.tagtypeOperation}>
-                                    {shipment?.typeOperation || 'N/A'}
+                                    {unifiedShipment?.typeOperation || 'N/A'}
                                 </span>
                                 <span className={styles.tagtypeShipment}>
-                                    {shipment?.typeShipment || 'N/A'}
+                                    {unifiedShipment?.typeShipment || 'N/A'}
                                 </span>
                                 </div>
                             </div>
@@ -2023,7 +2170,7 @@ return (
                             <div className={styles.serviceRight}>
                             <span className={styles.labelMini}>Incoterm</span>
                             <span className={styles.incoterm}>
-                                {shipment?.incoterm || 'N/A'}
+                                {unifiedShipment?.incoterm || 'N/A'}
                             </span>
                             </div>
                         </div>
@@ -2092,24 +2239,26 @@ return (
                             <div className={styles.associated}>
                                 <p className={styles.labelMini}>{t('tvf.AssociatedServices')}</p>
 
+                                {unifiedShipment && (
                                 <div className={styles.badgeList}>
-                                {shipment?.servicesAsociated?.length > 0 ? (
-                                    shipment.servicesAsociated.map((s: any) => {
+                                    {unifiedShipment.servicesAsociated?.length > 0 ? (
+                                    unifiedShipment.servicesAsociated.map((s: any) => {
                                         const icon =
-                                            serviceIconsCategory2ById[s.idServiceAsociated] || <Package size={14} />;
+                                        serviceIconsCategory2ById[s.idServiceAsociated] || <Package size={14} />;
                                         return (
-                                            <span key={s.idServiceAsociated} className={styles.badge}>
+                                        <span key={s.idServiceAsociated} className={styles.badge}>
                                             {icon}
                                             <span style={{ marginLeft: "6px" }}>
-                                                {s.serviceAsociatedName}
+                                            {s.serviceAsociatedName}
                                             </span>
-                                            </span>
+                                        </span>
                                         );
-                                        })
-                                ) : (
+                                    })
+                                    ) : (
                                     <span className={styles.badge}>N/A</span>
-                                )}
+                                    )}
                                 </div>
+                                )}
                             </div>
                             </div>
 
@@ -2123,7 +2272,7 @@ return (
                                 <div className={styles.cargoItemMain}>
                                 <span className={styles.cargoLabel}>{t('tvf.Goods')}</span>
                                 <span className={styles.cargoValue}>
-                                    {shipment?.cargo?.map((c: any) => c.name).join(', ') || 'N/A'}
+                                    {unifiedShipment?.cargo?.map((c: any) => c.name).join(', ') || 'N/A'}
                                 </span>
                                 </div>
 
@@ -2133,16 +2282,16 @@ return (
                                 <div className={styles.cargoRight}>
                                 <div className={styles.cargoItem}>
                                     <span className={styles.cargoNumber}>
-                                    {shipment?.cargo?.reduce((acc: number, c: any) => acc + (c.weigthTotal || 0), 0)}
+                                    {unifiedShipment?.cargo?.reduce((acc: number, c: any) => acc + (c.weigthTotal || 0), 0)}
                                     </span>
                                     <span className={styles.cargoUnit}>
-                                        {shipment?.cargo?.[0]?.unitWeight  || ''}
+                                        {unifiedShipment?.cargo?.[0]?.unitWeight  || ''}
                                     </span>
                                 </div>
 
                                 <div className={styles.cargoItem}>
                                     <span className={styles.cargoNumber}>
-                                    {shipment?.cargo?.reduce((acc: number, c: any) => acc + (c.volumeTotal || 0), 0)}
+                                    {unifiedShipment?.cargo?.reduce((acc: number, c: any) => acc + (c.volumeTotal || 0), 0)}
                                     </span>
                                     <span className={styles.cargoUnit}>CBM</span>
                                 </div>

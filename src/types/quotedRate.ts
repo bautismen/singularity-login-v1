@@ -56,6 +56,27 @@ export interface ServiceItem {
   category: number;
   service_name: string;
   shipments: Shipment[];
+  order_service?: OrderService;
+}
+
+export interface OrderService {
+  origin: Location;
+  destination?: Location;
+  _id_shipment_type?: number;
+  shipment_type_name?: string;
+  _id_operation_type?: number;
+  operation_type_name?: string;
+  departure_date_approximate?: string;
+  projection_shipment?: ProjectionShipment;
+  comments?: string;
+  cargo: CargoItem[];
+}
+
+export interface ProjectionShipment {
+  num?: number;
+  _id_measurement_frequency?: number;
+  measurement_frequency?: string;
+  frequency?: string;
 }
 
 export interface Shipment {

@@ -1,6 +1,6 @@
 import { Customer, Person, Company } from '../types/customer';
 
-const API_URL = import.meta.env.VITE_API_CATALOGS;
+const API_URL = import.meta.env.VITE_API_CATALOGSPRO;
 const API_KEY = import.meta.env.VITE_APIKEYSL;
 const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 
