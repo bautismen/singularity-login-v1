@@ -662,7 +662,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 </label>
                 <input
                   type="text"
-                  value={service.orderService?.origin.city ?? ''}                
+                  value={service.orderService?.origin?.city ?? ''}                
                   className={styles.input}
                   disabled/>                          
               </div>    
@@ -695,7 +695,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 </label>
                 <input
                   type="text"
-                  value={service.orderService?.origin.city ?? ''}                
+                  value={service.orderService?.origin?.city ?? ''}                
                   className={styles.input}
                   disabled/>                
               </div>
@@ -807,7 +807,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 </label>
                 <input
                   type="text"
-                  value={service.orderService?.destination.city}                
+                  value={service.orderService?.destination?.city || ''}                
                   className={styles.input}
                   disabled/>              
               </div>);
@@ -858,7 +858,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 </label>
                 <input
                   type="text"
-                  value={service.orderService?.destination.city ?? ''}                
+                  value={service.orderService?.destination?.city ?? ''}                
                   className={styles.input}
                   disabled/>             
               </div>          
@@ -912,7 +912,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   </label>
                 <input
                   type="number"
-                  value={service.orderService?.origin.zipCode ?? ''}                
+                  value={service.orderService?.origin?.zipCode ?? ''}                
                   className={styles.input}
                   disabled/>              
               </div>    
@@ -925,7 +925,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 </label>
                 <input
                   type="number"
-                  value={service.orderService?.origin.zipCode ?? ''}                
+                  value={service.orderService?.origin?.zipCode ?? ''}                
                   className={styles.input}
                   disabled/>
               </div>
@@ -978,7 +978,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 </label>
                 <input
                   type="number"
-                  value={service.orderService?.destination.zipCode ?? ''}                
+                  value={service.orderService?.destination?.zipCode ?? ''}                
                   className={styles.input}
                   disabled/>
               </div>);             
@@ -990,7 +990,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 </label>
                 <input
                   type="number"
-                  value={service.orderService?.destination.zipCode ?? ''}                
+                  value={service.orderService?.destination?.zipCode ?? ''}                
                   className={styles.input}
                   disabled/>
               </div>          
