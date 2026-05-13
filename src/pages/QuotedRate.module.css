@@ -166,8 +166,8 @@ CARD 1 inicia-  cardGeneral*/
 .cardContent {
   display: flex;
   justify-content: space-between;
-  gap: 40px;
-  background: var(--border--secondary);
+  gap: 20px;
+  background: var(--hover);
   padding: 16px;
   border-radius: 10px;
   border: 1px solid var(--border--primary);
@@ -340,14 +340,14 @@ CARD 1 inicia-  cardGeneral*/
 }
 
 .executename  {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--titleCard);
 }
 
 .quotationRequestNumber {
   color: var(--titleCard);
-  font-size: 16px;      
+  font-size: 15px;      
   font-weight: 700;     
 }
 
@@ -359,7 +359,7 @@ CARD 1 inicia-  cardGeneral*/
 .summaryCard {
   background: var(--surface);
   border-radius: 16px;
-  padding: 16px;
+  padding: 14px;
   border: 1px solid var(--border--primary);
   display: flex;
   flex-direction: column;
@@ -388,7 +388,7 @@ CARD 1 inicia-  cardGeneral*/
 }
 
 .quoteId {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 900;
   color:var(--titleCard);
 }
@@ -396,7 +396,7 @@ CARD 1 inicia-  cardGeneral*/
 .version {
   background: #038c7f;
   color: white;
-  padding: 6px 10px;
+  padding: 5px 5px;
   border-radius: 10px;
   font-size: 12px;
   font-weight: 800;
@@ -689,7 +689,7 @@ CARD 1 finaliza-  cardGeneral*/
 
 /* card */
 .serviceCard {
-  background: var(--border--secondary);
+  background: var(--hover);
   padding: 16px;
   border-radius: 10px;
   border: 1px solid var(--border--primary);
@@ -1138,7 +1138,7 @@ CARD 1 finaliza-  cardGeneral*/
 
 .table tbody td {
     border-bottom: 1px solid #cbd5e1; /* mismo rango del header */
-    background: var(--border--secondary);
+    background: var(--hover);
 }
 
 .emptyCell {
@@ -2046,7 +2046,7 @@ CARD 1 finaliza-  cardGeneral*/
 .termsSearchInput {
   width: 100%;
   padding: 10px 10px 10px 34px;
-  background: var(--border--secondary);     
+  background: var(--hover);    
   color: var(--text-tertiary);
   border: 1px solid var(--border--secondary);
   border-radius: 8px;
@@ -2094,7 +2094,7 @@ CARD 1 finaliza-  cardGeneral*/
   gap: 6px;
   padding: 8px;
   border-bottom: 1px solid #e5e7eb;
-  background: var(--border--primary);
+  background: var(--hover);
 }
 
 .editorToolbar button {
@@ -2155,7 +2155,7 @@ CARD 1 finaliza-  cardGeneral*/
 }
 
 .editor {
-  background: var(--border--primary);
+  background: var(--hover);
   color: var(--text-secondary);
   padding: 16px;
   min-height: 150px;

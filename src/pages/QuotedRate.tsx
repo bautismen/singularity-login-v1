@@ -16,7 +16,7 @@ import {pricingControlService } from '../services/pricingControlService';
 import { getCustomers} from '../services/customerService';
 import { uploadDocuments,getDocumentTypes, getSections , deleteDocumentById} from "../services/digitizationService";
 //interfaz o modelo
-import type { VatOption, LanguageOption, CurrencyOption, ServiceTypeOption, StatusQuote,
+import type { VatOption, LanguageOption, CurrencyOption, StatusQuote,
     QuotedRate, ServiceItem , Shipment,
     Location, ServiceAssociated, CargoItem, Container
 } from '../types/quotedRate';
@@ -67,7 +67,6 @@ const [idLanguage, setIdLanguage] = useState<number>(1);
 const [termsValue, setTermsValue] = useState<string>("");
 const [quotedRateRegistradaInfo, setQuotedRateInfo] = useState<any>(null);
 const idPrevious = !!quotedRateRegistradaInfo?.data?.[0]?._id;
-const [loadingPreview, setLoadingPreview] = useState(false);
 
 const [validFrom, setValidFrom] = useState("");
 const [validUntil, setValidUntil] = useState("");
@@ -412,16 +411,6 @@ const CURRENCY_OPTIONS:CurrencyOption[] = [
     //,{ idCurrency: 3, label: "EUR", value: "EUR" }
 ];
 
-
-/*          Catalogo de Servicios             */
-const SERVICES_OPTIONS: ServiceTypeOption[] = [
-    { idSer: 0, label: "None"},
-    { idSer: 1, label: "Maritime"},
-    { idSer: 2, label: "Air"},
-    { idSer: 3, label: "Land"},
-    { idSer: 4, label: "Accessories"}
-];
-
 // -------------- catalogo de iconos de servicios , categoria 1 y 2------------------- //
 const serviceIconsCategory1ById: Record<number, JSX.Element> = {
     1: <Ship size={18} />, // Maritimo LCL
@@ -567,15 +556,17 @@ useEffect(() => {
     const charges = item?.details?.[0]?.charges || {};
 
     setMaritimeConcepts(
-        (charges.maritime || []).map((c: any, i: number) => ({
+    (charges.maritime || []).map((c: any, i: number) => ({
             ...mapCommon(c, i),
-            container_type: c.container_type ?? ""
+            container_type: c.container_type ?? "",
+            service_type: 1
         }))
     );
 
     setAirConcepts(
         (charges.air?.airline_costs || []).map((c: any, i: number) => ({
             id: `${Date.now()}-air-${i}`,
+            service_type: 2,
             concept: c.concept ?? "",
             airline: c.airline ?? "",
             route: c.route ?? "",
@@ -593,15 +584,24 @@ useEffect(() => {
     );
 
     setAirOperationalConcepts(
-        (charges.air?.operational_costs || []).map(mapCommon)
+        (charges.air?.operational_costs || []).map((c: any, i: number) => ({
+            ...mapCommon(c, i),
+            service_type: 2
+        }))
     );
 
     setLandConcepts(
-        (charges.land || []).map(mapCommon)
+        (charges.land || []).map((c: any, i: number) => ({
+            ...mapCommon(c, i),
+            service_type: 3
+        }))
     );
 
     setconsultingServicesConcepts(
-        (charges.consulting_services || []).map(mapCommon)
+        (charges.consulting_services || []).map((c: any, i: number) => ({
+            ...mapCommon(c, i),
+            service_type: 4
+        }))
     );
 
 }, [quotedRateRegistradaInfo]);
@@ -632,7 +632,10 @@ const handleChangeGeneric = (
     setList: Function
 ) => {
     const updated = [...list];
-    updated[index][field] = value;
+    updated[index] = {
+        ...updated[index], 
+        [field]: value
+    };
 
     const subtotal = Number(updated[index].subtotal || 0);
     const vat = Number(updated[index].vat ?? 0);
@@ -910,47 +913,6 @@ const editor = editorRef.current;
     document.execCommand(command, false);
 };
 
-// modifica el tamaño del texto
-const changeFontSize = (size: string) => {
-    const selection = window.getSelection();
-
-    if (!selection || selection.rangeCount === 0) return;
-
-    const range = selection.getRangeAt(0);
-
-    // Si NO hay texto seleccionado
-    if (range.collapsed) {
-        const span = document.createElement("span");
-        span.style.fontSize = size;
-        span.innerHTML = "&#8203;"; // caracter invisible
-        range.insertNode(span);
-
-        // mover cursor dentro del span
-        const newRange = document.createRange();
-        newRange.setStart(span.firstChild!, 1);
-        newRange.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-        editorRef.current?.focus();
-
-        return;
-    }
-
-    // Si SÍ hay texto seleccionado
-    const selectedContent = range.extractContents();
-    const span = document.createElement("span");
-    span.style.fontSize = size;
-    span.appendChild(selectedContent);
-    range.insertNode(span);
-
-    // restaurar selección
-    selection.removeAllRanges();
-
-    const newRange = document.createRange();
-    newRange.selectNodeContents(span);
-    selection.addRange(newRange);
-    editorRef.current?.focus();
-};
 // ================== preparamos el modelo================== //
 const mapServicesFromPricing = (
   services: any[] = []
@@ -1102,10 +1064,10 @@ const mapServicesFromPricing = (
 
 // obtener cual es la categoria dependiendo de mi idservicio
 const getCategoryByServiceId = (idService: number): number => {
-    const existsInCat1 = servicesCategory1.some(s => s.idService === idService);
+    const existsInCat1 = servicesCategory1.some(s => s._Id === idService);
     if (existsInCat1) return 1;
 
-    const existsInCat2 = servicesCategory2.some(s => s.idService === idService);
+    const existsInCat2 = servicesCategory2.some(s => s._Id === idService);
     if (existsInCat2) return 2;
 
     return 1; // default por seguridad
@@ -1388,6 +1350,7 @@ const handleSaveQuotedRate = async (
         
         } else if (isGenerateAction && previousVersionId !== null && isGenerate) {   
         console.log("----CREATE MODE----");
+        
             //codigo 201 registrado
         response = await uploadQuotedRate(
             quotationRequestData?.referenceRequest || "",
@@ -1713,6 +1676,8 @@ const handlePreviewQuotedRate = async (isPreview: boolean,  version: number ) =>
 const generatePdfBlob = async (isPreview: boolean,  version: number): Promise<Blob | null> => {
     const payload = buildPreviewPayload(isPreview, version);
 
+    console.log("Payload:", JSON.stringify(payload, null, 2));
+
     let blob: Blob | null = null;
     let attempts = 0;
     const maxAttempts = 10;
@@ -1812,9 +1777,24 @@ const buildPreviewPayload = (
             }
             return [];
             }),
+            ConceptsAir: [
+            ...(airConcepts || [])
+            ].map((c: any) => ({
+                Concept: c.concept || "",
+                AierLine: c.airline || c.AierLine || "",
+                Route: c.route || "",
+                TransitDays: String(c.transit_days || ""),
+                RatePerKG: Number(c.rate_per_kg) || 0,
+                FuelSurcharge: Number(c.fuel_surcharge) || 0,
+                SecuritySurcharge: Number(c.security_surcharge) || 0,
+                MiscellaneousCharges: Number(c.miscellaneous_charges) || 0,
+                ChargeableWeight: Number(c.chargeable_weight) || 0,
+                SubTotal: Number(c.subtotal) || 0,
+                Rate: Number(c.rate) || 0,
+                Total: Number(c.total) || 0
+            })),
             Concepts: [
                 ...(maritimeConcepts || []),
-                ...(airConcepts || []),
                 ...(airOperationalConcepts || []),
                 ...(landConcepts || []),
                 ...(consultingServicesConcepts || [])
@@ -1825,11 +1805,10 @@ const buildPreviewPayload = (
                 Base: c.billing_base || "",
                 Container: c.container_type || "",
                 Quantity: c.unit || 0,
-                SubTotal: c.subtotal || 0,
-                Rate: c.rate || 0,
-                Total: c.total || 0
+                SubTotal: Number(c.subtotal) || 0,
+                Rate: Number(c.rate) || 0,
+                Total: Number(c.total) || 0
             })),
-
             Comments: editorRef.current?.innerHTML || "",
             TermsAndConditions: termsValue 
             ? [termsValue] 
@@ -1838,30 +1817,6 @@ const buildPreviewPayload = (
     };
 };
 
-// loading preview
-if (loadingPreview) {
-    return (
-        <div className={styles.contentWrapper}>
-            <div className={styles.containerLoading}>
-
-                <div className={styles.loadingCard}>
-
-                    <div className={styles.spinner}></div>
-
-                    <h2 className={styles.loadingTitle}>
-                        Generando PDF...
-                    </h2>
-
-                    <p className={styles.loadingText}>
-                        Espere un momento por favor.
-                    </p>
-
-                </div>
-
-            </div>
-        </div>
-    );
-}
  /* ===================================== EMPIEZA EL DISEÑO FRONT ========================================= */
 return (
     <div className={styles.contentWrapper}>
@@ -2422,8 +2377,6 @@ return (
                                             const selectedText =
                                                 e.target.options[e.target.selectedIndex].text;
 
-                                            handleChange(index, 'service_type', 1);    
-
                                             handleChange(index, '_id_type_of_charge', selectedId);
 
                                             handleChange(index, 'type_of_charge', selectedText);
@@ -2616,10 +2569,7 @@ return (
                                         className={styles.inputConcept}
                                         value={row.concept}
                                         onChange={(e) => {
-                                            handleChangeAir(index, 'service_type', 2);
-
                                             handleChangeAir(index, 'concept', e.target.value);
-                                            
                                         }}
                                     />
                                     </td>
@@ -2818,8 +2768,6 @@ return (
                                             const selectedText =
                                                 e.target.options[e.target.selectedIndex].text;
 
-                                            handleChangeAirOperational(index, 'service_type', 2);
-
                                             handleChangeAirOperational(index, '_id_type_of_charge', selectedId);
 
                                             handleChangeAirOperational(index, 'type_of_charge', selectedText);
@@ -2977,8 +2925,6 @@ return (
                                             const selectedText =
                                                 e.target.options[e.target.selectedIndex].text;
                                             
-                                            handleChangeLand(index, 'service_type', 3);
-
                                             handleChangeLand(index, '_id_type_of_charge', selectedId);
 
                                             handleChangeLand(index, 'type_of_charge', selectedText);
@@ -3142,8 +3088,6 @@ return (
                                             const selectedId = Number(e.target.value);
                                             const selectedText =
                                                 e.target.options[e.target.selectedIndex].text;
-
-                                            handleChangeConsultingServices(index, 'service_type', 4);
 
                                             handleChangeConsultingServices(index, '_id_type_of_charge', selectedId);
 
