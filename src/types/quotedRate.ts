@@ -17,7 +17,7 @@ export interface QuotedRate {
   customer_address: string;
   customer_contact: CustomerContact;
   status_control: StatusControl;
- _iddocument: string | null;
+  _iddocument: string | null;
   currency: string;
   exchange: number;
   targetcurrecy: string;
@@ -25,7 +25,7 @@ export interface QuotedRate {
   environment: string;
   details: QuoteDetail[];
   comments: string;
-  conditions: string;
+  conditions: string[];
   created_by: CreatedBy;
   created_at: string;
   updated_at: string;

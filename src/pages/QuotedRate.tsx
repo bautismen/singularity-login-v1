@@ -64,7 +64,7 @@ const [currencyTo, setCurrencyTo] = useState("MXN");    // moneda destino (conve
 const [languageFormat, setLanguage] = useState("mx");
 const [idLanguage, setIdLanguage] = useState<number>(1);
 
-const [termsValue, setTermsValue] = useState<string>("");
+const [termsValue, setTermsValue] = useState<string[]>([]);
 const [quotedRateRegistradaInfo, setQuotedRateInfo] = useState<any>(null);
 const idPrevious = !!quotedRateRegistradaInfo?.data?.[0]?._id;
 
@@ -153,7 +153,8 @@ const buildLocationString = (loc?: Location) => {
         (c) => String(c._Id) === String(idCountry)
     );
 
-    const countryName = country?.name_country || countryCode || "N/A";
+    //const countryName = country?.name_country || countryCode || "N/A";
+    const countryName = countryCode || "N/A";
 
     // ====== PORT ======
     const port = Ports.find(
@@ -604,6 +605,24 @@ useEffect(() => {
         }))
     );
 
+    // ================== AUTO TAB  SI TENGO CONCEPTOS CAPTURADOS==================
+    const hasMaritime = (charges.maritime || []).length > 0;
+    const hasAir =
+    (charges.air?.airline_costs || []).length > 0 ||
+    (charges.air?.operational_costs || []).length > 0;
+    const hasLand = (charges.land || []).length > 0;
+    const hasConsulting = (charges.consulting_services || []).length > 0;
+
+    if (hasMaritime) {
+    setActiveTab('MARITIMO');
+    } else if (hasAir) {
+    setActiveTab('AEREO');
+    } else if (hasLand) {
+    setActiveTab('TERRESTRE');
+    } else if (hasConsulting) {
+    setActiveTab('ACCESORIAL');
+    }
+
 }, [quotedRateRegistradaInfo]);
 
 // ================== CALCULO TOTAL en catalogos conceptos ================== //
@@ -632,10 +651,7 @@ const handleChangeGeneric = (
     setList: Function
 ) => {
     const updated = [...list];
-    updated[index] = {
-        ...updated[index], 
-        [field]: value
-    };
+    updated[index][field] = value;
 
     const subtotal = Number(updated[index].subtotal || 0);
     const vat = Number(updated[index].vat ?? 0);
@@ -891,6 +907,8 @@ if (range) {
 };
 
     reader.readAsDataURL(file);
+
+    e.target.value = "";
 };
 
 const editorRef = useRef<HTMLDivElement>(null);
@@ -1079,11 +1097,16 @@ const toUTCDate = (dateStr: string) => {
 
 //modal que notifica que se va a generar una nueva tarifa de venta
 const handleGenerateWithConfirm = () => {
+
+    const currentVersion = (quotedRateRegistradaInfo?.data?.[0]?.version ?? 0) + 1;
+
     setModalState({
         isOpen: true,
         type: 'confirm',
         title: t('tvf.GenerateTitle'),
-        message: t('tvf.GenerateConfirmMessage'),
+        message: t('tvf.GenerateConfirmMessage', { 
+            values: { version: currentVersion }
+        }),
         showCancel: true,
         confirmText: t('tvf.Generate'),         
         cancelText: t('tvf.GenerateCancel'),
@@ -1112,8 +1135,9 @@ const handleDraftWithValidation = () => {
 
         const message =
             t('tvf.ChangeStatusToDraftMessagept1') +
+            '"' +
             (statusLabel || '') +
-            '. ' +
+            '". ' +
             t('tvf.ChangeStatusToDraftMessagept2');
 
         setModalState({
@@ -1135,6 +1159,8 @@ const handleDraftWithValidation = () => {
     // Si no hay conflicto → guardar directo
     handleSaveQuotedRate(STATUS_QUOTE[0], false);
 };
+
+
 const handleSaveQuotedRate = async (
     statusOverride?: StatusQuote,
     isGenerateAction: boolean = false
@@ -1152,6 +1178,8 @@ const handleSaveQuotedRate = async (
     const isGenerate = statusToUse.idStatusQ === 2; // Active = Generate
     
     const validationErrors = validateRequiredFields();
+
+    let isSuccess = true;  //RESPUESTA del upload o update de la tarifa de venta
 
     const calculatedVersion = idPrevious //obtener la nueva version o no, dependiendo de la modalidad
     ? isGenerate
@@ -1223,12 +1251,11 @@ const handleSaveQuotedRate = async (
 
                         handlePreviewQuotedRate(false, calculatedVersion) // ya no es preview
 
-                        console.log("Documento registrado con ID:", documentId);
-                        showSuccess("PDF generado y subido correctamente");
+                        showSuccess(t('tvf.PdfUploadOK'));
 
                     } else {
-                        console.error("Respuesta inesperada:", response);
-                        showError("No se pudo subir el documento");
+                        isSuccess = false;
+                        showError(t('tvf.PdfUploadError'));
                     }
 
                 } catch (error) {
@@ -1236,8 +1263,6 @@ const handleSaveQuotedRate = async (
                 }
 
             } catch (err) {
-                console.error("Upload error:", err);
-
                 showNotification(
                     "warning",
                     "La cotización se generó pero el PDF no se pudo subir"
@@ -1299,7 +1324,7 @@ const handleSaveQuotedRate = async (
             }
         ],
         comments: editorRef.current?.innerHTML || "",
-        conditions: termsValue || "",
+        conditions: termsValue || [],
         created_by: {
             _id_user_save: user?._id || '',
             user_name: user?.name || ''
@@ -1329,145 +1354,157 @@ const handleSaveQuotedRate = async (
         // ============================
         // SWITCH CREATE / UPDATE
         // ============================
+        // valiable del responsse
+        const validateResponse = (res: any, successCodes = [200, 201, 204]) => {
+        if (!successCodes.includes(res?.codeStatus)) {
+            throw new Error(res?.messageStatus || 'Error en la operación');
+        }
+        return res;
+        };
+
         let response;
 
         let responseUpdateStatus;
 
-        if (!isGenerateAction && idQuoteRate !== null) { // se actualiza el borrado de la version actual
-        console.log("----UPDATE MODE----");
-        response = await updateQuotedRate(
-            current?.quote_number,
-            payload
-        );
-        } else if (!isGenerateAction && idQuoteRate == null ) { // se crea el primer borrador
-        console.log("----CREATE MODE----");
+        try {
+        const isUpdate = !isGenerateAction && idQuoteRate !== null; //borrador update
+        const isFirstDraft = !isGenerateAction && idQuoteRate == null; //primer borrador upload
+        const isGenerateWithPrev = isGenerateAction && previousVersionId !== null && isGenerate; //se genera una nueva de version >0
+        const isGenerateWithoutPrev = isGenerateAction && previousVersionId == null && isGenerate; //se genera una nueva de version 0
 
-        response = await uploadQuotedRate(
-            quotationRequestData?.referenceRequest || "",
-            pricingData?.control || "",
-            payload
-        );
-        
-        } else if (isGenerateAction && previousVersionId !== null && isGenerate) {   
-        console.log("----CREATE MODE----");
-        
-            //codigo 201 registrado
-        response = await uploadQuotedRate(
-            quotationRequestData?.referenceRequest || "",
-            pricingData?.control || "",
-            payload
-        );
+        // -------- UPDATE --------
+        if (isUpdate) {
+            console.log("----UPDATE MODE----");
 
-        responseUpdateStatus = await updateStatusQuotedRate( // se manda a Reemplazada
-            current?._id,
-            4
-        );
+            response = validateResponse(
+            await updateQuotedRate(current?.quote_number, payload)
+            );
 
-        // se debe borrar el documento anterior en gcs y datastate 0
-        if (current?._iddocument) {
-            try {
-                const response = await deleteDocumentById(current._iddocument);
+            if (response?.codeStatus === 200) { //update code 200
+                showSuccess(
+                `${t('tvf.UpdateOK')} ${response?.atrribute?.value ?? ''}`
+                );
+            } else {
+                isSuccess = false;
+                showError(
+                `${t('tvf.UpdateStatusError')} ${response?.messageStatus ?? ''}`
+                );
+            }
 
-                if ([200, 204].includes(response.codeStatus)) {
-                    showSuccess(t('dig.deleteSuccess'));
-                } else {
-                    throw new Error(response.messageStatus || 'Error al eliminar');
+        }
+
+        // -------- CREATE (todos los casos de creación) --------
+        if (isFirstDraft || isGenerateWithPrev || isGenerateWithoutPrev) {
+            console.log("----CREATE MODE----");
+
+            response = validateResponse(
+            await uploadQuotedRate(
+                quotationRequestData?.referenceRequest || "",
+                pricingData?.control || "",
+                payload
+            ),
+            [201] // normalmente create = 201
+            );
+
+            if (response?.codeStatus === 201) { //code status 201 create
+                showSuccess(
+                `${t('tvf.GenerateOK')} ${response?.atrribute?.value ?? ''}`
+                );
+            } else {
+                isSuccess = false;
+                showError(
+                `${t('tvf.GenerateError')} ${response?.messageStatus ?? ''}`
+                );
+            }
+
+            // -------- UPDATE STATUS (solo si es generate + create OK de la tarifa venta) --------
+            if (
+                (isGenerateWithPrev || isGenerateWithoutPrev) &&
+                response?.codeStatus === 201 // si se creo el documento correctamente
+            ) 
+            {
+                responseUpdateStatus = validateResponse(
+                await updateStatusQuotedRate(current?._id, 4)
+                );
+
+                if (responseUpdateStatus?.codeStatus !== 200) { // code status 200 para update
+                isSuccess = false;
+                showError(
+                    `${t('tvf.UpdateStatusError')} ${
+                    responseUpdateStatus?.messageStatus ?? ''
+                    }`
+                );
                 }
 
-            } catch (error: any) {
-                console.error(error);
-                showError(error?.message || t('dig.deleteError'));
+            }
+
+        }
+
+        // -------- DELETE DOCUMENT (solo si hay documento previo) --------
+		// se debe borrar el documento anterior en gcs y datastate 0
+        if (isGenerateWithPrev && current?._iddocument) {
+            try {
+            const deleteRes = await deleteDocumentById(current._iddocument);
+
+            validateResponse(deleteRes, [200, 204]);
+
+            showSuccess(t('dig.deleteSuccess'));
+            } 
+            catch (error: any) 
+            {
+            isSuccess = false;
+            console.error(error);
+            showError(error?.message || t('dig.deleteError'));
             }
         }
 
+        } catch (error: any) {
+        console.error(error);
+        showError(error?.message || 'Error general');
         }
 
-        else if (isGenerateAction && previousVersionId == null && isGenerate) {   
-        console.log("----CREATE MODE----");
 
-        response = await uploadQuotedRate(
-            quotationRequestData?.referenceRequest || "",
-            pricingData?.control || "",
-            payload
-        );
+        // ============================
+        // RESPUESTA
+        // ============================
+        if (response?.codeStatus === 200 || response?.codeStatus === 201) {
 
-        responseUpdateStatus = await updateStatusQuotedRate( // se manda a Reemplazada
-            current?._id,
-            4
-        );
-
-        // se debe borrar el documento anterior en gcs y datastate 0
-        if (current?._iddocument) {
+        if (statusToUse.idStatusQ === 2 && pricingData?.id) {
             try {
-                const response = await deleteDocumentById(current._iddocument);
-
-                if ([200, 204].includes(response.codeStatus)) {
-                    showSuccess(t('dig.deleteSuccess'));
-                } else {
-                    throw new Error(response.messageStatus || 'Error al eliminar');
-                }
-
-            } catch (error: any) {
-                console.error(error);
-                showError(error?.message || t('dig.deleteError'));
-            }
-        }
-
-        }
-
-    // ============================
-    // RESPUESTA
-    // ============================
-    if (response?.codeStatus === 200 || response?.codeStatus === 201) { // se guardo / actualizo correctamente
-
-        if (statusToUse.idStatusQ === 2 && pricingData?.id) { //estatus Vigente y objectid control
-
-            try { // actualiza el status a Reg018QuotationRequests y Reg018PricingControls a cotizadas
-                const controlResponse = await pricingControlService.ChangeStatusControl(
+            const controlResponse = await pricingControlService.ChangeStatusControl(
                 pricingData.id,
                 "Cotizada"
             );
 
             if (controlResponse?.codeStatus === 200) {
-
-                //se deja para pruebas 
                 showSuccess(
-                    `${t('tvf.UpdateStatusControlOK')} ${controlResponse?.messageStatus ?? ''}`
+                `${t('tvf.UpdateStatusControlOK')} ${controlResponse?.messageStatus ?? ''}`
                 );
-
             } else {
-
-                 //se deja para pruebas 
+                isSuccess = false;
                 showError(
-                    `${t('tvf.UpdateStatusControlError')} ${controlResponse?.messageStatus ?? ''}`
+                `${t('tvf.UpdateStatusControlError')} ${controlResponse?.messageStatus ?? ''}`
                 );
             }
 
             } catch (err) {
-                console.error("Error al cambiar status del control:", err);
+            console.error("Error al cambiar status del control:", err);
             }
         }
+        }
 
-        showSuccess(
-        !isGenerateAction
-            ? `${t('tvf.UpdateOK')} ${response?.atrribute?.value ?? ''}`
-            : `${t('tvf.GenerateOK')} ${response?.atrribute?.value ?? ''}`
-        );
-
+        // si todo se realizo ok
+        if (isSuccess) {
         onClose?.();
-        } else {
-        showError(
-            !isGenerateAction
-            ? `${t('tvf.UpdateError')} ${response?.atrribute?.value ?? ''}`
-            : `${t('tvf.GenerateError')} ${response?.atrribute?.value ?? ''}`
-        );
-    }
+        }
+        
 
-  } catch (error) {
-    console.error("Error en save quoted rate:", error);
-    showError("Error al guardar");
-  }
-};
+        } catch (error) {
+            console.error("Error en save quoted rate:", error);
+            showError("Error al guardar");
+        }
+
+    };
 
 const validateRequiredFields = () => {
     const errors: string[] = [];
@@ -1734,8 +1771,12 @@ const buildPreviewPayload = (
                 QuotedRateUserName: pricingData?.complete_name_pricing || "",
                 QuotedRateUserContact: selectedContact
                 ? [
-                    selectedContact.name,selectedContact.email, selectedContact.phone
-                ]
+                    selectedContact.name,
+                    selectedContact.email,
+                    selectedContact.phone
+                        ? `Tel: ${selectedContact.phone}`
+                        : ""
+                    ]
                     .filter((value) => value && value.trim() !== "")
                     .join(" | ")
                 : "",
@@ -1810,9 +1851,7 @@ const buildPreviewPayload = (
                 Total: Number(c.total) || 0
             })),
             Comments: editorRef.current?.innerHTML || "",
-            TermsAndConditions: termsValue 
-            ? [termsValue] 
-            : []
+            TermsAndConditions: termsValue
         }
     };
 };
@@ -2441,7 +2480,7 @@ return (
                                     <input
                                         className={styles.inputUnit}
                                         value={row.unit}
-                                        onChange={(e) => handleChange(index, 'unit', e.target.value)}
+                                        onChange={(e) => handleChange(index, 'unit', Number(e.target.value))}
                                     />
                                     </td>
                                     {/* SUBTOTAL */}
@@ -2963,7 +3002,7 @@ return (
                                     <input
                                         className={styles.inputUnit}
                                         value={row.unit}
-                                        onChange={(e) => handleChangeLand(index, 'unit', e.target.value)}
+                                        onChange={(e) => handleChangeLand(index, 'unit', Number(e.target.value))}
                                     />
                                     </td>
 
@@ -3127,7 +3166,7 @@ return (
                                     <input
                                         className={styles.inputUnit}
                                         value={row.unit}
-                                        onChange={(e) => handleChangeConsultingServices(index, 'unit', e.target.value)}
+                                        onChange={(e) => handleChangeConsultingServices(index, 'unit', Number(e.target.value))}
                                     />
                                     </td>
 
@@ -3377,22 +3416,14 @@ return (
                                                 key={item._id}
                                                 className={styles.tagItem}
                                                 onMouseDown={() => {
-                                                    const formattedText = conditionText
-                                                        .split('\n')
-                                                        .map((line: string) => {
-                                                            const clean = line.trim();
-                                                            if (!clean) return '';
-                                                            // Detecta si ya tiene viñeta, número o guion
-                                                            if (/^([•\-*]|\d+\.)\s+/.test(clean)) {
-                                                                return clean; // ya está formateado
-                                                            }
-                                                            return `• ${clean}`;
-                                                        })
-                                                        .join('\n');
-                                                    setTermsValue(prev =>
-                                                        prev + formattedText + '\n\n'
-                                                    );
-                                                    setSearchTerm('');
+                                                setTermsValue(prev => [
+                                                ...prev,
+                                                ...conditionText
+                                                    .split(/\n+/)
+                                                    .map((t: string) => t.trim())
+                                                    .filter(Boolean)
+                                                ]);
+                                                setSearchTerm('');
                                                 }}
                                             >
                                                 <div className={styles.tagTitle}>
@@ -3419,9 +3450,16 @@ return (
                         <textarea
                         className={styles.termsTextarea}
                         rows={10}
-                        placeholder= {t('tvf.TermsPlaceholder')}
-                        value={termsValue}
-                        onChange={(e) => setTermsValue(e.target.value)}
+                        placeholder={t('tvf.TermsPlaceholder')}
+                        value={termsValue.join('\n')}
+                        onChange={(e) =>
+                            setTermsValue(
+                            e.target.value
+                                .split(/\n+/)    
+                                .map(t => t.trim())
+                                .filter(Boolean)
+                            )
+                        }
                         />
                 </section>
             </div>
