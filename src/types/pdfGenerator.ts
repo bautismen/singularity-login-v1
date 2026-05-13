@@ -10,6 +10,7 @@ export interface pdfGeneratorQuotedRate {
 export interface Data {
     Header: Header;
     Services: Service[];
+    ConceptsAir?: ConceptAir[]; 
     Concepts: Concept[];
     Comments: string;
     TermsAndConditions: string[];
@@ -21,8 +22,8 @@ export interface Header {
     CostumerProspect: string;
     Adress: string;
     ExchangeRate: ExchangeRate;
-    ValidFrom: string; // ISO date
-    ValidUntil: string; // ISO date
+    ValidFrom: string;
+    ValidUntil: string;
     QuotedRateUserName: string;
     QuotedRateUserContact: string;
 }
@@ -52,6 +53,21 @@ export interface Concept {
     Base: string;
     Container: string;
     Quantity: number;
+    SubTotal: number;
+    Rate: number;
+    Total: number;
+}
+
+export interface ConceptAir {
+    Concept: string;
+    AierLine: string;     
+    Route: string;
+    TransitDays: string;
+    RatePerKG: number;
+    FuelSurcharge: number;
+    SecuritySurcharge: number;
+    MiscellaneousCharges: number;
+    ChargeableWeight: number;
     SubTotal: number;
     Rate: number;
     Total: number;
