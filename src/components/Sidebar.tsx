@@ -13,6 +13,7 @@ import {
   ChevronRight,
   DollarSign,
   MapPin,
+  File
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import styles from './Sidebar.module.css';
@@ -27,6 +28,7 @@ const menuItems = [
   { key: 'nav.customers', icon: Users, route: 'customers' },
   { key: 'nav.suppliers', icon: Users, route: 'suppliers' },
   { key: 'nav.digitization', icon: FileText, route: 'digitization' },
+  //{ key: 'nav.reports', icon: File, route: 'reports' },
 ];
 
 interface SidebarProps {
@@ -43,6 +45,8 @@ export function Sidebar({ onCollapsedChange, currentRoute = 'dashboard', onNavig
   const { user } = useAuth();
   const rolAdmin = ["admin"] // Roles que puuedo ir agregando para validar los botones del menu/admin
   const isAdmin = user?.roles?.every(() => true) && rolAdmin.every(v => user?.roles?.includes(v));
+  const rolclau = ["clausule"] // Roles que puuedo ir agregando para validar los botones del menu/admin
+  const isClausule = user?.roles?.every(() => true) && rolclau.every(v => user?.roles?.includes(v));
 
   const handleCollapse = () => {
     const newState = !collapsed;
@@ -176,13 +180,14 @@ export function Sidebar({ onCollapsedChange, currentRoute = 'dashboard', onNavig
                   <span>{t('nav.catalogs.users')}</span>
                 </button>
               )}
-             
+             {isClausule && (
               <button
                   onClick={() => onNavigate?.('catalogs/clauses')}
                   className={`${styles.submenuButton} ${currentRoute === 'catalogs/clauses' ? styles.active : ''}`}
                 >
                   <span>{t('nav.catalogs.clauses')}</span>
                 </button>
+             )}
 
             </div>
           )}
