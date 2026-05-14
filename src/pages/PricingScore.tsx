@@ -6,6 +6,7 @@ import { getExecutivesByDepartment} from '../services/executiveService';
 import { ScorePricing } from '../types/scorePricing';
 import { User, Hourglass, Check, Printer} from 'lucide-react';
 import { ProgressCircle } from '../components/ProgressCircleChart';
+import { useNotification } from "../contexts/NotificationContext";
 import  styles  from './Quotations.module.css';
 
 interface Month {
@@ -23,6 +24,7 @@ export function PricingScore() {
     value: new Date().getMonth() + 1 , 
     name: new Date(0, (new Date().getMonth()) ).toLocaleString(locale, { month: "long" }) 
   });
+   const { showError } = useNotification();  
   const [scorePricingGeneralData, setScorePricingGeneralData] = useState<ScorePricing[]>([]);
   const [executivesPricing, setExecutivesPricing] = useState<any[]>([]);
   const [executiveScore, setExecutiveScore] = useState<{
@@ -71,18 +73,16 @@ export function PricingScore() {
 
   useEffect(() => {
     loadScoreIndividual(executiveScore.idUser, executiveScore.nameExecutive, executiveScore.emailExecutive)
-    console.log('ejecutivo', scorePricingGeneralData[0], executiveScore)
   }, [executiveScore.idUser])
 
   const loadScorePricingGeneralData = async (year: number, month : Month, executiveid: string) => {    
     try {
-      console.log(month)
         setLoading(true)
         const responseScore = await fetchScorePricing(year, (month.value === 13 ? 0 : month.value), executiveid);
         setScorePricingGeneralData(responseScore);
 
-    } catch(error) {
-        console.error('Error details:', error);   
+    } catch(error) {           
+        showError('error - General Score');
     } finally{
         setLoading(false);
     }
@@ -93,7 +93,6 @@ export function PricingScore() {
         if(idUser === "NA") nameExecutive=''; 
 
         const responseScoreIndividual = await fetchScorePricing(yearSelected, (monthSelected.value === 13 ? 0 : monthSelected.value) , idUser);
-        console.log('Indiv',responseScoreIndividual, monthSelected)
         setExecutiveScore({
             idUser: idUser,
             nameExecutive: nameExecutive,
@@ -102,7 +101,7 @@ export function PricingScore() {
         })        
 
     }catch(error){
-        console.error('Error details:', error);   
+         showError('error - Score Individual');
     }
   }
 

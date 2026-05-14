@@ -373,7 +373,7 @@ export const OtherServicesForm: React.FC<OtherServicesFormProps> = ({
                 required value={orderService?.projectionShipment?.frecuency}
                 className={styles.select} disabled={isDisabled}
                 onChange={(e) => {
-                  console.log(orderService)
+                  //console.log(orderService)
                   onUpdateOrderService(
                     service.idServiceItem, 
                     { projectionShipment : {

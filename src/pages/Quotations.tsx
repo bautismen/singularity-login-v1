@@ -526,7 +526,6 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
 
   const saveMerchandiseForm = () => {
     //if (!currentServiceId) return;
-    console.log(currentServiceId, currentServiceIdMerch)
     if(!currentServiceIdMerch) return;
 
     /*if (!merchandiseForm?.merchandiseName.trim()) {
@@ -601,7 +600,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
     }else {
       saveMerchandise(currentServiceIdMerch, newMerchandise, editingMerchandise);
     }
-    console.log(services, newMerchandise);
+    //console.log(services, newMerchandise);
    
     /*setServices(
       services.map((service) => {
@@ -1124,7 +1123,6 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
     if(executives.some((ex)=> ex.idUser === user?._id) === false) {
       answer = await autoAsignationRequestQuotation();
     }       
-    //const answer = await autoAsignationRequestQuotation();
     if(answer === "confirm") {
       handleAsignateto() 
     }
@@ -1407,9 +1405,8 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
     try {
       e.preventDefault();
       setSaving(true);
-
       const quotationData = buildQuotationRequest();
-      console.log(JSON.stringify(quotationData, null, 2));
+      //console.log(JSON.stringify(quotationData, null, 2));
       if (quotationData.services.length == 0) {
         setModalState({
           isOpen: true,
@@ -1438,33 +1435,25 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
 
       await performSave(quotationData);
     } catch (error) {
-      console.error('Error saving quotation:', error);
+      //console.error('Error saving quotation:', error);
       showError(t("quote.errors.saveQuotation"));
     } finally {
       setSaving(false);
     }
   };
 
-  const handleSendQuotationRequest = async () => {     
-    setSaving(true);  
-     let answer = "";
+  const handleSendQuotationRequest = async () => {         
+    let answer = "";
 
-    if(!formRef.current?.reportValidity()) {
-      setSaving(false) 
+    if(!formRef.current?.reportValidity()) {       
       return; 
-    }
+    }                
+
     if(executives.some((ex)=> ex.idUser === user?._id) === false) {
       answer = await autoAsignationRequestQuotation();
-    }           
-    const quotationRequestData = buildQuotationRequest();
-    if(answer === "confirm") {
-      quotationRequestData.idStatusRequest = StatusRequestQuotation.Asignada;
-      quotationRequestData.statusRequest = StatusRequestQuotationLabel[StatusRequestQuotation.Asignada];
-    }else{
-      quotationRequestData.idStatusRequest = StatusRequestQuotation.Enviada;
-      quotationRequestData.statusRequest = StatusRequestQuotationLabel[StatusRequestQuotation.Enviada];
-    }
-      console.log('SEND',answer,quotationRequestData)
+    }   
+
+    const quotationRequestData = buildQuotationRequest();    
     if (quotationRequestData.services.length == 0) {
       setModalState({
         isOpen: true,
@@ -1472,17 +1461,28 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
         title: t("quote.serviceaddtitle"),
         message: t("quote.serviceaddmessage"),
         showCancel: false,
-      });
-      setSaving(false);
+      });      
       return;
     }
+
+    if(answer === "confirm") {
+      setSaving(true); 
+      quotationRequestData.idStatusRequest = StatusRequestQuotation.Asignada;
+      quotationRequestData.statusRequest = StatusRequestQuotationLabel[StatusRequestQuotation.Asignada];
+    }else if (answer === "reject") {
+      setSaving(true); 
+      quotationRequestData.idStatusRequest = StatusRequestQuotation.Enviada;
+      quotationRequestData.statusRequest = StatusRequestQuotationLabel[StatusRequestQuotation.Enviada];
+    } 
+    
    await performSave(quotationRequestData);
+   setSaving(false);
   };
 
   const performSave = async (quotationData: QuotationRequest) => {
     try {
       let result: any;
-       console.log(JSON.stringify(quotationData, null, 2))
+       //console.log(JSON.stringify(quotationData, null, 2))
       setSaving(true);
       if (mode === "edit" && quotationId) {
         quotationData.id = quotationId;
@@ -1501,7 +1501,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
         onBack();
       }
     } catch (error) {
-      console.error('Error in performSave:', error);
+      //console.error('Error in performSave:', error);
       showError(t("quote.errors.saveQuotation"));
     } finally {
       setSaving(false);
@@ -1517,7 +1517,6 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
     const height = (document.getElementById("package-height") as HTMLInputElement).value;
     const width = (document.getElementById("package-width") as HTMLInputElement).value;
     const weight = (document.getElementById("package-weight") as HTMLInputElement).value;
-    console.log('pack',UnitCargo)
     if (UnitCargo && quantity && length && height && width && weight) {
       addPackage({
         idUnitCargo: parseInt(selectElement.value),
@@ -1999,7 +1998,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
               type="button"
               className={styles.actionBarResetButton}
               onClick={handleAsignateto}
-              hidden={formData.idStatusRequest <= 1}
+              hidden={ isPricingUser === false || formData.idStatusRequest <= 1 }
               disabled={saving || mode === "view"}>
               <User size={18} />
               <span>{t("quote.add")}</span>
