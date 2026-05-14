@@ -792,6 +792,7 @@ const translations = {
     "score.totalQuotationsResume" : "Actividad acumulada en la plataforma durante el año actual ",
     "score.quotationsAcceptedMonth": "Cotizaciones aceptadas ",
     "score.individualMetrics": "Score Individual",
+    "score.accumulated": "acumulado",
 
   },
   en: {
@@ -1569,6 +1570,7 @@ const translations = {
     "score.totalQuotationsResume": "Accumulated activity on the platform during the current year ",
     "score.quotationsAcceptedMonth": "Accepted quotations ",    
     "score.individualMetrics": "Individual Score",
+    "score.accumulated": "accumulated",
   },
 };
 

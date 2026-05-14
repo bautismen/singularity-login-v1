@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useReactToPrint } from "react-to-print";
 import { useLanguage } from '../contexts/LanguageContext';
 import { fetchScorePricing } from '../services/dashboardService';
@@ -14,13 +14,14 @@ interface Month {
 }
 
 export function PricingScore() {
-  const { t } = useLanguage();    
+  const { t, language } = useLanguage();  
+  const locale = language === "en" ? "en-US" : "es-MX";  
   const componentRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear());
   const [monthSelected, setMonthSelected] = useState<Month>({ 
     value: new Date().getMonth() + 1 , 
-    name: new Date(0, (new Date().getMonth()) ).toLocaleString(navigator.language, { month: "long" }) 
+    name: new Date(0, (new Date().getMonth()) ).toLocaleString(locale, { month: "long" }) 
   });
   const [scorePricingGeneralData, setScorePricingGeneralData] = useState<ScorePricing[]>([]);
   const [executivesPricing, setExecutivesPricing] = useState<any[]>([]);
@@ -34,11 +35,26 @@ export function PricingScore() {
     nameExecutive: '',
     emailExecutive: ''
   });
-  const months = Array.from({ length: 13 }, (_, i) => (
+
+
+  const months = useMemo(() => {
+    const locale = language === "en" ? "en-US" : "es-MX";
+    return Array.from({ length: 13 }, (_, i) => (
     {
       value: i + 1,
-      name: i === 12 ? "acumulado" : new Date(0, i).toLocaleString(navigator.language, { month: "long" }),
+      name: i === 12 ? t('score.accumulated') : new Date(0, i).toLocaleString(locale, { month: "long" }),
     }));
+  }, [language, t]) 
+
+  useEffect(() => {
+    const translatedMonth = months.find(
+      (month) => month.value === monthSelected.value
+    );
+    if (translatedMonth && translatedMonth.name !== monthSelected.name) {
+      setMonthSelected(translatedMonth);
+    }
+  }, [months, monthSelected.value]);
+
 
 
   useEffect(() => {
@@ -202,7 +218,7 @@ export function PricingScore() {
           <div className="flex items-center gap-2 mt-auto">
             <div className="w-2.5 h-2.5 bg-teal-500 rounded-full"></div>
             <span className={styles.label} > {/**"text-xs font-semibold " */}
-              {t('score.Accepted')} : {loading ? '...' : scorePricingGeneralData[0]?.aceptadas || 0}
+              {t('score.quotationsAccepted')} : {loading ? '...' : scorePricingGeneralData[0]?.aceptadas || 0}
             </span>
           </div>
         </div>
@@ -246,7 +262,7 @@ export function PricingScore() {
             </p>
             <div className="flex items-baseline gap-3">
               <span className="text-5xl font-headline font-extrabold tracking-tighter text-[#03738C]  dark:text-white">
-                {executiveScore.scoreIndividual?.[0]?.total_mes ? executiveScore.scoreIndividual?.[0].total_mes :  0}
+                {executiveScore.scoreIndividual?.[0]?.total_mes ? executiveScore.scoreIndividual?.[0]?.total_mes :  0}
               </span>              
             </div>
           </div>
@@ -307,7 +323,7 @@ export function PricingScore() {
             <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 bg-teal-500 rounded-full"/>
                 <span className={styles.label}> {/**"text-xs font-semibold " */}
-                     {t('score.Accepted')}: {executiveScore.scoreIndividual?.[0]?.aceptadas ? executiveScore.scoreIndividual?.[0].aceptadas : 0}
+                     {t('score.quotationsAccepted')}: {executiveScore.scoreIndividual?.[0]?.aceptadas ? executiveScore.scoreIndividual?.[0].aceptadas : 0}
                 </span>
             </div>        
           </div>
