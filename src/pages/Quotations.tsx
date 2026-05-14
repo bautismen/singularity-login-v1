@@ -1171,8 +1171,8 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
         setModalState({
           isOpen: true,
           type: 'confirm',
-          title: 'Asignacion ejecutivo',
-          message: '¿Desea asignarse esta solicitud a usted mismo?',
+          title: t('quote.modalAutoAssign'),
+          message: t('quote.modalAutoAssignQue'),
           showNoAction: true,
           onConfirm: async () => {
             executives.push({      
