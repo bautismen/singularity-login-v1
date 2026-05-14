@@ -1,3 +1,4 @@
+import './ProgressCircle.css';
 
 interface ProgressCircleProps {
   percentage: number; // valor de 0 a 100
@@ -48,7 +49,7 @@ export function ProgressCircle({
           <text
             x="50%"
             y="50%"
-            fill="var(--text-primary)"
+            fill="var(--textCenter-ProgressChart)"
             fontSize={size * 0.2}
             fontWeight="800"
             textAnchor="middle"

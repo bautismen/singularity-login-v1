@@ -1076,7 +1076,7 @@
 }
 
 .scoreLabelMid {
-  font-size: 1.0rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
@@ -1888,7 +1888,7 @@
   }
 
   .scoreLabelMid {
-    font-size: 0.8125rem;    
+    font-size: 0.5125rem;    
   }
 
   .scoreLabelSmall {
@@ -1960,9 +1960,12 @@
     font-size: 1.125rem;
   }
   
-
   .inputUppercase {
   text-transform: uppercase;
+  }
+
+  .scoreLabelMid {
+    font-size:  0.6875rem;    
   }
 
 }

@@ -1,0 +1,7 @@
+:root {
+  --textCenter-ProgressChart: #03738C;
+}
+
+.dark {  
+  --textCenter-ProgressChart: #ffffff;
+}
