@@ -49,11 +49,15 @@ export const ZipCodesOriginDestination = ({
   const isAir      = (showAirportsOrderService !== undefined ? showAirportsOrderService : service.idService === 5);
   const isDisabled = mode === 'view' || idStatusRequest >= 2;  
 
+  const originListId = `${isAir ? "airports" : "ports"}-origin-${service.idServiceItem}-${idShipment ?? "order"}`;
+  const destinationListId = `${isAir ? "airports" : "ports"}-destination-${service.idServiceItem}-${idShipment ?? "order"}`;
+
+
   // ── Carga puertos / aeropuertos cuando cambia el país de origen ──────────────
   useEffect(() => {
     const idCountry = shipmentOrOrder?.origin?.idCountry;
     const needsPortOrAirport = [2, 3, 4].includes(shipmentOrOrder?.idTypeShipment || 0);
-    console.log('UE',needsPortOrAirport)
+    console.log('ports',shipmentOrOrder,portsOrigin , idCountry, needsPortOrAirport )
     if (!idCountry || !needsPortOrAirport) {
       setPortsOrigin([]);
       setAirportsOrigin([]);
@@ -242,7 +246,7 @@ export const ZipCodesOriginDestination = ({
         {originLabel}
       </label>
       <input
-        list={isAir ? 'airportsOrigin' : 'portsOrigin'}
+        list={originListId}
         className={styles.select}
         value={originPortAirportValue}
         disabled={isDisabled || loadingPorts}
@@ -265,7 +269,7 @@ export const ZipCodesOriginDestination = ({
           }
         }}
       />
-      <datalist id={isAir ? 'airportsOrigin' : 'portsOrigin'} > 
+      <datalist id={originListId} > 
         {isAir
           ? airportsOrigin.map((airport) => (
               <option key={airport._Id} value={airport.airport_code}>
@@ -290,7 +294,7 @@ export const ZipCodesOriginDestination = ({
         {destinationLabel}
       </label>
       <input
-        list={isAir ? 'airportsDestination' : 'portsDestination'}
+        list={destinationListId}
         className={styles.select}
         value={destinationPortAirportValue}
         disabled={isDisabled || loadingPorts}
@@ -312,7 +316,7 @@ export const ZipCodesOriginDestination = ({
           }
         }}
       />
-      <datalist id={isAir ? 'airportsDestination' : 'portsDestination'}  >      
+      <datalist id={destinationListId}  >      
         {isAir
           ? airportsDestination.map((airport) => (
               <option key={airport._Id} value={airport.airport_code}>

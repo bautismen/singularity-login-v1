@@ -108,7 +108,7 @@ export const MerchandiseModal: React.FC<MerchandiseModalProps> = ({
                   type="text"
                   maxLength={80}
                   minLength={3}
-                  placeholder="Baterías de Teléfonos Modelo 388"
+                  placeholder="Gas"
                   className={styles.input}
                   value={merchandiseForm.merchandiseName}
                   onChange={(e) => onChangeMerchandiseForm({ merchandiseName: e.target.value })}

@@ -57,7 +57,7 @@ export const OtherServicesForm: React.FC<OtherServicesFormProps> = ({
         <div className={styles.formGroup}>
           <label className={styles.label}>
             <span className={styles.required}>*</span>
-           Tipo Servicio
+            {t('quote.serviceType')}
           </label>
           <select
             value={service.nameService}

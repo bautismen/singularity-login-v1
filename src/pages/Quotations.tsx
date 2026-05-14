@@ -1446,19 +1446,25 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
   };
 
   const handleSendQuotationRequest = async () => {     
-    setSaving(true);   
+    setSaving(true);  
+     let answer = "";
+
     if(!formRef.current?.reportValidity()) {
       setSaving(false) 
       return; 
     }
     if(executives.some((ex)=> ex.idUser === user?._id) === false) {
-      await autoAsignationRequestQuotation();
-    }       
-    
+      answer = await autoAsignationRequestQuotation();
+    }           
     const quotationRequestData = buildQuotationRequest();
-    quotationRequestData.idStatusRequest = StatusRequestQuotation.Enviada;
-    quotationRequestData.statusRequest = StatusRequestQuotationLabel[StatusRequestQuotation.Enviada];
-    console.log('SEND',quotationRequestData)
+    if(answer === "confirm") {
+      quotationRequestData.idStatusRequest = StatusRequestQuotation.Asignada;
+      quotationRequestData.statusRequest = StatusRequestQuotationLabel[StatusRequestQuotation.Asignada];
+    }else{
+      quotationRequestData.idStatusRequest = StatusRequestQuotation.Enviada;
+      quotationRequestData.statusRequest = StatusRequestQuotationLabel[StatusRequestQuotation.Enviada];
+    }
+      console.log('SEND',answer,quotationRequestData)
     if (quotationRequestData.services.length == 0) {
       setModalState({
         isOpen: true,
