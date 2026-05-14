@@ -16,7 +16,7 @@ const headers = {
   "environmentId_": ENVIRONMENT_ID.toString(),
   "Content-Type": "application/json",
 };
-const API_DIGITIZATION = import.meta.env.VITE_API_URL_DIG + `operations/v1/kl/t/datastorage/`;
+const API_DIGITIZATION = import.meta.env.VITE_API_URL_DIG + `/operations/v1/kl/t/datastorage/`;
 /* ==============================
  * UTIL: File → Base64
  * ============================== */
@@ -270,14 +270,25 @@ export async function uploadDocuments(
  * Eliminar documento
  * ============================== */
 export async function deleteDocumentById(
-  id: string
+  id: string,
+  deletedby: {
+    iduser: string;
+    nameemployee: string;
+  }
 ): Promise<{ codeStatus: number; messageStatus?: string }> {
 
   const response = await fetch(
     `${API_DIGITIZATION}docs/${id}/delete`,
     {
       method: "DELETE",
-      headers,
+      headers: {
+        ...headers,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        idUser: deletedby.iduser,
+        nameEmployee: deletedby.nameemployee,
+      }),
     }
   );
 

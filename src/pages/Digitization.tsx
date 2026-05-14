@@ -134,7 +134,11 @@ const handleDelete = (id: string, name: string) => {
 
       try {
 
-        const response = await deleteDocumentById(id);
+        const response = await deleteDocumentById(id,
+                                      {
+                                      iduser: user?._id || "",
+                                      nameemployee: user?.name || "",
+                                      });
 
         if (![200, 204].includes(response.codeStatus)) {
           throw new Error(response.messageStatus);
@@ -904,7 +908,11 @@ const getFileIcon = (name?: string) => {
                   try {
 
                     for (const id of selectedDocuments) {
-                      await deleteDocumentById(id);
+                      await deleteDocumentById(id,
+                                      {
+                                      iduser: user?._id || "",
+                                      nameemployee: user?.name || "",
+                                      });
                     }
 
                     showSuccess(t('dig.deleteDocumentsSuccess'));
