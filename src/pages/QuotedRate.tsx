@@ -37,6 +37,9 @@ export default function QuotedRate({
     quotationRequestData 
 }: any) {
 
+//console.log("pricingData:", JSON.stringify(pricingData, null, 2));
+//console.log("quotationRequestData:", JSON.stringify(quotationRequestData, null, 2));
+
 const { t, language } = useLanguage();
 const { showError, showSuccess, showNotification } = useNotification();
 const { user } = useAuth();
@@ -73,6 +76,15 @@ const [validUntil, setValidUntil] = useState("");
 const [previousVersionId, setPreviousVersionId] = useState<string | null>(null);
 const [previousVersionCuote, setPreviousVersionCuote] = useState<number>(0);
 const [selectedContact, setSelectedContact] = useState<any>(null);
+
+const isProspect = !!quotationRequestData?.customer?.prospectName;
+const [prospectAddress, setProspectAddress] = useState("");
+const [manualContact, setManualContact] = useState({
+    type: "",
+    name: "",
+    email: "",
+    phone: ""
+});
 
 const [documentTypes, setDocumentTypes] = useState<any[]>([]);
 const [sections, setSections] = useState<any[]>([]);
@@ -513,14 +525,36 @@ useEffect(() => {
     }
 
     // ================== CONTACTO ==================
-    const contactFromDB = item?.customer_contact;
+        const contactRegister = item?.customer_contact;
 
-    if (contactFromDB?.email && customerContacts.length > 0) {
+    if (contactRegister?.email) {
         const foundContact = customerContacts.find(
-            (c: any) => c.email === contactFromDB.email
+            (c: any) => c.email === contactRegister.email
         );
 
-        setSelectedContact(foundContact || null);
+        if (foundContact) {
+            // ✅ Cliente normal
+            setSelectedContact(foundContact);
+        } else {
+            // ✅ Prospecto (NO existe en catálogo)
+            setManualContact({
+                type: contactRegister.type || "",
+                name: contactRegister.name || "",
+                email: contactRegister.email || "",
+                phone: contactRegister.phone || ""
+            });
+
+            setSelectedContact(null); // importante
+        }
+    }
+    // ================== DIRECCIÓN ==================
+    const addressFromDB = item?.customer_address;
+
+    if (addressFromDB) {
+    // si es prospecto → guardar en input manual
+    if (isProspect) {
+        setProspectAddress(addressFromDB);
+    } 
     }
     // ================== MONEDA ==================
     if (CURRENCY_OPTIONS.some(c => c.value === item.currency)) {
@@ -1226,7 +1260,7 @@ const handleSaveQuotedRate = async (
                 // 2. Convertir a File y se asigna nomenclatura doc
                 const file = new File(
                     [blob],
-                    `QuotedRate_${current?.quote_number || "TEMP"}_v${calculatedVersion}.pdf`,
+                    `QuotedRate_${current?.quote_number || "SinFolio"}_v${calculatedVersion}.pdf`,
                     { type: "application/pdf" }
                 );
 
@@ -1278,10 +1312,18 @@ const handleSaveQuotedRate = async (
             } catch (err) {
                 showNotification(
                     "warning",
-                    "La cotización se generó pero el PDF no se pudo subir"
+                    t('tvf.PdfUploadWarning')
                 );
             }
     }
+
+    const contact = isProspect ? manualContact : selectedContact;
+
+    const prospectName = isProspect
+    ? quotationRequestData?.customer?.prospectName
+    : pricingData?.customer_business_name;
+
+    const address = isProspect ? prospectAddress : customerAddress;
 
     const payload: QuotedRate = {
         _id: current?._id || null,
@@ -1292,22 +1334,15 @@ const handleSaveQuotedRate = async (
         control_number: pricingData?.control || "",
         _idreferencerequest: quotationRequestData?.id || "",
         referencerequest: quotationRequestData?.referenceRequest || "",
-        prospect: pricingData?.customer_business_name || "sin prospecto",
+        prospect: prospectName || "sin prospecto",
         _id_customer: pricingData?.id_customer || "",
         customer_business_name: pricingData?.customer_business_name || "",
-        customer_address: customerAddress || "",
-        customer_contact: selectedContact
-        ? {
-            type: selectedContact.type || "",   // si existe
-            name: selectedContact.name || "",
-            email: selectedContact.email || "",
-            phone: selectedContact.phone || "",
-        }
-        : {
-            type: "",
-            name: "",
-            email: "",
-            phone: "",
+        customer_address: address.toUpperCase() || "",
+        customer_contact: {
+            type: contact?.type || "",
+            name: contact?.name || "",
+            email: contact?.email || "",
+            phone: contact?.phone || "",
         },
         status_control: {
             id_status_control: pricingData?.status_control?.id_status_control ?? 0,
@@ -1555,8 +1590,23 @@ const validateRequiredFields = () => {
     // =========================
     // GENERALES
     // =========================
+    if (isProspect) {
+    if (!manualContact?.name?.trim()) {
+        errors.push(t('tvf.NameRequired'));
+    }
+
+    if (!manualContact?.email?.trim()) {
+        errors.push(t('tvf.EmailRequired'));
+    }
+
+    if (!manualContact?.phone?.trim()) {
+        errors.push(t('tvf.PhoneRequired'));
+    }
+
+    } else {
     if (!selectedContact?.email) {
         errors.push(t('tvf.ContactRequired'));
+    }
     }
 
     if (!currency) {
@@ -1614,11 +1664,14 @@ const handlePreviewQuotedRate = async (isPreview: boolean,  version: number ) =>
         // abrimos pestaña en blanco
         const newTab = window.open("", "_blank");
 
+        const title = t('tvf.generatingPdf');  
+        const subtitle = t('tvf.pleaseWait');
+
         if (newTab) {
             newTab.document.write(`
                 <html>
                     <head>
-                        <title>Generando PDF...</title>
+                        <title>${title}</title>
 
                         <style>
                             body {
@@ -1692,11 +1745,11 @@ const handlePreviewQuotedRate = async (isPreview: boolean,  version: number ) =>
                                 <div class="previewPdfSpinner"></div>
 
                                 <h2 class="previewPdfLoadingTitle">
-                                    Generando PDF...
+                                    ${title}
                                 </h2>
 
                                 <p class="previewPdfLoadingText">
-                                    Espere un momento ...
+                                    ${subtitle}
                                 </p>
 
                             </div>
@@ -1789,6 +1842,14 @@ const buildPreviewPayload = (
     
     const current = quotedRateRegistradaInfo?.data?.[0];
 
+    const contact = isProspect ? manualContact : selectedContact;
+
+    const prospectName = isProspect
+    ? quotationRequestData?.customer?.prospectName
+    : pricingData?.customer_business_name;
+    
+    const address = isProspect ? prospectAddress : customerAddress;
+
     return {
         typeOfDocument: "QuotedRate",
         typeOfLanguage: languageFormat || "Mx",
@@ -1799,8 +1860,8 @@ const buildPreviewPayload = (
             Header: {
                 QuoteNumber: current?.quote_number ||t('tvf.noQuote'),
                 QuotedRateVersion: version,
-                CostumerProspect: pricingData?.customer_business_name || "",
-                Adress: customerAddress || "",
+                CostumerProspect: prospectName || "",
+                Adress: address ? address.toUpperCase() : "",
                 ExchangeRate: {
                     BaseCurrency: currency || "MXN",
                     TargetCurrency: currencyTo || "MXN",
@@ -1815,13 +1876,11 @@ const buildPreviewPayload = (
                     : new Date().toISOString(),
 
                 QuotedRateUserName: pricingData?.complete_name_pricing || "",
-                QuotedRateUserContact: selectedContact
+                QuotedRateUserContact: contact
                 ? [
-                    selectedContact.name,
-                    selectedContact.email,
-                    selectedContact.phone
-                        ? `Tel: ${selectedContact.phone}`
-                        : ""
+                    contact.name,
+                    contact.email,
+                    contact.phone ? `Tel: ${contact.phone}` : ""
                     ]
                     .filter((value) => value && value.trim() !== "")
                     .join(" | ")
@@ -2019,39 +2078,87 @@ return (
                         </div>
                         {/* NUEVO: dirección */}
                         <div className={styles.clientAddress}>
-                            {customerAddress || 'Sin dirección'}
+                        {isProspect ? (
+                            <input
+                            type="text"
+                            placeholder={t('tvf.enterAddress')}
+                            value={prospectAddress}
+                            onChange={(e) => setProspectAddress(e.target.value)}
+                            className={styles.inputAddress}
+                            />
+                        ) : (
+                            customerAddress || t('tvf.Noaddress')
+                        )}
                         </div>
                         {/* grid info */}
                         <div className={styles.infoGrid}>
 
                         <div className={`${styles.infoItem} ${styles.fullWidth}`}>
-                            <label>
-                                <UserCheck size={14} /> {t('tvf.Contact')}
-                            </label>
+                        <label>
+                            <UserCheck size={14} /> {t('tvf.Contact')}
+                        </label>
 
-                            <div className={styles.contactSelectWrapper}>
-                                <select
-                                    className={styles.contactSelect}
-                                    value={selectedContact?.email || ''}
-                                    onChange={(e) => {
-                                        const contact = customerContacts.find(
-                                            (c: any) => c.email === e.target.value
-                                        );
-                                        setSelectedContact(contact);
-                                    }}
-                                    required
-                                >
-                                    {customerContacts.length === 0 && (
-                                        <option value="">{t('tvf.NoContacts')}</option>
-                                    )}
+                        {isProspect ? (
+                            // INPUTS PARA PROSPECTO
+                            <div className={styles.contactInputsGrid}>
+                            
+                            <input
+                                type="text"
+                                placeholder={t('tvf.Name')}
+                                value={manualContact.name}
+                                onChange={(e) =>
+                                setManualContact({ ...manualContact, name: e.target.value })
+                                }
+                                className={styles.inputContact}
+                            />
 
-                                    {customerContacts.map((c: any, index: number) => (
-                                        <option key={index} value={c.email}>
-                                            {`${c.name || t('tvf.NoName')} | ${c.email || t('tvf.NoEmail')} | ${c.phone || t('tvf.NoPhone')}`}
-                                        </option>
-                                    ))}
-                                </select>
+                            <input
+                                type="email"
+                                placeholder={t('tvf.Email')}
+                                value={manualContact.email}
+                                onChange={(e) =>
+                                setManualContact({ ...manualContact, email: e.target.value })
+                                }
+                                className={styles.inputContact}
+                            />
+
+                            <input
+                                type="text"
+                                placeholder={t('tvf.Phone')}
+                                value={manualContact.phone}
+                                onChange={(e) =>
+                                setManualContact({ ...manualContact, phone: e.target.value })
+                                }
+                                className={styles.inputContact}
+                            />
+
                             </div>
+                        ) : (
+                            // SELECT PARA CLIENTE NORMAL
+                            <div className={styles.contactSelectWrapper}>
+                            <select
+                                className={styles.contactSelect}
+                                value={selectedContact?.email || ''}
+                                onChange={(e) => {
+                                const contact = customerContacts.find(
+                                    (c: any) => c.email === e.target.value
+                                );
+                                setSelectedContact(contact);
+                                }}
+                                required
+                            >
+                                {customerContacts.length === 0 && (
+                                <option value="">{t('tvf.NoContacts')}</option>
+                                )}
+
+                                {customerContacts.map((c: any, index: number) => (
+                                <option key={index} value={c.email}>
+                                    {`${c.name || t('tvf.NoName')} | ${c.email || t('tvf.NoEmail')} | ${c.phone || t('tvf.NoPhone')}`}
+                                </option>
+                                ))}
+                            </select>
+                            </div>
+                        )}
                         </div>   
                         <div className={styles.infoItem}>
                             <label>
@@ -2580,7 +2687,7 @@ return (
                                     </button>
                                     {/*    
                                     <button
-                                    className={styles.editBtn}
+                                    className={stylese.editBtn}
                                     onClick={() => {
                                         const updated = [...maritimeConcepts];
                                         updated[index].isEditing = !updated[index].isEditing;
