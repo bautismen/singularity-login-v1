@@ -2624,8 +2624,8 @@
   color: white;
   padding: 6px 10px; 
   border-radius: 6px;
-  font-weight: 600;
-  font-size: 13px;
+  font-weight: 500;
+  font-size: 12px;
   border: none;
   cursor: pointer;
   transition: background-color 0.2s ease;
