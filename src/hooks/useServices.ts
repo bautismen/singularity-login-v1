@@ -59,7 +59,6 @@ export const useServices = () => {
 
   /** Hidrata los servicios con datos del API (modo edit/view) */
   const setAllServices = (rawServices: any[]) => {
-    console.log(rawServices);
     const loaded: Service[] = rawServices.map((service: any, idx: number) => ({
       idServiceItem: idx + 1,
 

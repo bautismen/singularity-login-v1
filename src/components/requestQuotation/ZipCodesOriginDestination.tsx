@@ -57,7 +57,6 @@ export const ZipCodesOriginDestination = ({
   useEffect(() => {
     const idCountry = shipmentOrOrder?.origin?.idCountry;
     const needsPortOrAirport = [2, 3, 4].includes(shipmentOrOrder?.idTypeShipment || 0);
-    console.log('ports',shipmentOrOrder,portsOrigin , idCountry, needsPortOrAirport )
     if (!idCountry || !needsPortOrAirport) {
       setPortsOrigin([]);
       setAirportsOrigin([]);
@@ -129,8 +128,6 @@ export const ZipCodesOriginDestination = ({
   const destinationPortAirportValue = isPort ? shipmentOrOrder?.destination?.portCode ?? '' : shipmentOrOrder?.destination?.airportCode ?? '';
 
   const updateOriginPortAirport = (value: string) => {
-    console.log('ORDER', isPort, isAir,shipmentOrOrder, value)
-
     onUpdateOrigin(service.idServiceItem, 
       isPort ? 
       { 
@@ -167,7 +164,6 @@ export const ZipCodesOriginDestination = ({
           value={shipmentOrOrder?.origin?.city ?? ''}
           onChange={(e) => {
             onUpdateOrigin(service.idServiceItem,  { city: e.target.value, portCode: '', airportCode: '' }, idShipment )
-            console.log('ORDER', isPort, isAir,shipmentOrOrder)
           }}
           disabled={isDisabled}
           required

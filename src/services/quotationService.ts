@@ -125,13 +125,13 @@ export const quotationService = {
   
           return response.json();
       } catch (error: any) {
-        console.error('Fetch error:', error);
+        //console.error('Fetch error:', error);
         throw new Error(error.message || 'Error de conexión al asignar el ejecutivo de pricing a la solicitud de cotización');
       }
     },
 
     async clone(id: string, data: Executive) {
-      console.log(JSON.stringify(data));
+      //console.log(JSON.stringify(data));
     const response = await fetch(`${API_REQUESTQUOTATION}/operations/v1/kl/quotationrequest/clone/${id}`, {
       method: 'PUT',
       headers: {

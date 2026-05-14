@@ -76,7 +76,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
         setData(stats);
         setError(null);
       } catch (err) {
-        console.error("Error loading dashboard stats:", err);
+        //console.error("Error loading dashboard stats:", err);
         setError(err instanceof Error ? err.message : "Error desconocido");
       } finally {
         setLoading(false);

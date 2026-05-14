@@ -20,22 +20,6 @@ const resolveShipmentForm = (idService: number): React.FC<any> => {
   return OtherServicesForm; // fallback para cualquier otro id
 };
 
-// ─── Mapa de formularios ──────────────────────────────────────────────────────
-// Para agregar un nuevo tipo de servicio:
-//   1. Crea XxxForm.tsx que extienda ShipmentFormProps
-//   2. Agrégalo aquí con su idService
-const ShipmentFormMap: Record<number, React.FC<any>> = {
-  1:  FreightShipmentForm,  // Marítimo FCL
-  2:  FreightShipmentForm,  // Marítimo LCL
-  3:  FreightShipmentForm,  // Terrestre FTL
-  4:  FreightShipmentForm,  // Terrestre LTL
-  5:  FreightShipmentForm,  // Aéreo
-  10: FreightShipmentForm,  // Terrestre FCL
-  11: FreightShipmentForm,  // Terrestre LCL
-   6:  OtherServicesForm,     // Almacén    ← futuro
-  // 8:  ParcelForm,        // Paquetería ← futuro
-};
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ServiceCardProps {
   service:           Service;
