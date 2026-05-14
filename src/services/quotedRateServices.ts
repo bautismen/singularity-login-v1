@@ -22,12 +22,6 @@ export const uploadQuotedRate = async (
   try {
     const url = `${VITE_API_QUOTEDRATE}/quotationrequest/${quotationrequest_}/control/${controlnumber_}/add`;
 
-    /* prueba debugueo */
-    const jsonFormatted = JSON.stringify(data, null, 2);
-    console.log("JSON FORMATEADO INSERCION uploadQuotedRate:");
-    console.log(jsonFormatted);
-    console.log(url);
-
     const response = await fetch(url, {
       method: "POST",
       headers,
@@ -53,10 +47,6 @@ export const updateQuotedRate = async (
 ) => {
   try {
     const url = `${VITE_API_QUOTEDRATE}/quotenumber/${quotenumber_}/update`;
-
-    console.log("JSON FORMATEADO UPDATE:");
-    console.log(JSON.stringify(data, null, 2));
-    console.log(url);
 
     const response = await fetch(url, {
       method: "PUT",
@@ -121,13 +111,8 @@ export const GetQuotedRateByQuotationRequestAndControlInfo = async (
       throw new Error(error?.message || "Error al obtener quoted rate info");
     }
 
-
     const data = await response.json();
     
-   /* prueba debugueo */
-    console.log("JSON FORMATEADO:");
-    console.log(JSON.stringify(data, null, 2));
-
     return data;
 
   } catch (error) {

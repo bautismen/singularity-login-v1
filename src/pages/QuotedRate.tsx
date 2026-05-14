@@ -77,6 +77,9 @@ const [selectedContact, setSelectedContact] = useState<any>(null);
 const [documentTypes, setDocumentTypes] = useState<any[]>([]);
 const [sections, setSections] = useState<any[]>([]);
 
+const [isSaving, setIsSaving] = useState(false);
+const [isGenerating, setIsGenerating] = useState(false);
+
 const [modalState, setModalState] = useState<{
     isOpen: boolean;
     type: 'info' | 'warning' | 'error' | 'success' | 'confirm';
@@ -477,7 +480,7 @@ useEffect(() => {
         id: `${Date.now()}-${i}`,
         _id_type_of_charge: c._id_type_of_charge
             ? Number(c._id_type_of_charge)
-            : "",
+            : 0,
         type_of_charge: c.type_of_charge
             ? String(c.type_of_charge)
             : "",
@@ -936,12 +939,7 @@ const mapServicesFromPricing = (
   services: any[] = []
 ): ServiceItem[] => {
 
-  // 🔎 log una sola vez
-  console.log("SERVICES ARRAY:", JSON.stringify(services, null, 2));
-
   return services.map((s, index): ServiceItem => {
-
-    console.log(`SERVICE [${index}]:`, JSON.stringify(s, null, 2));
 
     const hasShipments = Array.isArray(s.shipments) && s.shipments.length > 0;
 
@@ -956,9 +954,6 @@ const mapServicesFromPricing = (
       // =========================
       shipments: hasShipments
         ? s.shipments.map((sh: any, i: number): Shipment => {
-
-            console.log(`  SHIPMENT [${index}-${i}]:`, JSON.stringify(sh, null, 2));
-
             return {
               id_shipment: sh.idShipment,
               origin: {
@@ -1016,9 +1011,6 @@ const mapServicesFromPricing = (
       // =========================
       order_service: !hasShipments && s.orderService
         ? (() => {
-
-            console.log( `  ORDER SERVICE [${index}]:`,JSON.stringify(s.orderService, null, 2));
-
             const os = s.orderService;
 
             return {
@@ -1098,6 +1090,8 @@ const toUTCDate = (dateStr: string) => {
 //modal que notifica que se va a generar una nueva tarifa de venta
 const handleGenerateWithConfirm = () => {
 
+    if (isGenerating) return; //evita doble clic
+
     const currentVersion = (quotedRateRegistradaInfo?.data?.[0]?.version ?? 0) + 1;
 
     setModalState({
@@ -1111,13 +1105,26 @@ const handleGenerateWithConfirm = () => {
         confirmText: t('tvf.Generate'),         
         cancelText: t('tvf.GenerateCancel'),
         onConfirm: async () => {
-            await handleSaveQuotedRate(STATUS_QUOTE[1], true);
+            if (isGenerating) return;
+
+            setIsGenerating(true);
+            try {
+                await handleSaveQuotedRate(STATUS_QUOTE[1], true);
+            } finally {
+                setIsGenerating(false);
+            }
         }
     });
 };
 
 //modal que notifica que se va a planchar el estatus anterior (activo o aceptado por el cliente)
 const handleDraftWithValidation = () => {
+    
+    if (isSaving) return; // evitar doble clic
+    setIsSaving(true);
+
+    try {
+
     const current = quotedRateRegistradaInfo?.data?.[0];
 
     const currentStatusId = current?._id_status_quote;
@@ -1158,6 +1165,10 @@ const handleDraftWithValidation = () => {
 
     // Si no hay conflicto → guardar directo
     handleSaveQuotedRate(STATUS_QUOTE[0], false);
+
+    } finally {
+        setIsSaving(false); // liberar botón
+    }
 };
 
 
@@ -1166,6 +1177,8 @@ const handleSaveQuotedRate = async (
     isGenerateAction: boolean = false
 ) => {
     try {
+
+    if (!validateConcepts()) return;
 
     if (!validateTotal()) return;
 
@@ -1340,7 +1353,10 @@ const handleSaveQuotedRate = async (
             : new Date().toISOString(),
         is_current: true,
         _id_status_quote: statusToUse.idStatusQ,
-        status_cuote_name: statusToUse.labelEnglish.toUpperCase(),
+        status_cuote_name:
+            language === "es"
+                ? statusToUse.labelSpanish
+                : statusToUse.labelEnglish,
         id_language: idLanguage,
         language: languageFormat,
         previous_version_id:  previousVersionId,//aqui debe cambiar- ajuste pendiente
@@ -1374,8 +1390,6 @@ const handleSaveQuotedRate = async (
 
         // -------- UPDATE --------
         if (isUpdate) {
-            console.log("----UPDATE MODE----");
-
             response = validateResponse(
             await updateQuotedRate(current?.quote_number, payload)
             );
@@ -1395,8 +1409,6 @@ const handleSaveQuotedRate = async (
 
         // -------- CREATE (todos los casos de creación) --------
         if (isFirstDraft || isGenerateWithPrev || isGenerateWithoutPrev) {
-            console.log("----CREATE MODE----");
-
             response = validateResponse(
             await uploadQuotedRate(
                 quotationRequestData?.referenceRequest || "",
@@ -1444,7 +1456,13 @@ const handleSaveQuotedRate = async (
 		// se debe borrar el documento anterior en gcs y datastate 0
         if (isGenerateWithPrev && current?._iddocument) {
             try {
-            const deleteRes = await deleteDocumentById(current._iddocument);
+            const deleteRes = await deleteDocumentById(
+                current._iddocument,
+                {
+                iduser: user?._id || "",
+                nameemployee: user?.name || "",
+                }
+            );
 
             validateResponse(deleteRes, [200, 204]);
 
@@ -1506,6 +1524,31 @@ const handleSaveQuotedRate = async (
 
     };
 
+//agregar validacion que si dejan un concepto sin capturar completo, notifique
+const validateConcepts = () => {
+    const allConcepts = [
+        ...maritimeConcepts,
+        ...airConcepts,
+        ...airOperationalConcepts,
+        ...landConcepts,
+        ...consultingServicesConcepts
+    ];
+
+    const hasEmptyConcept = allConcepts.some((c) => {
+        return (
+            !c.concept || // sin concepto
+            Number(c.subtotal) <= 0 // sin importe
+        );
+    });
+
+    if (hasEmptyConcept) {
+        showError(t('tvf.ConceptSubtotalRequired'));  
+        return false;
+    }
+
+    return true;
+};
+
 const validateRequiredFields = () => {
     const errors: string[] = [];
 
@@ -1564,6 +1607,7 @@ const validateTotal = () => {
 
 const handlePreviewQuotedRate = async (isPreview: boolean,  version: number ) => {  
     try {
+
         // si hay conceptos capturados con importes mayores a 0
         if (!validateTotal()) return;
 
@@ -1666,6 +1710,7 @@ const handlePreviewQuotedRate = async (isPreview: boolean,  version: number ) =>
 
         const payload = buildPreviewPayload(isPreview, version );
 
+        //pruebas
         console.log("Payload:", JSON.stringify(payload, null, 2));
 
         let blob: Blob | null = null;
@@ -1713,6 +1758,7 @@ const handlePreviewQuotedRate = async (isPreview: boolean,  version: number ) =>
 const generatePdfBlob = async (isPreview: boolean,  version: number): Promise<Blob | null> => {
     const payload = buildPreviewPayload(isPreview, version);
 
+    //pruebas
     console.log("Payload:", JSON.stringify(payload, null, 2));
 
     let blob: Blob | null = null;
@@ -1751,7 +1797,7 @@ const buildPreviewPayload = (
         watermarkText:"SIN VALIDEZ OFICIAL",
         data: {
             Header: {
-                QuoteNumber: current?.quote_number || "TEMP",
+                QuoteNumber: current?.quote_number ||t('tvf.noQuote'),
                 QuotedRateVersion: version,
                 CostumerProspect: pricingData?.customer_business_name || "",
                 Adress: customerAddress || "",
@@ -1869,7 +1915,9 @@ return (
                         <ArrowLeft size={18} />
                     </button>
 
-                    <button className={styles.headerButton} onClick={handleDraftWithValidation} >  
+                    <button className={styles.headerButton} onClick={handleDraftWithValidation} 
+                        disabled={isSaving}
+                    >
                         <Save size={18} />
                         <span>
                             {t('tvf.Draft')}
@@ -1888,6 +1936,7 @@ return (
                     <button
                             className={styles.headerButton}
                             onClick={handleGenerateWithConfirm}
+                            disabled={isGenerating}
                         >
                             <FileText size={18} />
                             <span>{t('tvf.Generate')}</span>
@@ -2410,7 +2459,7 @@ return (
                                     <td>
                                     <select
                                         className={styles.selectCargo}
-                                        value={row._id_type_of_charge ?? ""}
+                                        value={row._id_type_of_charge ?? 0}
                                         onChange={(e) => {
                                             const selectedId = Number(e.target.value);
                                             const selectedText =
@@ -2801,7 +2850,7 @@ return (
                                 <td>
                                     <select
                                         className={styles.selectCargo}
-                                        value={row._id_type_of_charge ?? ""}
+                                        value={row._id_type_of_charge ?? 0}
                                         onChange={(e) => {
                                             const selectedId = Number(e.target.value);
                                             const selectedText =
@@ -2958,7 +3007,7 @@ return (
                                     <td>
                                     <select
                                         className={styles.selectCargo}
-                                        value={row._id_type_of_charge ?? ""}
+                                        value={row._id_type_of_charge ?? 0}
                                         onChange={(e) => {
                                             const selectedId = Number(e.target.value);
                                             const selectedText =
@@ -3122,7 +3171,7 @@ return (
                                     <td>
                                     <select
                                         className={styles.selectCargo}
-                                        value={row._id_type_of_charge ?? ""}
+                                        value={row._id_type_of_charge ?? 0}
                                         onChange={(e) => {
                                             const selectedId = Number(e.target.value);
                                             const selectedText =
