@@ -1400,7 +1400,7 @@ const handleSaveQuotedRate = async (
         data_state: 1
         };
         //pruebas 
-        console.log("Payload:", JSON.stringify(payload, null, 2));
+        //console.log("Payload:", JSON.stringify(payload, null, 2));
 
         // ============================
         // SWITCH CREATE / UPDATE
@@ -1764,7 +1764,7 @@ const handlePreviewQuotedRate = async (isPreview: boolean,  version: number ) =>
         const payload = buildPreviewPayload(isPreview, version );
 
         //pruebas
-        console.log("Payload:", JSON.stringify(payload, null, 2));
+        //console.log("Payload:", JSON.stringify(payload, null, 2));
 
         let blob: Blob | null = null;
         let attempts = 0;
@@ -1812,7 +1812,7 @@ const generatePdfBlob = async (isPreview: boolean,  version: number): Promise<Bl
     const payload = buildPreviewPayload(isPreview, version);
 
     //pruebas
-    console.log("Payload:", JSON.stringify(payload, null, 2));
+    //console.log("Payload:", JSON.stringify(payload, null, 2));
 
     let blob: Blob | null = null;
     let attempts = 0;
@@ -3604,19 +3604,16 @@ return (
 
                         {/* Textarea */}
                         <textarea
-                        className={styles.termsTextarea}
-                        rows={10}
-                        placeholder={t('tvf.TermsPlaceholder')}
-                        value={termsValue.join('\n')}
-                        onChange={(e) =>
-                            setTermsValue(
-                            e.target.value
-                                .split(/\n+/)    
-                                .map(t => t.trim())
-                                .filter(Boolean)
-                            )
-                        }
-                        />
+                            className={styles.termsTextarea}
+                            rows={10}
+                            placeholder={t('tvf.TermsPlaceholder')}
+                            value={termsValue.join('\n')}
+                            onChange={(e) =>
+                                setTermsValue(
+                                e.target.value.split('\n') 
+                                )
+                            }
+                            />
                 </section>
             </div>
         </div>
