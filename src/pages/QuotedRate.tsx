@@ -1513,7 +1513,7 @@ const handleSaveQuotedRate = async (
 
         } catch (error: any) {
         console.error(error);
-        showError(error?.message || 'Error general');
+        showError(error?.message || t('tvf.GeneralError'));
         }
 
 
@@ -1554,7 +1554,7 @@ const handleSaveQuotedRate = async (
 
         } catch (error) {
             console.error("Error en save quoted rate:", error);
-            showError("Error al guardar");
+            showError(t('tvf.SaveError'));
         }
 
     };
@@ -3514,7 +3514,7 @@ return (
                         />
 
                         <div className={styles.autoSave}>
-                        {lastSaved && `Guardado ${lastSaved}`}
+                        {lastSaved && `${t('tvf.Saved')} ${lastSaved}`}
                         </div>
                     </div>
 

@@ -5,7 +5,7 @@ const ENVIRONMENT_ID = 2;
 const API_KEY = import.meta.env.VITE_APIKEYSL;
 
 const VITE_API_QUOTEDRATE =
-  import.meta.env.VITE_API_QUOTEDRATE +
+  import.meta.env.VITE_API_URL +
   `/operations/v1/kl/t/quotedrate`;
 
 const headers = {
