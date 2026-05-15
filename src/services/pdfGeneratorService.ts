@@ -22,18 +22,6 @@ export const GeneratePreviewQuotedRate = async (
 try {
     const url = `${VITE_API_PDFGENERATOR}/generate-bydata`;
 
-        /* prueba debugueo */
-    console.log("BASE URL:", import.meta.env.VITE_API_PDFGENERATOR);
-    console.log("FULL URL:", url);
-
-    const jsonFormatted = JSON.stringify(data, null, 2);
-    console.log("JSON FORMATEADO INSERCION uploadQuotedRate:");
-    console.log(jsonFormatted);
-    console.log(url);
-    console.log("URL FINAL:", url);
-    console.log("HEADERS:", headers);
-    console.log("BODY:", data);
-
     const response = await fetch(url, {
         method: "POST",
         headers,
