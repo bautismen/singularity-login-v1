@@ -22,7 +22,7 @@ import { DashboardStats } from './components/DashboardStats';
 import Digitization from './pages/Digitization';
 import { CatalogClauses } from './pages/CatalogClauses';
 
-type Route = 'dashboard' | 'quotations' | 'controls-pricing' | 'tracking-monitor' | 'executives' | 'shipments' | 'customers' | 'suppliers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users' | 'catalogs/sector-of-business'| 'catalogs/companies' | 'digitization' | 'catalogs/clausules';
+type Route = 'dashboard' | 'quotations' | 'controls-pricing' | 'tracking-monitor' | 'executives' | 'shipments' | 'customers' | 'suppliers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users' | 'catalogs/sector-of-business'| 'catalogs/companies' | 'digitization' | 'catalogs/clauses';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState<Route>('dashboard');
