@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import styles from "../pages/Quotations.module.css";
 import { Shipment , OrderService} from "../types/requestQuotation";
+import { useLanguage } from "../contexts/LanguageContext";
 
 type LocationType = "origin" | "destination";
 
@@ -33,6 +34,7 @@ export const InputCountry: React.FC<CountryInputProps> = ({
   label,
   onUpdateLocation,
 }) => {
+  const { t } = useLanguage();
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
     
@@ -75,7 +77,7 @@ export const InputCountry: React.FC<CountryInputProps> = ({
     const trimmedValue = inputValue.trim();
 
     if (!trimmedValue) {
-      setError(required ? "seleccione un registro" : "");
+      setError(required ? t('quote.inputCountryNoOne') : "");
       return;
     }
 
@@ -85,7 +87,7 @@ export const InputCountry: React.FC<CountryInputProps> = ({
 
     if (!countrySelected) {
       setInputValue("")
-      setError("Selecciona un pais válido de la lista");
+      setError(('quote.inputCountryInvalid'));
       return;
     }
 
