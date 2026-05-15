@@ -67,7 +67,7 @@ export function Executives() {
 
   const loadExecutives = async () => {
     try {
-      console.log(saving);
+      // console.log(saving);
       setLoading(true);
       const data = await getExecutives(true);
       setExecutives(data);
@@ -143,7 +143,7 @@ export function Executives() {
     const isValid = await validateForm();
     
     if (!isValid) {
-      console.log('si soy fal')
+      // console.log('si soy fal')
       setSaving(false);
       return;
     }
