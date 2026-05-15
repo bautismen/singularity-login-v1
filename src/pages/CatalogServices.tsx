@@ -177,7 +177,7 @@ export function CatalogServices() {
           showError('Error al actualizar el registro');
         }
       } else {
-        console.log(JSON.stringify(formData));
+        // console.log(JSON.stringify(formData));
         const response = await fetch(`${API_URL}/v1/kl/catalog/operations/add/Service`, {
           method: 'POST',
           headers: {

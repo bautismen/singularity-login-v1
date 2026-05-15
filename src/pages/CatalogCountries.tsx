@@ -160,7 +160,7 @@ export function CatalogCountries() {
 
       if (editingItem) {
          setFormData({ ...formData, _Id: editingItem._id });         
-        console.log(JSON.stringify(formData))
+        // console.log(JSON.stringify(formData))
         const response = await fetch(`${API_URL}/v1/kl/catalog/operations/Countrie`, {
           method: 'PUT',
           headers: {

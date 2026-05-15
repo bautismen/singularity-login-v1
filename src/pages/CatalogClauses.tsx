@@ -134,7 +134,7 @@ export function CatalogClauses() {
           'x-api-key': API_KEY,
         },
       });
-      console.log(response)
+      // console.log(response)
       if (!response.ok) {
         throw new Error(t('catalog.errorLoad'));
       }
@@ -284,7 +284,7 @@ export function CatalogClauses() {
       if (editingItem) {
         setFormData({ ...formData, _Id: editingItem._id });
 
-        console.log(JSON.stringify(formData))
+        // console.log(JSON.stringify(formData))
         const response = await fetch(`${API_URL}/v1/kl/catalog/operations/Clause`, {
           method: 'PUT',
           headers: {
