@@ -38,6 +38,7 @@ import {
   getDocumentTypes,
   getSections
 } from "../services/digitizationService";
+import { GetQuotedRateByDocumentInfo } from "../services/quotedRateServices";
 import styles from "./Digitization.module.css";
 import { useNotification } from "../contexts/NotificationContext";
 
@@ -100,6 +101,7 @@ const refDocType = useRef<HTMLDivElement>(null);
   message: string;
   onConfirm?: () => void;
   showCancel?: boolean;
+  confirmText?: string;
   }>({
     isOpen: false,
     type: 'info',
@@ -121,8 +123,38 @@ const refDocType = useRef<HTMLDivElement>(null);
 };
 
   /* ================= DELETE ================= */
-const handleDelete = (id: string, name: string) => {
+const handleDelete = async (id: string, name: string,  documentTypeId: number ) => {
 
+  let hasAcceptedQuotedRate = false;
+
+  try {
+
+    // es tarifa de venta
+    if (documentTypeId === 1) {
+
+    const response = await GetQuotedRateByDocumentInfo([id]);
+
+      hasAcceptedQuotedRate = Array.isArray(response.data) &&
+        response.data.some(q => q._id_status_quote === 5); //si fue aceptada por el cliente
+    }
+
+  } catch (e) {
+    console.error('Error validando tarifa:', e);
+  }
+
+  // Si tiene tarifa aceptada, no permitir borrar
+  if (hasAcceptedQuotedRate) {
+    setModalState({
+    isOpen: true,
+    type: 'info',
+    title: t('dig.cannotDelete'),
+    message: t('dig.documentHasAcceptedRate'),
+    showCancel: false,
+    confirmText: t('dig.OKmodal') 
+  });
+  return;
+}
+  
   setModalState({
     isOpen: true,
     type: 'confirm',
@@ -130,6 +162,7 @@ const handleDelete = (id: string, name: string) => {
     message: t('dig.deleteDocumentConfirm')
       .replace('{{name}}', name),
     showCancel: true,
+    confirmText: t('dig.delete'),
     onConfirm: async () => {
 
       try {
@@ -153,6 +186,98 @@ const handleDelete = (id: string, name: string) => {
       }
     }
   });
+};
+
+  /* ================= DELETE MASIVO================= */
+const handleDeleteMultiple = async () => {
+
+  let acceptedCount = 0;
+
+  try {
+
+    const selectedDocs = documents.filter(doc =>
+      selectedDocuments.includes(doc.id)
+    );
+
+    const tarifaDocs = selectedDocs.filter(
+      doc => doc.documenttype?.documentTypeId === 1
+    );
+
+    if (tarifaDocs.length > 0) {
+
+      const ids = tarifaDocs.map(doc => doc.id);
+
+      const response = await GetQuotedRateByDocumentInfo(ids);
+
+      acceptedCount = Array.isArray(response.data)
+        ? response.data.filter(q => q._id_status_quote === 5).length
+        : 0;
+    }
+
+  } catch (e) {
+    console.error('Error validando tarifas:', e);
+  }
+
+  // bloquear eliminar docs
+ if (acceptedCount > 0) {
+
+  const message = acceptedCount === 1
+  ? t('dig.documentHasAcceptedRateSingle')
+  : t('dig.documentHasAcceptedRateMultiple')
+      .replace('{{count}}', String(acceptedCount));
+
+  setModalState({
+    isOpen: true,
+    type: 'info',
+    title: t('dig.cannotDelete'),
+    message: message,
+    showCancel: false,
+    confirmText: t('dig.OKmodal')
+  });
+  return;
+
+}
+
+  openDeleteDocumentsModal();
+};
+
+const openDeleteDocumentsModal = () => {
+
+  setModalState({
+    isOpen: true,
+    type: 'confirm',
+    title: t('dig.deleteDocuments'),
+    message: t('dig.deleteDocumentsConfirm')
+      .replace('{{count}}', String(selectedDocuments.length)),
+    showCancel: true,
+    confirmText: t('dig.delete'),
+    onConfirm: handleConfirmDeleteDocuments
+  });
+
+};
+
+const handleConfirmDeleteDocuments = async () => {
+
+  try {
+
+    for (const id of selectedDocuments) {
+      await deleteDocumentById(id, {
+        iduser: user?._id || "",
+        nameemployee: user?.name || "",
+      });
+    }
+
+    showSuccess(t('dig.deleteDocumentsSuccess'));
+
+    setSelectedDocuments([]);
+    setSelectAll(false);
+
+    await loadRecentDocuments();
+
+  } catch (error: any) {
+    showError(t('dig.deleteError'));
+  }
+
 };
 
   /* ================= consultar por barra de busqueda ================= */
@@ -894,42 +1019,7 @@ const getFileIcon = (name?: string) => {
 
             <button
             className={styles.DeleteDocument}
-            onClick={() => {
-
-              setModalState({
-                isOpen: true,
-                type: 'confirm',
-                title: t('dig.deleteDocuments'),
-                message: t('dig.deleteDocumentsConfirm')
-                  .replace('{{count}}', String(selectedDocuments.length)),
-                showCancel: true,
-                onConfirm: async () => {
-
-                  try {
-
-                    for (const id of selectedDocuments) {
-                      await deleteDocumentById(id,
-                                      {
-                                      iduser: user?._id || "",
-                                      nameemployee: user?.name || "",
-                                      });
-                    }
-
-                    showSuccess(t('dig.deleteDocumentsSuccess'));
-
-                    setSelectedDocuments([]);
-                    setSelectAll(false);
-
-                    await loadRecentDocuments();
-
-                  } catch (error: any) {
-                    showError(t('dig.deleteError'));
-                  }
-
-                }
-              });
-
-            }}
+            onClick={handleDeleteMultiple}
           >
               <Trash2 size={16} />
               {t('dig.delete')}
@@ -998,7 +1088,7 @@ const getFileIcon = (name?: string) => {
                   <button
                     className={styles.actionButtonDelete}
                     onClick={() =>
-                      handleDelete(doc.id, doc.documentName)
+                      handleDelete(doc.id, doc.documentName, doc.documenttype.documentTypeId)
                     }
                   >
                     <Trash2 size={20} />
@@ -1251,7 +1341,7 @@ const getFileIcon = (name?: string) => {
           message={modalState.message}
           type={modalState.type}
           showCancel={modalState.showCancel}
-          confirmText={t('dig.delete')}
+          confirmText={modalState.confirmText}
           cancelText={t('dig.cancel')}
         />
 
