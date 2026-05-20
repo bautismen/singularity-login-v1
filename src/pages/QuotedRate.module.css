@@ -120,9 +120,81 @@
 .rightTopRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;  
+  justify-content: flex-end;  
   width: 100%;
   gap: 10px;
+}
+.actionsGroup {
+  display: flex;
+  align-items: center;
+}
+.cloudButton:hover .tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(65px);
+}
+
+/* botón base */
+.cloudButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.2s ease;
+}
+
+/* icono grande */
+.cloudButton svg {
+  font-size: 30px;
+}
+
+/* efecto flotante */
+.cloudButton:hover {
+  transform: translateY(-4px) scale(1.08);
+  opacity: 0.95;
+}
+
+/* click */
+.cloudButton:active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.cloudButton:hover svg {
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+}
+
+.cloudButton svg {
+  color: #03A678;
+}
+
+/* badge */
+.cloudButton {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%) translateY(65px);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 5px 8px;
+  white-space: nowrap;
+  opacity: 0;             
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.cloudButton:hover .tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(60px);
 }
 
 .badgeStatusIdioma {
@@ -273,8 +345,12 @@ CARD 1 inicia-  cardGeneral*/
   font-size: 13px;
   font-weight: 600;
   padding: 4px 10px;
-  background: #eab308;
-  color:var(--hover);
+  background: #03A678;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
   border-radius: 999px;
 }
 
@@ -575,8 +651,29 @@ CARD 1 inicia-  cardGeneral*/
   border-radius: 10px;
   padding: 4px 58px;
   transition: all 0.2s ease;
+  justify-content: center;
 }
 
+.inputWithIcon:hover .iconCalendar {
+  color: #038c7f;
+}
+/* contenedor de cada input + icono */
+.inputWithIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* icono */
+.iconCalendar {
+  position: absolute;
+  left: 10px;
+  width: 16px;
+  height: 16px;
+  color: #038c7f;
+  pointer-events: none;
+  transition: 0.2s ease;
+}
 
 /* inputs estilo limpio */
 .dateField {
@@ -586,7 +683,7 @@ CARD 1 inicia-  cardGeneral*/
   color: var(--titleCard);
   font-size: 13px;
   font-weight: 500;
-  padding: 4px 6px;
+  padding: 6px 8px 6px 34px;
   border-radius: 6px;
   transition: background 0.2s ease;
 }
@@ -596,10 +693,23 @@ CARD 1 inicia-  cardGeneral*/
   background: rgba(80, 228, 213, 0.08);
 }
 
+.dateField::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
 /* separador */
 .separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;         
+  line-height: 1;      
   color: var(--text-secondary);
-  font-weight: 600;
 }
 
 /* modo oscuro fix calendario */
@@ -619,7 +729,7 @@ CARD 1 inicia-  cardGeneral*/
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
 }
 /* contenedor tipo langSelect */
 .contactSelectWrapper {
@@ -985,8 +1095,8 @@ CARD 1 finaliza-  cardGeneral*/
   display: flex;
   align-items: center;
   gap: 16px;
-  background: var(--border);
-  border: 1px solid var(--text-tertiary);
+  background: var(--primary-hover);
+  border: 1px solid var(--border--primary);
   padding: 14px 16px;
   border-radius: 10px;
   width: 100%;    
@@ -1095,11 +1205,28 @@ CARD 1 finaliza-  cardGeneral*/
   cursor: pointer;
   user-select: none;
   transition: color 0.2s ease;
+  display: flex;            
+  align-items: center;     
+  gap: 6px;                  
 }
 
 /* hover solo cambia color */
 .tabItem:hover {
-  color: #aab239;
+  color: #03A678;
+}
+
+.badgeCount {
+    background-color: var(--titleCard); 
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 50%;
+    min-width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
 }
 
 /* activo */
@@ -1135,8 +1262,8 @@ CARD 1 finaliza-  cardGeneral*/
 /* ===== WRAPPER ===== */
 
 .tableWrapper {
-  width: 100%;
   margin-top: 16px;
+  width: 100%;
   max-width: 100%;
   overflow-x: auto;
 }
@@ -1605,7 +1732,7 @@ CARD 1 finaliza-  cardGeneral*/
 
 .tableConceptsAereoOperativo {
   table-layout: fixed;
-  min-width: 1010px;
+  width: 100%;
 }
 
 .tableConceptsAereoOperativo input,
@@ -2023,7 +2150,8 @@ CARD 1 finaliza-  cardGeneral*/
 /* TEXTAREA */
 .termsTextarea {
   width: 100%;
-  background: var(--border--secondary);
+  min-height: 300px;
+  background: var(--hover);
   border: 1px solid var(--border--primary);
   border-radius: 10px;
   padding: 12px;
@@ -2059,7 +2187,7 @@ CARD 1 finaliza-  cardGeneral*/
   top: calc(100% + 4px);
   left: 0;
   width: 100%;
-  background: var(--inputTable);
+  background: var(--primary-hover);
   border: 1px solid var(--titleCard);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -2080,7 +2208,7 @@ CARD 1 finaliza-  cardGeneral*/
     padding: 10px;
     cursor: pointer;
     border-bottom: 1px solid var(--text-tertiary) ;
-    background-color: var(--inputTable);
+    background-color: var(--primary-hover);
 }
 
 .tagTitle {
@@ -2219,7 +2347,7 @@ CARD 1 finaliza-  cardGeneral*/
   background: var(--hover);
   color: var(--text-secondary);
   padding: 16px;
-  min-height: 150px;
+  min-height: 250px;
   border: 1px solid var(--border--primary);
   border-radius: 6px;
   outline: none;
@@ -2255,6 +2383,14 @@ CARD 1 finaliza-  cardGeneral*/
   list-style: decimal !important;
   padding-left: 20px;
 }
+
+/* bloqueo de los componentes*/
+.locked {
+  pointer-events: none;
+  opacity: 0.9;
+  filter: saturate(0.85);
+}
+
 /* =========================
    TERMS CARD FINALIZA
 ========================= */

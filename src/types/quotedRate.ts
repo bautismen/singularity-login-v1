@@ -259,3 +259,19 @@ export type CurrencyOption = {
   label: string;
   value: string;
 };
+
+export interface ResponseGet<T> {
+  codeStatus: number;
+  messageStatus: string;
+  meta: MetaQuotedRate;
+  data: T;
+}
+
+export interface MetaQuotedRate {
+  data_response: string;
+  data_items: number;
+  data_atribute: {
+    type: string;
+    name: string;
+  };
+}

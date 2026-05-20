@@ -14,7 +14,8 @@ import { catalogService } from '../services/catalogsService';
 import { GeneratePreviewQuotedRate } from '../services/pdfGeneratorService';
 import {pricingControlService } from '../services/pricingControlService';
 import { getCustomers} from '../services/customerService';
-import { uploadDocuments,getDocumentTypes, getSections , deleteDocumentById} from "../services/digitizationService";
+import { uploadDocuments,getDocumentTypes, getSections , deleteDocumentById, downloadDocument
+} from "../services/digitizationService";
 //interfaz o modelo
 import type { VatOption, LanguageOption, CurrencyOption, StatusQuote,
     QuotedRate, ServiceItem , Shipment,
@@ -24,12 +25,14 @@ import { UploadResponse } from "../types/digitization";
 import { pdfGeneratorQuotedRate } from "../types/pdfGenerator";
 //Servicio de la API
 import { uploadQuotedRate, updateQuotedRate,
-        updateStatusQuotedRate , GetQuotedRateByQuotationRequestAndControlInfo } from "../services/quotedRateServices";
+        updateStatusQuotedRate , GetQuotedRateByQuotationRequestAndControlInfo, updateStatusControlQuotedRate } from "../services/quotedRateServices";
 // Icons
 import {
         ArrowLeft, Save, Eye, FileText, User, Tag, Ship, Truck, Plane, Package, PlusCircle, Trash2, Search,
-        Copy, Bold, Italic, Underline, List, ListOrdered, Image, Shield, Warehouse ,UserCheck,Puzzle  
+        Copy, Bold, Italic, Underline, List, ListOrdered, Image, Shield, Warehouse ,UserCheck,Puzzle ,Calendar  
 } from "lucide-react";
+import {  GrCloudDownload  } from "react-icons/gr";
+import { AiFillCaretRight } from "react-icons/ai";
 
 export default function QuotedRate({ 
     onClose, 
@@ -78,6 +81,10 @@ const [previousVersionCuote, setPreviousVersionCuote] = useState<number>(0);
 const [selectedContact, setSelectedContact] = useState<any>(null);
 
 const isProspect = !!quotationRequestData?.customer?.prospectName;
+const [isAcceptedByClient, setIsAcceptedByClient] = useState(false);
+const [isActive, setIsActive] = useState(false);
+const hasDocument = isAcceptedByClient || isActive;
+
 const [prospectAddress, setProspectAddress] = useState("");
 const [manualContact, setManualContact] = useState({
     type: "",
@@ -91,6 +98,7 @@ const [sections, setSections] = useState<any[]>([]);
 
 const [isSaving, setIsSaving] = useState(false);
 const [isGenerating, setIsGenerating] = useState(false);
+const [downloading, setDownloading] = useState(false);
 
 const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -396,8 +404,8 @@ const VAT_OPTIONS: VatOption[] = [
     { idVar: 1, label: "N/A", rate: 0, value: -1 },
     { idVar: 2, label: "0%",  rate: 0, value: 0 },
     { idVar: 3, label: "4%",  rate: 4, value: 4 },
-    { idVar: 4, label: "8%",  rate: 0, value: 8 },
-    { idVar: 5, label: "16%", rate: 0, value: 16 }
+    { idVar: 4, label: "8%",  rate: 8, value: 8 },
+    { idVar: 5, label: "16%", rate: 16, value: 16 }
 ];
 
 /*          Catalogo de idiomas             */
@@ -517,6 +525,16 @@ useEffect(() => {
             setSelectedStatus(found);
         }
     }
+
+    // ================== STATUS ==================
+    const accepted =item._id_status_quote === 5; // 5 = Aceptada por el cliente
+
+    setIsAcceptedByClient(accepted);
+
+    const active =item._id_status_quote === 2; // 2-  activo
+
+    setIsActive(active);
+
     // ================== IDIOMA ==================
     const lang = getLanguage(item);
     if (lang) {
@@ -525,27 +543,27 @@ useEffect(() => {
     }
 
     // ================== CONTACTO ==================
-        const contactRegister = item?.customer_contact;
+    const contactRegister = item?.customer_contact;
 
-    if (contactRegister?.email) {
-        const foundContact = customerContacts.find(
-            (c: any) => c.email === contactRegister.email
-        );
+    if (contactRegister) {
+    const foundContact = customerContacts.find(
+        (c: any) => c.email === contactRegister.email
+    );
 
-        if (foundContact) {
-            // ✅ Cliente normal
-            setSelectedContact(foundContact);
-        } else {
-            // ✅ Prospecto (NO existe en catálogo)
-            setManualContact({
-                type: contactRegister.type || "",
-                name: contactRegister.name || "",
-                email: contactRegister.email || "",
-                phone: contactRegister.phone || ""
-            });
+    if (foundContact) {
+        // Cliente normal
+        setSelectedContact(foundContact);
+    } else {
+        // Prospecto (aunque falten campos)
+        setManualContact({
+        type: contactRegister.type || "",
+        name: contactRegister.name || "",
+        email: contactRegister.email || "",
+        phone: contactRegister.phone || ""
+        });
 
-            setSelectedContact(null); // importante
-        }
+        setSelectedContact(null);
+    }
     }
     // ================== DIRECCIÓN ==================
     const addressFromDB = item?.customer_address;
@@ -922,7 +940,6 @@ const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const range = selection?.getRangeAt(0);
 
     const wrapper = document.createElement("div");
-    wrapper.contentEditable = "false";
     wrapper.style.display = "inline-block";
     wrapper.style.resize = "both";
     wrapper.style.overflow = "hidden";
@@ -1214,6 +1231,8 @@ const handleSaveQuotedRate = async (
 
     if (!validateConcepts()) return;
 
+    if (!validateConceptsNumers()) return;
+
     if (!validateTotal()) return;
 
     const current = quotedRateRegistradaInfo?.data?.[0]; //registro anterior
@@ -1247,85 +1266,305 @@ const handleSaveQuotedRate = async (
 
     if (isGenerate) {
 
-            try {
-                // 1. Generar PDF SIN watermark
-                const blob = await generatePdfBlob(false, calculatedVersion);
+        const pdfResponse = await generateAndUploadPdf(calculatedVersion);
 
-                if (!blob) {
-                    throw new Error("No se pudo generar el PDF");
-                }
+        _iddoc = pdfResponse.documentId;
 
-                const current = quotedRateRegistradaInfo?.data?.[0];
+        if (!pdfResponse.success) {
+            isSuccess = false;
+        }
 
-                // 2. Convertir a File y se asigna nomenclatura doc
-                const file = new File(
-                    [blob],
-                    `QuotedRate_${current?.quote_number || "SinFolio"}_v${calculatedVersion}.pdf`,
-                    { type: "application/pdf" }
+    }
+
+    const payload: QuotedRate = buildQuotedRatePayload(
+        current,
+        calculatedVersion,
+        statusToUse,
+        _iddoc
+    );
+        //pruebas 
+        //console.log("Payload:", JSON.stringify(payload, null, 2)); //pruebas 
+
+        // ============================
+        // SWITCH CREATE / UPDATE
+        // ============================
+        // valiable del responsse
+        const validateResponse = (res: any, successCodes = [200, 201, 204]) => {
+        if (!successCodes.includes(res?.codeStatus)) {
+            throw new Error(res?.messageStatus || 'Error en la operación');
+        }
+        return res;
+        };
+
+        let response;
+
+        let responseUpdateStatus;
+
+        let idNewQuotedRate;
+
+        try {
+        const isUpdate = !isGenerateAction && idQuoteRate !== null; //borrador update
+        const isFirstDraft = !isGenerateAction && idQuoteRate == null; //primer borrador upload
+        const isGenerateWithPrev = isGenerateAction && previousVersionId !== null && isGenerate; //se genera una nueva de version >0
+        const isGenerateWithoutPrev = isGenerateAction && previousVersionId == null && isGenerate; //se genera una nueva de version 0
+
+        // -------- UPDATE --------
+        if (isUpdate) {
+            response = validateResponse(
+            await updateQuotedRate(current?.quote_number, payload)
+            );
+
+            if (response?.codeStatus === 200) { //update code 200
+                showSuccess(
+                `${t('tvf.UpdateOK')} ${response?.atrribute?.value ?? ''}`
                 );
-
-                // 3. Definir section y documentType
-                const sectionId = sections.find(
-                (s) => s.section === "Pricing"
-                )?.sectionid;
-
-                const documentTypeId = documentTypes.find(
-                (d) => d.documentkey === "TarVen"
-                )?.documenttypeid;
-
-                if (!sectionId || !documentTypeId) {
-                    throw new Error("No hay sección o tipo de documento");
-                }
-
-                // 4. Subir documento
-                try {
-                    const response: UploadResponse = await uploadDocuments(
-                        quotationRequestData?.referenceRequest,
-                        sectionId,
-                        documentTypeId,
-                        {
-                            iduser: user?._id || "",
-                            nameemployee: user?.name || ""
-                        },
-                        [file]
-                    );
-
-                    if (response.codeStatus === 201) { //Documento registrado
-
-                        const documentId = response.atrribute?.value;
-
-                        _iddoc = documentId || "";
-
-                        handlePreviewQuotedRate(false, calculatedVersion) // ya no es preview
-
-                        showSuccess(t('tvf.PdfUploadOK'));
-
-                    } else {
-                        isSuccess = false;
-                        showError(t('tvf.PdfUploadError'));
-                    }
-
-                } catch (error) {
-                    console.error(error);
-                }
-
-            } catch (err) {
-                showNotification(
-                    "warning",
-                    t('tvf.PdfUploadWarning')
+            } else {
+                isSuccess = false;
+                showError(
+                `${t('tvf.UpdateStatusError')} ${response?.messageStatus ?? ''}`
                 );
             }
+
+        }
+
+        // -------- CREATE (todos los casos de creación) --------
+        if (isFirstDraft || isGenerateWithPrev || isGenerateWithoutPrev) {
+            response = validateResponse(
+            await uploadQuotedRate(
+                quotationRequestData?.referenceRequest || "",
+                pricingData?.control || "",
+                payload
+            ),
+            [201] // normalmente create = 201
+            );
+
+            const attr = response?.atrribute?.value;
+
+            idNewQuotedRate = attr?._id
+
+            if (response?.codeStatus === 201) { //code status 201 create
+                showSuccess(
+                `${t('tvf.GenerateOK')} ${attr?.quote_number ?? ''}/v${attr?.version ?? 0}`
+                );
+            } else {
+                isSuccess = false;
+                showError(
+                `${t('tvf.GenerateError')} ${response?.messageStatus ?? ''}`
+                );
+            }
+
+            // -------- UPDATE STATUS (solo si es generate + create OK de la tarifa venta) --------
+            if (
+                (isGenerateWithPrev || isGenerateWithoutPrev) &&
+                response?.codeStatus === 201 // si se creo el documento correctamente
+            ) 
+            {
+                responseUpdateStatus = validateResponse(
+                await updateStatusQuotedRate(current?._id, 4) //Reemplazada
+                );
+
+                if (responseUpdateStatus?.codeStatus !== 200) { // code status 200 para update
+                isSuccess = false;
+                showError(
+                    `${t('tvf.UpdateStatusError')} ${
+                    responseUpdateStatus?.messageStatus ?? ''
+                    }`
+                );
+                }
+
+            }
+
+        }
+
+        // -------- DELETE DOCUMENT (solo si hay documento previo) --------
+		// se debe borrar el documento anterior en gcs y datastate 0
+        if (isGenerateWithPrev && current?._iddocument) {
+            try {
+            const deleteRes = await deleteDocumentById(
+                current._iddocument,
+                {
+                iduser: user?._id || "",
+                nameemployee: user?.name || "",
+                }
+            );
+
+            validateResponse(deleteRes, [200, 204]);
+
+            //showSuccess(t('dig.deleteSuccess'));
+            } 
+            catch (error: any) 
+            {
+            isSuccess = false;
+            console.error(error);
+            showError(error?.message || t('dig.deleteError'));
+            }
+        }
+
+        } catch (error: any) {
+        console.error(error);
+        showError(error?.message || t('tvf.GeneralError'));
+        }
+
+
+        // ============================
+        // RESPUESTA
+        // ============================
+        if (response?.codeStatus === 200 || response?.codeStatus === 201) {
+
+        if (statusToUse.idStatusQ === 2 && pricingData?.id) {
+            try {
+            const controlResponse = await pricingControlService.ChangeStatusControl(
+                pricingData.id,
+                "Cotizada"
+            );
+
+            if (controlResponse?.codeStatus === 200) {
+
+                // se actualiza la nueva tarifa como cotizada
+                const quotedRateResponse =
+                await updateStatusControlQuotedRate(
+                    idNewQuotedRate,
+                    5 // Cotizada
+                );
+                
+                if (quotedRateResponse?.codeStatus === 200) {
+
+                    showSuccess(
+                `${t('tvf.UpdateStatusControlOK')} ${controlResponse?.messageStatus ?? ''}`
+                );
+                } else {
+
+                    isSuccess = false;
+                    showError(
+                        `${t('tvf.UpdateStatusControlError')} ${quotedRateResponse?.messageStatus ?? ''}`
+                    );
+                }
+            } else {
+                isSuccess = false;
+                showError(
+                `${t('tvf.UpdateStatusControlError')} ${controlResponse?.messageStatus ?? ''}`
+                );
+            }
+
+            } catch (err) {
+            console.error("Error al cambiar status del control:", err);
+            }
+        }
+        }
+
+        // si todo se realizo ok
+        if (isSuccess) {
+        onClose?.();
+        }
+        
+
+        } catch (error) {
+            console.error("Error en save quoted rate:", error);
+            showError(t('tvf.SaveError'));
+        }
+
+};
+
+// servicio donde genera el pdf y lo sube a google cloud storage
+const generateAndUploadPdf = async (
+    calculatedVersion: number
+): Promise<{ success: boolean; documentId: string }> => {
+    try {
+
+        // 1. Generar PDF SIN watermark
+        const blob = await generatePdfBlob(false, calculatedVersion);
+
+        if (!blob) {
+            throw new Error("No se pudo generar el PDF");
+        }
+
+        const current = quotedRateRegistradaInfo?.data?.[0];
+
+        // 2. Convertir a File y asignar nomenclatura
+        const file = new File(
+            [blob],
+            `QuotedRate_${current?.quote_number || t('tvf.WithoutFolio')}_v${calculatedVersion}.pdf`,
+            { type: "application/pdf" }
+        );
+
+        // 3. Obtener section y documentType
+        const sectionId = sections.find(
+            (s) => s.section === "Pricing"
+        )?.sectionid;
+
+        const documentTypeId = documentTypes.find(
+            (d) => d.documentkey === "TarVen"
+        )?.documenttypeid;
+
+        if (!sectionId || !documentTypeId) {
+            throw new Error("No hay sección o tipo de documento");
+        }
+
+        // 4. Subir documento
+        const response: UploadResponse = await uploadDocuments(
+            quotationRequestData?.referenceRequest,
+            sectionId,
+            documentTypeId,
+            {
+                iduser: user?._id || "",
+                nameemployee: user?.name || ""
+            },
+            [file]
+        );
+
+        if (response.codeStatus === 201) {
+
+            const documentId = response.atrribute?.value || "";
+
+            handlePreviewQuotedRate(false, calculatedVersion);
+
+            showSuccess(t('tvf.PdfUploadOK'));
+
+            return {
+                success: true,
+                documentId
+            };
+        }
+
+        showError(t('tvf.PdfUploadError'));
+
+        return {
+            success: false,
+            documentId: ""
+        };
+
+    } catch (error) {
+
+        console.error(error);
+
+        showNotification(
+            "warning",
+            t('tvf.PdfUploadWarning')
+        );
+
+        return {
+            success: false,
+            documentId: ""
+        };
     }
+};
+
+const buildQuotedRatePayload = (
+    current: any,
+    calculatedVersion: number,
+    statusToUse: StatusQuote,
+    documentId: string
+): QuotedRate => {
 
     const contact = isProspect ? manualContact : selectedContact;
 
     const prospectName = isProspect
-    ? quotationRequestData?.customer?.prospectName
-    : pricingData?.customer_business_name;
+        ? quotationRequestData?.customer?.prospectName
+        : pricingData?.customer_business_name;
 
     const address = isProspect ? prospectAddress : customerAddress;
 
-    const payload: QuotedRate = {
+    return {
         _id: current?._id || null,
         _idcuote: current?._idcuote || null,
         quote_number: current?.quote_number || null,
@@ -1348,7 +1587,7 @@ const handleSaveQuotedRate = async (
             id_status_control: pricingData?.status_control?.id_status_control ?? 0,
             status_control_name: pricingData?.status_control?.status_control_name ?? "",
         },
-        _iddocument: _iddoc || current?._iddocument,
+        _iddocument: documentId || current?._iddocument,
         currency: currency,
         exchange: exchangeRate,
         targetcurrecy: currencyTo,
@@ -1394,170 +1633,12 @@ const handleSaveQuotedRate = async (
                 : statusToUse.labelEnglish,
         id_language: idLanguage,
         language: languageFormat,
-        previous_version_id:  previousVersionId,//aqui debe cambiar- ajuste pendiente
-        previous_version_cuote:  previousVersionCuote,//aqui debe cambiar- ajuste pendiente
+        previous_version_id:  previousVersionId,
+        previous_version_cuote:  previousVersionCuote,
         archived: false,
-        data_state: 1
-        };
-        //pruebas 
-        //console.log("Payload:", JSON.stringify(payload, null, 2));
-
-        // ============================
-        // SWITCH CREATE / UPDATE
-        // ============================
-        // valiable del responsse
-        const validateResponse = (res: any, successCodes = [200, 201, 204]) => {
-        if (!successCodes.includes(res?.codeStatus)) {
-            throw new Error(res?.messageStatus || 'Error en la operación');
-        }
-        return res;
-        };
-
-        let response;
-
-        let responseUpdateStatus;
-
-        try {
-        const isUpdate = !isGenerateAction && idQuoteRate !== null; //borrador update
-        const isFirstDraft = !isGenerateAction && idQuoteRate == null; //primer borrador upload
-        const isGenerateWithPrev = isGenerateAction && previousVersionId !== null && isGenerate; //se genera una nueva de version >0
-        const isGenerateWithoutPrev = isGenerateAction && previousVersionId == null && isGenerate; //se genera una nueva de version 0
-
-        // -------- UPDATE --------
-        if (isUpdate) {
-            response = validateResponse(
-            await updateQuotedRate(current?.quote_number, payload)
-            );
-
-            if (response?.codeStatus === 200) { //update code 200
-                showSuccess(
-                `${t('tvf.UpdateOK')} ${response?.atrribute?.value ?? ''}`
-                );
-            } else {
-                isSuccess = false;
-                showError(
-                `${t('tvf.UpdateStatusError')} ${response?.messageStatus ?? ''}`
-                );
-            }
-
-        }
-
-        // -------- CREATE (todos los casos de creación) --------
-        if (isFirstDraft || isGenerateWithPrev || isGenerateWithoutPrev) {
-            response = validateResponse(
-            await uploadQuotedRate(
-                quotationRequestData?.referenceRequest || "",
-                pricingData?.control || "",
-                payload
-            ),
-            [201] // normalmente create = 201
-            );
-
-            if (response?.codeStatus === 201) { //code status 201 create
-                showSuccess(
-                `${t('tvf.GenerateOK')} ${response?.atrribute?.value ?? ''}`
-                );
-            } else {
-                isSuccess = false;
-                showError(
-                `${t('tvf.GenerateError')} ${response?.messageStatus ?? ''}`
-                );
-            }
-
-            // -------- UPDATE STATUS (solo si es generate + create OK de la tarifa venta) --------
-            if (
-                (isGenerateWithPrev || isGenerateWithoutPrev) &&
-                response?.codeStatus === 201 // si se creo el documento correctamente
-            ) 
-            {
-                responseUpdateStatus = validateResponse(
-                await updateStatusQuotedRate(current?._id, 4)
-                );
-
-                if (responseUpdateStatus?.codeStatus !== 200) { // code status 200 para update
-                isSuccess = false;
-                showError(
-                    `${t('tvf.UpdateStatusError')} ${
-                    responseUpdateStatus?.messageStatus ?? ''
-                    }`
-                );
-                }
-
-            }
-
-        }
-
-        // -------- DELETE DOCUMENT (solo si hay documento previo) --------
-		// se debe borrar el documento anterior en gcs y datastate 0
-        if (isGenerateWithPrev && current?._iddocument) {
-            try {
-            const deleteRes = await deleteDocumentById(
-                current._iddocument,
-                {
-                iduser: user?._id || "",
-                nameemployee: user?.name || "",
-                }
-            );
-
-            validateResponse(deleteRes, [200, 204]);
-
-            showSuccess(t('dig.deleteSuccess'));
-            } 
-            catch (error: any) 
-            {
-            isSuccess = false;
-            console.error(error);
-            showError(error?.message || t('dig.deleteError'));
-            }
-        }
-
-        } catch (error: any) {
-        console.error(error);
-        showError(error?.message || t('tvf.GeneralError'));
-        }
-
-
-        // ============================
-        // RESPUESTA
-        // ============================
-        if (response?.codeStatus === 200 || response?.codeStatus === 201) {
-
-        if (statusToUse.idStatusQ === 2 && pricingData?.id) {
-            try {
-            const controlResponse = await pricingControlService.ChangeStatusControl(
-                pricingData.id,
-                "Cotizada"
-            );
-
-            if (controlResponse?.codeStatus === 200) {
-                showSuccess(
-                `${t('tvf.UpdateStatusControlOK')} ${controlResponse?.messageStatus ?? ''}`
-                );
-            } else {
-                isSuccess = false;
-                showError(
-                `${t('tvf.UpdateStatusControlError')} ${controlResponse?.messageStatus ?? ''}`
-                );
-            }
-
-            } catch (err) {
-            console.error("Error al cambiar status del control:", err);
-            }
-        }
-        }
-
-        // si todo se realizo ok
-        if (isSuccess) {
-        onClose?.();
-        }
-        
-
-        } catch (error) {
-            console.error("Error en save quoted rate:", error);
-            showError(t('tvf.SaveError'));
-        }
-
+        data_state: 1,
     };
+};
 
 //agregar validacion que si dejan un concepto sin capturar completo, notifique
 const validateConcepts = () => {
@@ -1584,6 +1665,78 @@ const validateConcepts = () => {
     return true;
 };
 
+const isValidNumber = (value: any) => {
+    return value !== null && value !== "" && !isNaN(Number(value));
+};
+
+const validateConceptsNumers = () => {
+
+    const allConcepts = [
+        ...maritimeConcepts.map((c, i) => ({ ...c, table: 'maritime', index: i })),
+        ...airConcepts.map((c, i) => ({ ...c, table: 'air', index: i })),
+        ...airOperationalConcepts.map((c, i) => ({ ...c, table: 'airOperational', index: i })),
+        ...landConcepts.map((c, i) => ({ ...c, table: 'land', index: i })),
+        ...consultingServicesConcepts.map((c, i) => ({ ...c, table: 'consulting', index: i }))
+    ];
+
+    const isInvalid = (value: any) => {
+        if (value === undefined || value === null || value === "") return false;
+        return !isValidNumber(value) || Number(value) < 0;
+    };
+
+    const invalidConcept = allConcepts.find((c) => {
+
+        switch (c.table) {
+
+            case 'maritime':
+                return isInvalid(c.unit) || isInvalid(c.subtotal);
+
+            case 'air':
+                return (
+                    isInvalid(c.rate_per_kg) ||
+                    isInvalid(c.fuel_surcharge) ||
+                    isInvalid(c.security_surcharge) ||
+                    isInvalid(c.miscellaneous_charges) ||
+                    isInvalid(c.chargeable_weight)
+                );
+
+            case 'airOperational':
+                return isInvalid(c.subtotal); 
+
+            case 'land':
+                return isInvalid(c.unit) || isInvalid(c.subtotal);
+
+            case 'consulting':
+                return isInvalid(c.unit) || isInvalid(c.subtotal);
+
+            default:
+                return false;
+        }
+    });
+
+    if (invalidConcept) {
+
+        const tableNames: Record<string, string> = {
+            maritime: t('tvf.MaritimeConcepts'),
+            air: t('tvf.AirConcepts'),
+            airOperational: t('tvf.AirOperationalConcepts'),
+            land: t('tvf.LandConcepts'),
+            consulting: t('tvf.ConsultingServicesConcepts')
+        };
+
+        showError(
+            `${tableNames[invalidConcept.table]} - ` +
+            t('tvf.ConceptUnValid', {
+                values: { row: invalidConcept.index + 1 }
+            })
+        );
+
+        return false;
+    }
+
+    return true;
+};
+
 const validateRequiredFields = () => {
     const errors: string[] = [];
 
@@ -1594,13 +1747,19 @@ const validateRequiredFields = () => {
     if (!manualContact?.name?.trim()) {
         errors.push(t('tvf.NameRequired'));
     }
-
+ 
+    {/*
     if (!manualContact?.email?.trim()) {
         errors.push(t('tvf.EmailRequired'));
     }
 
     if (!manualContact?.phone?.trim()) {
         errors.push(t('tvf.PhoneRequired'));
+    }
+    */}
+
+    if (!prospectAddress?.trim()) {
+        errors.push(t('tvf.enterAddress'));
     }
 
     } else {
@@ -1653,6 +1812,48 @@ const validateTotal = () => {
     return true;
 };
 
+// ================ Descarga del archivo================== //
+
+const handleDownload = async (id: string) => {
+    if (downloading) return;
+
+    try {
+    setDownloading(true);
+
+    const response = await downloadDocument(id);
+
+    if (response.codeStatus === 200) {
+        const { fileBytes, fileName } = response.meta;
+
+        const byteCharacters = atob(fileBytes);
+        const byteNumbers = new Array(byteCharacters.length);
+
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+
+        const blob = new Blob([new Uint8Array(byteNumbers)]);
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        window.URL.revokeObjectURL(url);
+
+    showSuccess(  t('dig.fileDownloaded').replace('{{name}}', fileName) );
+    } else {
+    showError(t('dig.downloadError'));
+    }
+} catch {
+    showError(t('dig.downloadFailed'));
+} finally {
+    setDownloading(false);
+}
+};
 // ================== Preview de la tarifa de venta================== //
 
 const handlePreviewQuotedRate = async (isPreview: boolean,  version: number ) => {  
@@ -1674,26 +1875,31 @@ const handlePreviewQuotedRate = async (isPreview: boolean,  version: number ) =>
                         <title>${title}</title>
 
                         <style>
-                            body {
+                        
+                            html, body {
                                 margin: 0;
+                                padding: 0;
+                                overflow: hidden;
                                 font-family: sans-serif;
                             }
 
                             .previewPdfContainerLoading {
                                 width: 100%;
                                 min-height: 100vh;
+                                height: 100vh;
                                 display: flex;
                                 justify-content: center;
                                 align-items: center;
                                 padding: 2rem;
-                                background: #f8fafc;
+                                background: #111827;
+                                box-sizing: border-box;
                             }
 
                             .previewPdfLoadingCard {
                                 width: 100%;
                                 max-width: 420px;
-                                background: white;
-                                border: 1px solid #e5e7eb;
+                                background: #111827;
+                                border: 1px solid #374151; 
                                 border-radius: 20px;
                                 padding: 40px 32px;
                                 display: flex;
@@ -1710,7 +1916,7 @@ const handlePreviewQuotedRate = async (isPreview: boolean,  version: number ) =>
                                 margin-top: 22px;
                                 font-size: 24px;
                                 font-weight: 800;
-                                color: #111827;
+                                color: #f9fafb;
                             }
 
                             .previewPdfLoadingText {
@@ -1718,7 +1924,7 @@ const handlePreviewQuotedRate = async (isPreview: boolean,  version: number ) =>
                                 max-width: 260px;
                                 font-size: 14px;
                                 line-height: 1.5;
-                                color: #6b7280;
+                                color: #d1d5db;
                             }
 
                             .previewPdfSpinner {
@@ -1800,7 +2006,37 @@ const handlePreviewQuotedRate = async (isPreview: boolean,  version: number ) =>
         const fileURL = window.URL.createObjectURL(blob);
 
         if (newTab) {
-            newTab.location.href = fileURL;
+            newTab.document.write(`
+                <html>
+                    <head>
+                        <title>${t('tvf.Preview')}</title>
+
+                        <style>
+                            html, body {
+                                margin: 0;
+                                width: 100%;
+                                height: 100%;
+                                overflow: hidden;
+                                background: #111827;
+                            }
+
+                            iframe {
+                                width: 100%;
+                                height: 100%;
+                                border: none;
+                            }
+                        </style>
+                    </head>
+
+                    <body>
+                        <iframe 
+                            src="${fileURL}#toolbar=0&navpanes=0&scrollbar=0"
+                        ></iframe>
+                    </body>
+                </html>
+            `);
+
+            newTab.document.close();
         }
 
     } catch (error) {
@@ -1950,7 +2186,7 @@ const buildPreviewPayload = (
                 Concept: c.concept || "",
                 Base: c.billing_base || "",
                 Container: c.container_type || "",
-                Quantity: c.unit || 0,
+                Quantity:  Number(c.unit) || 0,
                 SubTotal: Number(c.subtotal) || 0,
                 Rate: Number(c.rate) || 0,
                 Total: Number(c.total) || 0
@@ -1969,39 +2205,48 @@ return (
             <div className={styles.header}>
                 <h1 className={styles.title}>{t('tvf.title')}</h1>
                 <div className={styles.buttonGroup}>
+                <button className={styles.headerButton} onClick={onClose}>
+                    <ArrowLeft size={18} />
+                </button>
 
-                    <button className={styles.headerButton} onClick={onClose}>
-                        <ArrowLeft size={18} />
-                    </button>
-
-                    <button className={styles.headerButton} onClick={handleDraftWithValidation} 
+                {!isAcceptedByClient && ( //falta añadir el activo
+                    <button
+                        className={styles.headerButton}
+                        onClick={handleDraftWithValidation}
                         disabled={isSaving}
                     >
                         <Save size={18} />
-                        <span>
-                            {t('tvf.Draft')}
-                        </span>
+                        <span>{t('tvf.Draft')}</span>
                     </button>
+                )}
 
-                    <button 
-                        className={styles.headerButton}
-                        onClick={() => handlePreviewQuotedRate(true, quotedRateRegistradaInfo?.data?.[0]?.version  ?? 0)}
-                    >
-                        <Eye size={18} />
-                        <span>{t('tvf.Preview')}</span>
-                    </button>
+                <button
+                    className={styles.headerButton}
+                    onClick={() =>
+                        handlePreviewQuotedRate(
+                            !isAcceptedByClient,
+                            quotedRateRegistradaInfo?.data?.[0]?.version ?? 0
+                        )
+                    }
+                >
+                    <Eye size={18} />
+                    <span>
+                        {isAcceptedByClient ? t('tvf.ViewRate') : t('tvf.Preview')}
+                    </span>
+                </button>
 
-                    {idPrevious && (
+                {!isAcceptedByClient && idPrevious && (
                     <button
-                            className={styles.headerButton}
-                            onClick={handleGenerateWithConfirm}
-                            disabled={isGenerating}
-                        >
-                            <FileText size={18} />
-                            <span>{t('tvf.Generate')}</span>
+                        className={styles.headerButton}
+                        onClick={handleGenerateWithConfirm}
+                        disabled={isGenerating}
+                    >
+                        <FileText size={18} />
+                        <span>{t('tvf.Generate')}</span>
                     </button>
-                    )}
-                </div>
+                )}
+
+            </div>
             </div>
             {/* Control Pricing titulo*/}
             <div className={styles.titleSection}>
@@ -2027,14 +2272,30 @@ return (
             <div className={styles.rightTitle}>
 
                 <div className={styles.rightTopRow}>
-                    
+                    {hasDocument && ( //si es activo o aceptada por el cliente
+                        <div className={styles.actionsGroup}>
+                            <button
+                                className={styles.cloudButton}
+                                onClick={() =>
+                                    handleDownload(
+                                        quotedRateRegistradaInfo?.data?.[0]?._iddocument
+                                    )
+                                }
+                            >
+                                <GrCloudDownload size={26} />
+                                <span className={styles.tooltip}>
+                                    {t('dig.download')}
+                                </span>
+                            </button>
+                        </div>
+                    )}
                     <div className={styles.langBlock}>
                         <span className={styles.badgeLang}>
                             {t('tvf.LanguageFormat')}
                         </span>
                     </div>
 
-                    <div className={styles.langSelect}>
+                    <div className={`${styles.langSelect} ${isAcceptedByClient ? styles.locked : ""}`}>
                     <select
                         value={languageFormat}
                         onChange={(e) => {
@@ -2066,8 +2327,7 @@ return (
                             <span className={styles.badgePrimary}>{t('tvf.subtitleGeneral')}</span>
                         </div>
                     {/* decorativo */}
-                    <div className={styles.cardContent}>
-
+                    <div className={`${styles.cardContent} ${isAcceptedByClient ? styles.locked : ""}`} >
                     {/* LEFT */}
                     <div className={styles.leftSection}>
                         {/* header */}
@@ -2243,30 +2503,36 @@ return (
 
                         {/* fechas */}
                         <div className={styles.dateBlock}>
-                            <span className={styles.labelMini}>
+                        <span className={styles.labelMini}>
                             {t('tvf.OfferValidity')}
-                            </span>
+                        </span>
 
-                            <div className={styles.dateInputs}>
-
+                        <div className={styles.dateInputs}>
+                            <div className={styles.inputWithIcon}>
+                            <Calendar className={styles.iconCalendar} />
                             <input
-                            type="date"
-                            className={styles.dateField}
-                            value={validFrom}
-                            onChange={(e) => setValidFrom(e.target.value)}
-                            required                        
-                            />
-
-                            <span className={styles.separator}>→</span>
-
-                            <input
-                            type="date"
-                            className={styles.dateField}
-                            value={validUntil}
-                            onChange={(e) => setValidUntil(e.target.value)}
-                            required                    
+                                type="date"
+                                className={styles.dateField}
+                                value={validFrom}
+                                onChange={(e) => setValidFrom(e.target.value)}
+                                required
                             />
                             </div>
+
+                            <span className={styles.separator}><AiFillCaretRight  size={16} /></span>
+
+                            <div className={styles.inputWithIcon}>
+                            <Calendar className={styles.iconCalendar} />
+                            <input
+                                type="date"
+                                className={styles.dateField}
+                                value={validUntil}
+                                onChange={(e) => setValidUntil(e.target.value)}
+                                required
+                            />
+                            </div>
+
+                        </div>
                         </div>
                         </div>
                     </div>
@@ -2331,7 +2597,7 @@ return (
                     };
 
                     return (
-                        <div key={service.idServiceItem} className={styles.serviceCard}>
+                        <div key={service.idServiceItem} className={`${styles.serviceCard} ${isAcceptedByClient ? styles.locked : ""}`} >
 
                         {/* HEADER */}
                         <div className={styles.serviceHeader}>
@@ -2508,6 +2774,12 @@ return (
                             className={`${styles.tabItem} ${activeTab === 'MARITIMO' ? styles.active : ''}`}
                             onClick={() => setActiveTab('MARITIMO')}
                         >
+                            {/* Badge contador maritimeConcepts */}
+                            {maritimeConcepts.length > 0 && (
+                                <span className={styles.badgeCount}>
+                                    {maritimeConcepts.length}
+                                </span>
+                            )}
                             <Ship size={18} /> {t('tvf.Maritime')}
                         </div>
 
@@ -2515,6 +2787,13 @@ return (
                             className={`${styles.tabItem} ${activeTab === 'AEREO' ? styles.active : ''}`}
                             onClick={() => setActiveTab('AEREO')}
                         >
+                            
+                            {/* Badge contador airConcepts y airOperationalConcepts*/}
+                            {(airConcepts.length + airOperationalConcepts.length) > 0 && (
+                                <span className={styles.badgeCount}>
+                                    {airConcepts.length + airOperationalConcepts.length}
+                                </span>
+                            )}
                             <Plane  size={18} />  {t('tvf.Air')}
                         </div>
 
@@ -2522,17 +2801,27 @@ return (
                             className={`${styles.tabItem} ${activeTab === 'TERRESTRE' ? styles.active : ''}`}
                             onClick={() => setActiveTab('TERRESTRE')}
                         >
+                            {landConcepts.length > 0 && (
+                                <span className={styles.badgeCount}>
+                                    {landConcepts.length}
+                                </span>
+                            )}
                             <Truck size={18} />    {t('tvf.Land')}
                         </div>
                         <div
                             className={`${styles.tabItem} ${activeTab === 'ACCESORIAL' ? styles.active : ''}`}
                             onClick={() => setActiveTab('ACCESORIAL')}
                         >
+                            {consultingServicesConcepts.length > 0 && (
+                                <span className={styles.badgeCount}>
+                                    {consultingServicesConcepts.length}
+                                </span>
+                            )}
                             <Puzzle   size={18} />    {t('tvf.Advisory')}
                         </div>
                     </div>
                     {activeTab === 'MARITIMO' && (
-                    <div className={styles.tableWrapper}>
+                    <div className={`${styles.tableWrapper} ${isAcceptedByClient ? styles.locked : ""}`} >
                         <h3>{t('tvf.MaritimeConcepts')}</h3>
                         <table className={`${styles.table} ${styles.tableConceptsMaritime }`}>
                         <thead>
@@ -2592,6 +2881,7 @@ return (
                                     <input
                                         className={styles.inputConcept}
                                         value={row.concept}
+                                        title={row.concept}
                                         onChange={(e) => handleChange(index, 'concept', e.target.value)}
                                     />
                                     </td>
@@ -2601,6 +2891,7 @@ return (
                                     <input
                                         className={styles.inputBase}
                                         value={row.billing_base ?? ""}
+                                        title={row.billing_base}
                                         onChange={(e) => handleChange(index, 'billing_base', e.target.value)}
                                     />
                                     </td>
@@ -2611,6 +2902,7 @@ return (
                                     list={`containers-${index}`}
                                     className={styles.selectContainer}
                                     value={row.container_type ?? ""}
+                                    title={row.container_type}
                                     onChange={(e) => handleChange(index, 'container_type', e.target.value)}
                                     onBlur={(e) => {
                                         const value = e.target.value;
@@ -2636,7 +2928,8 @@ return (
                                     <input
                                         className={styles.inputUnit}
                                         value={row.unit}
-                                        onChange={(e) => handleChange(index, 'unit', Number(e.target.value))}
+                                        title={row.unit}
+                                        onChange={(e) => handleChange(index, 'unit', e.target.value)}
                                     />
                                     </td>
                                     {/* SUBTOTAL */}
@@ -2644,6 +2937,7 @@ return (
                                     <input
                                         className={styles.inputSubtotal}
                                         value={row.subtotal}
+                                        title={row.subtotal}
                                         onChange={(e) => handleChange(index, 'subtotal', e.target.value)}
                                         />
                                     </td>
@@ -2678,6 +2972,7 @@ return (
                                     <td>
                                     <button
                                         className={styles.duplicateBtn}
+                                        title={t('tvf.Duplicate')}
                                         onClick={() => {
                                         const copy = { ...row, id: Date.now() };
                                         setMaritimeConcepts([...maritimeConcepts, copy]);
@@ -2699,6 +2994,7 @@ return (
                                     */}
                                     <button
                                         className={styles.deleteBtn}
+                                        title={t('tvf.Delete')}
                                         onClick={() => {
                                         setMaritimeConcepts(maritimeConcepts.filter((_, i) => i !== index));
                                         }}
@@ -2720,7 +3016,7 @@ return (
                     </div>
                     )}
                     {activeTab === 'AEREO' && (<>  
-                    <div className={styles.tableWrapperAir}>
+                    <div className={`${styles.tableWrapperAir} ${isAcceptedByClient ? styles.locked : ""}`} >
 
                     <h3>{t('tvf.AirConcepts')}</h3>
 
@@ -2763,6 +3059,7 @@ return (
                                     <input
                                         className={styles.inputConcept}
                                         value={row.concept}
+                                        title={row.concept}
                                         onChange={(e) => {
                                             handleChangeAir(index, 'concept', e.target.value);
                                         }}
@@ -2774,6 +3071,7 @@ return (
                                     <input
                                         className={styles.inputConcept}
                                         value={row.airline}
+                                        title={row.airline}
                                         onChange={(e) => handleChangeAir(index, 'airline', e.target.value)}
                                     />
                                     </td>
@@ -2783,6 +3081,7 @@ return (
                                     <input
                                         className={styles.inputConcept}
                                         value={row.route}
+                                        title={row.route}
                                         onChange={(e) => handleChangeAir(index, 'route', e.target.value)}
                                     />
                                     </td>
@@ -2792,6 +3091,7 @@ return (
                                     <input
                                         className={styles.inputConcept}
                                         value={row.transit_days}
+                                        title={row.transit_days}
                                         onChange={(e) => handleChangeAir(index, 'transit_days', e.target.value)}
                                     />
                                     </td>
@@ -2801,6 +3101,7 @@ return (
                                     <input
                                         className={styles.inputConcept}
                                         value={row.rate_per_kg}
+                                        title={row.rate_per_kg}
                                         onChange={(e) => handleChangeAir(index, 'rate_per_kg', e.target.value)}
                                     />
                                     </td>
@@ -2810,6 +3111,7 @@ return (
                                     <input
                                         className={styles.inputConcept}
                                         value={row.fuel_surcharge}
+                                        title={row.fuel_surcharge}
                                         onChange={(e) => handleChangeAir(index, 'fuel_surcharge', e.target.value)}
                                     />
                                     </td>
@@ -2819,6 +3121,7 @@ return (
                                     <input
                                         className={styles.inputConcept}
                                         value={row.security_surcharge}
+                                        title={row.security_surcharge}
                                         onChange={(e) => handleChangeAir(index, 'security_surcharge', e.target.value)}
                                     />
                                     </td>
@@ -2828,6 +3131,7 @@ return (
                                     <input
                                         className={styles.inputConcept}
                                         value={row.miscellaneous_charges}
+                                        title={row.miscellaneous_charges}
                                         onChange={(e) => handleChangeAir(index, 'miscellaneous_charges', e.target.value)}
                                     />
                                     </td>
@@ -2837,6 +3141,7 @@ return (
                                     <input
                                         className={styles.inputConcept}
                                         value={row.chargeable_weight}
+                                        title={row.chargeable_weight}
                                         onChange={(e) => handleChangeAir(index, 'chargeable_weight', e.target.value)}
                                     />
                                     </td>
@@ -2844,8 +3149,9 @@ return (
                                     {/* Subtotal */}
                                     <td>
                                     <input
-                                        className={styles.inputConcept}
+                                        className={styles.inputSubtotal}
                                         value={row.subtotal}
+                                        title={row.subtotal}
                                         onChange={(e) => handleChangeAir(index, 'subtotal', e.target.value)}
                                     />
                                     </td>
@@ -2881,6 +3187,7 @@ return (
                                     <td>
                                     <button
                                         className={styles.duplicateBtn}
+                                        title={t('tvf.Duplicate')}
                                         onClick={() => {
                                         const copy = { ...row, id: Date.now() };
                                         setAirConcepts([...airConcepts, copy]);
@@ -2888,7 +3195,7 @@ return (
                                     >
                                         <Copy size={16} />
                                     </button>
-                                     {/* 
+                                    {/* 
                                     <button
                                     className={styles.editBtn}
                                     onClick={() => {
@@ -2902,6 +3209,7 @@ return (
                                     */}
                                     <button
                                         className={styles.deleteBtn}
+                                        title={t('tvf.Delete')}
                                         onClick={() => {
                                         setAirConcepts(airConcepts.filter((_, i) => i !== index));
                                         }}
@@ -2924,7 +3232,7 @@ return (
                     </button>
 
                     </div>                 
-                    <div className={styles.tableWrapper}>
+                    <div className={`${styles.tableWrapper} ${isAcceptedByClient ? styles.locked : ""}`}>
                     <h3>{t('tvf.AirOperationalConcepts')}</h3>
 
                     <table className={`${styles.table} ${styles.tableConceptsAereoOperativo}`}>
@@ -2983,6 +3291,7 @@ return (
                                 <input
                                     className={styles.inputConcept}
                                     value={row.concept}
+                                    title={row.concept}
                                     onChange={(e) => handleChangeAirOperational(index, 'concept', e.target.value)}
                                 />
                                 </td>
@@ -2992,6 +3301,7 @@ return (
                                     <input
                                         className={styles.inputBase}
                                         value={row.billing_base ?? ""}
+                                        title={row.billing_base}
                                         onChange={(e) => handleChangeAirOperational(index, 'billing_base', e.target.value)}
                                     />
                                 </td>
@@ -3001,6 +3311,7 @@ return (
                                 <input
                                     className={styles.inputSubtotal}
                                     value={row.subtotal}
+                                    title={row.subtotal}
                                     onChange={(e) => handleChangeAirOperational(index, 'subtotal', e.target.value)}
                                 />
                                 </td>
@@ -3035,6 +3346,7 @@ return (
                                 <td>
                                 <button
                                     className={styles.duplicateBtn}
+                                    title={t('tvf.Duplicate')}
                                     onClick={() => {
                                     const copy = { ...row, id: Date.now() };
                                     setAirOperationalConcepts([...airOperationalConcepts, copy]);
@@ -3056,6 +3368,7 @@ return (
                                   */}       
                                 <button
                                     className={styles.deleteBtn}
+                                    title={t('tvf.Delete')}
                                     onClick={() => {
                                     setAirOperationalConcepts(
                                         airOperationalConcepts.filter((_, i) => i !== index)
@@ -3080,7 +3393,7 @@ return (
                     </>
                     )}
                     {activeTab === 'TERRESTRE' && (
-                    <div className={styles.tableWrapper}>
+                    <div className={`${styles.tableWrapper} ${isAcceptedByClient ? styles.locked : ""}`}>
                         <h3>{t('tvf.LandConcepts')}</h3>
 
                         <table className={`${styles.table} ${styles.tableConceptsTerrestrial}`}>
@@ -3140,6 +3453,7 @@ return (
                                     <input
                                         className={styles.inputConcept}
                                         value={row.concept}
+                                        title={row.concept}
                                         onChange={(e) => handleChangeLand(index, 'concept', e.target.value)}
                                     />
                                     </td>
@@ -3149,6 +3463,7 @@ return (
                                     <input
                                         className={styles.inputBase}
                                         value={row.billing_base ?? ""}
+                                        title={row.billing_base}
                                         onChange={(e) => handleChangeLand(index, 'billing_base', e.target.value)}
                                     />
                                     </td>
@@ -3158,7 +3473,8 @@ return (
                                     <input
                                         className={styles.inputUnit}
                                         value={row.unit}
-                                        onChange={(e) => handleChangeLand(index, 'unit', Number(e.target.value))}
+                                        title={row.unit}
+                                        onChange={(e) => handleChangeLand(index, 'unit', e.target.value)}
                                     />
                                     </td>
 
@@ -3167,6 +3483,7 @@ return (
                                     <input
                                         className={styles.inputSubtotal}
                                         value={row.subtotal}
+                                        title={row.subtotal}
                                         onChange={(e) => handleChangeLand(index, 'subtotal', e.target.value)}
                                     />
                                     </td>
@@ -3204,6 +3521,7 @@ return (
                                     <td>
                                     <button
                                         className={styles.duplicateBtn}
+                                        title={t('tvf.Duplicate')}
                                         onClick={() => {
                                         const copy = { ...row, id: Date.now() };
                                         setLandConcepts([...landConcepts, copy]);
@@ -3223,6 +3541,7 @@ return (
                                     </button>     */}
                                     <button
                                         className={styles.deleteBtn}
+                                        title={t('tvf.Delete')}
                                         onClick={() => {
                                         setLandConcepts(landConcepts.filter((_, i) => i !== index));
                                         }}
@@ -3244,7 +3563,7 @@ return (
                     </div>
                     )}
                     {activeTab === 'ACCESORIAL' && (
-                    <div className={styles.tableWrapper}>
+                    <div className={`${styles.tableWrapper} ${isAcceptedByClient ? styles.locked : ""}`}>
                         <h3>{t('tvf.ConsultingServicesConcepts')}</h3>
 
                         <table className={`${styles.table} ${styles.tableConceptsAsesorial}`}>
@@ -3304,6 +3623,7 @@ return (
                                     <input
                                         className={styles.inputConcept}
                                         value={row.concept}
+                                        title={row.concept}
                                         onChange={(e) => handleChangeConsultingServices(index, 'concept', e.target.value)}
                                     />
                                     </td>
@@ -3313,6 +3633,7 @@ return (
                                     <input
                                         className={styles.inputBase}
                                         value={row.billing_base ?? ""}
+                                        title={row.billing_base}
                                         onChange={(e) => handleChangeConsultingServices(index, 'billing_base', e.target.value)}
                                     />
                                     </td>
@@ -3322,7 +3643,8 @@ return (
                                     <input
                                         className={styles.inputUnit}
                                         value={row.unit}
-                                        onChange={(e) => handleChangeConsultingServices(index, 'unit', Number(e.target.value))}
+                                        title={row.unit}
+                                        onChange={(e) => handleChangeConsultingServices(index, 'unit', e.target.value)}
                                     />
                                     </td>
 
@@ -3331,6 +3653,7 @@ return (
                                     <input
                                         className={styles.inputSubtotal}
                                         value={row.subtotal}
+                                        title={row.subtotal}
                                         onChange={(e) => handleChangeConsultingServices(index, 'subtotal', e.target.value)}
                                     />
                                     </td>
@@ -3366,6 +3689,7 @@ return (
                                     <td>
                                     <button
                                         className={styles.duplicateBtn}
+                                        title={t('tvf.Duplicate')}
                                         onClick={() => {
                                         const copy = { ...row, id: Date.now() };
                                         setconsultingServicesConcepts([...consultingServicesConcepts, copy]);
@@ -3385,6 +3709,7 @@ return (
                                     </button>     */}
                                     <button
                                         className={styles.deleteBtn}
+                                        title={t('tvf.Delete')}
                                         onClick={() => {
                                         setconsultingServicesConcepts(consultingServicesConcepts.filter((_, i) => i !== index));
                                         }}
@@ -3472,7 +3797,7 @@ return (
                     </div>
                 </section>
                 {/* ------------------------------------------- apartado de los comentarios  ------------------------------------- */}
-                <section className={styles.cardcomments}>
+                <section className={`${styles.cardcomments} ${isAcceptedByClient ? styles.locked : ""}`}>
 
                     {/* Header */}
                     <div className={styles.badges}>
@@ -3514,7 +3839,7 @@ return (
                         />
 
                         <div className={styles.autoSave}>
-                        {lastSaved && `${t('tvf.Saved')} ${lastSaved}`}
+                        {lastSaved && `${t('tvf.SavedAt')} ${lastSaved}`}
                         </div>
                     </div>
 
@@ -3544,7 +3869,7 @@ return (
                         </div>
 
                         {/* SEARCH */}
-                        <div className={styles.termsSearch}>
+                        <div className={`${styles.termsSearch} ${isAcceptedByClient ? styles.locked : ""}`}>
                             <div className={styles.searchBox}>
                                 <Search size={16} className={styles.searchIcon} />
                                 
@@ -3604,11 +3929,13 @@ return (
 
                         {/* Textarea */}
                         <textarea
-                            className={styles.termsTextarea}
+                            className={styles.termsTextarea }
                             rows={10}
                             placeholder={t('tvf.TermsPlaceholder')}
                             value={termsValue.join('\n')}
+                            readOnly={isAcceptedByClient} // solo lectura a aceptadas
                             onChange={(e) =>
+                                !isAcceptedByClient &&
                                 setTermsValue(
                                 e.target.value.split('\n') 
                                 )

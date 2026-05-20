@@ -10,6 +10,7 @@
   --surface: #ffffff;
   --border: #e5e7eb;
   --hover: #f9fafb;
+  --primary-hover: #f3f4f6; 
   --text-primary: #111827;
   --text-secondary: #6b7280;
   --text-tertiary: #9ca3af;
@@ -31,6 +32,7 @@
   --surface: #1f2937;
   --border: #374151;
   --hover: #374151;
+  --primary-hover: #4c5766;
   --text-primary: #f9fafb;
   --text-secondary: #d1d5db;
   --text-tertiary: #9ca3af;
