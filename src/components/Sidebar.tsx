@@ -13,7 +13,8 @@ import {
   ChevronRight,
   DollarSign,
   MapPin,
-  File
+  File,
+  Truck,
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import styles from './Sidebar.module.css';
@@ -29,6 +30,7 @@ const menuItems = [
   { key: 'nav.suppliers', icon: Users, route: 'suppliers' },
   { key: 'nav.digitization', icon: FileText, route: 'digitization' },
   { key: 'nav.reports', icon: File, route: 'reports' },
+  { key: 'nav.operations', icon: Truck, route: 'operations' }
 ];
 
 interface SidebarProps {

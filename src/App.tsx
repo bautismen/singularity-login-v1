@@ -22,8 +22,9 @@ import { DashboardStats } from './components/DashboardStats';
 import Digitization from './pages/Digitization';
 import { CatalogClauses } from './pages/CatalogClauses';
 import { Reports } from './pages/Reports';
+import Operations from './pages/Operations';
 
-type Route = 'dashboard' | 'quotations' | 'controls-pricing' | 'tracking-monitor' | 'executives' | 'shipments' | 'customers' | 'suppliers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users' | 'catalogs/sector-of-business'| 'catalogs/companies' | 'digitization' | 'catalogs/clausules'| 'reports';
+type Route = 'dashboard' | 'quotations' | 'controls-pricing' | 'tracking-monitor' | 'executives' | 'shipments' | 'customers' | 'suppliers' | 'operations' | 'documents' | 'analytics' | 'settings' | 'catalogs/imo' | 'catalogs/incoterms' | 'catalogs/services' | 'catalogs/status' | 'catalogs/request-types' | 'catalogs/countries' | 'catalogs/users' | 'catalogs/sector-of-business'| 'catalogs/companies' | 'digitization' | 'catalogs/clauses'| 'reports';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState<Route>('dashboard');
@@ -89,6 +90,8 @@ function App() {
           return <PricingScore />;
         case 'reports':
             return <Reports />;
+        case 'operations':
+          return <Operations />;
         default:
           return (
             <div className="p-8">
