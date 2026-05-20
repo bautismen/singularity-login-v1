@@ -1,4 +1,4 @@
-import { QuotedRate } from "../types/quotedRate";
+import { QuotedRate,ResponseGet } from "../types/quotedRate";
 
 const ENVIRONMENT_ID = 2;
 
@@ -99,7 +99,7 @@ export const GetQuotedRateByQuotationRequestAndControlInfo = async (
   controlnumber_: string
 ) => {
   try {
-    const url = `${VITE_API_QUOTEDRATE}/quotedrate/quotationrequest/${quotationrequest_}/control/${controlnumber_}/info`;
+    const url = `${VITE_API_QUOTEDRATE}/quotationrequest/${quotationrequest_}/control/${controlnumber_}/info`;
 
     const response = await fetch(url, {
       method: "GET",
@@ -144,4 +144,75 @@ export const updateStatusQuotedRatebyRequestQuotation = async (
     console.error("uploadQuotedRate error:", error);
     throw error;
   }  
+};
+
+
+export const GetQuotedRateByDocumentInfo = async (
+  ids: string[],
+): Promise<ResponseGet<QuotedRate[]>> => {
+
+  try {
+
+    if (!ids || ids.length === 0) {
+      throw new Error("Debe enviar al menos un id");
+    }
+
+    const query = ids
+      .map(id => `idDocuments_=${encodeURIComponent(id)}`)
+      .join("&");
+
+    const url = `${VITE_API_QUOTEDRATE}/iddocuments/info?${query}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error?.message || "Error al obtener quoted rate info");
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error("getQuotedRateInfo error:", error);
+    throw error;
+  }
+};
+
+export const updateStatusControlQuotedRate = async (
+  idquotedrate_: string,
+  idstatuscontrol_: number
+) => {
+  try {
+
+    const url =
+      `${VITE_API_QUOTEDRATE}` + `/idquotedrate/${idquotedrate_}/statuscontrol/${idstatuscontrol_}/update`;
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+
+      throw new Error(
+        error?.message ||
+        "Error al actualizar status control quoted rate"
+      );
+    }
+
+    return await response.json();
+
+  } catch (error) {
+
+    console.error(
+      "updateStatusControlQuotedRate error:",
+      error
+    );
+
+    throw error;
+  }
 };
