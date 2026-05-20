@@ -278,26 +278,43 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
   };
 
   const getDaysRemaining = (deadline: string) => {
-    if (!deadline) return null;
-    const now = new Date();
+    if (!deadline) return null;    
+    const today = new Date();
     const deadlineDate = new Date(deadline);
 
-    const totalDays = Math.floor(
+    today.setHours(0,0,0,0);
+    deadlineDate.setHours(0,0,0,0);
+    /*const totalDays = Math.floor(
       (deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    );*/
+    if (today.getTime() === deadlineDate.getTime()) return 0;
+    const direction = deadlineDate > today ? 1 : -1;
+    let businessDays = 0;
+    const current = new Date(today);
+    
+    while (current.getTime() !== deadlineDate.getTime()) {
+      current.setDate(current.getDate() + direction);
+      const day = current.getDay();
+      if (day !== 0 && day !== 6) {
+        businessDays += direction;
+      }
+    }
 
-    const weeks = Math.floor(totalDays / 7);
-    let extraDays = totalDays % 7;
+    return businessDays;
+    
+    /*const weeks = Math.floor(totalDays / 7);
+    const extraDays = totalDays % 7;
     let businessDays = weeks * 5;
-    const startDay = now.getDay();
+    const startDay = now.getDay();*/   
 
-    for (let i = 0; i <= extraDays; i++) {
+    /*for (let i = 0; i <= extraDays; i++) {
       const day = (startDay + i) % 7;
       if (day !== 0 && day !== 6) {  // no domingo ni sábado
         businessDays++;
       }
     }
-    return businessDays;
+    return businessDays;*/
+
   };
 
    /* recargar los documentos total por cantidad referencia qua req */
