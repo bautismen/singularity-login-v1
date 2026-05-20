@@ -2624,7 +2624,7 @@
   color: white;
   padding: 6px 10px; 
   border-radius: 6px;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 12px;
   border: none;
   cursor: pointer;
@@ -2644,4 +2644,18 @@
   font-size: 16px;
 }
 
+/* status declinada/cancelada */
+.btnGenerateSaleDisabledStatus {
+  background-color: #cbd5e1 !important;
+  border-color: #cbd5e1 !important;
+  color:var(--text-secondary) !important;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: not-allowed !important;
+}
+
+.btnGenerateSaleDisabledStatus:hover {
+  background-color: #cbd5e1 !important;
+  border-color: #cbd5e1 !important;
+}
 /* boton tarifa de venta final */ 

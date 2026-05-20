@@ -101,8 +101,6 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   useEffect(() => {
   if (!requestData || !controlData) return;
-  console.log("referenceRequest:", requestData.referenceRequest);
-  console.log("controlData:", controlData);
 
   loadQuotedRateData();
 
@@ -118,7 +116,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     quotationRequestData = {pricingQuotationRequest}
     />;
   }
-    const loadCustomers = async () => {
+  
+  const loadCustomers = async () => {
     try {     
 
       const customersData = await getCustomers(true);
@@ -225,13 +224,17 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   };
 
   async function loadQuotedRateData() {
+
+    if (controlId) {
+        const control = await pricingControlService.getById(controlId);
+        setControlData(control);
+    }
+
   try {
     const response = await GetQuotedRateByQuotationRequestAndControlInfo(
       requestData.referenceRequest,
       controlData.control
     );
-
-    console.log("QUOTED RATE RESPONSE:", response);
 
     setquotedratedata(response?.data?.[0] || null);
 
@@ -1169,9 +1172,19 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 </button>*/}
                 <button
                   type="button"
-                  className={styles.btnGenerateSale}
-                  disabled={loading}
-                  hidden={!controlId}
+                    className={`
+                    ${styles.btnGenerateSale}
+                    ${
+                      [6, 10].includes(controlData?.status_control?.id_status_control) //6-declinada 10-cancelada
+                        ? styles.btnGenerateSaleDisabledStatus
+                        : ""
+                    }
+                  `}
+                  disabled={
+                    loading ||
+                    [6, 10].includes(controlData?.status_control?.id_status_control)
+                  }
+                  hidden={ !controlId}
                   onClick={() => {
                     if (!controlData) {
                       showError("Aún no se carga el control");
