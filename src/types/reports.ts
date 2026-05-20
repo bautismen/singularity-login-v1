@@ -1,5 +1,5 @@
 export interface Report {
-  id?: string;
+  _id?: string;
   id_report: string;
   category: string;
   name_report: string;
@@ -7,7 +7,10 @@ export interface Report {
   id_user: string;
   user_name: string;
   creation:Date;
-  parameter: any;
+  Dataset?: any;
+  parameter: any[];
   selected?: boolean;
+  Status: number;
   archived: false;
+  Data_state: number;
 }
