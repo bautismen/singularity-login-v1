@@ -11,7 +11,7 @@ import { getCustomers } from '../services/customerService';
 export function Reports() {
   
   
-  const CHIP_VALUES = ['All', 'Pricing', 'Operational', 'Customer'] as const;
+  const CHIP_VALUES = ['All', 'Pricing', 'Operations', 'Customer'] as const;
   type Chip = typeof CHIP_VALUES[number];
   const CHIP_TRANSLATIONS: Record<Chip, { es: string; en: string }> = {
     All: {
@@ -22,9 +22,9 @@ export function Reports() {
       es: 'Pricing',
       en: 'Pricing'
     },
-    Operational: {
-      es: 'Operacional',
-      en: 'Operational'
+    Operations: {
+      es: 'Operaciones',
+      en: 'Operations'
     },
     Customer: {
       es: 'Cliente',
@@ -453,8 +453,8 @@ const handlecreate = () => {
                     className={`${styles.spancategory} ${
                       r.category.toLowerCase() === 'pricing'
                         ? styles.Pricing
-                        : r.category.toLowerCase() === 'operational'
-                        ? styles.Operational
+                        : r.category.toLowerCase() === 'operations'
+                        ? styles.Operations
                         : r.category.toLowerCase() === 'customer'
                         ? styles.Customer
                         : ''
@@ -470,8 +470,8 @@ const handlecreate = () => {
         </table>
         <div className={styles.divMostrar}>
 
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-            {t('report.show')} {Math.min(currentPageTop * pageSizeTop, filteredItems.length)} de {filteredItems.length} reportes
+          <p className="text-[10px] font-bold text-gray-400 tracking-widest">
+            {t('report.show')} {Math.min(currentPageTop * pageSizeTop, filteredItems.length)} {t('report.show4')} {filteredItems.length} {t('report.show2')}
           </p>
 
           <div className="flex items-center gap-2">
@@ -624,8 +624,8 @@ const handlecreate = () => {
       })()}
       </div>
       <div className={styles.divMostrar}>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-          {t('report.show')} {Math.min(currentPage * pageSize, reportResult.length)} de {reportResult.length} registros
+        <p className="text-[10px] font-bold text-gray-400 tracking-widest">
+          {t('report.show')} {Math.min(currentPage * pageSize, reportResult.length)} {t('report.show4')} {reportResult.length} {t('report.show3')}
         </p>
         <div className="flex items-center gap-2">
           <button
