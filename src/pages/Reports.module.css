@@ -145,7 +145,7 @@
   transition: background-color 0.2s ease;
 }
 .trbody:hover {
-  background-color: #f9fafb; /* hover:bg-gray-50 */
+  background-color: var(--hover);
 }
 .trbodySelected {
   background-color: rgba(16, 185, 129, 0.3); /* bg-emerald-50/30 */
@@ -548,7 +548,7 @@
 .subtitleParameter {
   font-size: 0.875rem;   /* text-sm */
   line-height: 1.25rem;
-  color: #6b7280;        /* text-gray-500 */
+  color: var(--text-secondary);       /* text-gray-500 */
   margin-top: 0.25rem;   /* mt-1 */
 }
 

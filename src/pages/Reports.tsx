@@ -610,7 +610,7 @@ const handlecreate = () => {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {paginatedData.map((row, i) => (
-                  <tr key={i} className="hover:bg-gray-50 transition-colors">
+                  <tr key={i} className={styles.trbody}>
                     {headers.map(h => (
                       <td key={h} className={styles.tdResult}>
                         {row[h] ?? '—'}
