@@ -28,7 +28,11 @@ export default function Operations() {
   const [editingOperation, setEditingOperation] = useState<Operation | null>(null);
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
-  const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<Record<string, string>>({
+    id: '',
+    item: '',
+    name: ''
+  });
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
     services: false
   });
@@ -200,7 +204,7 @@ export default function Operations() {
       })),
       Services: operation.services,
       OperationStatus: operation.operationStatus,
-      ListaParaFacturar: operation.listaparafacturar || false,
+      ListaParaFacturar: operation.listaParaFacturar || false,
       Observations: operation.observations || '',
       CreatedAt: operation.createdAt,
       CreatedBy: operation.createdBy,
@@ -313,11 +317,11 @@ export default function Operations() {
       prev.filter(c => c.id !== control._id)
     );
 
-    if (!activeTab) {
-    setActiveTab(control._id);
+    // if (controlsOperation.length > 0) {
+    //   setActiveTab(controlsOperation[0]._id);
 
-    loadInfoControl(control._id, 1);
-    }
+    //   loadInfoControl(controlsOperation[0]._id);
+    // }
 
   };
 
@@ -334,7 +338,9 @@ export default function Operations() {
 
     // Eliminar el control seleccionado de la lista de controles asociados a la operación
     setControlsOperation(co =>
-      co.filter(c => c._id !== idcontrol && c.services.idServiceItem !== item )
+      co.filter(c => c._id !== _idcontrol && c.services?.some(
+        s => s.idServiceItem !== item )  
+      )
     );
 
   };
@@ -359,10 +365,9 @@ export default function Operations() {
       }
     ] as Service[]);
 
-    if (!activeTab) {
-      setActiveTab(service._id);
-
-    }
+    // if (servicesOperation.length > 0) {
+    //   setActiveTab(servicesOperation[0]._id);
+    // }
 
   };
 
@@ -373,18 +378,26 @@ export default function Operations() {
     // controlsClient.push(controlsOperation.find(c => c._id === _idcontrol) as PricingControl); // Volver a agregar el control eliminado a la lista de controles disponibles para el cliente
   };
 
-  const loadInfoControl = (controlId: string, itemId: number) => {
-    const controlServices = controlsData.filter(c => c.id === controlId);
+  const loadInfoControl = (info: object) => {
 
-    if (controlServices) {
+    const infoControl = controlsData.filter(c =>
+      c.id === info.id &&
+      c.services?.some(
+        s => String(s.idServiceItem) === String(info.item)
+      )
+    )
+
+    if (infoControl) {
       return (
-        <div className={styles.serviceHeader}>
-          {controlServices.map(controlservice => (
-            <span key={controlservice.id} className={styles.serviceItem}>
-              <h3 className='title'>
-                {controlservice.control}
-              </h3>
-              {controlservice.services.map(serv => (
+        <div >
+          {infoControl.map(infoControl => (
+            
+            <span key={infoControl.id} >
+              Envios
+              {/* <h3 className='title'>
+                {infoControl.control}
+              </h3> */}
+              {infoControl.services.map(serv => (
                 <span key={serv.idServiceItem} className={styles.serviceItem}>
                   <label className={styles.fieldLabel}>
                     Servicio
@@ -458,24 +471,24 @@ export default function Operations() {
     setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }));
   }
 
-   async function handleSaveOperation(e: React.FormEvent) {
-      try {
+  async function handleSaveOperation(e: React.FormEvent) {
+    try {
 
-        setLoading(true);
-        e.preventDefault();
-  
+      setLoading(true);
+      e.preventDefault();
+
+      const dataToSave = {
+        ...formData,
+        UpdatedAt: null,
+        UpdateBy: {},
+        Status: 1,
+        Archived: false,
+        DataState: 1,
+      };
+
+      if (editingOperation) {
+
         const dataToSave = {
-          ...formData,
-          UpdatedAt: null,
-          UpdateBy: {},
-          Status: 1,
-          Archived: false,
-          DataState: 1,
-        };
-  
-        if (editingOperation) {
-
-          const dataToSave = {
           ...formData,
           UpdatedAt: new Date,
           UpdateBy: {
@@ -484,22 +497,22 @@ export default function Operations() {
           },
         };
 
-          await updateOperation(editingOperation.Id!, dataToSave);
-        } else {
-          await createOperation(dataToSave);
-        }
-  
-        await loadOperations();
-        setIsFormOpen(false);
-        setEditingOperation(null);
-      } catch (error) {
-        console.error('Error saving supplier:', error);
-        const errorMessage = error instanceof Error ? error.message : t('supp.errorSave');
-        showError(errorMessage);
-      } finally {
-        setLoading(false);
+        await updateOperation(editingOperation.Id!, dataToSave);
+      } else {
+        await createOperation(dataToSave);
       }
+
+      await loadOperations();
+      setIsFormOpen(false);
+      setEditingOperation(null);
+    } catch (error) {
+      console.error('Error saving supplier:', error);
+      const errorMessage = error instanceof Error ? error.message : t('supp.errorSave');
+      showError(errorMessage);
+    } finally {
+      setLoading(false);
     }
+  }
 
   if (isFormOpen) {
     return (
@@ -622,6 +635,7 @@ export default function Operations() {
                             <button
                               type="button"
                               value={controlService.idcontrol}
+                              key={`${controlService._id}-${service.idServiceItem}`}
                               className="ml-1 text-gray-500 hover:text-red-500 dark:text-gray-300"
                               onClick={() => { removeControl(controlService._id as string, service.idServiceItem as number) }}
                             >
@@ -716,7 +730,7 @@ export default function Operations() {
                     <div className="p-2 flex flex-wrap gap-2 min-h-[120px] content-start">
                       {servicesOperation.length > 0 ? (
                         servicesOperation?.map(service => (
-                          <span key={service._id}
+                          <span key={`${service._id}-${service.service_name}`} 
                             className="border border-[#14b8a6] bg-transparent rounded-full
                                        flex items-center gap-1 px-3 py-1 text-xs
                                        dark:bg-[#374151] dark:text-white"
@@ -726,11 +740,12 @@ export default function Operations() {
                               type="button"
                               value={service._id}
                               className="ml-1 text-gray-500 hover:text-red-500 dark:text-gray-300"
-                              onClick={() => { removeService(service._id) }}
+                              onClick={() => { removeService(service._id as number) }}
                             >
                               ✕
                             </button>
                           </span>
+
                         ))
                       ) : (
                         <span className=''></span>
@@ -816,6 +831,7 @@ export default function Operations() {
           </div>
           
           <div className={styles.sectionCard}>
+            <span className={styles.greenDot}></span>
             <h2 className={styles.sectionTitle}>{t("operations.services")}</h2>
             
             <div className={styles.serviceSpace}>
@@ -840,18 +856,42 @@ export default function Operations() {
                         //   {controlService.control}-{service.nameService}
                         // </div>
 
-                        <div
-                          className={`${styles.tabItem} ${activeTab === service.idService ? styles.active : ''}`}
-                          onClick={() => setActiveTab(service.idService)}
+                        <div key={`${controlService._id}-${service.idServiceItem}`} 
+                          className={`${styles.tabItem} ${activeTab === service.idServiceItem ? styles.active : ''}`}
+                          onClick={() => setActiveTab({id: controlService._id, item:service.idServiceItem, name:service.nameService})}
                         >
                           {controlService.control}-{service.nameService}
                         </div>
 
                       ))
                     ))
-                  ) : (
-                    <span className=''></span>
-                  )
+                  ): (<></>)}
+                  {servicesOperation.length > 0 ? (
+                      servicesOperation?.map(serviceOperation => (
+                        // <div key={`${controlService._id}-${service.idServiceItem}`}
+                        //   onClick={() =>(`${controlService._id}-${service.idServiceItem}`)
+                        //   }
+                        //   className={
+                        //     activeTab === controlService._id
+                        //       ? "px-6 py-2 border-b-2 border-primary text-primary dark:text-white font-bold text-sm"
+                        //       : "px-6 py-2 text-secondary font-medium text-sm hover:text-primary dark:text-white transition-colors"
+                        //   }
+                        // >
+                        //   {controlService.control}-{service.nameService}
+                        // </div>
+
+                        <div key={`${serviceOperation._id}-${serviceOperation.service_name}`} 
+                          className={`${styles.tabItem} ${activeTab === serviceOperation._id ? styles.active : ''}`}
+                          onClick={() => setActiveTab(serviceOperation.service_name)}
+                        >
+                          {serviceOperation._id}-{serviceOperation.service_name}
+                        </div>
+                      ))
+
+                    ) : (
+                      <span className=''>
+                      </span>
+                    )
                   }
                 </div>
 
@@ -859,194 +899,12 @@ export default function Operations() {
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
                 </button> */}
               </div>
+              
+            </div>
 
-              {activeTab === 'MARITIMO' && (
-                <div className={styles.tableWrapper}>
-                  <h3>{t('tvf.MaritimeConcepts')}</h3>
-                  <table className={`${styles.table} ${styles.tableConceptsMaritime}`}>
-                    <thead>
-                      <tr>
-                        <th>{t('tvf.Charge')}</th>
-                        <th>{t('tvf.Concept')}</th>
-                        <th>{t('tvf.Base')}</th>
-                        <th>{t('tvf.Container')}</th>
-                        <th>{t('tvf.Unit')}</th>
-                        <th>{t('tvf.Subtotal')}</th>
-                        <th>{t('tvf.VAT')}</th>
-                        <th>{t('tvf.Total')}</th>
-                        <th>{t('tvf.Actions')}</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {maritimeConcepts.length === 0 ? (
-                        <tr>
-                          <td colSpan={9} className={styles.emptyCell}>
-                            <span className={styles.emptyText}>
-                              {t('tvf.SinConceptos')}
-                            </span>
-                          </td>
-                        </tr>
-                      ) : (
-                        maritimeConcepts.map((row, index) => (
-                          <tr key={row.id}>
-
-                            {/* CHARGE */}
-                            <td>
-                              <select
-                                className={styles.selectCargo}
-                                value={row._id_type_of_charge ?? ""}
-                                onChange={(e) => {
-                                  const selectedId = Number(e.target.value);
-                                  const selectedText =
-                                    e.target.options[e.target.selectedIndex].text;
-
-                                  handleChange(index, '_id_type_of_charge', selectedId);
-
-                                  handleChange(index, 'type_of_charge', selectedText);
-
-                                }}
-                              >
-                                <option value="">{t('tvf.Elegir')}</option>
-                                {charges.map((c: any) => (
-                                  <option key={c._IdCharge} value={c._IdCharge}>
-                                    {c.chargeName}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-
-                            {/* CONCEPT */}
-                            <td>
-                              <input
-                                className={styles.inputConcept}
-                                value={row.concept}
-                                onChange={(e) => handleChange(index, 'concept', e.target.value)}
-                              />
-                            </td>
-
-                            {/* BASE */}
-                            <td>
-                              <input
-                                className={styles.inputBase}
-                                value={row.billing_base ?? ""}
-                                onChange={(e) => handleChange(index, 'billing_base', e.target.value)}
-                              />
-                            </td>
-
-                            {/* CONTAINER */}
-                            <td>
-                              <input
-                                list={`containers-${index}`}
-                                className={styles.selectContainer}
-                                value={row.container_type ?? ""}
-                                onChange={(e) => handleChange(index, 'container_type', e.target.value)}
-                                onBlur={(e) => {
-                                  const value = e.target.value;
-                                  const exists = containers.some(
-                                    (c: any) => c.name_type === value
-                                  );
-
-                                  if (!exists) {
-                                    handleChange(index, 'container_type', '');
-                                  }
-                                }}
-                                placeholder={t('tvf.ElegirContenedor')}
-                              />
-                              <datalist id={`containers-${index}`}>
-                                {containers.map((c: any) => (
-                                  <option key={c.id_container} value={c.name_type} />
-                                ))}
-                              </datalist>
-                            </td>
-
-                            {/* UNIT */}
-                            <td>
-                              <input
-                                className={styles.inputUnit}
-                                value={row.unit}
-                                onChange={(e) => handleChange(index, 'unit', e.target.value)}
-                              />
-                            </td>
-                            {/* SUBTOTAL */}
-                            <td>
-                              <input
-                                className={styles.inputSubtotal}
-                                value={row.subtotal}
-                                onChange={(e) => handleChange(index, 'subtotal', e.target.value)}
-                              />
-                            </td>
-                            {/* VAT */}
-                            <td>
-                              <select
-                                className={styles.selectIVA}
-                                value={row.vat}
-                                onChange={(e) => {
-                                  const selectedVat = VAT_OPTIONS.find(
-                                    v => String(v.value) === e.target.value
-                                  );
-
-                                  handleChange(index, 'vat', selectedVat?.value ?? -1);
-                                  handleChange(index, 'rate', selectedVat?.rate ?? 0);
-                                }}
-                              >
-                                {VAT_OPTIONS.map((v) => (
-                                  <option key={v.label} value={v.value}>
-                                    {v.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-
-                            {/* TOTAL */}
-                            <td>
-                              ${Number(row.total || 0).toFixed(2)}
-                            </td>
-
-                            {/* ACTIONS */}
-                            <td>
-                              <button
-                                className={styles.duplicateBtn}
-                                onClick={() => {
-                                  const copy = { ...row, id: Date.now() };
-                                  setMaritimeConcepts([...maritimeConcepts, copy]);
-                                }}
-                              >
-                                <Copy size={16} />
-                              </button>
-                              {/*    
-                                                  <button
-                                                  className={styles.editBtn}
-                                                  onClick={() => {
-                                                      const updated = [...maritimeConcepts];
-                                                      updated[index].isEditing = !updated[index].isEditing;
-                                                      setMaritimeConcepts(updated);
-                                                  }}
-                                                  >
-                                                  <Pencil size={16} />
-                                                  </button>
-                                                  */}
-                              <button
-                                className={styles.deleteBtn}
-                                onClick={() => {
-                                  setMaritimeConcepts(maritimeConcepts.filter((_, i) => i !== index));
-                                }}
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </td>
-
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-
-                  <button className={styles.addBtn} onClick={handleAddConcept}>
-                    <PlusCircle size={16} />
-                    {t('tvf.AddNewConcept')}
-                  </button>
-                </div>
+            <div className={styles.serviceCard}>
+              {activeTab.name === 'Maritimo LCL' && (
+                loadInfoControl(activeTab)
               )}
 
             </div>

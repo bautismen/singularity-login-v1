@@ -651,6 +651,53 @@
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
+.tabItem {
+  position: relative;
+  padding: 8px 2px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.tabItem:hover {
+  color: #03A678;
+}
+
+.active {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -7px;
+  width: 100%;
+  height: 4px;
+  background: #10b981;
+  border-radius: 2px;
+  animation: underline 0.25s ease;
+}
+
+.tableWrapper {
+  width: 100%;
+  margin-top: 16px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.tableWrapper h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+}
+
+
 @media (max-width: 1024px) {
   .container {
     padding: 1.25rem 1.5rem;
