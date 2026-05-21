@@ -11,24 +11,24 @@ import { getCustomers } from '../services/customerService';
 export function Reports() {
   
   
-  const CHIP_VALUES = ['All', 'Financial', 'Operational', 'Inventory'] as const;
+  const CHIP_VALUES = ['All', 'Pricing', 'Operational', 'Customer'] as const;
   type Chip = typeof CHIP_VALUES[number];
   const CHIP_TRANSLATIONS: Record<Chip, { es: string; en: string }> = {
     All: {
       es: 'Todos',
       en: 'All'
     },
-    Financial: {
-      es: 'Financiero',
-      en: 'Financial'
+    Pricing: {
+      es: 'Pricing',
+      en: 'Pricing'
     },
     Operational: {
       es: 'Operacional',
       en: 'Operational'
     },
-    Inventory: {
-      es: 'Inventario',
-      en: 'Inventory'
+    Customer: {
+      es: 'Cliente',
+      en: 'Customer'
     }
   };
   const [controlData, setControlData] = useState<any>(null);
@@ -358,16 +358,16 @@ const handlecreate = () => {
     <div className={styles.container}>
       <section className={styles.section}>
         <div className={styles.header}>
-          <h2 className={styles.title}>{t('report.title')}</h2>          
+          <h2 className={styles.title}>{t('report.title')}</h2>
+          <p className={styles.subtitle}>
+            {t('report.subtitle')}
+          </p>    
           <div className={styles.buttonGroup}>
             <button className={styles.headerButton}>
                 <Filter size={16} />                
               </button>
           </div>          
-        </div>
-        <p className={styles.subtitle}>
-            {t('report.subtitle')}
-          </p>
+        </div>        
         <div className={styles.searchBar}>
           {/* Search */}         
             <Search size={20} className={styles.icon} />
@@ -397,7 +397,7 @@ const handlecreate = () => {
           </div>          
         </div>
          
-      <div className="headercard">
+      <div className={styles.headercard}>
           <div className={styles.headerRow}>
           <h4 className={styles.tdreport}>{title}</h4>
           <button onClick={() => setIsOpen(!isOpen)} className={styles.iconbutonlucide}>
@@ -414,9 +414,9 @@ const handlecreate = () => {
               transition: "max-height 0.3s ease",
           }}
         >
-        <div className="flex items-center justify-end gap-2 mb-4">
-          <span className="text-xs text-gray-500">
-            Mostrar:
+        <div className={styles.headerActions}>
+          <span className={styles.headerActionsLabel}>
+            {t('report.show')}:
           </span>
 
           <select
@@ -424,7 +424,7 @@ const handlecreate = () => {
             onChange={(e) =>
               handlePageSizeTopChange(Number(e.target.value))
             }
-            className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 text-xs rounded-lg focus:ring-teal-500 focus:border-teal-500 block p-1.5 outline-none transition-all cursor-pointer"
+            className={styles.customselect}
           >
             {[10, 50, 100].map(size => (
               <option key={size} value={size}>
@@ -451,12 +451,12 @@ const handlecreate = () => {
                 <td className={styles.tdcategory}>
                   <span
                     className={`${styles.spancategory} ${
-                      r.category.toLowerCase() === 'financial'
-                        ? styles.Financial
+                      r.category.toLowerCase() === 'pricing'
+                        ? styles.Pricing
                         : r.category.toLowerCase() === 'operational'
                         ? styles.Operational
-                        : r.category.toLowerCase() === 'inventory'
-                        ? styles.Inventory
+                        : r.category.toLowerCase() === 'customer'
+                        ? styles.Customer
                         : ''
                     }`}
                   >{r.category}</span>
@@ -468,10 +468,10 @@ const handlecreate = () => {
             ))}
           </tbody>
         </table>
-        <div className="px-6 py-4 bg-gray-50 flex items-center justify-between border-t border-gray-100">
+        <div className={styles.divMostrar}>
 
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-            Mostrando {Math.min(currentPageTop * pageSizeTop, filteredItems.length)} de {filteredItems.length} reportes
+            {t('report.show')} {Math.min(currentPageTop * pageSizeTop, filteredItems.length)} de {filteredItems.length} reportes
           </p>
 
           <div className="flex items-center gap-2">
@@ -543,7 +543,7 @@ const handlecreate = () => {
           </div>
           <div>
             <h3 className={styles.h3parameter}>{t('report.titleparameter')}</h3>
-            <p className="text-sm text-gray-500 mt-1">{t('report.subtitleparameter')}</p>
+            <p className={styles.subtitleParameter}>{t('report.subtitleparameter')}</p>
           </div>
         </div>
         <div className="grid grid-cols-1 gap-x-12 gap-y-10 w-full">
@@ -558,22 +558,30 @@ const handlecreate = () => {
         </div>
       </section>
 
-      <section className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden" hidden={!isviewResult}>
+      <section className={styles.seccionResult} hidden={!isviewResult}>
         <div className="flex items-center justify-end gap-2">
-          <span className="text-xs text-gray-500">
-            Mostrar:
-          </span>
+          
+        </div>
+      <div className="px-8 py-6 flex items-center justify-between">
+      <h3 className={styles.h3parameter}>{t('report.titleresult')}</h3>
+      <div className="flex gap-2">
+        
+      <button className="bg-[#d3e2f5] text-[#3c5d8a] px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all">
+      <span className="material-symbols-outlined text-lg"><Table size={20} /></span> Excel
+                              </button>
+      <button className="bg-[#5c6c84] text-white px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all">
+      <span className="material-symbols-outlined text-lg"><FileText size={20} /></span> PDF
+      </button>
+      <span className={styles.headerActionsLabel2}>
+              {t('report.show')}:
+        </span>
 
           <select
             value={pageSize}
             onChange={(e) =>
               handlePageSizeChange(Number(e.target.value))
             }
-            className="
-              px-3 py-1 rounded text-xs font-bold
-              bg-white border border-gray-300
-              text-gray-700 outline-none
-            "
+            className={styles.customselect}            
           >
             {[10, 50, 100].map(size => (
               <option key={size} value={size}>
@@ -581,16 +589,6 @@ const handlecreate = () => {
               </option>
             ))}
           </select>
-        </div>
-      <div className="px-8 py-6 flex items-center justify-between">
-      <h3 className="text-lg font-bold text-gray-900">Resultados de Consulta</h3>
-      <div className="flex gap-2">
-      <button className="bg-[#d3e2f5] text-[#3c5d8a] px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all">
-      <span className="material-symbols-outlined text-lg"><Table size={20} /></span> Excel
-                              </button>
-      <button className="bg-[#5c6c84] text-white px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all">
-      <span className="material-symbols-outlined text-lg"><FileText size={20} /></span> PDF
-                              </button>
       </div>
       </div>
       <div className="overflow-x-auto">
@@ -602,9 +600,9 @@ const handlecreate = () => {
           return (
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-gray-50/80 border-y border-gray-100">
+                <tr className={styles.trheader}>
                   {headers.map(h => (
-                    <th key={h} className="px-8 py-4 table-header uppercase">
+                    <th key={h} className={styles.thheader}>
                     {headerMapping[h] || h}
                     </th>
                   ))}
@@ -614,7 +612,7 @@ const handlecreate = () => {
                 {paginatedData.map((row, i) => (
                   <tr key={i} className="hover:bg-gray-50 transition-colors">
                     {headers.map(h => (
-                      <td key={h} className="px-8 py-5 text-xs text-gray-700">
+                      <td key={h} className={styles.tdResult}>
                         {row[h] ?? '—'}
                       </td>
                     ))}
@@ -625,9 +623,9 @@ const handlecreate = () => {
           );
       })()}
       </div>
-      <div className="px-8 py-5 bg-gray-50 flex items-center justify-between border-t border-gray-100">
+      <div className={styles.divMostrar}>
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-          Mostrando {Math.min(currentPage * pageSize, reportResult.length)} de {reportResult.length} registros
+          {t('report.show')} {Math.min(currentPage * pageSize, reportResult.length)} de {reportResult.length} registros
         </p>
         <div className="flex items-center gap-2">
           <button
