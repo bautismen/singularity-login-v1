@@ -1,24 +1,28 @@
-
-
 .container {
   flex: 1;
-  min-width: 0;   
+  min-width: 0;
   max-width: 100%;
   padding: 2rem;
   overflow-x: hidden;
-  overflow-y: hidden;
+  overflow-y: auto;
+  height: 100%;
 }
 
 .contentWrapper {
- display: flex;
-  min-height: 100vh;
+  display: flex;
+  height: 100vh;
   width: 100%;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
-.contentWrapper > div {
-  flex: 1;
-  min-width: 0;  
+/* Firefox */
+.container {
+  scrollbar-width: none;
+}
+
+/* Chrome */
+.container::-webkit-scrollbar {
+  display: none;
 }
 
 /* ===============================
@@ -2395,3 +2399,33 @@ CARD 1 finaliza-  cardGeneral*/
    TERMS CARD FINALIZA
 ========================= */
 
+/* ===============================
+   BOTÓN SUBIR ARRIBA
+================================ */
+.scrollTopButton {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: #038C7F;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,.2);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.scrollTopButton:hover {
+  background: #037F8C;
+  transform: translateY(-4px) scale(1.05);
+}
+
+.scrollTopButton:active {
+  transform: scale(0.96);
+}

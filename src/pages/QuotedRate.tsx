@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import {  GrCloudDownload  } from "react-icons/gr";
 import { AiFillCaretRight } from "react-icons/ai";
+import { FaArrowUp } from "react-icons/fa";
 
 export default function QuotedRate({ 
     onClose, 
@@ -99,6 +100,7 @@ const [sections, setSections] = useState<any[]>([]);
 const [isSaving, setIsSaving] = useState(false);
 const [isGenerating, setIsGenerating] = useState(false);
 const [downloading, setDownloading] = useState(false);
+const mainRef = useRef<HTMLDivElement>(null);
 
 const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -132,6 +134,12 @@ useEffect(() => {
     loadSections(); // cargamos secciones
 }, []);
 
+const scrollToTop = () => {
+    mainRef.current?.scrollTo({
+        top: 0,
+        behavior: "smooth",
+    });
+};
 // --------------  consultamos si hay una tarifa existente ------------------- //
 const consultarQuotedRateViva = async () => {
         if (!quotationRequestData?.referenceRequest || !pricingData?.control) {
@@ -772,7 +780,7 @@ const airOperationalTemplate = {
 
 const landTemplate = {
     service_type: 3,
-    _id_type_of_charge: 3,
+    _id_type_of_charge: 0,
     type_of_charge: "",
     concept: "",
     billing_base: "",
@@ -2199,8 +2207,7 @@ const buildPreviewPayload = (
 
  /* ===================================== EMPIEZA EL DISEÑO FRONT ========================================= */
 return (
-    <div className={styles.contentWrapper}>
-        <div className={styles.container}>
+        <div className={styles.container} ref={mainRef}>
             {/* ===== HEADER ===== */}
             <div className={styles.header}>
                 <h1 className={styles.title}>{t('tvf.title')}</h1>
@@ -3846,11 +3853,19 @@ return (
                     {/* Editor */}
                     <div
                         ref={editorRef}
-                        contentEditable
-                        className={styles.editor}
+                        contentEditable={!isAcceptedByClient}
+                        className={`${styles.editor} ${
+                            isAcceptedByClient ? styles.editorReadOnly : ""
+                        }`}
                         suppressContentEditableWarning
-                        onClick={() => editorRef.current?.focus()}  
+                        onClick={() => {
+                            if (!isAcceptedByClient) {
+                                editorRef.current?.focus();
+                            }
+                        }}
                         onInput={() => {
+                            if (isAcceptedByClient) return;
+
                             const now = new Date();
                             setLastSaved(now.toLocaleTimeString());
                         }}
@@ -3943,7 +3958,6 @@ return (
                             />
                 </section>
             </div>
-        </div>
             {/* ================= MODAL ================= */}
             <Modal
             isOpen={modalState.isOpen}
@@ -3959,7 +3973,12 @@ return (
             confirmText={modalState.confirmText || t('tvf.Confirm')}
             cancelText={modalState.cancelText || t('tvf.Cancel')}
             />
-    </div>
-
+            <button
+            className={styles.scrollTopButton}
+            onClick={scrollToTop}
+            >
+            <FaArrowUp size={22} />
+            </button>
+        </div>
     );
 }
