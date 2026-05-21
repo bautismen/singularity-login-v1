@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import  React, { useEffect, useRef, useState } from 'react';
 import { Search, Filter,SlidersHorizontal, BarChart2,ChevronUp, ChevronDown, ChevronLeft, ChevronRight,Table,FileText } from 'lucide-react';
 import {useLanguage } from "../contexts/LanguageContext";
 import styles from './Reports.module.css';
@@ -187,10 +187,10 @@ const renderParameter = (id: string) => {
     chunks.push(report.parameter.slice(i, i + 3));
   }
 
-  return chunks.map((group, index) => (     
-    <div key={index} className={styles.rowGroup}>
-      {group.map((p: any) => (
-        <div className={styles.formGroup} key={p.id}>
+  return chunks.map((group, chunkIndex) => (     
+    <div key={`chunk-${chunkIndex}`} className={styles.rowGroup}>
+      {group.map((p: any, paramIndex: number) => (
+        <div className={styles.formGroup}key={p.id ?? p.name ?? `param-${chunkIndex}-${paramIndex}`}>
           <label className={styles.label}>{language === 'es' ? p.showlabel.es : p.showlabel.en}:</label>
 
           {p.type === 'date' && (
@@ -240,14 +240,14 @@ const renderParameter = (id: string) => {
                 placeholder={`Seleccionar ${language === 'es' ? p.showlabel.es : p.showlabel.en}...`}
               />
 
-              <datalist id={`catalog-${p.name}`}>
-                {catalogs[p.catalog]?.map((dat: any) => (
-                  <option
-                    key={dat.id}
-                    value={getOptionLabel(p.catalog, dat)}
-                  />
-                ))}
-              </datalist>
+             <datalist id={`catalog-${p.name}`}>
+              {catalogs[p.catalog]?.map((dat: any, index: number) => (
+                <option
+                  key={dat.id ?? dat._id ?? `${p.name}-option-${index}`}
+                  value={getOptionLabel(p.catalog, dat)}
+                />
+              ))}
+            </datalist>
             </>
           )}
         </div>
@@ -487,25 +487,17 @@ const handlecreate = () => {
               <ChevronLeft size={20} />
             </button>
 
-            {Array.from(
-              { length: totalPagesTop },
-              (_, i) => i + 1
-            )
-              .filter(
-                p =>
-                  p === 1 ||
-                  p === totalPagesTop ||
-                  Math.abs(p - currentPageTop) <= 1
+            {Array.from({ length: totalPagesTop }, (_, i) => i + 1)
+              .filter(p =>
+                p === 1 ||
+                p === totalPagesTop ||
+                Math.abs(p - currentPageTop) <= 1
               )
               .map((p, idx, arr) => (
-                <div key={p} className="flex items-center">
-
+                <React.Fragment key={p}> 
                   {idx > 0 && arr[idx - 1] !== p - 1 && (
-                    <span className="text-gray-400 text-xs">
-                      ...
-                    </span>
+                    <span className="text-gray-400 text-xs">...</span>
                   )}
-
                   <button
                     onClick={() => setCurrentPageTop(p)}
                     className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
@@ -516,9 +508,9 @@ const handlecreate = () => {
                   >
                     {p}
                   </button>
-
-                </div>
-              ))}
+                </React.Fragment>
+              ))
+            }
 
             <button
               onClick={() =>
@@ -640,12 +632,12 @@ const handlecreate = () => {
           {Array.from({ length: totalPages }, (_, i) => i + 1)
             .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
             .map((p, idx, arr) => (
-              <>
+              <React.Fragment key={p}>  {/* ← key en el Fragment externo */}
                 {idx > 0 && arr[idx - 1] !== p - 1 && (
-                  <span key={`dots-${p}`} className="text-gray-400 text-xs">...</span>
+                  <span className="text-gray-400 text-xs">...</span>
+                  // ↑ ya no necesita key propio, lo hereda del Fragment
                 )}
                 <button
-                  key={p}
                   onClick={() => setCurrentPage(p)}
                   className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
                     currentPage === p
@@ -655,7 +647,7 @@ const handlecreate = () => {
                 >
                   {p}
                 </button>
-              </>
+              </React.Fragment>
             ))
           }
 
