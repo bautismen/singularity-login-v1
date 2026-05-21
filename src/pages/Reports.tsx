@@ -161,11 +161,12 @@ const toggleSelected = (id: string) => {
         settitle(r.name_report);
         setIsOpen(false);
         setisviewParameters(true);
+        const mapping = language === 'es' ? r.dataset?.mapping.es : r.dataset?.mapping.en;
         const mappingParsed =
-        typeof r.dataset?.mapping === 'string'
-        ? JSON.parse(r.dataset.mapping)
-        : r.dataset?.mapping || {};
-
+        typeof mapping === 'string'
+        ? JSON.parse(mapping)
+        : mapping || {};
+        
         setHeaderMapping(mappingParsed);
         return { ...r, selected: true };
       }
