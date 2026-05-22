@@ -1334,15 +1334,17 @@ CARD 1 finaliza-  cardGeneral*/
 }
 
 .emptyCell {
+  padding: 48px 20px;
   text-align: center;
-  padding: 18px;
+  background: var(--hover);
+  border-bottom: none !important;
 }
 
 .emptyText {
   color: var(--text-secondary);
   font-size: 14px;
   font-weight: 500;
-  letter-spacing: 0.3px;
+  opacity: .75;
 }
 
 .inputConcept,
