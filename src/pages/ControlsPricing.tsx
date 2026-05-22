@@ -554,15 +554,30 @@ const closeDocumentsModal = () => {
     return statusClasses[status] || styles.statusNueva;
   };
 
-  const getDaysElapsed = (date: string) => {
-     if (!date) return null;
-    const now = new Date();    
-    const deadlineDate = new Date(date.substring(0, 10)+ "T00:00:00");
-    now.setHours(0, 0, 0, 0);
-    deadlineDate.setHours(0, 0, 0, 0);
-    const diffTime = deadlineDate.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+  const getDaysElapsed = (deadline: string) => {
+    if (!deadline) return null;    
+    const today = new Date();
+    const deadlineDate = new Date(deadline);
+
+    today.setHours(0,0,0,0);
+    deadlineDate.setHours(0,0,0,0);
+    /*const totalDays = Math.floor(
+      (deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );*/
+    if (today.getTime() === deadlineDate.getTime()) return 0;
+    const direction = deadlineDate > today ? 1 : -1;
+    let businessDays = 0;
+    const current = new Date(today);
+    
+    while (current.getTime() !== deadlineDate.getTime()) {
+      current.setDate(current.getDate() + direction);
+      const day = current.getDay();
+      if (day !== 0 && day !== 6) {
+        businessDays += direction;
+      }
+    }
+
+    return businessDays;
   };
 
   const getOperationType = (services: any[]) => {
