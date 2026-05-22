@@ -8,13 +8,6 @@
   height: 100%;
 }
 
-.contentWrapper {
-  display: flex;
-  height: 100vh;
-  width: 100%;
-  overflow: hidden;
-}
-
 /* Firefox */
 .container {
   scrollbar-width: none;
