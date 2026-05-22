@@ -2,6 +2,8 @@
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  overflow-y: auto;
+  height: 100%;
 }
 
 .header {
@@ -147,10 +149,6 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* .dark .section {
-  background-color: #1f2937;
-} */
-
 .sectionTitle {
   font-size: 1.125rem;
   font-weight: 600;
@@ -160,10 +158,6 @@
   border-bottom: 2px solid var(--border);
 }
 
-/* .dark .sectionTitle {
-  color: #d1d5db;
-  border-bottom-color: #374151;
-} */
 .formRow {
   margin-bottom: 1.25rem;
 } 
@@ -376,6 +370,39 @@
 
 .prospectCheckbox input:checked::before {
   transform: translateX(18px);
+}
+
+/*card comments*/
+ .editorToolbar { 
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+  background: var(--hover);
+}
+
+.editorToolbar button {
+  padding: 6px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.editorToolbar button:hover {
+  background: #f1f5f9;
+  color: #2563eb;
+}
+
+.editorToolbar button {
+  padding: 6px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-secondary); 
+  transition: all 0.2s ease;
 }
 
 .clientSelect {
@@ -1702,16 +1729,6 @@
   border-color: #14b8a6;
 }
 
-/* .dark .executiveSelectionItem {
-  background: #374151;
-  border-color: #4b5563;
-} */
-
-/* .dark .executiveSelectionItem:hover {
-  background: #4b5563;
-  border-color: #14b8a6;
-} */
-
 .executiveSelectionItem span {
   font-size: 0.875rem;
   color: var(--text-secondary);
@@ -1747,9 +1764,6 @@
   color: var(--text-tertiary);
 }
 
-/* .dark .activeUnitLabel {
-  color: #14b8a6;
-} */
 
 .loading {
   text-align: center;
@@ -1764,6 +1778,37 @@
   border-top-color: #14b8a6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+/* ===============================
+   BOTÓN SUBIR ARRIBA
+================================ */
+.scrollTopButton {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: #038C7F;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,.2);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.scrollTopButton:hover {
+  background: #037F8C;
+  transform: translateY(-4px) scale(1.05);
+}
+
+.scrollTopButton:active {
+  transform: scale(0.96);
 }
 
 @keyframes spin {

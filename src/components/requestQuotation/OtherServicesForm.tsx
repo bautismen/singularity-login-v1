@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect, useRef} from 'react';
+import { Plus, Trash2, Bold, Italic, Underline, List, ListOrdered, Image } from 'lucide-react';
 import {OrderBaseFormProps} from "./FreightServiceForm"
 import { MerchandiseTable } from '../requestQuotation/MerchandiseTable';
 import {InputCountry } from '../InputCountry'
@@ -48,7 +49,74 @@ export const OtherServicesForm: React.FC<OtherServicesFormProps> = ({
   const isDisabled = mode === 'view' || idStatusRequest >= 2;
   const formatDateForInput = (date: string) => date ? date.split('T')[0] : '';
   const [showAirports, setShowAirports] = useState(!!(orderService?.origin?.airportCode || orderService?.destination?.airportCode)) 
+  //utils para comentarios
+  const editorRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (!editorRef.current) return;
+
+    const currentComments = orderService?.comments ?? '';
+
+    if (editorRef.current.innerHTML !== currentComments) {
+      editorRef.current.innerHTML = currentComments;
+    }
+  }, [orderService?.comments, service.idServiceItem]);
+
+  const updateComments = () => {
+    onUpdateOrderService(service.idServiceItem, {
+      comments: editorRef.current?.innerHTML ?? ''
+    });
+  };
+
+  const exec = (command: string) => {
+  if (isDisabled) return;
+
+  editorRef.current?.focus();
+  document.execCommand(command, false);
+  updateComments();
+};
+
+const openImagePicker = () => {
+  if (isDisabled) return;
+  fileInputRef.current?.click();
+};
+
+const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    editor.focus();
+
+    const img = document.createElement('img');
+    img.src = reader.result as string;
+    img.style.maxWidth = '220px';
+    img.style.height = 'auto';
+    img.style.display = 'block';
+    img.style.margin = '8px 0';
+
+    const selection = window.getSelection();
+    const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+
+    if (range) {
+      range.insertNode(img);
+      range.collapse(false);
+    } else {
+      editor.appendChild(img);
+    }
+
+    updateComments();
+  };
+
+  reader.readAsDataURL(file);
+  e.target.value = '';
+};
 
   return (
     <>
@@ -336,15 +404,47 @@ export const OtherServicesForm: React.FC<OtherServicesFormProps> = ({
       {/* ── Comentarios ── */}
       <div className={styles.formGroup} style={{ marginTop: '1.25rem' }}>
         <label className={styles.label}>{t('quote.comments')}</label>
-        <textarea
-          maxLength={500} className={styles.textarea} rows={3}
-          value={orderService?.comments} disabled={isDisabled}
-          onChange={(e) =>
-            onUpdateOrderService(
-              service.idServiceItem, 
-              { comments: e.target.value }
-            )
-          }
+
+        <div className={styles.editorToolbar}>
+          <button type="button" disabled={isDisabled} onMouseDown={(e) => {e.preventDefault(); exec('bold');}}>
+            <Bold size={16} />
+          </button>
+
+          <button type="button" disabled={isDisabled} onMouseDown={(e) => {e.preventDefault(); exec('italic');}}>
+            <Italic size={16} />
+          </button>
+
+          <button type="button" disabled={isDisabled} onMouseDown={(e) => {e.preventDefault(); exec('underline');}}>
+            <Underline size={16} />
+          </button>
+
+          <button type="button" disabled={isDisabled} onMouseDown={(e) => {e.preventDefault(); exec('insertUnorderedList');}}>
+            <List size={16} />
+          </button>
+
+          <button type="button" disabled={isDisabled} onMouseDown={(e) => {e.preventDefault(); exec('insertOrderedList');}}>
+            <ListOrdered size={16} />
+          </button>
+
+          <button type="button" disabled={isDisabled} onClick={openImagePicker}>
+            <Image size={16} />
+          </button>
+
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={handleImageUpload}
+          />
+        </div>
+
+        <div
+          ref={editorRef}
+          contentEditable={!isDisabled}
+          className={styles.textarea}
+          suppressContentEditableWarning
+          onInput={updateComments}
         />
       </div>
 

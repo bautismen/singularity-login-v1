@@ -1,5 +1,5 @@
-import React from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import React, {useRef, useEffect} from 'react';
+import { Plus, Trash2, Bold, Italic, Underline, List, ListOrdered, Image } from 'lucide-react';
 import { Service, Shipment, Cargo, ContainerRequest } from '../../types/requestQuotation';
 import { Container } from '../../types/container';
 import { InputCountry } from '../InputCountry';
@@ -96,6 +96,77 @@ export const FreightShipmentForm: React.FC<FreightShipmentFormProps> = ({
   const isDisabled     = mode === 'view' || idStatusRequest >= 2;
   const usesContainers = [2, 3, 10].includes(service.idService);
   const formatDateForInput = (date: string) => date ? date.split('T')[0] : '';
+  //utils para comentarios
+  const editorRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!editorRef.current) return;
+
+    const currentComments = shipment?.comments ?? '';
+
+    if (editorRef.current.innerHTML !== currentComments) {
+      editorRef.current.innerHTML = currentComments;
+    }
+  }, [shipment?.idShipment, shipment?.comments]);
+
+  const updateComments = () => {
+    onUpdateShipment(
+      service.idServiceItem,
+      shipment?.idShipment ?? 0,
+      'comments',
+      editorRef.current?.innerHTML ?? ''
+    );
+  };
+
+  const exec = (command: string) => {
+    if (isDisabled) return;
+
+    editorRef.current?.focus();
+    document.execCommand(command, false);
+    updateComments();
+  };
+
+  const openImagePicker = () => {
+    if (isDisabled) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const editor = editorRef.current;
+      if (!editor) return;
+
+      editor.focus();
+
+      const img = document.createElement('img');
+      img.src = reader.result as string;
+      img.style.maxWidth = '220px';
+      img.style.height = 'auto';
+      img.style.display = 'block';
+      img.style.margin = '8px 0';
+
+      const selection = window.getSelection();
+      const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+
+      if (range) {
+        range.insertNode(img);
+        range.collapse(false);
+      } else {
+        editor.appendChild(img);
+      }
+
+      updateComments();
+    };
+
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
   return (
     <>
@@ -580,16 +651,47 @@ export const FreightShipmentForm: React.FC<FreightShipmentFormProps> = ({
       {/* ── Comentarios ── */}
       <div className={styles.formGroup} style={{ marginTop: '1.25rem' }}>
         <label className={styles.label}>{t('quote.comments')}</label>
-        <textarea
-          maxLength={500} className={styles.textarea} rows={3}
-          value={shipment?.comments} disabled={isDisabled}
-          onChange={(e) =>
-            onUpdateShipment(
-              service.idServiceItem, 
-              shipment?.idShipment ?? 0, 
-              'comments', 
-              e.target.value)
-          }
+
+        <div className={styles.editorToolbar}>
+          <button type="button" disabled={isDisabled} onMouseDown={(e) => { e.preventDefault(); exec('bold'); }}>
+            <Bold size={16} />
+          </button>
+
+          <button type="button" disabled={isDisabled} onMouseDown={(e) => { e.preventDefault(); exec('italic'); }}>
+            <Italic size={16} />
+          </button>
+
+          <button type="button" disabled={isDisabled} onMouseDown={(e) => { e.preventDefault(); exec('underline'); }}>
+            <Underline size={16} />
+          </button>
+
+          <button type="button" disabled={isDisabled} onMouseDown={(e) => { e.preventDefault(); exec('insertUnorderedList'); }}>
+            <List size={16} />
+          </button>
+
+          <button type="button" disabled={isDisabled} onMouseDown={(e) => { e.preventDefault(); exec('insertOrderedList'); }}>
+            <ListOrdered size={16} />
+          </button>
+
+          <button type="button" disabled={isDisabled} onClick={openImagePicker}>
+            <Image size={16} />
+          </button>
+
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={handleImageUpload}
+          />
+        </div>          
+
+        <div
+          ref={editorRef}
+          contentEditable={!isDisabled}
+          className={styles.textarea}
+          suppressContentEditableWarning
+          onInput={updateComments}
         />
       </div>
 
