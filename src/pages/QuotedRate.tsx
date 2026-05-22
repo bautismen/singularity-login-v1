@@ -1237,11 +1237,14 @@ const handleSaveQuotedRate = async (
 ) => {
     try {
 
-    if (!validateConcepts()) return;
+        // validacion que si dejan un concepto sin capturar completo, solo requerido subtotal y concepto notifique
+        if (!validateConcepts()) return;
 
-    if (!validateConceptsNumers()) return;
+        //validacion de datos numericos en los conceptos
+        if (!validateConceptsNumers()) return;
 
-    if (!validateTotal()) return;
+        // si hay conceptos capturados con importes mayores a 0
+        if (!validateTotal()) return;
 
     const current = quotedRateRegistradaInfo?.data?.[0]; //registro anterior
 
@@ -1437,9 +1440,7 @@ const handleSaveQuotedRate = async (
                 
                 if (quotedRateResponse?.codeStatus === 200) {
 
-                    showSuccess(
-                `${t('tvf.UpdateStatusControlOK')} ${controlResponse?.messageStatus ?? ''}`
-                );
+                    showSuccess( `${t('tvf.UpdateStatusControlOK')}` );
                 } else {
 
                     isSuccess = false;
@@ -1648,7 +1649,7 @@ const buildQuotedRatePayload = (
     };
 };
 
-//agregar validacion que si dejan un concepto sin capturar completo, notifique
+//validacion que si dejan un concepto sin capturar completo, notifique
 const validateConcepts = () => {
     const allConcepts = [
         ...maritimeConcepts,
@@ -1805,7 +1806,11 @@ const validateRequiredFields = () => {
         errors.push(t('tvf.ValidUntilMustBeGreater'));
     }
 
-    if (!termsValue) {
+    if (
+    !termsValue ||
+    termsValue.length === 0 ||
+    termsValue.every(term => !term.trim())
+    ) {
         errors.push(t('tvf.termsValueRequired'));
     }
     
@@ -1867,8 +1872,18 @@ const handleDownload = async (id: string) => {
 const handlePreviewQuotedRate = async (isPreview: boolean,  version: number ) => {  
     try {
 
+        if (isPreview) {
+
+        // validacion que si dejan un concepto sin capturar completo, solo requerido subtotal y concepto notifique
+        if (!validateConcepts()) return;
+
+        //validacion de datos numericos en los conceptos
+        if (!validateConceptsNumers()) return;
+
         // si hay conceptos capturados con importes mayores a 0
         if (!validateTotal()) return;
+
+        }
 
         // abrimos pestaña en blanco
         const newTab = window.open("", "_blank");
