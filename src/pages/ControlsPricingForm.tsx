@@ -1003,6 +1003,25 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       }
     }
 
+    const renderReadOnlyComments = (comments?: string) => {
+      const html = comments?.trim() || '';
+
+      if (!html) {
+        return (
+          <div className={styles.commentsPreviewEmpty}>
+            {t('ctrlpricing.nocomments')}
+          </div>
+        );
+      }
+
+      return (
+        <div
+          className={styles.commentsPreview}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      );
+    };
+    
   const openModal = () => {      
       setShowModal(true);
     };
@@ -1894,23 +1913,11 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                         </div>                    
                         <div className={styles.formGroup} hidden={isorderservice}>
                           <label className={styles.label}>{t('ctrlpricing.comments')}</label>
-                          <textarea
-                            value={shipment.comment || shipment.comments || ''}
-                            className={styles.formTextarea}
-                            rows={2}
-                            disabled
-                            placeholder={t('ctrlpricing.nocomments')}
-                          />
+                          {renderReadOnlyComments(shipment.comment || shipment.comments)}
                         </div>
                         <div className={styles.formGroup} hidden={isshipment}>
                           <label className={styles.label}>{t('ctrlpricing.comments')}</label>
-                          <textarea
-                            value={orderservice?.comment || orderservice?.comments || ''}
-                            className={styles.formTextarea}
-                            rows={2}
-                            disabled
-                            placeholder={t('ctrlpricing.nocomments')}
-                          />
+                          {renderReadOnlyComments(orderservice?.comment || orderservice?.comments)}
                         </div>
 
                         <div className={styles.frequencySection} hidden={isorderservice}>
@@ -1977,8 +1984,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                                       <td>{carg.classification.idClassificationMerchandise === 5 ? 'Sí' : 'No'}</td>
                                       <td>{carg.classification.idClassificationMerchandise === 4 ? 'Refrigerada' : 'General'}</td>
                                       <td>{carg.stowable ? 'Sí' : 'No'}</td>
-                                      <td>{carg.volumeTotal ? `${carg.volumeTotal} ${carg.unitMeasurement || ''}` : '0'} KG</td>
-                                      <td>{carg.weigthTotal ? `${carg.weigthTotal} ${carg.unitWeight   || ''}` : '0'} KG</td>                        
+                                      <td>{carg.volumeTotal ? `${carg.volumeTotal} ${carg.unitMeasurement || ''}` : '0'} </td>
+                                      <td>{carg.weigthTotal ? `${carg.weigthTotal} ${carg.unitWeight   || ''}` : '0'} </td>                        
                                     </tr>
                                   ))}                                
                                 </tbody>
@@ -2010,8 +2017,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                                       <td>{carg.classification.idClassificationMerchandise === 5 ? 'Sí' : 'No'}</td>
                                       <td>{carg.classification.idClassificationMerchandise === 4 ? 'Refrigerada' : 'General'}</td>
                                       <td>{carg.stowable ? 'Sí' : 'No'}</td>
-                                      <td>{carg.volumeTotal ? `${carg.volumeTotal} ${carg.unitMeasurement || ''}` : '0'} KG</td>
-                                      <td>{carg.weigthTotal ? `${carg.weigthTotal} ${carg.unitWeight   || ''}` : '0'} KG</td>                        
+                                      <td>{carg.volumeTotal ? `${carg.volumeTotal} ${carg.unitMeasurement || ''}` : '0'} </td>
+                                      <td>{carg.weigthTotal ? `${carg.weigthTotal} ${carg.unitWeight   || ''}` : '0'} </td>                        
                                     </tr>
                                   ))}                                
                                 </tbody>

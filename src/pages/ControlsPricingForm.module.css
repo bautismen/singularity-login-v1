@@ -2292,6 +2292,50 @@
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
+.commentsPreview,
+.commentsPreviewEmpty {
+  min-height: 4.5rem;
+  padding: 0.625rem 0.75rem;
+  background: var(--hover);
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-family: inherit;
+  overflow-wrap: anywhere;
+}
+
+.commentsPreview :global(img) {
+  display: block;
+  max-width: 220px;
+  height: auto;
+  margin: 0.5rem 0;
+  border-radius: 0.375rem;
+}
+
+.commentsPreview :global(p) {
+  margin: 0 0 0.5rem;
+}
+
+.commentsPreview :global(p:last-child) {
+  margin-bottom: 0;
+}
+
+.commentsPreviewEmpty {
+  color: #9ca3af;
+}
+
+.dark .commentsPreview,
+.dark .commentsPreviewEmpty {
+  background: #111827;
+  border-color: #374151;
+  color: #f9fafb;
+}
+
+.dark .commentsPreviewEmpty {
+  color: #9ca3af;
+}
+
 .servicesSection {
   background: var(--surface);
   border: 1px solid var(--border);
