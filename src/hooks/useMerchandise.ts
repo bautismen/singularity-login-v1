@@ -19,7 +19,7 @@ const EMPTY_FORM: Cargo = {
   stowable: 0,
   shipmentTypeCargo: '',
   idUnitMeasurement: 1,
-  unitMeasurement: 'cm',
+  unitMeasurement: 'm³',
   idUnitWeight: 1,
   unitWeight: 'kg',
   volumeTotal: 0,
@@ -76,7 +76,7 @@ export const useMerchandise = () => {
         stowable:               cargo.stowable,
         shipmentTypeCargo:      cargo.shipmentTypeCargo,
         idUnitMeasurement:      cargo.idUnitMeasurement || 1,
-        unitMeasurement:        cargo.unitMeasurement   || 'cm',
+        unitMeasurement:        cargo.unitMeasurement   || 'm³',
         idUnitWeight:           cargo.idUnitWeight      || 1,
         unitWeight:             cargo.unitWeight        || 'kg',
         volumeTotal:            cargo.volumeTotal,
@@ -122,15 +122,27 @@ export const useMerchandise = () => {
   const calculateTotals = () => {
     let totalVolume = 0;
     let totalWeight = 0;
-    currentPackages.forEach(pkg => {
-      totalVolume += pkg.length * pkg.height * pkg.width * pkg.quantity;
+
+    if (serviceId === 5) { //Aereo
+      currentPackages.forEach(pkg => {
+      totalVolume += (pkg.length  * pkg.width * pkg.height * pkg.quantity) / 1000000;
+      totalWeight += (pkg.length  * pkg.width * pkg.height * pkg.quantity) / 6000;
+      }); 
+    }else {
+      currentPackages.forEach(pkg => {
+      totalVolume += (pkg.length  * pkg.width * pkg.height * pkg.quantity) / 1000000;
       totalWeight += pkg.weight * pkg.quantity;
-    });
+      }); 
+    }
+          
     return {
       totalVolume: Number(totalVolume.toFixed(2)),
       totalWeight: Number(totalWeight.toFixed(2)),
     };
   };
+
+  
+
 
   // ── Validación y build del objeto final ─────────────────────────────────────
 
@@ -168,7 +180,7 @@ export const useMerchandise = () => {
       stowable:          merchandiseForm.stowable,
       shipmentTypeCargo: [2, 3, 10].includes(serviceId || 0) ? 'Contenerizada' : 'Suelta',
       idUnitMeasurement: useMetricSystem ? 1 : 2,
-      unitMeasurement:   useMetricSystem ? 'cm' : 'in',
+      unitMeasurement:   useMetricSystem ? 'm³' : 'ft³',
       idUnitWeight:      useMetricSystem ? 1 : 2,
       unitWeight:        useMetricSystem ? 'kg' : 'lb',
       volumeTotal:  byUnitsMerch ? totalVolume : merchandiseForm.volumeTotal,
@@ -182,6 +194,7 @@ export const useMerchandise = () => {
     showMerchandiseModal,
     showPackagingModal,
     editingMerchandise,
+    serviceId,
     currentServiceIdMerch,
     merchandiseForm,
     currentPackages,

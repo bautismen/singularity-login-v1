@@ -16,6 +16,7 @@ interface MerchandiseModalProps {
   classificationFlags: ClassificationFlags;
   imoList:             any[];
   mode:                'create' | 'edit' | 'view';
+  serviceId:           number;
   idStatusRequest:     number;
   showPackagingModal:  boolean;
   // Acciones form
@@ -46,6 +47,7 @@ export const MerchandiseModal: React.FC<MerchandiseModalProps> = ({
   classificationFlags,
   imoList,
   mode,
+  serviceId,
   idStatusRequest,
   showPackagingModal,
   onChangeMerchandiseForm,
@@ -336,18 +338,17 @@ export const MerchandiseModal: React.FC<MerchandiseModalProps> = ({
               <div className={styles.formGroup}>
                 <div className={styles.unitTypeToggle}>
                   <span className={!useMetricSystem ? styles.activeUnitLabel : styles.inactiveUnitLabel}>
-                    {t('quote.units.lbsInches')}
+                    Lbs/Ft
                   </span>
                   <button
                     type="button"
                     className={`${styles.toggleSwitch} ${useMetricSystem ? styles.active : ''}`}
                     onClick={() => onChangeMetricSystem(!useMetricSystem)}
-                    disabled={isDisabled}
-                  >
+                    disabled={isDisabled}>
                     <div className={styles.toggleThumb} />
                   </button>
                   <span className={useMetricSystem ? styles.activeUnitLabel : styles.inactiveUnitLabel}>
-                    {t('quote.units.kgCm')}
+                    Kgm/m
                   </span>
                 </div>
               </div>
@@ -358,7 +359,7 @@ export const MerchandiseModal: React.FC<MerchandiseModalProps> = ({
               <div className={styles.modalRow} style={{ marginTop: '1rem' }}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    {t('quote.totalVolume')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})
+                    {t('quote.totalVolume')} ({useMetricSystem ? 'm³' : 'ft³'})
                   </label>
                   <input
                     type="number" min="1" step="any" placeholder="0"
@@ -379,7 +380,8 @@ export const MerchandiseModal: React.FC<MerchandiseModalProps> = ({
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    {t('quote.totalWeight')} ({useMetricSystem ? t('quote.kg') : t('quote.lbs')})
+                    {serviceId === 5 ? t('quote.volumetricWeightTotal') : t('quote.totalWeight')} 
+                    ({useMetricSystem ? 'kg' : 'lbs'})
                   </label>
                   <input
                     type="number" min="0" step="any" placeholder="0"
@@ -420,10 +422,10 @@ export const MerchandiseModal: React.FC<MerchandiseModalProps> = ({
                         <tr>
                           <th>{t('quote.packagingTable.packaging')}</th>
                           <th>{t('quote.packagingTable.quantity')}</th>
-                          <th>{t('quote.packagingTable.length')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})</th>
-                          <th>{t('quote.packagingTable.height')} ({useMetricSystem ? t('quote.cm') : t('quote.in')})</th>
-                          <th>{t('quote.packagingTable.width')}  ({useMetricSystem ? t('quote.cm') : t('quote.in')})</th>
-                          <th>{t('quote.packagingTable.weight')} ({useMetricSystem ? t('quote.kg') : t('quote.lbs')})</th>
+                          <th>{t('quote.packagingTable.length')} ({useMetricSystem ? 'cm' : 'in'})</th>
+                          <th>{t('quote.packagingTable.height')} ({useMetricSystem ? 'cm' : 'in'})</th>
+                          <th>{t('quote.packagingTable.width')}  ({useMetricSystem ? 'cm' : 'in'})</th>
+                          <th>{t('quote.packagingTable.weight')} ({useMetricSystem ? 'kg' : 'lbs'})</th>
                           <th></th>
                         </tr>
                       </thead>
@@ -460,13 +462,15 @@ export const MerchandiseModal: React.FC<MerchandiseModalProps> = ({
                       <div>
                         <div className={styles.totalLabel}>{t('quote.totalVolume')}</div>
                         <div className={styles.totalValue}>
-                          {totalVolume.toFixed(2)} {useMetricSystem ? 'cm³' : 'in³'}
+                          {totalVolume} {useMetricSystem ? 'm³' : 'ft³'}
                         </div>
                       </div>
                       <div>
-                        <div className={styles.totalLabel}>{t('quote.totalWeight')}</div>
+                        <div className={styles.totalLabel}>
+                          {serviceId === 5 ? t('quote.volumetricWeightTotal') : t('quote.totalWeight')}
+                        </div>
                         <div className={styles.totalValue}>
-                          {totalWeight.toFixed(2)} {useMetricSystem ? 'kg' : 'lbs'}
+                          {totalWeight} {useMetricSystem ? 'kg' : 'lbs'}
                         </div>
                       </div>
                     </div>

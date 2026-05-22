@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   User,
 } from "lucide-react";
+import { FaArrowUp } from "react-icons/fa";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useNotification } from "../contexts/NotificationContext";
@@ -61,7 +62,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
     loadImos,
     loadContainers
   } = useCatalogs(); 
-  const { merchandiseForm , showMerchandiseModal, showPackagingModal, editingMerchandise, 
+  const { merchandiseForm , showMerchandiseModal, showPackagingModal, editingMerchandise, serviceId, 
     currentServiceIdMerch, currentPackages, useMetricSystem, byUnitsMerch, classificationFlags,
     openMerchandiseModal, closeMerchandiseModal, setMerchandiseForm, setUseMetricSystem, setByUnitsMerch, setClassificationFlags,
     openPackagingModal, closePackagingModal, addPackage, removePackage, calculateTotals, buildMerchandise }=  useMerchandise();
@@ -156,6 +157,8 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
   //Roles
   const rolPricing = ["pricing"]; // Roles que puuedo ir agregando para validar los botones del menu/admin
   const isPricingUser = user?.roles?.every(() => true) && rolPricing.every((v) => user?.roles?.includes(v));
+  //Boton para subir a inicio
+  const mainRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (mode !== "create" && quotationId) {
@@ -196,6 +199,12 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
     setServices([]);*/    
   };
 
+  const scrollToTop = () => {
+    mainRef.current?.scrollTo({
+        top: 0,
+        behavior: "smooth",
+    });
+  };
   /*const loadImos = async () => {
     try {
       const resultImos = await catalogService.getImos();
@@ -1931,11 +1940,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
         return <div />;
     }
   };
-
-  const formatDateForInput = (date: string) => {
-    if (!date) return "";
-    return date.split("T")[0];
-  };
+  
 
   const calculateDateResponseDeadline = () => {
     const [year, month, day] = formData.created.split("-").map(Number);
@@ -1954,7 +1959,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} ref={mainRef} >
       <form
         ref={formRef}
         onSubmit={handleSaveQuotation}
@@ -3689,6 +3694,7 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
         classificationFlags={classificationFlags}
         imoList={imoList}
         mode={mode}
+        serviceId = {serviceId ?? 1}
         idStatusRequest={formData.idStatusRequest}
         showPackagingModal={showPackagingModal}
         onChangeMerchandiseForm={(changes) => setMerchandiseForm(prev => ({...prev, ...changes}))}
@@ -4534,6 +4540,13 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
         cancelText={t("quote.cancel")}
         noActionText="No"
       />
+
+      <button
+        className={styles.scrollTopButton}
+        onClick={scrollToTop}>
+        <FaArrowUp size={22} />
+      </button>
+
     </div>
   );
 }

@@ -43,8 +43,8 @@ export const PackagingModal: React.FC<PackagingModalProps> = ({
     }
   };
 
-  const dimensionUnit = useMetricSystem ? t('quote.cm') : t('quote.in');
-  const weightUnit    = useMetricSystem ? t('quote.kg') : t('quote.lbs');
+  const dimensionUnit = useMetricSystem ? 'cm' : 'in';
+  const weightUnit    = useMetricSystem ? 'kg' : 'lbs';
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
