@@ -94,16 +94,41 @@ export function Sidebar({ onCollapsedChange, currentRoute = 'dashboard', onNavig
           )}
         </div>
 
-        {menuItems.map(({ key, icon: Icon, route }) => (
-          <button
-            key={key}
-            onClick={() => onNavigate?.(route)}
-            className={`${styles.navButton} ${currentRoute === route ? styles.active : ''}`}
-            title={collapsed ? t(key) : ''}>
-            <Icon size={20} />
-            {!collapsed && <span>{t(key)}</span>}
-          </button>
-        ))}
+        {
+          menuItems
+            .filter(item => {
+              // ocultar reports y operations
+              if (
+                !isAdmin &&
+                (
+                  item.route === 'reports' ||
+                  item.route === 'operations'
+                )
+              ) {
+                return false;
+              }
+
+              return true;
+            })
+            .map(({ key, icon: Icon, route }) => (
+              <button
+                key={key}
+                onClick={() => onNavigate?.(route)}
+                className={`${styles.navButton} ${
+                  currentRoute === route
+                    ? styles.active
+                    : ''
+                }`}
+                title={collapsed ? t(key) : ''}
+              >
+                <Icon size={20} />
+
+                {!collapsed && (
+                  <span>{t(key)}</span>
+                )}
+              </button>
+            ))
+        }
 
         <div className={styles.catalogsSection}>
           <button
