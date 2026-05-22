@@ -8,7 +8,7 @@ import styles from './Operations.module.css';
 import { useAuth } from '../contexts/AuthContext';
 import { getCustomers } from '../services/customerService';
 import { catalogService } from '../services/catalogsService';
-import { PricingControl} from '../types/pricingControl';
+import { PricingControl } from '../types/pricingControl';
 
 export default function Operations() {
   const { t } = useLanguage();
@@ -21,7 +21,7 @@ export default function Operations() {
   const [control, setControl] = useState<PricingControl>();
   const [servicesData, setServices] = useState<Service[]>([]);
   const [service, setService] = useState<Service>();
-  const [servicesOperation , setServicesOperation] = useState<Service[]>([]);
+  const [servicesOperation, setServicesOperation] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -34,7 +34,8 @@ export default function Operations() {
     name: ''
   });
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
-    services: false
+    services: false,
+    expedientes: false
   });
   const { user } = useAuth();
 
@@ -93,12 +94,12 @@ export default function Operations() {
   }
 
   async function loadCustomers() {
-      try {
-        const data = await getCustomers();
-        setCustomers(data);
-      } catch (error) {
-        console.error('Error loading customers:', error);
-      }
+    try {
+      const data = await getCustomers();
+      setCustomers(data);
+    } catch (error) {
+      console.error('Error loading customers:', error);
+    }
   }
 
   async function loadControls() {
@@ -219,11 +220,11 @@ export default function Operations() {
     });
 
     setIsFormOpen(true);
-  
+
   }
 
   function handleCustomerChange(selectedCustomerId: string) {
-    
+
     setControl({} as PricingControl);
     setControlsOperation([]);
 
@@ -237,28 +238,28 @@ export default function Operations() {
     if (!selectedCustomer) {
       setFormData({
         ...formData,
-          Id: '',
-          IdReference: 0,
-          Reference: '',
-          Customer: {} as Customer,
-          Controls: [] as Control[],
-          Services: [] as ServiceOperation[],
-          OperationStatus: 'Alta referencia',
-          Observations: '',
-          CreatedAt: new Date,
-          CreatedBy: {
-            UserId: user?._id || '',
-            Name: user?.name || '',
-          },
-          UpdatedAt: Date,
-          UpdateBy: {
-            UserId: user?._id || '',
-            Name: user?.name || '',
-          },
-          Status: 1,
-          Archived: false,
-          DataState: 1,
-        });
+        Id: '',
+        IdReference: 0,
+        Reference: '',
+        Customer: {} as Customer,
+        Controls: [] as Control[],
+        Services: [] as ServiceOperation[],
+        OperationStatus: 'Alta referencia',
+        Observations: '',
+        CreatedAt: new Date,
+        CreatedBy: {
+          UserId: user?._id || '',
+          Name: user?.name || '',
+        },
+        UpdatedAt: Date,
+        UpdateBy: {
+          UserId: user?._id || '',
+          Name: user?.name || '',
+        },
+        Status: 1,
+        Archived: false,
+        DataState: 1,
+      });
       return;
     }
 
@@ -277,31 +278,31 @@ export default function Operations() {
 
     setControlsClient(controlsClient);
 
-  }; 
+  };
 
-  const addControl = () => {  
-    
+  const addControl = () => {
+
     if (control === undefined || control._id === undefined ||
-        control._id === '' || control.control === '' ) {
+      control._id === '' || control.control === '') {
       showWarning(t('operations.selectControlWarning'));
       return;
     }
-    
-    if (controlsOperation?.some(c => c._id === control?._id)) {
-      showError(t('operations.alreadyadded'));    
-      return;
-    }   
-    
-    setFormData({
-        ...formData,
-        Controls: [
-          ...formData.Controls || [], {
-            IdControl: control._id,
-            Control: control.control
-          }
-        ] as Control[]
 
-      }); 
+    if (controlsOperation?.some(c => c._id === control?._id)) {
+      showError(t('operations.alreadyadded'));
+      return;
+    }
+
+    setFormData({
+      ...formData,
+      Controls: [
+        ...formData.Controls || [], {
+          IdControl: control._id,
+          Control: control.control
+        }
+      ] as Control[]
+
+    });
 
     setControlsOperation(prev => [
       ...prev,
@@ -311,7 +312,7 @@ export default function Operations() {
         services: control.services
       }
     ]);
-    
+
     // Quitamos el control seleccionado de la lista de controles disponibles para el cliente
     setControlsClient(prev =>
       prev.filter(c => c.id !== control._id)
@@ -323,38 +324,44 @@ export default function Operations() {
     //   loadInfoControl(controlsOperation[0]._id);
     // }
 
+    toggleSection('services')
+  
   };
 
-  const removeControl = (_idcontrol: string, item: number) => {  
-    
-    const updated = formData.Controls.filter((control: any) => control._id !== _idcontrol );
+  const removeControl = (_idcontrol: string, item: number) => {
 
-    setFormData({ 
-      ...formData, 
-      Controls: updated 
+    const updated = formData.Controls.filter((control: any) => control._id !== _idcontrol);
+
+    setFormData({
+      ...formData,
+      Controls: updated
     });
 
     controlsClient.push(controlsOperation.find(c => c._id === _idcontrol) as PricingControl); // Volver a agregar el control eliminado a la lista de controles disponibles para el cliente
 
     // Eliminar el control seleccionado de la lista de controles asociados a la operación
     setControlsOperation(co =>
-      co.filter(c => c._id !== _idcontrol && c.services?.some(
-        s => s.idServiceItem !== item )  
-      )
-    );
+      co.filter(c => c._id !== _idcontrol)
+        .map(c => ({
+          ...c,
+          services: c.services?.filter(
+            s => String(s.idServiceItem) !== String(item)
+          )
+        })));
+
 
   };
 
   const addService = () => {
 
     if (service === undefined || service._id === undefined ||
-        service._id === '' || service.service_name === '' ) {
+      service._id === '' || service.service_name === '') {
       showWarning(t('operations.selectServiceWarning'));
       return;
     }
 
     if (servicesOperation?.some(s => s._id === service._id)) {
-      showError(t('operations.alreadyadded'));    
+      showError(t('operations.alreadyadded'));
       return;
     }
 
@@ -371,92 +378,767 @@ export default function Operations() {
 
   };
 
-  const removeService = (_idservice: number) => {  
-    
+  const removeService = (_idservice: number) => {
+
     setServicesOperation(servicesOperation.filter(s => s._id !== _idservice));  // Eliminar el servicio seleccionado de la lista de servicios asociados a la operación
-    
+
     // controlsClient.push(controlsOperation.find(c => c._id === _idcontrol) as PricingControl); // Volver a agregar el control eliminado a la lista de controles disponibles para el cliente
   };
 
   const loadInfoControl = (info: object) => {
 
-    const infoControl = controlsData.filter(c =>
-      c.id === info.id &&
-      c.services?.some(
-        s => String(s.idServiceItem) === String(info.item)
-      )
-    )
+    const infoControl = controlsData
+      .filter(c => c.id === info.id)
+      .map(c => ({
+        ...c,
+        services: c.services?.filter(
+          s => String(s.idServiceItem) === String(info.item)
+        )
+      }));
 
     if (infoControl) {
       return (
-        <div >
+        <div className={styles.formRow}>
           {infoControl.map(infoControl => (
-            
-            <span key={infoControl.id} >
-              Envios
-              {/* <h3 className='title'>
-                {infoControl.control}
-              </h3> */}
-              {infoControl.services.map(serv => (
-                <span key={serv.idServiceItem} className={styles.serviceItem}>
-                  <label className={styles.fieldLabel}>
-                    Servicio
-                    <input
-                      type="text"
-                      value={serv.nameService}
-                      readOnly
-                      className={styles.textInput}
-                    />
-                  </label>
+            <span key={infoControl.id} className={styles.serviceItem}>
 
-                </span>
+              {infoControl.services?.map(serv => (
+                serv.shipments?.map(shipment => (
 
+                  <span key={shipment.idShipment} className={styles.serviceItem}>
+                    <div className={styles.serviceCard}>
+                      <h2 className='title'> Envio </h2>
+
+                      <div className={styles.fourColumnGrid}>
+
+                        <div className={styles.firstColumn}>
+
+                          {/* Tipo de envío */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Tipo de envío
+                              <input
+                                type="text"
+                                value={shipment.typeShipment}
+                                readOnly
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Tipo de referencia */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Tipo de referencia
+                              <input
+                                type="text"
+                                value={shipment.typeReference}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.secondColumn}>
+
+                          {/* Incoterm */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Incoterm
+                              <input
+                                type="text"
+                                value={shipment.incoterm}
+                                readOnly
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Referencia de envio */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Referencia de envio
+                              <input
+                                type="text"
+                                value={shipment.typeReference}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.thirdColumn}>
+
+                          {/* Tipo operación */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Tipo de operación
+                              <input
+                                type="text"
+                                value={shipment.typeOperation}
+                                readOnly
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Envio referencia */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Envio referencia
+                              <input
+                                type="datetime-local"
+                                value={shipment.typeReference}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.fourthColumn}>
+
+                          {/* Guia master */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Guia master
+                              <input
+                                type="text"
+                                value={shipment.masterBill}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                      <h2 className='title'> Transporte </h2>
+
+                      <div className={styles.fourColumnGrid}>
+
+                        <div className={styles.firstColumn}>
+
+                          {/* Transportista */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Transportista
+                              <input
+                                type="text"
+                                value={shipment.typeShipment}
+                                readOnly
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Tipo de unidad */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Tipo de unidad
+                              <input
+                                type="text"
+                                value={shipment.typeReference}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.secondColumn}>
+
+                          {/* CAAT */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              CAAT
+                              <input
+                                type="text"
+                                value={shipment.incoterm}
+                                readOnly
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Tipo de ruta */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Tipo de ruta
+                              <input
+                                type="text"
+                                value={shipment.typeReference}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.thirdColumn}>
+
+                          {/* Guia/Tipo */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Guia/Tipo
+                              <input
+                                type="text"
+                                value={shipment.typeOperation}
+                                readOnly
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Tipo de movimiento */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Tipo de movimiento
+                              <input
+                                type="text"
+                                value={shipment.typeReference}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.fourthColumn}>
+
+                          {/* Placas */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Placas
+                              <input
+                                type="text"
+                                value={shipment.masterBill}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Numero de rastreo/Tipo */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Numero de rastreo/Tipo
+                              <input
+                                type="text"
+                                value={shipment.masterBill}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                      <h2 className='title'> Origen / Destino </h2>
+
+                      <div className={styles.fourColumnGrid}>
+
+                        <div className={styles.firstColumn}>
+
+                          {/* Pais de carga */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Pais de carga
+                              <input
+                                type="text"
+                                value={shipment.origin.city}
+                                readOnly
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Llegada a planta */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Llegada a planta
+                              <input
+                                type="text"
+                                value={shipment.typeReference}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Pais de descarga */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Pais de descarga
+                              <input
+                                type="text"
+                                value={shipment.destination.city}
+                                readOnly
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.secondColumn}>
+
+                          {/* Lugar de recoleccion */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Lugar de recoleccion
+                              <input
+                                type="text"
+                                value={shipment.incoterm}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Salida de planta */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Salida de planta
+                              <input
+                                type="text"
+                                value={shipment.typeReference}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Puerto de descarga */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Puerto de descarga
+                              <input
+                                type="text"
+                                value={shipment.origin.portCode}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.thirdColumn}>
+
+                          {/* ETD (Salida estimada) */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              ETD (Salida estimada)
+                              <input
+                                type="datetime-local"
+                                value={shipment.departureDateAproximate}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/*  */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              .
+                              <input
+                                type="text"
+                                value={shipment.typeReference}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Planta */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Planta
+                              <input
+                                type="text"
+                                value={shipment.typeReference}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.fourthColumn}>
+
+                          {/* Despacho / recoleccion */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Despacho / recoleccion
+                              <input
+                                type="datetime-local"
+                                value={shipment.masterBill}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/*  */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              .
+                              <input
+                                type="text"
+                                value={shipment.masterBill}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* ETA (Llegada estimada) */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              ETA (Llegada estimada)
+                              <input
+                                type="datetime-local"
+                                value={shipment.masterBill}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                      {/* Observaciones del servicio*/}
+                      <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
+                        <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
+                          {t('operations.observations')}
+                        </label>
+                        <input
+                          type="text"
+                          id="observationsService"
+                          name="observations"
+                          value={shipment.comments}
+                          onChange={(e) => setFormData({ ...formData, Observations: e.target.value })}
+                          className="min-h-[30px] w-full p-2 rounded-lg
+                                  bg-transparent text-black dark:text-white
+                                  border border-gray-300 dark:border-gray-700
+                                  hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
+                                  focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
+                                  outline-none appearance-none text-body-sm transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div className={styles.serviceCard}>
+                      <h2 className='title'> Referencia aduanal </h2>
+
+                    </div>
+
+                    <div className={styles.serviceCard}>
+                      <h2 className='title'> Contenedor </h2>
+
+                    </div>
+
+                    <div className={styles.serviceCard}>
+                      <h2 className='title'> Mercancia </h2>
+
+                    </div>
+
+                  </span>
+
+                ))
 
               ))}
 
             </span>
           ))}
         </div>
-
-      
-      // <div className={styles.formRow}>
-      //   <div className={styles.fieldGroup}>
-      //     <div className={styles.servicesList}>
-      //       {controlServices.map(service => (
-      //         <span key={service.id} className={styles.serviceItem}>
-      //           <label className={styles.fieldLabel}>
-      //             {service.control}
-      //           </label>
-      //           {service.services.map(serv => (
-      //             <span key={serv.idService} className={styles.serviceItem}>
-      //               <label className={styles.fieldLabel}>
-      //                   Servicio
-      //                   <input 
-      //                     type="text" 
-      //                     value={serv.nameService}
-      //                     readOnly
-      //                     className={styles.textInput}
-      //                   />
-      //               </label>
-                     
-      //             </span>
-
-
-      //           ))} 
-
-      //         </span>
-      //       ))}
-      //     </div>
-      //   </div>
-
-      // </div>
-
       )
 
     }
 
     toggleSection('services')
+
   };
+
+  const loadInfoControlServicio = (info: object) => {
+
+    const infoControlService = controlsData
+      .filter(c => c.id === info.id)
+      .map(c => ({
+        ...c,
+        services: c.services?.filter(
+          s => String(s.idServiceItem) === String(info.item)
+        )
+      }));
+
+    if (infoControlService) {
+      return (
+        <div className={styles.formRow}>
+          {infoControlService.map(infoControlS => (
+            <span key={infoControlS.id} className={styles.serviceItem}>
+
+              {infoControlS.services?.map(serv => (
+                // serv.orderService?.map(otherservice => (
+
+                  <span key={serv.orderService.idTypeShipment} className={styles.serviceItem}>
+                    <div className={styles.serviceCard}>
+                      <h2 className='title'> Otro servicio </h2>
+
+                      <div className={styles.fourColumnGrid}>
+
+                        <div className={styles.firstColumn}>
+
+                          {/* Tipo de servicio */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Tipo de servicio
+                              <input
+                                type="text"
+                                value={serv.orderService.typeShipment}
+                                readOnly
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Tipo de referencia */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Tipo de referencia
+                              <input
+                                type="text"
+                                value={serv.orderService.typeReference}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Tipo de movimiento */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Tipo de movimiento
+                              <input
+                                type="text"
+                                value={serv.orderService.typeReference}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.secondColumn}>
+
+                          {/* Incoterm */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Incoterm
+                              <input
+                                type="text"
+                                value={serv.orderService.incoterm}
+                                readOnly
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Referencia de envio */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Referencia de envio
+                              <input
+                                type="text"
+                                value={serv.orderService.typeReference}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.thirdColumn}>
+
+                          {/* Tipo operación */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Tipo de operación
+                              <input
+                                type="text"
+                                value={serv.orderService.typeOperation}
+                                readOnly
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Envio referencia */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Envio referencia
+                              <input
+                                type="datetime-local"
+                                value={serv.orderService.typeReference}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.fourthColumn}>
+
+                          {/* Guia master */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Guia master
+                              <input
+                                type="text"
+                                value={serv.orderService.masterBill}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Guia/Tipo */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Guia/Tipo
+                              <input
+                                type="text"
+                                value={serv.orderService.typeOperation}
+                                readOnly
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                      <h2 className='title'> Origen / Destino </h2>
+
+                      <div className={styles.fourColumnGrid}>
+
+                        <div className={styles.firstColumn}>
+
+                          {/* Pais de carga */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Pais de carga
+                              <input
+                                type="text"
+                                value={serv.orderService.origin.city}
+                                readOnly
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                          {/* Pais de descarga */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Pais de descarga
+                              <input
+                                type="text"
+                                value={serv.orderService.destination.city}
+                                readOnly
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.secondColumn}>
+
+                          {/* Lugar de recoleccion */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Lugar de recoleccion
+                              <input
+                                type="text"
+                                value={serv.orderService.incoterm}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.thirdColumn}>
+
+                          {/* ETD (Salida estimada) */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              ETD (Salida estimada)
+                              <input
+                                type="datetime-local"
+                                value={serv.orderService.departureDateAproximate}
+                                className={styles.textInput}
+                              />
+                            </label>
+                          </div>
+
+                        </div>
+
+                        <div className={styles.fourthColumn}>
+
+
+                        </div>
+
+                      </div>
+
+                      {/* Observaciones del servicio*/}
+                      <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
+                        <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
+                          {t('operations.observations')}
+                        </label>
+                        <input
+                          type="text"
+                          id="observationsService"
+                          name="observations"
+                          value={serv.orderService.comments}
+                          onChange={(e) => setFormData({ ...formData, Observations: e.target.value })}
+                          className="min-h-[30px] w-full p-2 rounded-lg
+                                  bg-transparent text-black dark:text-white
+                                  border border-gray-300 dark:border-gray-700
+                                  hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
+                                  focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
+                                  outline-none appearance-none text-body-sm transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div className={styles.serviceCard}>
+                      <h2 className='title'> Referencia aduanal </h2>
+
+                    </div>
+
+                    <div className={styles.serviceCard}>
+                      <h2 className='title'> Contenedor </h2>
+
+                    </div>
+
+                    <div className={styles.serviceCard}>
+                      <h2 className='title'> Mercancia </h2>
+
+                    </div>
+
+                  </span>
+
+                // ))
+
+              ))}
+
+            </span>
+          ))}
+        </div>
+      )
+
+    }
+
+    toggleSection('services')
+
+  }
 
   const filteredOperations = operations.filter(operation => {
     const matchesSearch = operation.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -599,10 +1281,10 @@ export default function Operations() {
                           {t('operations.selectControl')}
                         </option>
                         {controlsClient.map(control => (
-                          <option className="bg-white text-black dark:bg-[#1e293b] dark:text-white appearance-none" 
-                            key={control.id} 
+                          <option className="bg-white text-black dark:bg-[#1e293b] dark:text-white appearance-none"
+                            key={control.id}
                             value={JSON.stringify({
-                              id: control.id, 
+                              id: control.id,
                               control: control.control,
                               services: control.services,
                               suppliers: control.suppliers
@@ -626,25 +1308,25 @@ export default function Operations() {
                         controlsOperation?.map(controlService => (
                           controlService.services?.map(service => (
 
-                            <span key={`${controlService._id}-${service.idServiceItem}`} 
-                            className="border border-[#14b8a6] bg-transparent rounded-full
+                            <span key={`${controlService._id}-${service.idServiceItem}`}
+                              className="border border-[#14b8a6] bg-transparent rounded-full
                                        flex items-center gap-1 px-3 py-1 text-xs
                                        dark:bg-[#374151] dark:text-white"
-                          >
-                            {controlService.control}-{service.nameService}
-                            <button
-                              type="button"
-                              value={controlService.idcontrol}
-                              key={`${controlService._id}-${service.idServiceItem}`}
-                              className="ml-1 text-gray-500 hover:text-red-500 dark:text-gray-300"
-                              onClick={() => { removeControl(controlService._id as string, service.idServiceItem as number) }}
                             >
-                              ✕
-                            </button>
-                          </span>
-                          
+                              {controlService.control}-{service.nameService}
+                              <button
+                                type="button"
+                                value={controlService.idcontrol}
+                                key={`${controlService._id}-${service.idServiceItem}`}
+                                className="ml-1 text-gray-500 hover:text-red-500 dark:text-gray-300"
+                                onClick={() => { removeControl(controlService._id as string, service.idServiceItem as number) }}
+                              >
+                                ✕
+                              </button>
+                            </span>
+
                           ))
-                          
+
                         ))
                       ) : (
                         <span className=''></span>
@@ -658,7 +1340,7 @@ export default function Operations() {
               </div>
 
               <div className={styles.rightColumn}>
-                
+
                 {/* Cliente */}
                 <div className={styles.fieldGroup}>
                   <label htmlFor="customer" className={styles.fieldLabel}>
@@ -726,11 +1408,11 @@ export default function Operations() {
                         <Plus size={16} />
                       </button>
                     </div>
-                  
+
                     <div className="p-2 flex flex-wrap gap-2 min-h-[120px] content-start">
                       {servicesOperation.length > 0 ? (
                         servicesOperation?.map(service => (
-                          <span key={`${service._id}-${service.service_name}`} 
+                          <span key={`${service._id}-${service.service_name}`}
                             className="border border-[#14b8a6] bg-transparent rounded-full
                                        flex items-center gap-1 px-3 py-1 text-xs
                                        dark:bg-[#374151] dark:text-white"
@@ -755,7 +1437,7 @@ export default function Operations() {
                     </div>
 
                   </div>
-                  
+
                 </div>
 
               </div>
@@ -827,94 +1509,13 @@ export default function Operations() {
               </div>
 
             </div>
-            
+
           </div>
-          
-          <div className={styles.sectionCard}>
-            <span className={styles.greenDot}></span>
-            <h2 className={styles.sectionTitle}>{t("operations.services")}</h2>
-            
-            <div className={styles.serviceSpace}>
-              <div className="border-b border-outline-variant flex items-center justify-between mb-4">
-                
-                {/* Tabs */}
-                <div className="flex">
-                  
-                  {controlsOperation.length > 0 ? (
-                    controlsOperation?.map(controlService => (
-                      controlService.services?.map(service => (
 
-                        // <div key={`${controlService._id}-${service.idServiceItem}`}
-                        //   onClick={() =>(`${controlService._id}-${service.idServiceItem}`)
-                        //   }
-                        //   className={
-                        //     activeTab === controlService._id
-                        //       ? "px-6 py-2 border-b-2 border-primary text-primary dark:text-white font-bold text-sm"
-                        //       : "px-6 py-2 text-secondary font-medium text-sm hover:text-primary dark:text-white transition-colors"
-                        //   }
-                        // >
-                        //   {controlService.control}-{service.nameService}
-                        // </div>
-
-                        <div key={`${controlService._id}-${service.idServiceItem}`} 
-                          className={`${styles.tabItem} ${activeTab === service.idServiceItem ? styles.active : ''}`}
-                          onClick={() => setActiveTab({id: controlService._id, item:service.idServiceItem, name:service.nameService})}
-                        >
-                          {controlService.control}-{service.nameService}
-                        </div>
-
-                      ))
-                    ))
-                  ): (<></>)}
-                  {servicesOperation.length > 0 ? (
-                      servicesOperation?.map(serviceOperation => (
-                        // <div key={`${controlService._id}-${service.idServiceItem}`}
-                        //   onClick={() =>(`${controlService._id}-${service.idServiceItem}`)
-                        //   }
-                        //   className={
-                        //     activeTab === controlService._id
-                        //       ? "px-6 py-2 border-b-2 border-primary text-primary dark:text-white font-bold text-sm"
-                        //       : "px-6 py-2 text-secondary font-medium text-sm hover:text-primary dark:text-white transition-colors"
-                        //   }
-                        // >
-                        //   {controlService.control}-{service.nameService}
-                        // </div>
-
-                        <div key={`${serviceOperation._id}-${serviceOperation.service_name}`} 
-                          className={`${styles.tabItem} ${activeTab === serviceOperation._id ? styles.active : ''}`}
-                          onClick={() => setActiveTab(serviceOperation.service_name)}
-                        >
-                          {serviceOperation._id}-{serviceOperation.service_name}
-                        </div>
-                      ))
-
-                    ) : (
-                      <span className=''>
-                      </span>
-                    )
-                  }
-                </div>
-
-                {/* <button className="text-primary hover:bg-surface-container-low rounded-full p-1">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-                </button> */}
-              </div>
-              
-            </div>
-
-            <div className={styles.serviceCard}>
-              {activeTab.name === 'Maritimo LCL' && (
-                loadInfoControl(activeTab)
-              )}
-
-            </div>
-              
-          </div>
-          
-
+          {/* Servicios */}
           <div className={styles.sectionCard}>
             <div className={styles.sectionTitleCollapsible}
-              onClick={() => toggleSection('references')}>
+              onClick={() => toggleSection('services')}>
               <div className={styles.sectionTitleWithDot}>
                 <span className={styles.greenDot}></span>
                 <span>{t('operations.services')}</span>
@@ -922,33 +1523,101 @@ export default function Operations() {
               {collapsedSections['services'] ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
             </div>
 
-            {/*
-            {collapsedSections['services'] && controlsOperation.length > 0 ? (
+            {!collapsedSections.services && (
               <div className={styles.sectionContent}>
 
-                {loadInfoControl(control?._id as string)}
-                
+                <div className={styles.serviceSpace}>
+                  <div className="border-b border-outline-variant flex items-center justify-between">
+
+                    {/* Tabs */}
+                    <div className="flex">
+
+                      {controlsOperation.length > 0 ? (
+                        controlsOperation?.map(controlService => (
+                          controlService.services?.map(service => (
+
+                            // <div key={`${controlService._id}-${service.idServiceItem}`}
+                            //   onClick={() =>(`${controlService._id}-${service.idServiceItem}`)
+                            //   }
+                            //   className={
+                            //     activeTab === controlService._id
+                            //       ? "px-6 py-2 border-b-2 border-primary text-primary dark:text-white font-bold text-sm"
+                            //       : "px-6 py-2 text-secondary font-medium text-sm hover:text-primary dark:text-white transition-colors"
+                            //   }
+                            // >
+                            //   {controlService.control}-{service.nameService}
+                            // </div>
+
+                            <div key={`${controlService._id}-${service.idServiceItem}`}
+                              className={`${styles.tabItem} ${activeTab === service.idServiceItem ? styles.active : ''}`}
+                              onClick={() => setActiveTab({ id: controlService._id, item: service.idServiceItem, name: service.nameService })}
+                            >
+                              {controlService.control}-{service.nameService}
+                            </div>
+
+                          ))
+                        ))
+                      ) : (<></>)}
+                      {servicesOperation.length > 0 ? (
+                        servicesOperation?.map(serviceOperation => (
+                          // <div key={`${controlService._id}-${service.idServiceItem}`}
+                          //   onClick={() =>(`${controlService._id}-${service.idServiceItem}`)
+                          //   }
+                          //   className={
+                          //     activeTab === controlService._id
+                          //       ? "px-6 py-2 border-b-2 border-primary text-primary dark:text-white font-bold text-sm"
+                          //       : "px-6 py-2 text-secondary font-medium text-sm hover:text-primary dark:text-white transition-colors"
+                          //   }
+                          // >
+                          //   {controlService.control}-{service.nameService}
+                          // </div>
+
+                          <div key={`${serviceOperation._id}-${serviceOperation.service_name}`}
+                            className={`${styles.tabItem} ${activeTab === serviceOperation._id ? styles.active : ''}`}
+                            onClick={() => setActiveTab(serviceOperation.service_name)}
+                          >
+                            {serviceOperation._id}-{serviceOperation.service_name}
+                          </div>
+                        ))
+
+                      ) : (
+                        <span className=''>
+                        </span>
+                      )
+                      }
+                    </div>
+
+                    {/* <button className="text-primary hover:bg-surface-container-low rounded-full p-1">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                      </button> */}
+                  </div>
+
+                </div>
+
+                  {activeTab.name === 'Maritimo LCL' && (
+                    loadInfoControl(activeTab)
+                  )}
+
+                  {activeTab.name === 'Seguro' && (
+                    loadInfoControlServicio(activeTab)
+                  )}
+
               </div>
-            ) : (
-              <span>  </span>
-            )} 
 
-            {collapsedSections['services'] && servicesOperation.length > 0 ? (
-              <div className={styles.sectionContent}>
-                <button
-                  type="button"
-                  onClick={addServiceOperation} className={styles.addDashedButton}>
-                  <Plus size={20} />
-                  {t('supp.addServiceOperation')}
-                </button>
+            )}
+          </div>
 
-
+          <div className={styles.sectionCard}>
+            <div className={styles.sectionTitleCollapsible}
+              onClick={() => toggleSection('expedientes')}>
+              <div className={styles.sectionTitleWithDot}>
+                <span className={styles.greenDot}></span>
+                <span>{t('operations.expedientes')}</span>
               </div>
-            ) : (
-              <span>  </span>
-            )} */}
+              {collapsedSections['expedientes'] ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+            </div>
 
-          </div> 
+          </div>
 
         </form>
       </>
@@ -1019,7 +1688,7 @@ export default function Operations() {
                   <div className={styles.operationNameWrapper}>
                     <span className={styles.reference}>{operation.reference}</span>
                     <h3>{operation.customer.name}</h3>
-                    
+
                   </div>
                 </div>
 

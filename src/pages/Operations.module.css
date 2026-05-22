@@ -326,8 +326,26 @@
   padding: 1.5rem;
 }
 
+.fourColumnGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 2rem;
+  padding: 1.5rem;
+  margin-top: -20px;
+  margin-bottom: -20px;
+}
+
 .leftColumn,
 .rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.firstColumn,
+.secondColumn,
+.thirdColumn,
+.fourthColumn {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -540,6 +558,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  margin-top: 1.2rem;
   margin-bottom: 0.5rem;
 }
 
@@ -555,8 +574,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  padding: 1.5rem;
 }
 
 .serviceNumber {
@@ -575,6 +592,12 @@
 .serviceActions {
   display: flex;
   gap: 0.5rem;
+}
+
+.servicesList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .tabs {
@@ -697,6 +720,38 @@
   color: var(--text-secondary);
 }
 
+.formRow {
+  margin-bottom: 1.25rem;
+} 
+
+.formRow label {
+  display: block;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.formRow h2 {
+  display: block;
+  font-weight: 600;
+  font-size: 1.200rem;
+  color: var(--text-primary);
+}
+
+.formRow input,
+.formRow select,
+.formRow textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
 
 @media (max-width: 1024px) {
   .container {
