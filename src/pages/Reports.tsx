@@ -7,6 +7,7 @@ import { Report } from '../types/reports';
 import { reportsServices } from '../services/reportsService';
 import { getExecutives } from '../services/executiveService';
 import { getCustomers } from '../services/customerService';
+import * as XLSX from 'xlsx-js-style';
 
 export function Reports() {
   
@@ -44,6 +45,7 @@ export function Reports() {
   const contentRef = useRef(null);
   const [title, settitle] = useState('');
   const { t, language } = useLanguage();
+  const { user } = useAuth();
   const [idReport, setidReport] = useState<string>('');
   const [reportResult, setReportResult] = useState<any[]>([]);
   const [isviewParameters, setisviewParameters] = useState(false);
@@ -345,6 +347,137 @@ const handlecreate = () => {
     });
 };
 
+const exportToExcel = () => {
+  if (!reportResult || reportResult.length === 0) return;
+
+  // Encabezados
+  const headers = Object.keys(reportResult[0]).filter(
+    h => h !== '_id'
+  );
+
+  const mappedHeaders = headers.map(
+    h => headerMapping[h] || h
+  );
+
+  // Datos
+  const data = reportResult.map(row => {
+    const obj: any = {};
+
+    headers.forEach(h => {
+      obj[headerMapping[h] || h] = row[h];
+    });
+
+    return obj;
+  });
+
+  // Crear hoja vacía
+  const worksheet = XLSX.utils.aoa_to_sheet([]);
+
+  // Fila 1 y 2
+  XLSX.utils.sheet_add_aoa(
+    worksheet,
+    [
+      [title],
+      [`Generado por ${user?.name}`],
+      [],
+      mappedHeaders
+    ],
+    { origin: 'A1' }
+  );
+
+  // Datos desde fila 5
+  XLSX.utils.sheet_add_json(
+    worksheet,
+    data,
+    {
+      origin: 'A5',
+      skipHeader: true
+    }
+  );
+
+  // Combinar columnas para títulos
+  worksheet['!merges'] = [
+    {
+      s: { r: 0, c: 0 },
+      e: { r: 0, c: mappedHeaders.length - 1 }
+    },
+    {
+      s: { r: 1, c: 0 },
+      e: { r: 1, c: mappedHeaders.length - 1 }
+    }
+  ];
+
+  // Tamaño automático columnas
+  worksheet['!cols'] = mappedHeaders.map(h => ({
+    wch: Math.max(h.length + 5, 20)
+  }));
+
+  // ===== ESTILOS =====
+
+  // Título fila 1
+  if (worksheet['A1']) {
+    worksheet['A1'].s = {
+      font: {
+        sz: 16,
+        bold: true
+      },
+      alignment: {
+        horizontal: 'center',
+        vertical: 'center'
+      }
+    };
+  }
+
+  // Subtítulo fila 2
+  if (worksheet['A2']) {
+    worksheet['A2'].s = {
+      font: {
+        sz: 14,
+        bold: true
+      },
+      alignment: {
+        horizontal: 'center',
+        vertical: 'center'
+      }
+    };
+  }
+
+  // Encabezados fila 4 en negritas
+  mappedHeaders.forEach((_, index) => {
+    const cellRef = XLSX.utils.encode_cell({
+      r: 3, // fila 4
+      c: index
+    });
+
+    if (worksheet[cellRef]) {
+      worksheet[cellRef].s = {
+        font: {
+          bold: true
+        },
+        alignment: {
+          horizontal: 'center',
+          vertical: 'center'
+        }
+      };
+    }
+  });
+
+  // Crear workbook
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    'Reporte'
+  );
+
+  // Descargar
+  XLSX.writeFile(
+    workbook,
+    `${title || 'Reporte'}.xlsx`
+  );
+};
+
  if (loading && !controlData) {
     return (
       <div className={styles.formContainer}>
@@ -559,7 +692,7 @@ const handlecreate = () => {
       <h3 className={styles.h3parameter}>{t('report.titleresult')}</h3>
       <div className="flex gap-2">
         
-      <button className="bg-[#d3e2f5] text-[#3c5d8a] px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all">
+      <button className="bg-[#d3e2f5] text-[#3c5d8a] px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all" onClick={exportToExcel}>
       <span className="material-symbols-outlined text-lg"><Table size={20} /></span> Excel
                               </button>
       <button className="bg-[#5c6c84] text-white px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all">
