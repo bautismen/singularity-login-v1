@@ -330,21 +330,36 @@ const buildParams = (): Record<string, string> | null => {
   return params;
 };
 
-const handlecreate = () => {
-  setLoading(true);
-  const params = buildParams();
-  reportsServices.getReport(idReport, params)
-    .then(result => {
-      setReportResult(Array.isArray(result) ? result : [result]);
-      setisviewResult(true);   
-    })
-    .catch(error => {
-      console.error('Error al generar el reporte:', error);
-      setisviewResult(false);      
-    })
-    .finally(() => {
-      setLoading(false);
-    });
+const handlecreate = async () => {
+  try {
+    setLoading(true);
+
+    const params = buildParams();
+
+    const result = await reportsServices.getReport(
+      idReport,
+      params
+    );
+
+    setReportResult(
+      Array.isArray(result)
+        ? result
+        : [result]
+    );
+
+    setisviewResult(true);
+
+  } catch (error) {
+    console.error(
+      'Error al generar el reporte:',
+      error
+    );
+
+    setisviewResult(false);
+
+  } finally {
+    setLoading(false);
+  }
 };
 
 const exportToExcel = () => {
@@ -377,7 +392,7 @@ const exportToExcel = () => {
   XLSX.utils.sheet_add_aoa(
     worksheet,
     [
-      [title],
+      [title.toUpperCase()],
       [`Generado por ${user?.name}`],
       [],
       mappedHeaders
@@ -418,11 +433,11 @@ const exportToExcel = () => {
   if (worksheet['A1']) {
     worksheet['A1'].s = {
       font: {
-        sz: 16,
+        sz: 18,
         bold: true
-      },
+      },      
       alignment: {
-        horizontal: 'center',
+        horizontal: 'left',
         vertical: 'center'
       }
     };
@@ -432,11 +447,10 @@ const exportToExcel = () => {
   if (worksheet['A2']) {
     worksheet['A2'].s = {
       font: {
-        sz: 14,
-        bold: true
+        sz: 13,             
       },
       alignment: {
-        horizontal: 'center',
+        horizontal: 'left',
         vertical: 'center'
       }
     };
@@ -478,7 +492,7 @@ const exportToExcel = () => {
   );
 };
 
- if (loading && !controlData) {
+ if (loading) {
     return (
       <div className={styles.formContainer}>
         <div className={styles.loading}>
