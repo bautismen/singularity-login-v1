@@ -8,6 +8,7 @@ import { reportsServices } from '../services/reportsService';
 import { getExecutives } from '../services/executiveService';
 import { getCustomers } from '../services/customerService';
 import * as XLSX from 'xlsx-js-style';
+import { useReactToPrint } from "react-to-print";
 
 export function Reports() {
   
@@ -55,6 +56,7 @@ export function Reports() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const totalPages = Math.ceil(reportResult.length / pageSize);
+  const componentPDF = useRef(null);
   const paginatedData = reportResult.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
@@ -394,7 +396,7 @@ const exportToExcel = () => {
     [
       [title.toUpperCase()],
       [`Generado por ${user?.name}`],
-      [],
+      ['Fecha de generación:', new Date().toLocaleString()],
       mappedHeaders
     ],
     { origin: 'A1' }
@@ -447,7 +449,7 @@ const exportToExcel = () => {
   if (worksheet['A2']) {
     worksheet['A2'].s = {
       font: {
-        sz: 13,             
+        sz: 12,             
       },
       alignment: {
         horizontal: 'left',
@@ -482,7 +484,7 @@ const exportToExcel = () => {
   XLSX.utils.book_append_sheet(
     workbook,
     worksheet,
-    'Reporte'
+    'SingularityReports'
   );
 
   // Descargar
@@ -491,6 +493,10 @@ const exportToExcel = () => {
     `${title || 'Reporte'}.xlsx`
   );
 };
+
+const printPdf = useReactToPrint({
+    contentRef:  componentPDF,
+  })
 
  if (loading) {
     return (
@@ -709,7 +715,7 @@ const exportToExcel = () => {
       <button className="bg-[#d3e2f5] text-[#3c5d8a] px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all" onClick={exportToExcel}>
       <span className="material-symbols-outlined text-lg"><Table size={20} /></span> Excel
                               </button>
-      <button className="bg-[#5c6c84] text-white px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all">
+      <button className="bg-[#5c6c84] text-white px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all" onClick={printPdf}>
       <span className="material-symbols-outlined text-lg"><FileText size={20} /></span> PDF
       </button>
       <span className={styles.headerActionsLabel2}>
@@ -730,20 +736,19 @@ const exportToExcel = () => {
             ))}
           </select>
       </div>
-      </div>
-      <div className="overflow-x-auto">
-     {reportResult.length > 0 && (() => {
-      // ✅ Excluir _id de los encabezados
-      const headers = Object.keys(reportResult[0])
-        .filter(h => h !== '_id');
+      </div>      
+      <div className={styles.tableResultWrapper}>
+        {reportResult.length > 0 && (() => {
+          const headers = Object.keys(reportResult[0])
+            .filter(h => h !== '_id');
 
-          return (
-            <table className="w-full text-left">
-              <thead>
+          return (            
+            <table ref={componentPDF} className={styles.tableResult}>
+              <thead className={styles.tableResultHead}>
                 <tr className={styles.trheader}>
                   {headers.map(h => (
                     <th key={h} className={styles.thheader}>
-                    {headerMapping[h] || h}
+                      {headerMapping[h] || h}
                     </th>
                   ))}
                 </tr>
@@ -752,7 +757,7 @@ const exportToExcel = () => {
                 {paginatedData.map((row, i) => (
                   <tr key={i} className={styles.trbody}>
                     {headers.map(h => (
-                      <td key={h} className={styles.tdResult}>
+                      <td key={h} className={styles.tdResult} title={String(row[h] ?? '')}>
                         {row[h] ?? '—'}
                       </td>
                     ))}
@@ -761,7 +766,7 @@ const exportToExcel = () => {
               </tbody>
             </table>
           );
-      })()}
+        })()}
       </div>
       <div className={styles.divMostrar}>
         <p className="text-[10px] font-bold text-gray-400 tracking-widest">
