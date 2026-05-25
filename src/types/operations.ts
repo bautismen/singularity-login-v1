@@ -6,11 +6,6 @@ export interface Customer {
     rfc: string;
 }
 
-export interface Control {
-    _idcontrol: string;
-    control: string;
-}
-
 export interface Service {
     _id: number;
     service_name: string;
@@ -23,11 +18,52 @@ export interface Service {
 
 export interface ServiceOperation{
     idServiceItem: number;
-    idControl: string;
-    idtype_service: number;
+    idControl?: string | null;
+    control?: string | null;
+    idTypeShipment: number;
+    typeShipment: string;
     nameService: string;
     // supplier: string;
-    ObservationsService: string;
+    observationsService: string;
+    detail: ServiceDetail[];
+}
+
+export interface ServiceDetail {
+  sequence: number;
+  idTypeShipment: number;
+  typeShipment?: string;
+  idTypeOperation: number;
+  typeOperation?: string;
+  isShipment: boolean;
+
+//   typeReference?: string;
+
+//   // Fechas
+//   departureDateAproximate?: Date;
+//   arrivalDateAproximate?: Date;
+
+//   // Transporte
+//   masterBill?: string;
+//   incoterm?: string;
+
+//   // Ubicaciones
+//   origin?: {
+//     city?: string;
+//     portCode?: string;
+//     country?: string;
+//   };
+
+//   destination?: {
+//     city?: string;
+//     portCode?: string;
+//     country?: string;
+//   };
+
+//   // Comentarios
+//   comments?: string;
+
+//   // Extras dinámicos
+//   extraData?: any;
 }
 
 export interface Operation {
@@ -35,7 +71,6 @@ export interface Operation {
     idreference?: number;
     reference: string;
     customer: Customer;
-    controls: Control[];
     services: ServiceOperation[];
     operationStatus: 'created' | 'pending' | 'completed' | 'failed';
     observations?: string;
