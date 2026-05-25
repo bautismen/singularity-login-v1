@@ -16,16 +16,16 @@ export interface Service {
     data_state: number;
 }
 
-export interface ServiceOperation{
+export interface ServiceOperation {
     idServiceItem: number;
     idControl?: string | null;
     control?: string | null;
-    idTypeShipment: number;
-    typeShipment: string;
+    idService: number;
     nameService: string;
     // supplier: string;
     observationsService: string;
-    detail: ServiceDetail[];
+    isShipment: boolean;
+    serviceDetail: ServiceDetail[];
 }
 
 export interface ServiceDetail {
@@ -34,9 +34,14 @@ export interface ServiceDetail {
   typeShipment?: string;
   idTypeOperation: number;
   typeOperation?: string;
-  isShipment: boolean;
+  typeShippingReference?: string;
+  shippingReferenceNumber?: string
+  shippingDate?: Date;
+  masterGuide?: string;
+  consignee?: boolean;
+  idIncoterm?: number
+  incoterm?: string;
 
-//   typeReference?: string;
 
 //   // Fechas
 //   departureDateAproximate?: Date;

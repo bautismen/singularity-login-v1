@@ -23,6 +23,7 @@ export default function Operations() {
   const [service, setService] = useState<Service>();
   const [servicesOperation, setServicesOperation] = useState<Service[]>([]);
   const [serviceDetail, setServiceDetail] = useState<ServiceDetail[]>([]);
+  const [incoterm, setIncoterm] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -72,6 +73,7 @@ export default function Operations() {
     loadOperations();
     loadControls();
     loadServices();
+    loadIncorterm();
     loadCustomers();
   }, []);
 
@@ -121,8 +123,17 @@ export default function Operations() {
     }
   }
 
+  async function loadIncorterm() {
+    try {
+      const data = await catalogService.getIncoterms();
+      setIncoterm(data.data.filter((s: any) => s.status === 1));
+    } catch (error) {
+      console.error('Error loading services:', error);
+    }
+  }
+
   function handleNewOperation() {
-    setActiveTab({ id: '', item: '', name: ''})
+    setActiveTab({ id: '', item: '', name: '' })
     setControlsClient([]);
     setControl({} as PricingControl);
     setControlsOperation([]);
@@ -206,7 +217,7 @@ export default function Operations() {
     setControlsOperation(loadedControls)
 
     const loadedServices = operation.services
-      .filter(os => os.idControl === null  )
+      .filter(os => os.idControl === null)
       .map(c => ({
         _id: null,
         control: null,
@@ -318,12 +329,24 @@ export default function Operations() {
       return;
     }
 
+    const normalizedServices = control.services.map(service =>
+      normalizeService(service, control)
+    );
+
+    setFormData(prev => ({
+      ...prev,
+      Services: [
+        ...prev.Services,
+        ...normalizedServices
+      ]
+    }));
+
     setControlsOperation(prev => [
       ...prev,
       {
         _id: control._id,
         control: control.control,
-        services: control.services
+        services: normalizedServices
       }
     ]);
 
@@ -333,7 +356,7 @@ export default function Operations() {
     );
 
     toggleSection('services')
-  
+
   };
 
   const removeControl = (_idcontrol: string, item: number) => {
@@ -356,7 +379,7 @@ export default function Operations() {
             s => String(s.idServiceItem) !== String(item)
           )
         }))
-      );
+    );
   };
 
   const addService = () => {
@@ -388,181 +411,245 @@ export default function Operations() {
     // controlsClient.push(controlsOperation.find(c => c._id === _idcontrol) as PricingControl); // Volver a agregar el control eliminado a la lista de controles disponibles para el cliente
   };
 
+  const normalizeService = (service: any, control: any = null) => {
+
+    let detail = [];
+
+    // Shipments
+    if (service.shipments?.length > 0) {
+      detail = service.shipments.map((shipment: any) => ({
+        ...shipment,
+        detailType: 'shipment'
+      }));
+
+    }
+
+    // Order Service
+    else if (service.orderService) {
+      detail = [{
+        ...service.orderService,
+        detailType: 'orderService'
+      }];
+    }
+
+    return {
+      idServiceItem: service.idServiceItem,
+      idControl: control?._id || service.idControl || null,
+      control: control?.control || service.control || null,
+      idService: service.idService,
+      nameService: service.nameService,
+      observationsService: service.observationsService || '',
+      isShipment: service.shipments?.length > 0 ? true : false,
+      serviceDetail: detail
+    };
+  };
+
   const loadInfoControl = (info: object) => {
 
-    const infoControl = controlsData
-      .filter(c => c.id === info.id)
-      .map(c => ({
-        ...c,
-        services: c.services?.filter(
-          s => String(s.idServiceItem) === String(info.item)
-        )
-      }));
+    let infoControl = formData.Services.find(
+      s =>
+        s.idControl === activeTab.id &&
+        s.idServiceItem === activeTab.item
+    );
 
     if (infoControl) {
 
       return (
         <div className={styles.formRow}>
-          {infoControl.map(infoControl => (
-            <span key={infoControl.id} className={styles.serviceItem}>
+          <span key={infoControl.idServiceItem} className={styles.serviceItem}>
+            {infoControl?.serviceDetail?.map((detail, index) => (
 
-              {infoControl.services?.map(serv => (
-                serv.shipments?.map(shipment => (
+              <div
+                key={detail.sequence || index}
+                className="
+                        border border-gray-200
+                        dark:border-gray-700
+                        rounded-xl
+                        p-4
+                        mb-4
+                        bg-white
+                        dark:bg-[#1e293b]"
+              >
 
-                  <span key={shipment.idShipment} className={styles.serviceItem}>
-                    <div className={styles.serviceCard}>
-                      <h2 className='title'> Envio </h2>
+                {/* Header Card */}
+                <div className="flex items-center justify-between mb-4">
 
-                      <div className={styles.fourColumnGrid}>
+                  <h3 className="font-semibold text-sm dark:text-white">
+                    Card #{index + 1}
+                  </h3>
 
-                        <div className={styles.firstColumn}>
+                </div>
 
-                          {/* Tipo de envío */}
-                          <div className={styles.fieldGroup}>
-                            {/* <TipoEnvio detail={detail} updateService={updateService} /> */}
-                            <label className={styles.fieldLabel}>
-                              Tipo de envío
-                              <input
-                                type="text"
-                                value={shipment.typeShipment}
-                                readOnly
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
+                <span key={index + 1} className={styles.serviceItem}>
+                  <div className={styles.serviceCard}>
+                    <h2 className='title'> Envio </h2>
 
-                          {/* Tipo de referencia */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Tipo de referencia
-                              <input
-                                type="text"
-                                value={shipment.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
+                    <div className={styles.fourColumnGrid}>
 
+                      <div className={styles.firstColumn}>
+
+                        {/* Tipo de envío */}
+                        <div className={styles.fieldGroup}>
+                          <TipoEnvio
+                            item={infoControl.idServiceItem}
+                            detail={detail}
+                            updateService={updateService}
+                          />
                         </div>
 
-                        <div className={styles.secondColumn}>
-
-                          {/* Incoterm */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Incoterm
-                              <input
-                                type="text"
-                                value={shipment.incoterm}
-                                readOnly
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
-                          {/* Referencia de envio */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Referencia de envio
-                              <input
-                                type="text"
-                                value={shipment.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
-                        </div>
-
-                        <div className={styles.thirdColumn}>
-
-                          {/* Tipo operación */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Tipo de operación
-                              <input
-                                type="text"
-                                value={shipment.typeOperation}
-                                readOnly
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
-                          {/* Envio referencia */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Envio referencia
-                              <input
-                                type="datetime-local"
-                                value={shipment.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
-                        </div>
-
-                        <div className={styles.fourthColumn}>
-
-                          {/* Guia master */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Guia master
-                              <input
-                                type="text"
-                                value={shipment.masterBill}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
+                        {/* Tipo de referencia */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Tipo de referencia
+                            <input
+                              type="text"
+                              value={detail.typeShippingReference || ''}
+                              className={styles.textInput}
+                              onChange={(e) =>
+                                updateService(
+                                  infoControl.idServiceItem,
+                                  detail.sequence,
+                                  'typeShippingReference',
+                                  (e.target.value))
+                              }
+                            />
+                          </label>
                         </div>
 
                       </div>
 
-                      <h2 className='title'> Transporte </h2>
+                      <div className={styles.secondColumn}>
 
-                      <div className={styles.fourColumnGrid}>
+                        {/* Incoterm */}
+                        <div className={styles.fieldGroup}>
+                          <Incoterm
+                            item={infoControl.idServiceItem}
+                            detail={detail}
+                            updateService={updateService}
+                          />
+                        </div>
 
-                        <div className={styles.firstColumn}>
+                        {/* Referencia de envio */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Referencia de envio
+                            <input
+                              type="text"
+                              value={detail.shippingReferenceNumber || ''}
+                              className={styles.textInput}
+                              onChange={(e) =>
+                                updateService(
+                                  infoControl.idServiceItem,
+                                  detail.sequence,
+                                  'shippingReferenceNumber',
+                                  (e.target.value))
+                              }
+                            />
 
-                          {/* Transportista */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Transportista
-                              <input
-                                type="text"
-                                value={shipment.typeShipment}
-                                readOnly
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
+                          </label>
+                        </div>
 
-                          {/* Tipo de unidad */}
-                          <div className={styles.fieldGroup}>
+                      </div>
+
+                      <div className={styles.thirdColumn}>
+
+                        {/* Tipo operación */}
+                        <div className={styles.fieldGroup}>
+                          <TipoOperacion
+                            item={infoControl.idServiceItem}
+                            detail={detail}
+                            updateService={updateService}
+                          />
+                        </div>
+
+                        {/* Envio referencia */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Envio referencia
+                            <input
+                              type="datetime-local"
+                              value={detail.shippingDate} //? new Date(detail.shippingDate).toISOString().slice(0, 16) : ''
+                              onChange={(e) =>
+                                updateService(
+                                  infoControl.idServiceItem,
+                                  detail.sequence,
+                                  'shippingDate',
+                                  (e.target.value))
+                              }
+                              className={styles.textInput}
+                            />
+                          </label>
+                        </div>
+
+                      </div>
+
+                      <div className={styles.fourthColumn}>
+
+                        {/* Guia master */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Guia master
+                            <input
+                              type="text"
+                              value={detail.masterGuide}
+                              onChange={(e) =>
+                                updateService(
+                                  infoControl.idServiceItem,
+                                  detail.sequence,
+                                  'shippingDate',
+                                  (e.target.value))
+                              }
+                              className={styles.textInput}
+                            />
+                          </label>
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                    <h2 className='title'> Transporte </h2>
+
+                    <div className={styles.fourColumnGrid}>
+
+                      <div className={styles.firstColumn}>
+
+                        {/* Transportista */}
+                        {/* <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Transportista
+                            <input
+                              type="text"
+                              value={detail.typeShipment}
+                              readOnly
+                              className={styles.textInput}
+                            />
+                          </label>
+                        </div> */}
+
+                        {/* Tipo de unidad */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Tipo de unidad
                               <input
                                 type="text"
-                                value={shipment.typeReference}
+                                value={detail.typeReference}
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                        </div>
+                      </div>
 
-                        <div className={styles.secondColumn}>
+                      <div className={styles.secondColumn}>
 
-                          {/* CAAT */}
-                          <div className={styles.fieldGroup}>
+                        {/* CAAT */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               CAAT
                               <input
                                 type="text"
-                                value={shipment.incoterm}
+                                value={detail.incoterm}
                                 readOnly
                                 className={styles.textInput}
                               />
@@ -570,252 +657,264 @@ export default function Operations() {
                           </div>
 
                           {/* Tipo de ruta */}
-                          <div className={styles.fieldGroup}>
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Tipo de ruta
                               <input
                                 type="text"
-                                value={shipment.typeReference}
+                                value={detail.typeReference}
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                        </div>
+                      </div>
 
-                        <div className={styles.thirdColumn}>
+                      <div className={styles.thirdColumn}>
 
-                          {/* Guia/Tipo */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Guia/Tipo
-                              <input
-                                type="text"
-                                value={shipment.typeOperation}
-                                readOnly
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
+                        {/* Guia/Tipo */}
+                        {/* <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Guia/Tipo
+                            <input
+                              type="text"
+                              value={detail.typeOperation}
+                              readOnly
+                              className={styles.textInput}
+                            />
+                          </label>
+                        </div> */}
 
-                          {/* Tipo de movimiento */}
-                          <div className={styles.fieldGroup}>
+                        {/* Tipo de movimiento */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Tipo de movimiento
                               <input
                                 type="text"
-                                value={shipment.typeReference}
+                                value={detail.typeReference}
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                        </div>
+                      </div>
 
-                        <div className={styles.fourthColumn}>
+                      <div className={styles.fourthColumn}>
 
-                          {/* Placas */}
-                          <div className={styles.fieldGroup}>
+                        {/* Placas */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Placas
                               <input
                                 type="text"
-                                value={shipment.masterBill}
+                                value={detail.masterBill}
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                          {/* Numero de rastreo/Tipo */}
-                          <div className={styles.fieldGroup}>
+                        {/* Numero de rastreo/Tipo */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Numero de rastreo/Tipo
                               <input
                                 type="text"
-                                value={shipment.masterBill}
+                                value={detail.masterBill}
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
-
-                        </div>
+                          </div> */}
 
                       </div>
 
-                      <h2 className='title'> Origen / Destino </h2>
+                    </div>
 
-                      <div className={styles.fourColumnGrid}>
+                    <h2 className='title'> Origen / Destino </h2>
 
-                        <div className={styles.firstColumn}>
+                    <div className={styles.fourColumnGrid}>
 
-                          {/* Pais de carga */}
-                          <div className={styles.fieldGroup}>
+                      <div className={styles.firstColumn}>
+
+                        {/* Pais de carga */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Pais de carga
                               <input
                                 type="text"
-                                value={shipment.origin.city}
+                                value={detail.origin.city}
                                 readOnly
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                          {/* Llegada a planta */}
-                          <div className={styles.fieldGroup}>
+                        {/* Llegada a planta */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Llegada a planta
                               <input
                                 type="text"
-                                value={shipment.typeReference}
+                                value={detail.typeReference}
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                          {/* Pais de descarga */}
-                          <div className={styles.fieldGroup}>
+                        {/* Pais de descarga */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Pais de descarga
                               <input
                                 type="text"
-                                value={shipment.destination.city}
+                                value={detail.destination.city}
                                 readOnly
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                        </div>
+                      </div>
 
-                        <div className={styles.secondColumn}>
+                      <div className={styles.secondColumn}>
 
-                          {/* Lugar de recoleccion */}
-                          <div className={styles.fieldGroup}>
+                        {/* Lugar de recoleccion */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Lugar de recoleccion
                               <input
                                 type="text"
-                                value={shipment.incoterm}
+                                value={detail.incoterm}
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                          {/* Salida de planta */}
-                          <div className={styles.fieldGroup}>
+                        {/* Salida de planta */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Salida de planta
                               <input
                                 type="text"
-                                value={shipment.typeReference}
+                                value={detail.typeReference}
                                 className={styles.textInput}
                               />
                             </label>
                           </div>
 
                           {/* Puerto de descarga */}
-                          <div className={styles.fieldGroup}>
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Puerto de descarga
                               <input
                                 type="text"
-                                value={shipment.origin.portCode}
+                                value={detail.origin.portCode}
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                        </div>
+                      </div>
 
-                        <div className={styles.thirdColumn}>
+                      <div className={styles.thirdColumn}>
 
-                          {/* ETD (Salida estimada) */}
-                          <div className={styles.fieldGroup}>
+                        {/* ETD (Salida estimada) */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               ETD (Salida estimada)
                               <input
                                 type="datetime-local"
-                                value={shipment.departureDateAproximate}
+                                value={detail.departureDateAproximate}
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                          {/*  */}
-                          <div className={styles.fieldGroup}>
+                        {/*  */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               .
                               <input
                                 type="text"
-                                value={shipment.typeReference}
+                                value={detail.typeReference}
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                          {/* Planta */}
-                          <div className={styles.fieldGroup}>
+                        {/* Planta */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Planta
                               <input
                                 type="text"
-                                value={shipment.typeReference}
+                                value={detail.typeReference}
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                        </div>
+                      </div>
 
-                        <div className={styles.fourthColumn}>
+                      <div className={styles.fourthColumn}>
 
-                          {/* Despacho / recoleccion */}
-                          <div className={styles.fieldGroup}>
+                        {/* Despacho / recoleccion */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Despacho / recoleccion
                               <input
                                 type="datetime-local"
-                                value={shipment.masterBill}
+                                value={detail.masterBill}
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                          {/*  */}
-                          <div className={styles.fieldGroup}>
+                        {/*  */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               .
                               <input
                                 type="text"
-                                value={shipment.masterBill}
+                                value={detail.masterBill}
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                          {/* ETA (Llegada estimada) */}
-                          <div className={styles.fieldGroup}>
+                        {/* ETA (Llegada estimada) */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               ETA (Llegada estimada)
                               <input
                                 type="datetime-local"
-                                value={shipment.masterBill}
+                                value={detail.masterBill}
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
-
-                        </div>
+                          </div> */}
 
                       </div>
 
-                      {/* Observaciones del servicio*/}
-                      <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
-                        <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
-                          {t('operations.observations')}
-                        </label>
-                        <input
+                    </div>
+
+                    {/* Observaciones del servicio*/}
+                    <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
+                      <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
+                        {t('operations.observations')}
+                      </label>
+
+                      <textarea
+                        value={detail.observationsService || ''}
+                        className={styles.textArea}
+                        onChange={(e) =>
+                          updateService(
+                            infoControl.idServiceItem,
+                            detail.sequence,
+                            'observationsService',
+                            (e.target.value))
+                        }
+                      />
+                      {/* <input
                           type="text"
                           id="observationsService"
                           name="observations"
@@ -837,33 +936,31 @@ export default function Operations() {
                                   hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
                                   focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
                                   outline-none appearance-none text-body-sm transition-colors"
-                        />
-                      </div>
+                        /> */}
                     </div>
+                  </div>
 
-                    <div className={styles.serviceCard}>
-                      <h2 className='title'> Referencia aduanal </h2>
+                  <div className={styles.serviceCard}>
+                    <h2 className='title'> Referencia aduanal </h2>
 
-                    </div>
+                  </div>
 
-                    <div className={styles.serviceCard}>
-                      <h2 className='title'> Contenedor </h2>
+                  <div className={styles.serviceCard}>
+                    <h2 className='title'> Contenedor </h2>
 
-                    </div>
+                  </div>
 
-                    <div className={styles.serviceCard}>
-                      <h2 className='title'> Mercancia </h2>
+                  <div className={styles.serviceCard}>
+                    <h2 className='title'> Mercancia </h2>
 
-                    </div>
+                  </div>
 
-                  </span>
+                </span>
 
-                ))
+              </div>
 
-              ))}
-
-            </span>
-          ))}
+            ))}
+          </span>
         </div>
       )
 
@@ -872,110 +969,6 @@ export default function Operations() {
     toggleSection('services')
 
   };
-
-  // const loadInfoControl = (info: object) => {
-
-  //   const currentService = formData.Services.find(
-  //     s =>
-  //       s.idControl === activeTab.id &&
-  //       s.idServiceItem === activeTab.item
-  //   );
-
-  //   if (currentService) {
-
-  //     return (
-  //       <div className={styles.formRow}>
-  //         {currentService?.detail?.map((detail, index) => (
-
-  //           <div
-  //             key={detail.id || index}
-  //             className="
-  //                       border border-gray-200
-  //                       dark:border-gray-700
-  //                       rounded-xl
-  //                       p-4
-  //                       mb-4
-  //                       bg-white
-  //                       dark:bg-[#1e293b]"
-  //           >
-
-  //             {/* Header Card */}
-  //             <div className="flex items-center justify-between mb-4">
-
-  //               <h3 className="font-semibold text-sm dark:text-white">
-  //                 Card #{index + 1}
-  //               </h3>
-
-  //             </div>
-
-  //             {/* Tipo de envío */}
-  //             <div className={styles.fieldGroup}>
-
-  //               <TipoEnvio
-  //                 detail={detail}
-  //                 updateService={updateService}
-  //               />
-
-  //             </div>
-
-  //             {/* Referencia */}
-  //             <div className={styles.fieldGroup}>
-
-  //               <label className={styles.fieldLabel}>
-
-  //                 Referencia
-
-  //                 <input
-  //                   type="text"
-  //                   value={detail.reference || ''}
-  //                   className={styles.textInput}
-  //                   onChange={(e) =>
-  //                     updateService(
-  //                       detail.id,
-  //                       'reference',
-  //                       e.target.value
-  //                     )
-  //                   }
-  //                 />
-
-  //               </label>
-
-  //             </div>
-
-  //             {/* Comentarios */}
-  //             <div className={styles.fieldGroup}>
-
-  //               <label className={styles.fieldLabel}>
-
-  //                 Comentarios
-
-  //                 <textarea
-  //                   value={detail.comments || ''}
-  //                   className={styles.textArea}
-  //                   onChange={(e) =>
-  //                     updateService(
-  //                       detail.id,
-  //                       'comments',
-  //                       e.target.value
-  //                     )
-  //                   }
-  //                 />
-
-  //               </label>
-
-  //             </div>
-
-  //           </div>
-
-  //         ))}
-  //       </div>
-  //     )
-
-  //   }
-
-  //   toggleSection('services')
-
-  // };
 
   const loadInfoControlServicio = (info: object) => {
 
@@ -998,18 +991,23 @@ export default function Operations() {
               {infoControlS.services?.map(serv => (
                 // serv.orderService?.map(otherservice => (
 
-                  <span key={serv.orderService.idTypeShipment} className={styles.serviceItem}>
-                    <div className={styles.serviceCard}>
-                      <h2 className='title'> Otro servicio </h2>
+                <span key={serv.orderService.idTypeShipment} className={styles.serviceItem}>
+                  <div className={styles.serviceCard}>
+                    <h2 className='title'> Otro servicio </h2>
 
-                      <div className={styles.fourColumnGrid}>
+                    <div className={styles.fourColumnGrid}>
 
-                        <div className={styles.firstColumn}>
+                      <div className={styles.firstColumn}>
 
-                          {/* Tipo de envio */}
-                          <div className={styles.fieldGroup}>
-                            {/* <TipoEnvio detail={detail} updateService={updateService} /> */}
-                            <label className={styles.fieldLabel}>
+                        {/* Tipo de envio */}
+                        <div className={styles.fieldGroup}>
+                          <TipoEnvio detail={
+                            editingOperation ? serviceDetail :
+                              serv.shipments ? serv.orderService : serv.shipments
+                          }
+                            updateService={updateService}
+                          />
+                          {/* <label className={styles.fieldLabel}>
                               Tipo de envio
                               <input
                                 type="text"
@@ -1017,132 +1015,132 @@ export default function Operations() {
                                 readOnly
                                 className={styles.textInput}
                               />
-                            </label>
-                          </div>
-
-                          {/* Tipo de referencia */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Tipo de referencia
-                              <input
-                                type="text"
-                                value={serv.orderService.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
-                          {/* Tipo de movimiento */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Tipo de movimiento
-                              <input
-                                type="text"
-                                value={serv.orderService.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
+                            </label> */}
                         </div>
 
-                        <div className={styles.secondColumn}>
-
-                          {/* Incoterm */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Incoterm
-                              <input
-                                type="text"
-                                value={serv.orderService.incoterm}
-                                readOnly
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
-                          {/* Referencia de envio */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Referencia de envio
-                              <input
-                                type="text"
-                                value={serv.orderService.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
+                        {/* Tipo de referencia */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Tipo de referencia
+                            <input
+                              type="text"
+                              value={serv.orderService.typeReference}
+                              className={styles.textInput}
+                            />
+                          </label>
                         </div>
 
-                        <div className={styles.thirdColumn}>
-
-                          {/* Tipo operación */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Tipo de operación
-                              <input
-                                type="text"
-                                value={serv.orderService.typeOperation}
-                                readOnly
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
-                          {/* Envio referencia */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Envio referencia
-                              <input
-                                type="datetime-local"
-                                value={serv.orderService.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
-                        </div>
-
-                        <div className={styles.fourthColumn}>
-
-                          {/* Guia master */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Guia master
-                              <input
-                                type="text"
-                                value={serv.orderService.masterBill}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
-                          {/* Guia/Tipo */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Guia/Tipo
-                              <input
-                                type="text"
-                                value={serv.orderService.typeOperation}
-                                readOnly
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
+                        {/* Tipo de movimiento */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Tipo de movimiento
+                            <input
+                              type="text"
+                              value={serv.orderService.typeReference}
+                              className={styles.textInput}
+                            />
+                          </label>
                         </div>
 
                       </div>
 
-                      <h2 className='title'> Origen / Destino </h2>
+                      <div className={styles.secondColumn}>
 
-                      <div className={styles.fourColumnGrid}>
+                        {/* Incoterm */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Incoterm
+                            <input
+                              type="text"
+                              value={serv.orderService.incoterm}
+                              // readOnly
+                              className={styles.textInput}
+                            />
+                          </label>
+                        </div>
 
-                        <div className={styles.firstColumn}>
+                        {/* Referencia de envio */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Referencia de envio
+                            <input
+                              type="text"
+                              value={serv.orderService.typeReference}
+                              className={styles.textInput}
+                            />
+                          </label>
+                        </div>
 
-                          {/* Pais de carga */}
-                          <div className={styles.fieldGroup}>
+                      </div>
+
+                      <div className={styles.thirdColumn}>
+
+                        {/* Tipo operación */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Tipo de operación
+                            <input
+                              type="text"
+                              value={serv.orderService.typeOperation}
+                              readOnly
+                              className={styles.textInput}
+                            />
+                          </label>
+                        </div>
+
+                        {/* Envio referencia */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Envio referencia
+                            <input
+                              type="datetime-local"
+                              value={serv.orderService.typeReference}
+                              className={styles.textInput}
+                            />
+                          </label>
+                        </div>
+
+                      </div>
+
+                      <div className={styles.fourthColumn}>
+
+                        {/* Guia master */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Guia master
+                            <input
+                              type="text"
+                              value={serv.orderService.masterBill}
+                              className={styles.textInput}
+                            />
+                          </label>
+                        </div>
+
+                        {/* Guia/Tipo */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Guia/Tipo
+                            <input
+                              type="text"
+                              value={serv.orderService.typeOperation}
+                              readOnly
+                              className={styles.textInput}
+                            />
+                          </label>
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                    <h2 className='title'> Origen / Destino </h2>
+
+                    <div className={styles.fourColumnGrid}>
+
+                      <div className={styles.firstColumn}>
+
+                        {/* Pais de carga */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Pais de carga
                               <input
@@ -1152,10 +1150,10 @@ export default function Operations() {
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                          {/* Pais de descarga */}
-                          <div className={styles.fieldGroup}>
+                        {/* Pais de descarga */}
+                        {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Pais de descarga
                               <input
@@ -1165,86 +1163,86 @@ export default function Operations() {
                                 className={styles.textInput}
                               />
                             </label>
-                          </div>
+                          </div> */}
 
-                        </div>
+                      </div>
 
-                        <div className={styles.secondColumn}>
+                      <div className={styles.secondColumn}>
 
-                          {/* Lugar de recoleccion */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Lugar de recoleccion
-                              <input
-                                type="text"
-                                value={serv.orderService.incoterm}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
-                        </div>
-
-                        <div className={styles.thirdColumn}>
-
-                          {/* ETD (Salida estimada) */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              ETD (Salida estimada)
-                              <input
-                                type="datetime-local"
-                                value={serv.orderService.departureDateAproximate}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
-                        </div>
-
-                        <div className={styles.fourthColumn}>
-
-
+                        {/* Lugar de recoleccion */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Lugar de recoleccion
+                            <input
+                              type="text"
+                              value={serv.orderService.incoterm}
+                              className={styles.textInput}
+                            />
+                          </label>
                         </div>
 
                       </div>
 
-                      {/* Observaciones del servicio*/}
-                      <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
-                        <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
-                          {t('operations.observations')}
-                        </label>
-                        <input
-                          type="text"
-                          id="observationsService"
-                          name="observations"
-                          value={serv.orderService.comments}
-                          onChange={(e) => setFormData({ ...formData, Observations: e.target.value })}
-                          className="min-h-[30px] w-full p-2 rounded-lg
+                      <div className={styles.thirdColumn}>
+
+                        {/* ETD (Salida estimada) */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            ETD (Salida estimada)
+                            <input
+                              type="datetime-local"
+                              value={serv.orderService.departureDateAproximate}
+                              className={styles.textInput}
+                            />
+                          </label>
+                        </div>
+
+                      </div>
+
+                      <div className={styles.fourthColumn}>
+
+
+                      </div>
+
+                    </div>
+
+                    {/* Observaciones del servicio*/}
+                    <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
+                      <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
+                        {t('operations.observations')}
+                      </label>
+                      <input
+                        type="text"
+                        id="observationsService"
+                        name="observations"
+                        value={serv.orderService.comments}
+                        onChange={(e) => setFormData({ ...formData, Observations: e.target.value })}
+                        className="min-h-[30px] w-full p-2 rounded-lg
                                   bg-transparent text-black dark:text-white
                                   border border-gray-300 dark:border-gray-700
                                   hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
                                   focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
                                   outline-none appearance-none text-body-sm transition-colors"
-                        />
-                      </div>
+                      />
                     </div>
+                  </div>
 
-                    <div className={styles.serviceCard}>
-                      <h2 className='title'> Referencia aduanal </h2>
+                  <div className={styles.serviceCard}>
+                    <h2 className='title'> Referencia aduanal </h2>
 
-                    </div>
+                  </div>
 
-                    <div className={styles.serviceCard}>
-                      <h2 className='title'> Contenedor </h2>
+                  <div className={styles.serviceCard}>
+                    <h2 className='title'> Contenedor </h2>
 
-                    </div>
+                  </div>
 
-                    <div className={styles.serviceCard}>
-                      <h2 className='title'> Mercancia </h2>
+                  <div className={styles.serviceCard}>
+                    <h2 className='title'> Mercancia </h2>
 
-                    </div>
+                  </div>
 
-                  </span>
+                </span>
 
                 // ))
 
@@ -1300,9 +1298,9 @@ export default function Operations() {
           },
         };
 
-        //await updateOperation(editingOperation.Id!, dataToSave);
+        await updateOperation(editingOperation.Id!, dataToSave);
       } else {
-       //await createOperation(dataToSave);
+        await createOperation(dataToSave);
       }
 
       await loadOperations();
@@ -1319,74 +1317,60 @@ export default function Operations() {
 
   function addServices(service: Service) {
     setFormData({
-      ...formData, 
+      ...formData,
       Services: [...formData.Services, service]
-    } );
+    });
   }
 
   function buildOperationService(control: any, service: any): ServiceOperation {
 
-    const shipment = service.shipments
-    const orderService = [service.orderService]
+    // const shipment = service.shipments
+    // const orderService = [service.orderService]
 
-    if (shipment.length > 0) {
-      setServiceDetail(shipment)
-    }
-    
-    if (orderService[0] !== null) {
-      setServiceDetail(orderService)
-    }
+    // if (shipment.length > 0) {
+    //   setServiceDetail(shipment)
+    // }
+
+    // if (orderService[0] !== null) {
+    //   setServiceDetail(orderService)
+    // }
 
     return {
-      IdControl: control?._id || null,
+      idServiceItem: service.idServiceItem,
+      idControl: control?._id || null,
       control: control?.control || null,
-
-      IdServiceItem: service.idServiceItem,
-      IdTypeService: service.idService,
-      NameService: service.nameService,
-
-      ServiceDetail: serviceDetail,
-
-      ObservationsService:
-        service.shipments?.comments ||
-        service.orderService?.comments ||
-        ''
+      idService: service.idService,
+      // idTypeShipment: service.idTypeShipment,
+      // typeShipment: service.typeShipment,
+      nameService: service.nameService,
+      observationsService: service.observationsService || '',
+      isShipment: service.shipments?.length > 0 ? true : false,
+      serviceDetail: service.serviceDetail,
     };
 
   }
 
-  // function updateService(idServiceItem: number, field: keyof ServiceOperation, value: any) {
+  const updateService = (idServiceItem, detailId, field, value) => {
 
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     Services: prev.Services.map(service =>
-  //       service.idServiceItem === idServiceItem
-  //         ? { ...service, [field]: value }
-  //         : service
-  //     )
-  //   }));
-
-  // }
-
-  const updateService = (detailId, field, value) => {
-
-    setFormData(prev => ({
-      ...prev,
-      Services: prev.Services.map(service => ({
-        ...service,
-        detail: service.detail.map(detail =>
-          detail.id === detailId
-            ? {
+    setFormData(formData => ({
+      ...formData,
+      Services: formData.Services.map(service =>
+        service.idServiceItem === idServiceItem ? {
+          ...service,
+          serviceDetail: service.serviceDetail.map(detail =>
+            detail.sequence === detailId ? {
               ...detail,
               [field]: value
-            }
-            : detail
-        )
-      }))
+            } : detail
+          )
+        } : service
+      )
     }));
+
   };
 
-  const TipoEnvio = ({ detail, updateService }) => {
+  const TipoEnvio = ({ item, detail, updateService }) => {
+
     return (
       <label className={styles.fieldLabel}>
         Tipo de envío / Shipping type
@@ -1396,8 +1380,9 @@ export default function Operations() {
           // readOnly
           required
           onChange={(e) => {
-             updateService(detail.id, 'idTypeShipment', Number(e.target.value))
-             updateService(detail.id, 'typeShipment', e.target.options[e.target.selectedIndex].text)}
+            updateService(item, detail.sequence, 'idTypeShipment', Number(e.target.value))
+            updateService(item, detail.sequence, 'typeShipment', e.target.options[e.target.selectedIndex].text)
+          }
           }
         >
           <option value="">Seleccionar ...</option>
@@ -1410,6 +1395,57 @@ export default function Operations() {
     );
   };
 
+  const TipoOperacion = ({ item, detail, updateService }) => {
+
+    return (
+      <label className={styles.fieldLabel}>
+        Tipo operación / Operation type
+        <select
+          value={detail.idTypeOperation || ''}
+          className={styles.selectInput}
+          // readOnly
+          required
+          onChange={(e) => {
+            updateService(item, detail.sequence, 'idTypeOperation', Number(e.target.value))
+            updateService(item, detail.sequence, 'typeOperation', e.target.options[e.target.selectedIndex].text)
+          }
+          }
+        >
+          <option value="">Seleccionar ...</option>
+          <option value={1}>Importación</option>
+          <option value={2}>Exportación</option>
+          <option value={3}>Nacional</option>
+          <option value={4}>Local USA</option>
+          <option value={5}>Triangulacion</option>
+        </select>
+      </label>
+    );
+  };
+
+  const Incoterm = ({ item, detail, updateService }) => {
+
+    return (
+      <label className={styles.fieldLabel}>
+        Incoterm
+        <select
+          value={detail.idIncoterm}
+          className={styles.selectInput}
+          // readOnly
+          required
+          onChange={(e) => {
+            updateService(item, detail.sequence, 'idIncoterm', Number(e.target.value))
+            updateService(item, detail.sequence, 'incoterm', e.target.options[e.target.selectedIndex].text)
+          }
+          }
+        >
+          <option value="">Seleccionar ...</option>
+          {incoterm.map((inc) => (
+              <option key={inc._Id} value={inc._Id}>{inc.incoterm}</option>
+            ))}
+        </select>
+      </label>
+    );
+  };
 
   if (isFormOpen) {
     return (
@@ -1664,8 +1700,8 @@ export default function Operations() {
               <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
                 {t('operations.observations')}
               </label>
-              <input
-                type="text"
+              <textarea
+                type="textarea"
                 id="observations"
                 name="observations"
                 value={formData.Observations}
@@ -1757,11 +1793,11 @@ export default function Operations() {
                             //   }
                             <div key={`${controlService._id}-${service.idServiceItem}`}
                               className={`${styles.tabItem} ${activeTab === service.idServiceItem ? styles.active : ''}`}
-                              onClick={() => { 
-                                setActiveTab({ 
-                                  id: controlService._id, 
-                                  item: service.idServiceItem, 
-                                  name: service.nameService 
+                              onClick={() => {
+                                setActiveTab({
+                                  id: controlService._id,
+                                  item: service.idServiceItem,
+                                  name: service.nameService
                                 });
 
                                 const newService = buildOperationService(
@@ -1771,22 +1807,22 @@ export default function Operations() {
 
                                 setFormData(prev => {
 
-                                const exists = prev.Services.some(
-                                  s =>
-                                    s.IdControl === newService.IdControl &&
-                                    s.IdServiceItem === newService.IdServiceItem
-                                );
+                                  const exists = prev.Services.some(
+                                    s =>
+                                      s.IdControl === newService.IdControl &&
+                                      s.IdServiceItem === newService.IdServiceItem
+                                  );
 
-                                if (exists) return prev;
+                                  if (exists) return prev;
 
-                                return {
-                                  ...prev,
-                                  Services: [...prev.Services, newService]
-                                };
+                                  return {
+                                    ...prev,
+                                    Services: [...prev.Services, newService]
+                                  };
 
-                              });
+                                });
 
-                            }}
+                              }}
                             >
                               {controlService.control}-{service.nameService}
                             </div>
@@ -1805,13 +1841,13 @@ export default function Operations() {
                             className={`${styles.tabItem} ${activeTab === serviceOperation._id ? styles.active : ''}`}
                             onClick={() => {
                               setActiveTab(serviceOperation.service_name)
-                              
-                              const newService = buildOperationService(
-                                  null,
-                                  service
-                                );
 
-                                setFormData(prev => {
+                              const newService = buildOperationService(
+                                null,
+                                service
+                              );
+
+                              setFormData(prev => {
 
                                 const exists = prev.Services.some(
                                   s =>
@@ -1848,13 +1884,13 @@ export default function Operations() {
 
                 </div>
 
-                  {activeTab.name === 'Maritimo LCL' && (
-                    loadInfoControl(activeTab)
-                  )}
+                {activeTab.name === 'Maritimo LCL' && (
+                  loadInfoControl(activeTab)
+                )}
 
-                  {activeTab.name === 'Seguro' && (
-                    loadInfoControlServicio(activeTab)
-                  )}
+                {activeTab.name === 'Seguro' && (
+                  loadInfoControl(activeTab)
+                )}
 
               </div>
 
