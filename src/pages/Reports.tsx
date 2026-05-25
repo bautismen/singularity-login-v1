@@ -57,7 +57,9 @@ export function Reports() {
   const [pageSize, setPageSize] = useState(10);
   const totalPages = Math.ceil(reportResult.length / pageSize);
   const componentPDF = useRef(null);
-  const paginatedData = reportResult.slice(
+  const [searchReport, setsearchReport] = useState('');
+  const [filteredReportResult, setFilteredReportResult] = useState<any[]>([]);
+  const paginatedData = filteredReportResult.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -91,6 +93,13 @@ export function Reports() {
 }, [searchQuery, filter, controlData]);
 
 useEffect(() => {
+  if (reportResult) {
+    const filteredReportResult = filterReportResult (reportResult, searchReport);
+    setFilteredReportResult(filteredReportResult);
+  }
+}, [searchReport, reportResult]);
+
+useEffect(() => {
   const loadCatalogs = async () => {
     if (!idSelected) return;
 
@@ -115,6 +124,32 @@ useEffect(() => {
 
   loadCatalogs();
 }, [idSelected]);
+
+useEffect(() => {
+  if (!idSelected || !controlData) return;
+
+  const report = controlData.find(
+    (r: any) => r.id_report === idSelected
+  );
+
+  if (!report) return;
+
+  const mapping =
+    language === 'es'
+      ? report.dataset?.mapping?.es
+      : report.dataset?.mapping?.en;
+
+  const mappingParsed =
+    typeof mapping === 'string'
+      ? JSON.parse(mapping)
+      : mapping || {};
+
+  setHeaderMapping(mappingParsed);
+
+  // Opcional: actualizar también el título
+  settitle(report.name_report);
+
+}, [language, idSelected, controlData]);
 
 const loadData = async () => {
   try {
@@ -147,6 +182,22 @@ const filterData = () => {
     setLoading(false);
   };
 
+const filterReportResult = (
+  data: any[],
+  query: string
+) => {
+
+  if (!query.trim()) return data;
+
+  return data.filter((row) =>
+    Object.values(row).some((value) =>
+      String(value ?? '')
+        .toLowerCase()
+        .includes(query.toLowerCase())
+    )
+  );
+};
+
 const AVATAR_SRC = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAzWWaigVY2dG2LPf68xDU_iE3Ecmfu1NLAtbyJRmpbZde8gihW52xYdqDvsVzhOZriVSDpLqjIWa5bxnWxN7W0BSERckk9S4V-oCjG0c0Stmtrk4U0rEWN1aFSdXQe0QDnsy9G8wDYh78jztkotskRvIfbdDo8MU7iBqy7wA0AvDzpDtYkmFyYiyeIXLvdlsYKLRQotGUa94PQxp0E4iqrEsbOBz_wzpQ3E-onuSBnEKab9Dn34B9DmzKHml-tcgu_oYm8L7u1nDg';
 
 const HEADERS = [ t('report.header1'), t('report.header2') , t('report.header3') , t('report.header4') , t('report.header6') ];
@@ -164,14 +215,7 @@ const toggleSelected = (id: string) => {
         setidReport(r.id);
         settitle(r.name_report);
         setIsOpen(false);
-        setisviewParameters(true);
-        const mapping = language === 'es' ? r.dataset?.mapping.es : r.dataset?.mapping.en;
-        const mappingParsed =
-        typeof mapping === 'string'
-        ? JSON.parse(mapping)
-        : mapping || {};
-        
-        setHeaderMapping(mappingParsed);
+        setisviewParameters(true);       
         return { ...r, selected: true };
       }
       return { ...r, selected: false };
@@ -395,8 +439,12 @@ const exportToExcel = () => {
     worksheet,
     [
       [title.toUpperCase()],
-      [`Generado por ${user?.name}`],
-      ['Fecha de generación:', new Date().toLocaleString()],
+      [
+        `${t('report.generatedby')}: ${user?.name}`,
+      ],
+      [
+        `${t('report.generationdate')}: ${new Date().toLocaleString(language === 'es' ? 'es-MX' : 'en-US')}`,
+      ],      
       mappedHeaders
     ],
     { origin: 'A1' }
@@ -515,16 +563,11 @@ const printPdf = useReactToPrint({
           <h2 className={styles.title}>{t('report.title')}</h2>
           <p className={styles.subtitle}>
             {t('report.subtitle')}
-          </p>    
-          <div className={styles.buttonGroup}>
-            <button className={styles.headerButton}>
-                <Filter size={16} />                
-              </button>
-          </div>          
+          </p>                  
         </div>        
         <div className={styles.searchBar}>
           {/* Search */}         
-            <Search size={20} className={styles.icon} />
+            <Search size={20} />
             <input
               type="text"
               placeholder={t('report.seartoogle')}
@@ -551,7 +594,7 @@ const printPdf = useReactToPrint({
           </div>          
         </div>
          
-      <div className={styles.headercard}>
+      <div className={isOpen ? styles.headercard : styles.headercardhover}>
           <div className={styles.headerRow}>
           <h4 className={styles.tdreport}>{title}</h4>
           <button onClick={() => setIsOpen(!isOpen)} className={styles.iconbutonlucide}>
@@ -624,7 +667,7 @@ const printPdf = useReactToPrint({
         </table>
         <div className={styles.divMostrar}>
 
-          <p className="text-[10px] font-bold text-gray-400 tracking-widest">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {t('report.show')} {Math.min(currentPageTop * pageSizeTop, filteredItems.length)} {t('report.show4')} {filteredItems.length} {t('report.show2')}
           </p>
 
@@ -736,7 +779,16 @@ const printPdf = useReactToPrint({
             ))}
           </select>
       </div>
-      </div>      
+      </div>
+      <div className={styles.searchBar2}>
+          {/* Search */}         
+            <Search size={20} />
+            <input
+              type="text"              
+              className="searchInput"
+               onChange={(e) => setsearchReport(e.target.value)}
+            />                        
+        </div>    
       <div className={styles.tableResultWrapper}>
         {reportResult.length > 0 && (() => {
           const headers = Object.keys(reportResult[0])
@@ -769,7 +821,7 @@ const printPdf = useReactToPrint({
         })()}
       </div>
       <div className={styles.divMostrar}>
-        <p className="text-[10px] font-bold text-gray-400 tracking-widest">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           {t('report.show')} {Math.min(currentPage * pageSize, reportResult.length)} {t('report.show4')} {reportResult.length} {t('report.show3')}
         </p>
         <div className="flex items-center gap-2">
