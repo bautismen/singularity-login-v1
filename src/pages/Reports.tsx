@@ -9,6 +9,8 @@ import { getExecutives } from '../services/executiveService';
 import { getCustomers } from '../services/customerService';
 import * as XLSX from 'xlsx-js-style';
 import { useReactToPrint } from "react-to-print";
+import { useNotification } from '../contexts/NotificationContext';
+import { Shower } from '@mui/icons-material';
 
 export function Reports() {
   
@@ -69,6 +71,7 @@ export function Reports() {
   };
   const [currentPageTop, setCurrentPageTop] = useState(1);
   const [pageSizeTop, setPageSizeTop] = useState(10);
+  const { showError, showWarning} = useNotification();
 
   const totalPagesTop = Math.ceil(filteredItems.length / pageSizeTop);
 
@@ -158,7 +161,7 @@ const loadData = async () => {
     setControlData(data);
   } catch (error) {
     setLoading(false);
-    console.error('Error fetching control data:', error);
+    showError('Error fetching control data:' + error);
   }  
 }
 
@@ -334,14 +337,15 @@ const handleInputChange = (name: string, value: string) => {
   setFormValues(prev => ({ ...prev, [name]: value }));
 };
 
-const buildParams = (): Record<string, string> | null => {
+const buildParams = (): Record<string, string | number> | null => {
+
   const report = controlData?.find(
     a => a.id_report === idSelected
   );
 
   if (!report?.parameter) return null;
 
-  const params: Record<string, string> = {};
+  const params: Record<string, string | number> = {};
 
   for (const p of report.parameter) {
 
@@ -367,9 +371,14 @@ const buildParams = (): Record<string, string> | null => {
         formValues[p.name]?.trim();
 
       if (value) {
-        params[p.name] = value;
-      }
 
+        if (p.type === 'int') {
+          params[p.name] = parseInt(value, 10);
+        } else {
+          params[p.name] = value;
+        }
+
+      }
     }
   }
 
@@ -381,6 +390,13 @@ const handlecreate = async () => {
     setLoading(true);
 
     const params = buildParams();
+
+    if(!params || Object.keys(params).length === 0) {
+      showWarning('Debe capturar al menos un parámetro para generar el reporte.');
+      setisviewResult(false);
+      setLoading(false);
+      return;
+    }
 
     const result = await reportsServices.getReport(
       idReport,
@@ -396,10 +412,7 @@ const handlecreate = async () => {
     setisviewResult(true);
 
   } catch (error) {
-    console.error(
-      'Error al generar el reporte:',
-      error
-    );
+    showError('Error al generar el reporte:' + error);
 
     setisviewResult(false);
 
