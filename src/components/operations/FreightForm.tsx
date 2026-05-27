@@ -3,7 +3,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import styles from "../../pages/Operations.module.css";
 import { PricingControl } from "../../types/pricingControl";
 import { OperationsFormData } from "../../hooks/useOperations";
-import { TipoEnvio, TipoReferencia, TipoOperacion } from "../operations/component";
+import { TipoEnvio, TipoReferencia, TipoOperacion, Incoterm, Transportista } from "../operations/component";
 
 export interface FreightFormProps {
    // Catálogos
@@ -65,22 +65,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 
                     {/* Incoterm */}
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel}>
-                        Incoterm
-                        <select
-                          value={detail.idIncoterm}
-                          className={styles.selectInput}
-                          required
-                          onChange={(e) => {
-                            onUpdateServiceFormData(infoControl.idServiceItem, detail.sequence, 'idIncoterm', Number(e.target.value))
-                            onUpdateServiceFormData(infoControl.idServiceItem, detail.sequence, 'incoterm', e.target.options[e.target.selectedIndex].text)
-                          }}>
-                          <option value="">Seleccionar ...</option>
-                          {incoterms.map((inc) => (
-                            <option key={inc._Id} value={inc._Id}>{inc.incoterm}</option>
-                          ))}
-                        </select>
-                      </label>
+                      <Incoterm
+                        itemService={infoControl.idServiceItem}
+                        sequencedetail={detail.sequence}
+                        detail={detail}
+                        onUpdateServiceFormData={onUpdateServiceFormData}
+                        incoterms={incoterms}
+                      />
                     </div>
 
                   </div>
@@ -169,36 +160,17 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 
                 <h2 className="title"> Transporte </h2>
                 <div className={styles.fourColumnGrid}>
+                  
                   <div className={styles.firstColumn}>
                     {/* Transportista */}
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel}>
-                        Transportista *
-                        <select
-                          value={detail.transports.idTransport || ''}
-                          className={styles.selectInput}
-                          // readOnly
-                          // required
-                          onChange={(e) => {
-                            onUpdateServiceFormData(
-                              infoControl.idServiceItem,
-                              detail.sequence,
-                              'idTransport', 
-                              e.target.value)
-                            onUpdateServiceFormData(
-                              infoControl.idServiceItem,
-                              detail.sequence, 
-                              'nameTransport', 
-                              e.target.options[e.target.selectedIndex].text)
-                          }
-                          }
-                        >
-                          <option value="">Seleccionar ...</option>
-                          {suppliers.map((inc) => (
-                            <option key={inc.id} value={inc.id}>{inc.fiscalData.businessName}</option>
-                          ))}
-                        </select>
-                      </label>
+                      <Transportista
+                        itemService={infoControl.idServiceItem}
+                        sequencedetail={detail.sequence}
+                        detail={detail}
+                        onUpdateServiceFormData={onUpdateServiceFormData}
+                        transportista={suppliers.filter( s => s.status === 1 && [7, 32].includes(parseInt(s.sectorId) ))}
+                      />
                     </div>
                           {/*      {// Tipo de unidad }
                                 <div className={styles.fieldGroup}>
