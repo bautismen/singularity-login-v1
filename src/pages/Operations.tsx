@@ -9,6 +9,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { getCustomers } from '../services/customerService';
 import { catalogService } from '../services/catalogsService';
 import { PricingControl } from '../types/pricingControl';
+import { FreightForm, FreightFormProps } from '../components/operations/FreightForm'
+import { PrevioForm , PrevioFormProps} from '../components/operations/PrevioForm'
+import { OtherServiceForm, OtherServiceFormProps } from '../components/operations/OtherServiceForm'
+import {useOperations} from '../hooks/useOperations'
+
 
 export default function Operations() {
   const { t } = useLanguage();
@@ -32,6 +37,7 @@ export default function Operations() {
   const [disabled, setDisabled] = useState(false);
   const [activeTab, setActiveTab] = useState<Record<string, string>>({
     id: '',
+    idService: '',
     item: '',
     name: ''
   });
@@ -41,7 +47,7 @@ export default function Operations() {
   });
   const { user } = useAuth();
 
-  const [formData, setFormData] = useState({
+  /*const [formData, setFormData] = useState({
     Id: '',
     IdReference: 0,
     Reference: '',
@@ -63,7 +69,8 @@ export default function Operations() {
     Status: 1,
     Archived: false,
     DataState: 1,
-  });
+  });*/
+  const {formData, resetFormData, setCompleteFormData,updateFormData, updateServiceFormData } = useOperations()
 
   //   const handleStatusFilterChange = (status: 'todos' | 'activo' | 'inactivo') => {
   //     setStatusFilter(status);
@@ -133,7 +140,7 @@ export default function Operations() {
   }
 
   function handleNewOperation() {
-    setActiveTab({ id: '', item: '', name: '' })
+    setActiveTab({ id: '',  idService: '', item: '', name: ''})
     setControlsClient([]);
     setControl({} as PricingControl);
     setControlsOperation([]);
@@ -142,8 +149,8 @@ export default function Operations() {
     setService({} as Service);
 
     setEditingOperation(null);
-
-    setFormData({
+    resetFormData();
+    /*setFormData({
       Id: '',
       IdReference: 0,
       Reference: '',
@@ -165,8 +172,7 @@ export default function Operations() {
       Status: 1,
       Archived: false,
       DataState: 1,
-    });
-
+    });*/
     setIsFormOpen(true);
   }
 
@@ -200,6 +206,7 @@ export default function Operations() {
 
         acc.push({
           _id: service.idControl,
+          idService: '',
           control: service.control,
           services: [service]
         });
@@ -227,10 +234,10 @@ export default function Operations() {
     setServicesOperation(loadedServices)
 
     if (loadedControls.length > 0) {
-      setActiveTab(loadedControls[0]._id);
+      //setActiveTab(loadedControls[0]._id);
     }
-
-    setFormData({
+    setCompleteFormData(operation, selectedCustomer);
+    /*setFormData({
       Id: operation.id,
       IdReference: operation.idReference,
       Reference: operation.reference,
@@ -253,10 +260,8 @@ export default function Operations() {
       Status: operation.status,
       Archived: operation.archived,
       DataState: operation.dataState,
-    });
-
+    });*/
     setIsFormOpen(true);
-
   }
 
   function handleCustomerChange(selectedCustomerId: string) {
@@ -272,7 +277,7 @@ export default function Operations() {
     const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
 
     if (!selectedCustomer) {
-      setFormData({
+      updateFormData({ //setFormData
         ...formData,
         Id: '',
         IdReference: 0,
@@ -299,7 +304,8 @@ export default function Operations() {
       return;
     }
 
-    setFormData({
+    //setFormData
+    updateFormData({
       ...formData,
       Customer: {
         IdCustomer: selectedCustomer.id,
@@ -333,13 +339,14 @@ export default function Operations() {
       normalizeService(service, control)
     );
 
-    setFormData(prev => ({
+    //setFormData
+    updateFormData(prev => ({
       ...prev,
       Services: [
         ...prev.Services,
         ...normalizedServices
-      ]
-    }));
+      ]    
+      }));
 
     setControlsOperation(prev => [
       ...prev,
@@ -361,9 +368,9 @@ export default function Operations() {
 
   const removeControl = (_idcontrol: string, item: number) => {
 
-    const updated = formData.Controls.filter((control: any) => control._id !== _idcontrol);
+    const updated = formData.Controls?.filter((control: any) => control._id !== _idcontrol);
 
-    setFormData({
+    updateFormData({ //setformdata
       ...formData,
       Controls: updated
     });
@@ -446,7 +453,7 @@ export default function Operations() {
 
   const loadInfoControl = (info: object) => {
 
-    let infoControl = formData.Services.find(
+    let infoControl = formData.Services?.find(
       s =>
         s.idControl === activeTab.id &&
         s.idServiceItem === activeTab.item
@@ -458,11 +465,9 @@ export default function Operations() {
         <div className={styles.formRow}>
           <span key={infoControl.idServiceItem} className={styles.serviceItem}>
             {infoControl?.serviceDetail?.map((detail, index) => (
-
               <div
                 key={detail.sequence || index}
-                className="
-                        border border-gray-200
+                className="border border-gray-200
                         dark:border-gray-700
                         rounded-xl
                         p-4
@@ -510,8 +515,7 @@ export default function Operations() {
                                   infoControl.idServiceItem,
                                   detail.sequence,
                                   'typeShippingReference',
-                                  (e.target.value))
-                              }
+                                  (e.target.value))}
                             />
                           </label>
                         </div>
@@ -987,7 +991,6 @@ export default function Operations() {
         <div className={styles.formRow}>
           {infoControlService.map(infoControlS => (
             <span key={infoControlS.id} className={styles.serviceItem}>
-
               {infoControlS.services?.map(serv => (
                 // serv.orderService?.map(otherservice => (
 
@@ -1216,7 +1219,7 @@ export default function Operations() {
                         id="observationsService"
                         name="observations"
                         value={serv.orderService.comments}
-                        onChange={(e) => setFormData({ ...formData, Observations: e.target.value })}
+                        onChange={(e) => updateFormData({ ...formData, Observations: e.target.value })} //setformata
                         className="min-h-[30px] w-full p-2 rounded-lg
                                   bg-transparent text-black dark:text-white
                                   border border-gray-300 dark:border-gray-700
@@ -1274,7 +1277,6 @@ export default function Operations() {
 
   async function handleSaveOperation(e: React.FormEvent) {
     try {
-
       setLoading(true);
       e.preventDefault();
 
@@ -1286,9 +1288,8 @@ export default function Operations() {
         Archived: false,
         DataState: 1,
       };
-
+      console.log(JSON.stringify(dataToSave, null, 2), editingOperation);
       if (editingOperation) {
-
         const dataToSave = {
           ...formData,
           UpdatedAt: new Date,
@@ -1302,7 +1303,6 @@ export default function Operations() {
       } else {
         await createOperation(dataToSave);
       }
-
       await loadOperations();
       setIsFormOpen(false);
       setEditingOperation(null);
@@ -1316,7 +1316,7 @@ export default function Operations() {
   }
 
   function addServices(service: Service) {
-    setFormData({
+    updateFormData({ //setformdata
       ...formData,
       Services: [...formData.Services, service]
     });
@@ -1352,7 +1352,7 @@ export default function Operations() {
 
   const updateService = (idServiceItem, detailId, field, value) => {
 
-    setFormData(formData => ({
+    updateFormData(formData => ({ //setformdata
       ...formData,
       Services: formData.Services.map(service =>
         service.idServiceItem === idServiceItem ? {
@@ -1494,7 +1494,7 @@ export default function Operations() {
                     id="reference"
                     name="reference"
                     value={formData.Reference}
-                    onChange={(e) => setFormData({ ...formData, Reference: e.target.value })}
+                    onChange={(e) => updateFormData({ ...formData, Reference: e.target.value })} //setformData
                     className={styles.textInput}
                     placeholder={`ATV${new Date().getFullYear().toString().slice(-2)}-00000`}
                     disabled
@@ -1621,7 +1621,6 @@ export default function Operations() {
 
                 {/* Servicios */}
                 <div className={styles.fieldGroup}>
-
                   <div className="border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-surface-container-low">
                     <label className="block font-label-caps text-label-caps text-primary px-3 py-2 dark:text-white">
                       {t('operations.services')}
@@ -1688,7 +1687,6 @@ export default function Operations() {
                     </div>
 
                   </div>
-
                 </div>
 
               </div>
@@ -1705,7 +1703,7 @@ export default function Operations() {
                 id="observations"
                 name="observations"
                 value={formData.Observations}
-                onChange={(e) => setFormData({ ...formData, Observations: e.target.value })}
+                onChange={(e) => updateFormData({ ...formData, Observations: e.target.value })} //setformdata
                 className="min-h-[30px] w-full p-2 rounded-lg
                            bg-transparent text-black dark:text-white
                            border border-gray-300 dark:border-gray-700
@@ -1716,7 +1714,6 @@ export default function Operations() {
             </div>
 
             <div className={styles.twoColumnGrid}>
-
               <div className={styles.leftColumn}>
                 <div className={styles.fieldGroup}>
 
@@ -1726,10 +1723,10 @@ export default function Operations() {
                       <input
                         type="checkbox"
                         checked={formData.ListaParaFacturar === true}
-                        onChange={(e) => setFormData({
+                        onChange={(e) => updateFormData({
                           ...formData,
                           ListaParaFacturar: e.target.checked ? true : false
-                        })}
+                        })} //setformdata
                       />
                       <span className={styles.slider}></span>
                     </label>
@@ -1747,7 +1744,7 @@ export default function Operations() {
                       <input
                         type="checkbox"
                         checked={formData.Status === 1}
-                        onChange={(e) => setFormData({
+                        onChange={(e) => updateFormData({ //setformdata
                           ...formData,
                           Status: e.target.checked ? 1 : 0
                         })}
@@ -1776,124 +1773,113 @@ export default function Operations() {
 
             {!collapsedSections.services && (
               <div className={styles.sectionContent}>
-
                 <div className={styles.serviceSpace}>
                   <div className="border-b border-outline-variant flex items-center justify-between">
-
                     {/* Tabs */}
-                    <div className="flex">
-
+                    <div className="flex gap-2">
                       {controlsOperation.length > 0 ? (
                         controlsOperation?.map(controlService => (
-                          controlService.services?.map(service => (
-                            //   className={
-                            //     activeTab === controlService._id
-                            //       ? "px-6 py-2 border-b-2 border-primary text-primary dark:text-white font-bold text-sm"
-                            //       : "px-6 py-2 text-secondary font-medium text-sm hover:text-primary dark:text-white transition-colors"
-                            //   }
-                            <div key={`${controlService._id}-${service.idServiceItem}`}
-                              className={`${styles.tabItem} ${activeTab === service.idServiceItem ? styles.active : ''}`}
-                              onClick={() => {
-                                setActiveTab({
+                          controlService.services?.map(service => (                            
+                            <div key={`${controlService._id}-${service.idServiceItem}`} className={`${styles.tabItem} ${activeTab.item === service.idServiceItem ? styles.active : ''}`}
+                              onClick={() => {                                 
+                                setActiveTab({ 
                                   id: controlService._id,
-                                  item: service.idServiceItem,
-                                  name: service.nameService
+                                  idService: service.idService, 
+                                  item: service.idServiceItem, 
+                                  name: service.nameService 
                                 });
-
-                                const newService = buildOperationService(
-                                  controlService,
-                                  service
-                                );
-
-                                setFormData(prev => {
-
-                                  const exists = prev.Services.some(
-                                    s =>
-                                      s.IdControl === newService.IdControl &&
-                                      s.IdServiceItem === newService.IdServiceItem
+                                const newService = buildOperationService(controlService,service);
+                                updateFormData(prev => {
+                                  const exists = prev.Services?.some(
+                                    s => s.IdControl === newService.IdControl &&
+                                         s.IdServiceItem === newService.IdServiceItem
                                   );
-
+                                  
                                   if (exists) return prev;
-
                                   return {
                                     ...prev,
                                     Services: [...prev.Services, newService]
                                   };
-
                                 });
-
-                              }}
-                            >
+                              }}>
                               {controlService.control}-{service.nameService}
                             </div>
-
                           ))
                         ))
                       ) : (<></>)}
                       {servicesOperation.length > 0 ? (
                         servicesOperation?.map(serviceOperation => (
-                          //   className={
-                          //     activeTab === controlService._id
-                          //       ? "px-6 py-2 border-b-2 border-primary text-primary dark:text-white font-bold text-sm"
-                          //       : "px-6 py-2 text-secondary font-medium text-sm hover:text-primary dark:text-white transition-colors"
-                          //   }
                           <div key={`${serviceOperation._id}-${serviceOperation.service_name}`}
-                            className={`${styles.tabItem} ${activeTab === serviceOperation._id ? styles.active : ''}`}
+                            className={`${styles.tabItem} ${activeTab.item === serviceOperation._id ? styles.active : ''}`}
                             onClick={() => {
-                              setActiveTab(serviceOperation.service_name)
-
-                              const newService = buildOperationService(
-                                null,
-                                service
+                              setActiveTab(
+                                { 
+                                  id: serviceOperation._id,
+                                  idService:  '', 
+                                  item: '', 
+                                  name:serviceOperation.service_name 
+                                })                           
+                              const newService = buildOperationService(null,service);
+                                updateFormData(prev => { //setformdata
+                                  const exists = prev.Services.some(
+                                    s =>
+                                      s.IdControl === newService.IdControl &&
+                                      s.IdServiceItem === newService.IdServiceItem
+                                  );
+                                  if (exists) return prev;
+                                  return {
+                                    ...prev,
+                                    Services: [...prev.Services, newService]
+                                  };
+                                }
                               );
-
-                              setFormData(prev => {
-
-                                const exists = prev.Services.some(
-                                  s =>
-                                    s.IdControl === newService.IdControl &&
-                                    s.IdServiceItem === newService.IdServiceItem
-                                );
-
-                                if (exists) return prev;
-
-                                return {
-                                  ...prev,
-                                  Services: [...prev.Services, newService]
-                                };
-
-                              });
-
-                            }}
-                          >
+                            }}>
                             {serviceOperation._id}-{serviceOperation.service_name}
                           </div>
                         ))
-
                       ) : (
                         <span className=''>
-                        </span>
-                      )
+                        </span>)
                       }
                     </div>
-
-                    {/* <button className="text-primary hover:bg-surface-container-low rounded-full p-1">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-                      </button> */}
                   </div>
-
                 </div>
+                
+                {/*ServiceForm && <ServiceForm {...formProps} />*/}                
+                {
+                 [1, 2, 3, 4, 5, 10, 11].includes(parseInt(activeTab.idService)) ?
+                  (<FreightForm 
+                  incoterms={incoterm}
+                  info={activeTab}
+                  controlsData={controlsData}
+                  formData={formData}
+                  onUpdateFormData={updateFormData}
+                  onUpdateServiceFormData={updateServiceFormData}
+                  />) :
+                  [17].includes(parseInt(activeTab.idService)) ?
+                  (<PrevioForm
+                  info={activeTab}
+                  controlsData={controlsData}
+                  formData={formData}
+                  onUpdateFormData={updateFormData}
+                  onUpdateServiceFormData={updateServiceFormData}
+                  />) :
+                  <OtherServiceForm 
+                  info={activeTab}
+                  controlsData={controlsData}
+                  formData={formData}
+                  onUpdateFormData={updateFormData}
+                  onUpdateServiceFormData={updateServiceFormData}/>                    
+                }
 
-                {activeTab.name === 'Maritimo LCL' && (
-                  loadInfoControl(activeTab)
-                )}
+                  {/*activeTab.name === 'Maritimo LCL' && (
+                    loadInfoControl(activeTab)
+                  )}
 
-                {activeTab.name === 'Seguro' && (
-                  loadInfoControl(activeTab)
-                )}
-
-              </div>
-
+                  {activeTab.name === 'Seguro' && (
+                    loadInfoControlServicio(activeTab)
+                  )*/}                
+              </div>              
             )}
           </div>
 
@@ -1916,7 +1902,6 @@ export default function Operations() {
 
   return (
     <div className={styles.container}>
-
       <div className={styles.header}>
         <h1 className={styles.title}>{t('operations.title')}</h1>
 
