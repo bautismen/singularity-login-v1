@@ -570,11 +570,11 @@
   padding: 1.5rem;
 }
 
-.serviceSpace {
+/* .serviceSpace {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
+} */
 
 .serviceNumber {
   width: 36px;
@@ -683,6 +683,7 @@
   cursor: pointer;
   user-select: none;
   transition: color 0.2s ease;
+
 }
 
 .tabItem:hover {
@@ -698,7 +699,7 @@
   content: "";
   position: absolute;
   left: 0;
-  bottom: -7px;
+  bottom: -2px;
   width: 100%;
   height: 4px;
   background: #10b981;

@@ -28,6 +28,14 @@ export interface ServiceOperation {
     serviceDetail: ServiceDetail[];
 }
 
+export interface Transports{
+  idTransport: string;
+  nameTransport: string;
+//   typeTransport: number;
+//   carrier: string;
+//   typeUnit: string;
+}
+
 export interface ServiceDetail {
   sequence: number;
   idTypeShipment: number;
@@ -35,13 +43,13 @@ export interface ServiceDetail {
   idTypeOperation: number;
   typeOperation?: string;
   typeShippingReference?: string;
-  shippingReferenceNumber?: string
+  shippingReferenceNumber?: string;
   shippingDate?: Date;
   masterGuide?: string;
   consignee?: boolean;
-  idIncoterm?: number
+  idIncoterm?: number;
   incoterm?: string;
-
+  transports: Transports[];
 
 //   // Fechas
 //   departureDateAproximate?: Date;

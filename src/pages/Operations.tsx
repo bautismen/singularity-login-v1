@@ -9,11 +9,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { getCustomers } from '../services/customerService';
 import { catalogService } from '../services/catalogsService';
 import { PricingControl } from '../types/pricingControl';
+import { getSuppliers } from '../services/supplierService';
+import { Supplier } from '../types/supplier';
 import { FreightForm, FreightFormProps } from '../components/operations/FreightForm'
 import { PrevioForm , PrevioFormProps} from '../components/operations/PrevioForm'
 import { OtherServiceForm, OtherServiceFormProps } from '../components/operations/OtherServiceForm'
 import {useOperations} from '../hooks/useOperations'
-
 
 export default function Operations() {
   const { t } = useLanguage();
@@ -29,6 +30,7 @@ export default function Operations() {
   const [servicesOperation, setServicesOperation] = useState<Service[]>([]);
   const [serviceDetail, setServiceDetail] = useState<ServiceDetail[]>([]);
   const [incoterm, setIncoterm] = useState<Service[]>([]);
+  const [supplier, setSupplier] = useState<Supplier[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -47,30 +49,13 @@ export default function Operations() {
   });
   const { user } = useAuth();
 
-  /*const [formData, setFormData] = useState({
-    Id: '',
-    IdReference: 0,
-    Reference: '',
-    Customer: {} as Customer,
-    Services: [] as ServiceOperation[],
-    OperationStatus: 'Alta referencia' as 'Alta referencia' | 'pending' | 'completed' | 'failed',
-    Observations: '',
-    ListaParaFacturar: false,
-    CreatedAt: new Date,
-    CreatedBy: {
-      UserId: user?._id || '',
-      Name: user?.name || ''
-    },
-    UpdatedAt: Date,
-    UpdateBy: {
-      UserId: user?._id || '',
-      Name: user?.name || ''
-    },
-    Status: 1,
-    Archived: false,
-    DataState: 1,
-  });*/
-  const {formData, resetFormData, setCompleteFormData,updateFormData, updateServiceFormData } = useOperations()
+  const {
+    formData, 
+    resetFormData, 
+    setCompleteFormData, 
+    updateFormData, 
+    updateServiceFormData 
+  } = useOperations()
 
   //   const handleStatusFilterChange = (status: 'todos' | 'activo' | 'inactivo') => {
   //     setStatusFilter(status);
@@ -82,6 +67,7 @@ export default function Operations() {
     loadServices();
     loadIncorterm();
     loadCustomers();
+    loadSupplier();
   }, []);
 
   //   useEffect(() => {
@@ -139,6 +125,15 @@ export default function Operations() {
     }
   }
 
+  async function loadSupplier() {
+    try {
+      const data = await getSuppliers();
+      setSupplier(data);
+    } catch (error) {
+      console.error('Error loading services:', error);
+    }
+  }
+
   function handleNewOperation() {
     setActiveTab({ id: '',  idService: '', item: '', name: ''})
     setControlsClient([]);
@@ -150,34 +145,11 @@ export default function Operations() {
 
     setEditingOperation(null);
     resetFormData();
-    /*setFormData({
-      Id: '',
-      IdReference: 0,
-      Reference: '',
-      Customer: {} as Customer,
-      Services: [] as ServiceOperation[],
-      OperationStatus: 'Alta referencia',
-      Observations: '',
-      ListaParaFacturar: false,
-      CreatedAt: new Date,
-      CreatedBy: {
-        UserId: user?._id || '',
-        Name: user?.name || '',
-      },
-      UpdatedAt: Date,
-      UpdateBy: {
-        UserId: user?._id || '',
-        Name: user?.name || '',
-      },
-      Status: 1,
-      Archived: false,
-      DataState: 1,
-    });*/
     setIsFormOpen(true);
   }
 
   function handleEditOperation(operation: Operation) {
-
+    setActiveTab({ id: '',  idService: '', item: '', name: ''})
     setServicesOperation([]);
     setService({} as Service);
 
@@ -202,18 +174,21 @@ export default function Operations() {
         c => String(c._id) === String(service.idControl)
       );
 
+      const normalizedService =
+      normalizeService(service);
+
       if (!existingControl) {
 
         acc.push({
           _id: service.idControl,
           idService: '',
           control: service.control,
-          services: [service]
+          services: [normalizedService]
         });
 
       } else {
 
-        existingControl.services.push(service);
+        existingControl.services.push(normalizedService);
 
       }
 
@@ -236,32 +211,11 @@ export default function Operations() {
     if (loadedControls.length > 0) {
       //setActiveTab(loadedControls[0]._id);
     }
+
     setCompleteFormData(operation, selectedCustomer);
-    /*setFormData({
-      Id: operation.id,
-      IdReference: operation.idReference,
-      Reference: operation.reference,
-      Customer: selectedCustomer ? {
-        idCustomer: selectedCustomer.id,
-        name: selectedCustomer.fiscalData.businessName,
-        rfc: selectedCustomer.fiscalData.taxId
-      } : operation.customer,
-      Services: operation.services,
-      OperationStatus: operation.operationStatus,
-      ListaParaFacturar: operation.listaParaFacturar || false,
-      Observations: operation.observations || '',
-      CreatedAt: operation.createdAt,
-      CreatedBy: operation.createdBy,
-      UpdatedAt: Date,
-      UpdateBy: {
-        UserId: user?._id || '',
-        Name: user?.name || ''
-      },
-      Status: operation.status,
-      Archived: operation.archived,
-      DataState: operation.dataState,
-    });*/
+
     setIsFormOpen(true);
+
   }
 
   function handleCustomerChange(selectedCustomerId: string) {
@@ -422,11 +376,38 @@ export default function Operations() {
 
     let detail = [];
 
+    let secuencia = 1
+
     // Shipments
     if (service.shipments?.length > 0) {
       detail = service.shipments.map((shipment: any) => ({
         ...shipment,
-        detailType: 'shipment'
+        transports:
+          shipment.transports?.length > 0
+            ? shipment.transports
+            : [{}],
+        origins:
+          shipment.origins?.length > 0
+            ? shipment.origins
+            : [{}],
+        destinations:
+          shipment.destinations?.length > 0
+            ? shipment.destinations
+            : [{}],
+        references:
+          shipment.references?.length > 0
+            ? shipment.references
+            : [{}],
+        containers:
+          shipment.containers?.length > 0
+            ? shipment.containers
+            : [{}],
+        goods:
+          shipment.goods?.length > 0
+            ? shipment.goods
+            : [{}],
+        detailType: 'shipment',
+        sequence: secuencia
       }));
 
     }
@@ -435,8 +416,42 @@ export default function Operations() {
     else if (service.orderService) {
       detail = [{
         ...service.orderService,
-        detailType: 'orderService'
+        detailType: 'orderService',
+        sequence: secuencia
       }];
+    }
+
+    if (service.serviceDetail?.length > 0) {
+      detail = service.serviceDetail.map((detail: any) => ({
+        ...detail,
+        transports:
+          detail.transports?.length > 0
+            ? detail.transports
+            : [{}],
+        origins:
+          detail.origins?.length > 0
+            ? detail.origins
+            : [{}],
+        destinations:
+          detail.destinations?.length > 0
+            ? detail.destinations
+            : [{}],
+        references:
+          detail.references?.length > 0
+            ? detail.references
+            : [{}],
+        containers:
+          detail.containers?.length > 0
+            ? detail.containers
+            : [{}],
+        goods:
+          detail.goods?.length > 0
+            ? detail.goods
+            : [{}],
+        detailType: 'detail',
+        sequence: secuencia
+      }));
+
     }
 
     return {
@@ -465,9 +480,11 @@ export default function Operations() {
         <div className={styles.formRow}>
           <span key={infoControl.idServiceItem} className={styles.serviceItem}>
             {infoControl?.serviceDetail?.map((detail, index) => (
+
               <div
                 key={detail.sequence || index}
-                className="border border-gray-200
+                className="
+                        border border-gray-200
                         dark:border-gray-700
                         rounded-xl
                         p-4
@@ -502,28 +519,6 @@ export default function Operations() {
                           />
                         </div>
 
-                        {/* Tipo de referencia */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Tipo de referencia
-                            <input
-                              type="text"
-                              value={detail.typeShippingReference || ''}
-                              className={styles.textInput}
-                              onChange={(e) =>
-                                updateService(
-                                  infoControl.idServiceItem,
-                                  detail.sequence,
-                                  'typeShippingReference',
-                                  (e.target.value))}
-                            />
-                          </label>
-                        </div>
-
-                      </div>
-
-                      <div className={styles.secondColumn}>
-
                         {/* Incoterm */}
                         <div className={styles.fieldGroup}>
                           <Incoterm
@@ -532,6 +527,32 @@ export default function Operations() {
                             updateService={updateService}
                           />
                         </div>
+
+                      </div>
+
+                      <div className={styles.secondColumn}>
+
+                        {/* Tipo de referencia */}
+                        <div className={styles.fieldGroup}>
+                          <TipoReferencia
+                            item={infoControl.idServiceItem}
+                            detail={detail}
+                            updateService={updateService}
+                          />
+                        </div>
+
+                        {/* Tipo operación */}
+                        <div className={styles.fieldGroup}>
+                          <TipoOperacion
+                            item={infoControl.idServiceItem}
+                            detail={detail}
+                            updateService={updateService}
+                          />
+                        </div>
+
+                      </div>
+
+                      <div className={styles.thirdColumn}>
 
                         {/* Referencia de envio */}
                         <div className={styles.fieldGroup}>
@@ -553,18 +574,28 @@ export default function Operations() {
                           </label>
                         </div>
 
+                        {/* Guia master */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Guia master
+                            <input
+                              type="text"
+                              value={detail?.masterGuide}
+                              onChange={(e) =>
+                                updateService(
+                                  infoControl.idServiceItem,
+                                  detail.sequence,
+                                  'masterGuide',
+                                  (e.target.value))
+                              }
+                              className={styles.textInput}
+                            />
+                          </label>
+                        </div>
+
                       </div>
 
-                      <div className={styles.thirdColumn}>
-
-                        {/* Tipo operación */}
-                        <div className={styles.fieldGroup}>
-                          <TipoOperacion
-                            item={infoControl.idServiceItem}
-                            detail={detail}
-                            updateService={updateService}
-                          />
-                        </div>
+                      <div className={styles.fourthColumn}>
 
                         {/* Envio referencia */}
                         <div className={styles.fieldGroup}>
@@ -587,68 +618,42 @@ export default function Operations() {
 
                       </div>
 
-                      <div className={styles.fourthColumn}>
-
-                        {/* Guia master */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Guia master
-                            <input
-                              type="text"
-                              value={detail.masterGuide}
-                              onChange={(e) =>
-                                updateService(
-                                  infoControl.idServiceItem,
-                                  detail.sequence,
-                                  'shippingDate',
-                                  (e.target.value))
-                              }
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div>
-
-                      </div>
-
                     </div>
-
+                    
                     <h2 className='title'> Transporte </h2>
 
-                    <div className={styles.fourColumnGrid}>
+                    {detail?.transports?.map((transport, index) => (
+                      
+                      <div className={styles.fourColumnGrid}>
 
-                      <div className={styles.firstColumn}>
+                        <div className={styles.firstColumn}>
 
-                        {/* Transportista */}
-                        {/* <div className={styles.fieldGroup}>
+                          {/* Transportista */}
+                          <Transportista
+                            item={infoControl.idServiceItem}
+                            key={1}
+                            transport={transport}
+                            detail={detail.sequence}
+                            updateNestedDetail={updateNestedDetail}
+                          />
+
+                          {/* Tipo de unidad */}
+                          {/* <div className={styles.fieldGroup}>
                           <label className={styles.fieldLabel}>
-                            Transportista
+                            Tipo de unidad
                             <input
                               type="text"
-                              value={detail.typeShipment}
-                              readOnly
+                              value={detail.transports.typeUnit}
                               className={styles.textInput}
                             />
                           </label>
                         </div> */}
+                        </div>
 
-                        {/* Tipo de unidad */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Tipo de unidad
-                              <input
-                                type="text"
-                                value={detail.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
+                        <div className={styles.secondColumn}>
 
-                      </div>
-
-                      <div className={styles.secondColumn}>
-
-                        {/* CAAT */}
-                        {/* <div className={styles.fieldGroup}>
+                          {/* CAAT */}
+                          {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               CAAT
                               <input
@@ -661,7 +666,7 @@ export default function Operations() {
                           </div>
 
                           {/* Tipo de ruta */}
-                        {/* <div className={styles.fieldGroup}>
+                          {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Tipo de ruta
                               <input
@@ -672,12 +677,12 @@ export default function Operations() {
                             </label>
                           </div> */}
 
-                      </div>
+                        </div>
 
-                      <div className={styles.thirdColumn}>
+                        <div className={styles.thirdColumn}>
 
-                        {/* Guia/Tipo */}
-                        {/* <div className={styles.fieldGroup}>
+                          {/* Guia/Tipo */}
+                          {/* <div className={styles.fieldGroup}>
                           <label className={styles.fieldLabel}>
                             Guia/Tipo
                             <input
@@ -689,8 +694,8 @@ export default function Operations() {
                           </label>
                         </div> */}
 
-                        {/* Tipo de movimiento */}
-                        {/* <div className={styles.fieldGroup}>
+                          {/* Tipo de movimiento */}
+                          {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Tipo de movimiento
                               <input
@@ -701,12 +706,12 @@ export default function Operations() {
                             </label>
                           </div> */}
 
-                      </div>
+                        </div>
 
-                      <div className={styles.fourthColumn}>
+                        <div className={styles.fourthColumn}>
 
-                        {/* Placas */}
-                        {/* <div className={styles.fieldGroup}>
+                          {/* Placas */}
+                          {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Placas
                               <input
@@ -717,8 +722,8 @@ export default function Operations() {
                             </label>
                           </div> */}
 
-                        {/* Numero de rastreo/Tipo */}
-                        {/* <div className={styles.fieldGroup}>
+                          {/* Numero de rastreo/Tipo */}
+                          {/* <div className={styles.fieldGroup}>
                             <label className={styles.fieldLabel}>
                               Numero de rastreo/Tipo
                               <input
@@ -729,10 +734,12 @@ export default function Operations() {
                             </label>
                           </div> */}
 
+                        </div>
+
                       </div>
-
-                    </div>
-
+                    ))
+                    }
+                    
                     <h2 className='title'> Origen / Destino </h2>
 
                     <div className={styles.fourColumnGrid}>
@@ -976,14 +983,11 @@ export default function Operations() {
 
   const loadInfoControlServicio = (info: object) => {
 
-    const infoControlService = controlsData
-      .filter(c => c.id === info.id)
-      .map(c => ({
-        ...c,
-        services: c.services?.filter(
-          s => String(s.idServiceItem) === String(info.item)
-        )
-      }));
+    let infoControlService = formData.Services.find(
+      s =>
+        s.idControl === activeTab.id &&
+        s.idServiceItem === activeTab.item
+    );
 
     if (infoControlService) {
 
@@ -1276,6 +1280,7 @@ export default function Operations() {
   }
 
   async function handleSaveOperation(e: React.FormEvent) {
+
     try {
       setLoading(true);
       e.preventDefault();
@@ -1299,9 +1304,9 @@ export default function Operations() {
           },
         };
 
-        await updateOperation(editingOperation.Id!, dataToSave);
+       // await updateOperation(editingOperation.Id!, dataToSave);
       } else {
-        await createOperation(dataToSave);
+       // await createOperation(dataToSave);
       }
       await loadOperations();
       setIsFormOpen(false);
@@ -1323,17 +1328,6 @@ export default function Operations() {
   }
 
   function buildOperationService(control: any, service: any): ServiceOperation {
-
-    // const shipment = service.shipments
-    // const orderService = [service.orderService]
-
-    // if (shipment.length > 0) {
-    //   setServiceDetail(shipment)
-    // }
-
-    // if (orderService[0] !== null) {
-    //   setServiceDetail(orderService)
-    // }
 
     return {
       idServiceItem: service.idServiceItem,
@@ -1366,8 +1360,144 @@ export default function Operations() {
         } : service
       )
     }));
+  };
+
+  const updateNestedDetail = (idServiceItem, detailId, collection, itemId, field, value) => {
+
+    updateFormData(formData => ({ //setformdata
+      ...formData,
+      Services: formData.Services.map(service =>
+        service.idServiceItem === idServiceItem ? {
+          ...service,
+          serviceDetail: service.serviceDetail.map(detail =>
+            detail.sequence === detailId ? {
+              ...detail,
+              [collection]:
+                detail[collection]?.map(item =>
+                  item.id === itemId ? {
+                    ...item,
+                    [field]: value
+                  } : item
+                )
+            } : detail
+          )
+        } : service
+      )
+    }));
+  };
+
+  const addNestedItem = (idServiceItem, detailId, collection, newItem) => {
+
+    updateFormData(prev => ({//setFormData
+      ...prev,
+      Services: prev.Services.map(service =>
+        service.idServiceItem === idServiceItem ? {
+          ...service,
+          serviceDetail: service.serviceDetail.map(detail =>
+            detail.sequence === detailId ? {
+              ...detail,
+              [collection]: [
+                ...(detail[collection] || []),
+                newItem
+              ]
+            } : detail
+          )
+        } : service
+      )
+
+    }));
 
   };
+
+  const removeNestedItem = (idServiceItem, detailId, collection, itemId) => {
+
+    updateFormData(prev => ({//setFormData
+      ...prev,
+      Services: prev.Services.map(service =>
+        service.idServiceItem === idServiceItem ? {
+          ...service,
+          serviceDetail: service.serviceDetail.map(detail =>
+            detail.sequence === detailId ? {
+              ...detail,
+              [collection]:
+                detail[collection]?.filter(
+                  item => item.id !== itemId
+                )
+            } : detail
+          )
+        } : service
+      )
+    }));
+  };
+
+  // const updateNestedDetail = (idServiceItem, detailId, collection, itemId, field, value) => {
+
+  //   updateFormData(formData => ({//setFormData
+  //     ...formData,
+  //     Services: formData.Services.map(service =>
+  //       service.idServiceItem === idServiceItem ? {
+  //         ...service,
+  //         serviceDetail: service.serviceDetail.map(detail =>
+  //           detail.sequence === detailId ? {
+  //             ...detail,
+  //             [collection]:
+  //               detail[collection]?.map(item =>
+  //                 item.id === itemId ? {
+  //                   ...item,
+  //                   [field]: value
+  //                 } : item
+  //               )
+  //           } : detail
+  //         )
+  //       } : service
+  //     )
+  //   }));
+  // };
+
+  // const addNestedItem = (idServiceItem, detailId, collection, newItem) => {
+
+  //   updateFormData(prev => ({//setFormData
+  //     ...prev,
+  //     Services: prev.Services.map(service =>
+  //       service.idServiceItem === idServiceItem ? {
+  //         ...service,
+  //         serviceDetail: service.serviceDetail.map(detail =>
+  //           detail.sequence === detailId ? {
+  //             ...detail,
+  //             [collection]: [
+  //               ...(detail[collection] || []),
+  //               newItem
+  //             ]
+  //           } : detail
+  //         )
+  //       } : service
+  //     )
+
+  //   }));
+
+  // };
+
+  // const removeNestedItem = (idServiceItem, detailId, collection, itemId) => {
+
+  //   updateFormData(prev => ({//setFormData
+  //     ...prev,
+  //     Services: prev.Services.map(service =>
+  //       service.idServiceItem === idServiceItem ? {
+  //         ...service,
+  //         serviceDetail: service.serviceDetail.map(detail =>
+  //           detail.sequence === detailId ? {
+  //             ...detail,
+  //             [collection]:
+  //               detail[collection]?.filter(
+  //                 item => item.id !== itemId
+  //               )
+  //           } : detail
+  //         )
+  //       } : service
+  //     )
+  //   }));
+
+  // };
 
   const TipoEnvio = ({ item, detail, updateService }) => {
 
@@ -1440,8 +1570,57 @@ export default function Operations() {
         >
           <option value="">Seleccionar ...</option>
           {incoterm.map((inc) => (
-              <option key={inc._Id} value={inc._Id}>{inc.incoterm}</option>
-            ))}
+            <option key={inc._Id} value={inc._Id}>{inc.incoterm}</option>
+          ))}
+        </select>
+      </label>
+    );
+  };
+
+  const TipoReferencia = ({ item, detail, updateService }) => {
+
+    return (
+      <label className={styles.fieldLabel}>
+        Tipo de referencia envio
+        <select
+          value={detail.typeShippingReference || ''}
+          className={styles.selectInput}
+          // readOnly
+          required
+          onChange={(e) => {
+            updateService(item, detail.sequence, 'typeShippingReference', e.target.options[e.target.selectedIndex].text)
+            // updateService(item, detail.sequence, 'NameShippingReference', e.target.options[e.target.selectedIndex].text)
+          }
+          }
+        >
+          <option value="">Seleccionar ...</option>
+          <option value={"Booking"}>Booking</option>
+          <option value={"Carta porte"}>Carta porte</option>
+        </select>
+      </label>
+    );
+  };
+
+  const Transportista = ({ item, key, transport, detail, updateNestedDetail }) => {
+
+    return (
+      <label className={styles.fieldLabel}>
+        Transportista *
+        <select
+          value={transport.idTransport || ''}
+          className={styles.selectInput}
+          // readOnly
+          // required
+          onChange={(e) => {
+            updateNestedDetail(item, detail, 'transports', 1, 'idTransport', e.target.value)
+            updateNestedDetail(item, detail, 'transports', 1, 'nameTransport', e.target.options[e.target.selectedIndex].text)
+          }
+          }
+        >
+          <option value="">Seleccionar ...</option>
+          {supplier.map((inc) => (
+            <option key={inc.id} value={inc.id}>{inc.fiscalData.businessName}</option>
+          ))}
         </select>
       </label>
     );
@@ -1774,15 +1953,16 @@ export default function Operations() {
             {!collapsedSections.services && (
               <div className={styles.sectionContent}>
                 <div className={styles.serviceSpace}>
-                  <div className="border-b border-outline-variant flex items-center justify-between">
+                  <div className="flex gap-2">
                     {/* Tabs */}
-                    <div className="flex gap-2">
+                    <div className="border-b border-outline-variant flex items-center justify-between mb-2">
                       {controlsOperation.length > 0 ? (
                         controlsOperation?.map(controlService => (
                           controlService.services?.map(service => (                            
-                            <div key={`${controlService._id}-${service.idServiceItem}`} className={`${styles.tabItem} ${activeTab.item === service.idServiceItem ? styles.active : ''}`}
-                              onClick={() => {                                 
-                                setActiveTab({ 
+                            <div key={`${controlService._id}-${service.idServiceItem}`}
+                              className={`${styles.tabItem} ${activeTab.item === service.idServiceItem ? styles.active : ''}`}
+                              onClick={() => {
+                                setActiveTab({
                                   id: controlService._id,
                                   idService: service.idService, 
                                   item: service.idServiceItem, 
@@ -1847,38 +2027,32 @@ export default function Operations() {
                 
                 {/*ServiceForm && <ServiceForm {...formProps} />*/}                
                 {
-                 [1, 2, 3, 4, 5, 10, 11].includes(parseInt(activeTab.idService)) ?
-                  (<FreightForm 
-                  incoterms={incoterm}
-                  info={activeTab}
-                  controlsData={controlsData}
-                  formData={formData}
-                  onUpdateFormData={updateFormData}
-                  onUpdateServiceFormData={updateServiceFormData}
-                  />) :
-                  [17].includes(parseInt(activeTab.idService)) ?
-                  (<PrevioForm
-                  info={activeTab}
-                  controlsData={controlsData}
-                  formData={formData}
-                  onUpdateFormData={updateFormData}
-                  onUpdateServiceFormData={updateServiceFormData}
-                  />) :
-                  <OtherServiceForm 
-                  info={activeTab}
-                  controlsData={controlsData}
-                  formData={formData}
-                  onUpdateFormData={updateFormData}
-                  onUpdateServiceFormData={updateServiceFormData}/>                    
+                  [1, 2, 3, 4, 5, 10, 11].includes(parseInt(activeTab.idService)) ?
+                    (<FreightForm
+                      incoterms={incoterm}
+                      suppliers={supplier}
+                      info={activeTab}
+                      controlsData={controlsData}
+                      formData={formData}
+                      onUpdateFormData={updateFormData}
+                      onUpdateServiceFormData={updateServiceFormData}
+                    />) :
+                    [17].includes(parseInt(activeTab.idService)) ?
+                      (<PrevioForm
+                        info={activeTab}
+                        controlsData={controlsData}
+                        formData={formData}
+                        onUpdateFormData={updateFormData}
+                        onUpdateServiceFormData={updateServiceFormData}
+                      />) :
+                      <OtherServiceForm
+                        info={activeTab}
+                        controlsData={controlsData}
+                        formData={formData}
+                        onUpdateFormData={updateFormData}
+                        onUpdateServiceFormData={updateServiceFormData} />
                 }
-
-                  {/*activeTab.name === 'Maritimo LCL' && (
-                    loadInfoControl(activeTab)
-                  )}
-
-                  {activeTab.name === 'Seguro' && (
-                    loadInfoControlServicio(activeTab)
-                  )*/}                
+               
               </div>              
             )}
           </div>
