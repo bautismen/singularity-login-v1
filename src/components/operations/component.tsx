@@ -99,19 +99,19 @@ export const Incoterm = ({ itemService, sequencedetail, detail, onUpdateServiceF
   );
 };
   
-export const Transportista = ({ itemService, sequencedetail, detail, onUpdateServiceFormData, transportista }) => {
+export const Transportista = ({ itemService, sequencedetail, transports, onUpdateServiceDetail, transportista }) => {
 
   return (
     <label className={styles.fieldLabel}>
       Transportista *
       <select
-        value={detail.transports.idTransport || ''}
+        value={transports.idTransport || ''}
         className={styles.selectInput}
         // readOnly
         // required
         onChange={(e) => {
-          onUpdateServiceFormData(itemService, sequencedetail, 'idTransport', e.target.value)
-          onUpdateServiceFormData(itemService, sequencedetail, 'nameTransport', e.target.options[e.target.selectedIndex].text)
+          onUpdateServiceDetail(itemService, sequencedetail, 'transports', 'idTransport', e.target.value)
+          onUpdateServiceDetail(itemService, sequencedetail, 'transports', 'nameTransport', e.target.options[e.target.selectedIndex].text)
         }
         }
       >
@@ -119,6 +119,75 @@ export const Transportista = ({ itemService, sequencedetail, detail, onUpdateSer
         {transportista.map((tr) => (
           <option key={tr.id} value={tr.id}>{tr.fiscalData.businessName}</option>
         ))}
+      </select>
+    </label>
+  );
+};
+
+export const TipoUnidad = ({ itemService, sequencedetail, transports, onUpdateServiceDetail }) => {
+
+  return (
+    <label className={styles.fieldLabel}>
+      Tipo unidad
+      <select
+        value={transports.typeUnit || ''}
+        className={styles.selectInput}
+        // readOnly
+        required
+        onChange={(e) => {
+          onUpdateServiceDetail(itemService, sequencedetail, 'transports', 'typeUnit', e.target.options[e.target.selectedIndex].text)
+        }
+        }
+      >
+        <option value="">Seleccionar ...</option>
+        <option value={"Tracto"}>Tracto</option>
+        <option value={"Buque"}>Buque</option>
+      </select>
+    </label>
+  );
+};
+
+export const TipoRuta = ({ itemService, sequencedetail, transports, onUpdateServiceDetail }) => {
+
+  return (
+    <label className={styles.fieldLabel}>
+      Tipo ruta
+      <select
+        value={transports.typeRoute || ''}
+        className={styles.selectInput}
+        // readOnly
+        required
+        onChange={(e) => {
+          onUpdateServiceDetail(itemService, sequencedetail, 'transports', 'typeRoute', e.target.options[e.target.selectedIndex].text)
+        }
+        }
+      >
+        <option value="">Seleccionar ...</option>
+        <option value={"Directo"}>Directo</option>
+        <option value={"Transbordo"}>Transbordo</option>
+      </select>
+    </label>
+  );
+};
+
+export const TipoMovimeiento = ({ itemService, sequencedetail, transports, onUpdateServiceDetail }) => {
+
+  return (
+    <label className={styles.fieldLabel}>
+      Tipo movimiento
+      <select
+        value={transports.typeOfMovement || ''}
+        className={styles.selectInput}
+        // readOnly
+        required
+        onChange={(e) => {
+          onUpdateServiceDetail(itemService, sequencedetail, 'transports', 'typeOfMovement', e.target.options[e.target.selectedIndex].text)
+        }
+        }
+      >
+        <option value="">Seleccionar ...</option>
+        <option value={"Full"}>Full</option>
+        <option value={"Sencillo"}>Sencillo</option>
       </select>
     </label>
   );

@@ -14,7 +14,7 @@ import { Supplier } from '../types/supplier';
 import { FreightForm, FreightFormProps } from '../components/operations/FreightForm'
 import { PrevioForm , PrevioFormProps} from '../components/operations/PrevioForm'
 import { OtherServiceForm, OtherServiceFormProps } from '../components/operations/OtherServiceForm'
-import {useOperations} from '../hooks/useOperations'
+import { useOperations } from '../hooks/useOperations'
 
 export default function Operations() {
   const { t } = useLanguage();
@@ -54,7 +54,8 @@ export default function Operations() {
     resetFormData, 
     setCompleteFormData, 
     updateFormData, 
-    updateServiceFormData 
+    updateServiceFormData,
+    updateServiceDetail,
   } = useOperations()
 
   //   const handleStatusFilterChange = (status: 'todos' | 'activo' | 'inactivo') => {
@@ -1304,9 +1305,9 @@ export default function Operations() {
           },
         };
 
-       // await updateOperation(editingOperation.Id!, dataToSave);
+       await updateOperation(editingOperation.Id!, dataToSave);
       } else {
-       // await createOperation(dataToSave);
+       await createOperation(dataToSave);
       }
       await loadOperations();
       setIsFormOpen(false);
@@ -2036,6 +2037,7 @@ export default function Operations() {
                       formData={formData}
                       onUpdateFormData={updateFormData}
                       onUpdateServiceFormData={updateServiceFormData}
+                      onUpdateServiceDetail={updateServiceDetail}
                     />) :
                     [17].includes(parseInt(activeTab.idService)) ?
                       (<PrevioForm
@@ -2046,6 +2048,7 @@ export default function Operations() {
                         onUpdateServiceFormData={updateServiceFormData}
                       />) :
                       <OtherServiceForm
+                        incoterms={incoterm}
                         info={activeTab}
                         controlsData={controlsData}
                         formData={formData}

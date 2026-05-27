@@ -7,7 +7,6 @@ export interface OperationsFormData {
     IdReference: number,
     Reference: string,
     Customer: Customer,
-    Controls?: Control[],
     Services: ServiceOperation[],
     OperationStatus: string,
     Observations: string,
@@ -61,7 +60,6 @@ const resetFormData = () => {
         IdReference: 0,
         Reference: '',
         Customer: {} as Customer,
-        Controls: [] as Control[],
         Services: [] as ServiceOperation[],
         OperationStatus: 'Alta referencia' as 'Alta referencia' | 'pending' | 'completed' | 'failed',
         Observations: '',
@@ -135,11 +133,37 @@ const updateFormData = (changes:
     }));
   };
 
+  const updateServiceDetail = (idServiceItem: number, detailId: number, collection: string, field: string, value: any) => {
+
+    setFormData(formData => ({
+      ...formData,
+      Services: formData.Services.map(service =>
+        service.idServiceItem === idServiceItem ? {
+          ...service,
+          serviceDetail: service.serviceDetail.map(detail =>
+            detail.sequence === detailId ? {
+              ...detail,
+              [collection]:
+                detail[collection]?.map(item =>
+                  item ? {
+                    ...item,
+                    [field]: value
+                  } : item
+                )
+            } : detail
+          )
+        } : service
+      )
+    }));
+    console.log(formData)
+  };
+
 return {
     formData, 
     resetFormData,
     setCompleteFormData,
     updateFormData, 
-    updateServiceFormData
+    updateServiceFormData,
+    updateServiceDetail
 }
 }
