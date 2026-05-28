@@ -331,7 +331,7 @@ export function DashboardStats({ onNavigate }: DashboardStatsProps) {
                 const urgentList: QuotationRequestItem[] =
                   data.quotations?.upcomingDeadlines?.map((d) => ({
                     _id: String(d._id),
-                    customer_name: d.customer.customer_name,
+                    customer_name: d.customer.customer_name || d.customer.prospect_name,
                     customer_category: d.customer.customer_category,
                     reference_request: d.reference_request,
                     date: d.deadlineDate.$date,
