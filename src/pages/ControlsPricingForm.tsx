@@ -89,7 +89,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const [Disabled, setDisabled] = useState(false);
   const [pricingToQuote, setPricingToQuote] = useState<any>(null);
   const [pricingQuotationRequest, setpricingQuotationRequest] = useState<any>(null);
-  const [quotedratedata, setquotedratedata] = useState<any>(null);
+  const [quotedratedata, setquotedratedata] = useState<any>(null);  
+  const [currentControlId, setCurrentControlId] = useState<string | undefined>(controlId);
 
 
   useEffect(() => {
@@ -98,6 +99,13 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     loadSuppliers();
     loadCustomers();
   }, [requestId, controlId]);
+
+  useEffect(() => {
+
+    loadData();   
+
+  }, [currentControlId]);
+
 
   useEffect(() => {
   if (!requestData || !controlData) return;
@@ -153,10 +161,10 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     if (!requestId) return;
 
     try {
-      setLoading(true);
-
-      if (controlId) {
-        const control = await pricingControlService.getById(controlId);
+      setLoading(true);      
+      
+      if (currentControlId) {
+        const control = await pricingControlService.getById(currentControlId);
         setControlData(control);
         setSuppliers(control.suppliers || []);
         setSuppliersAPI(control.suppliers || []);
@@ -225,8 +233,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   async function loadQuotedRateData() {
 
-    if (controlId) {
-        const control = await pricingControlService.getById(controlId);
+    if (currentControlId) {
+        const control = await pricingControlService.getById(currentControlId);
         setControlData(control);
     }
 
@@ -346,7 +354,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
       });*/
 
       const dataToSave = {
-        Id:controlId,
+        Id:currentControlId,
         Idcontrol: 0,
         Control: undefined,
         Idrequest: requestId,
@@ -381,20 +389,26 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         Ref_atv:  generalData.Ref_atv || ''
       };
 
-      if (controlId) {
+      if (currentControlId) {
         await pricingControlService.updatenew({         
           ...dataToSave
-        });
+        });       
         showSuccess('Control de pricing actualizado exitosamente');
+        loadData();
       } else {
-        await pricingControlService.create({
+        const response = await pricingControlService.create({
           _idrequest: requestId,
           ...dataToSave
         });
+        if (response?.atrribute.value) {                  
+
+          setCurrentControlId(response?.atrribute.value);
+
+        }
         showSuccess('Control de pricing creado exitosamente');
       }
 
-      onBack();
+      //onBack();
     } catch (error: any) {
       console.error('Error saving control:', error);
       showError(error.message || 'Error al guardar el control de pricing');
@@ -404,13 +418,13 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   };
 
   const handleDelete = async () => {
-    if (!controlId) return;
+    if (!currentControlId) return;
 
     if (!confirm('¿Está seguro de eliminar este control de pricing?')) return;
 
     try {
       setLoading(true);
-      await pricingControlService.delete(controlId);
+      await pricingControlService.delete(currentControlId);
       showSuccess('Control de pricing eliminado exitosamente');
       onBack();
     } catch (error) {
@@ -422,7 +436,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   };
 
   const handleMarkAsQuoted = async () => {
-    if (!controlId) return;
+    if (!currentControlId) return;
     if (suppliers.length ===0) {
       showError(t('ctrlpricing.selectprov'));
       return;
@@ -430,7 +444,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
     try {
       setLoading(true);
       await pricingControlService.QuoteControl({
-          idcontrol_: controlId,
+          idcontrol_: currentControlId,
           idresqued_: requestData.id,
           Suppliers: suppliersAPI
         });
@@ -450,11 +464,11 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
 
   const handleMarkAsDecline = async (e: React.FormEvent) => {  
      e.preventDefault();  
-    if (!controlId) return;     
+    if (!currentControlId) return;     
     try {
       setLoading(true);
       await pricingControlService.DeclineControl({
-          idcontrol_: controlId,
+          idcontrol_: currentControlId,
           idresqued_: requestData.id,
           reason_for_cancellation:reasoncancellation
         });
@@ -1064,7 +1078,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
             <div>
               <h1 className={styles.title}>{t('ctrlpricing.title')}</h1>
               <p className={styles.formSubtitle}>
-                {controlId ? t('ctrlpricing.editcontrolnumber') : t('ctrlpricing.newcontrolnumber')}
+                {currentControlId ? t('ctrlpricing.editcontrolnumber') : t('ctrlpricing.newcontrolnumber')}
               </p>
             </div>
           </div>
@@ -1176,7 +1190,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 className={styles.btnDecline} 
                 disabled={loading ||Disabled}
                 onClick={openModal}
-                hidden={controlId ? false : true}
+                hidden={currentControlId ? false : true}
                 >
                   {t('ctrlpricing.decline')}
                   
@@ -1185,7 +1199,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                   className={styles.btnQuote}
                   onClick={handleMarkAsQuoted}
                   disabled={loading ||Disabled}
-                  hidden={controlId ? false : true}
+                  hidden={currentControlId ? false : true}
                 >
                   {t('ctrlpricing.quoted')}
                 </button>*/}
@@ -1203,7 +1217,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                     loading ||
                     [6, 10].includes(controlData?.status_control?.id_status_control)
                   }
-                  hidden={ !controlId}
+                  hidden={ !currentControlId}
                   onClick={() => {
                     if (!controlData) {
                       showError("Aún no se carga el control");
@@ -1523,7 +1537,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
               ControlServices.map((service: any, index: number) => {
                 const serviceId = service.idServiceItem || service._id;
                 const isSelected = selectedServices.some(s => s.idServiceItem === serviceId);
-                const isUsed = (service.used && controlId === null) || (service.used && (Disabled)) ;
+                const isUsed = (service.used && currentControlId === null) || (service.used && (Disabled)) ;
                 const isExpanded = expandedServices.has(serviceId);
 
                 const shipment = service.shipments?.length > 0 ? service.shipments[0] : {};
