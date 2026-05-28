@@ -143,19 +143,16 @@ const updateFormData = (changes:
           serviceDetail: service.serviceDetail.map(detail =>
             detail.sequence === detailId ? {
               ...detail,
-              [collection]:
-                detail[collection]?.map(item =>
-                  item ? {
-                    ...item,
-                    [field]: value
-                  } : item
-                )
+              [collection]: {
+                ...detail[collection],
+                [field]: value
+              }
             } : detail
           )
         } : service
       )
     }));
-    console.log(formData)
+  // console.log(formData)
   };
 
 return {

@@ -28,7 +28,7 @@ export interface ServiceOperation {
     serviceDetail: ServiceDetail[];
 }
 
-export interface Transports{
+export interface Transport{
   idTransport: string;
   nameTransport: string;
 //   typeTransport: number;
@@ -49,8 +49,10 @@ export interface ServiceDetail {
   consignee?: boolean;
   idIncoterm?: number;
   incoterm?: string;
-  transports: Transports[];
-
+  transport?: any;
+  origin?: any;
+  destination?: any;
+  
 //   // Fechas
 //   departureDateAproximate?: Date;
 //   arrivalDateAproximate?: Date;

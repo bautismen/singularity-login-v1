@@ -98,63 +98,40 @@ export const OtherServiceForm: React.FC<OtherServiceFormProps> = ({
 
                   <div className={styles.firstColumn}>
 
-                    {/* Pais de carga */}
-                    {/* <div className={styles.fieldGroup}>
-                              <label className={styles.fieldLabel}>
-                                Pais de carga
-                                <input
-                                  type="text"
-                                  value={serv.orderService.origin.city}
-                                  readOnly
-                                  className={styles.textInput}
-                                />
-                              </label>
-                            </div> */}
-
-                    {/* Pais de descarga */}
-                    {/* <div className={styles.fieldGroup}>
-                              <label className={styles.fieldLabel}>
-                                Pais de descarga
-                                <input
-                                  type="text"
-                                  value={serv.orderService.destination.city}
-                                  readOnly
-                                  className={styles.textInput}
-                                />
-                              </label>
-                            </div> */}
+                    {/* Origen */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        Origen
+                        <input
+                          type="text"
+                          value={detail?.origin?.city}
+                          readOnly
+                          className={styles.textInput}
+                        />
+                      </label>
+                    </div>
 
                   </div>
 
                   <div className={styles.secondColumn}>
 
-                    {/* Lugar de recoleccion */}
-                    {/* <div className={styles.fieldGroup}>
-                    <label className={styles.fieldLabel}>
-                      Lugar de recoleccion
-                      <input
-                        type="text"
-                        value={serv.orderService.incoterm}
-                        className={styles.textInput}
-                      />
-                    </label>
-                  </div> */}
+                    {/* Destino */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        Destino
+                        <input
+                          type="text"
+                          value={detail?.origin?.city}
+                          readOnly
+                          className={styles.textInput}
+                        />
+                      </label>
+                    </div>
 
                   </div>
 
                   <div className={styles.thirdColumn}>
 
-                    {/* ETD (Salida estimada) */}
-                    {/* <div className={styles.fieldGroup}>
-                    <label className={styles.fieldLabel}>
-                      ETD (Salida estimada)
-                      <input
-                        type="datetime-local"
-                        value={serv.orderService.departureDateAproximate}
-                        className={styles.textInput}
-                      />
-                    </label>
-                  </div> */}
 
                   </div>
 

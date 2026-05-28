@@ -80,7 +80,7 @@ export const Incoterm = ({ itemService, sequencedetail, detail, onUpdateServiceF
     <label className={styles.fieldLabel}>
       Incoterm
       <select
-        value={detail.idIncoterm}
+        value={detail.idIncoterm || ''}
         className={styles.selectInput}
         // readOnly
         required
@@ -99,19 +99,19 @@ export const Incoterm = ({ itemService, sequencedetail, detail, onUpdateServiceF
   );
 };
   
-export const Transportista = ({ itemService, sequencedetail, transports, onUpdateServiceDetail, transportista }) => {
+export const Transportista = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, transportista }) => {
 
   return (
     <label className={styles.fieldLabel}>
       Transportista *
       <select
-        value={transports.idTransport || ''}
+        value={transport.idcarrier || ''}
         className={styles.selectInput}
         // readOnly
         // required
         onChange={(e) => {
-          onUpdateServiceDetail(itemService, sequencedetail, 'transports', 'idTransport', e.target.value)
-          onUpdateServiceDetail(itemService, sequencedetail, 'transports', 'nameTransport', e.target.options[e.target.selectedIndex].text)
+          onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'idcarrier', e.target.value)
+          onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'carrier', e.target.options[e.target.selectedIndex].text)
         }
         }
       >
@@ -124,18 +124,18 @@ export const Transportista = ({ itemService, sequencedetail, transports, onUpdat
   );
 };
 
-export const TipoUnidad = ({ itemService, sequencedetail, transports, onUpdateServiceDetail }) => {
+export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateServiceDetail }) => {
 
   return (
     <label className={styles.fieldLabel}>
       Tipo unidad
       <select
-        value={transports.typeUnit || ''}
+        value={transport.typeUnit || ''}
         className={styles.selectInput}
         // readOnly
         required
         onChange={(e) => {
-          onUpdateServiceDetail(itemService, sequencedetail, 'transports', 'typeUnit', e.target.options[e.target.selectedIndex].text)
+          onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'typeUnit', e.target.options[e.target.selectedIndex].text)
         }
         }
       >
@@ -147,18 +147,18 @@ export const TipoUnidad = ({ itemService, sequencedetail, transports, onUpdateSe
   );
 };
 
-export const TipoRuta = ({ itemService, sequencedetail, transports, onUpdateServiceDetail }) => {
+export const TipoRuta = ({ itemService, sequencedetail, transport, onUpdateServiceDetail }) => {
 
   return (
     <label className={styles.fieldLabel}>
       Tipo ruta
       <select
-        value={transports.typeRoute || ''}
+        value={transport.typeRoute || ''}
         className={styles.selectInput}
         // readOnly
         required
         onChange={(e) => {
-          onUpdateServiceDetail(itemService, sequencedetail, 'transports', 'typeRoute', e.target.options[e.target.selectedIndex].text)
+          onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'typeRoute', e.target.options[e.target.selectedIndex].text)
         }
         }
       >
@@ -170,18 +170,18 @@ export const TipoRuta = ({ itemService, sequencedetail, transports, onUpdateServ
   );
 };
 
-export const TipoMovimeiento = ({ itemService, sequencedetail, transports, onUpdateServiceDetail }) => {
+export const TipoMovimeiento = ({ itemService, sequencedetail, transport, onUpdateServiceDetail }) => {
 
   return (
     <label className={styles.fieldLabel}>
       Tipo movimiento
       <select
-        value={transports.typeOfMovement || ''}
+        value={transport.typeOfMovement || ''}
         className={styles.selectInput}
         // readOnly
         required
         onChange={(e) => {
-          onUpdateServiceDetail(itemService, sequencedetail, 'transports', 'typeOfMovement', e.target.options[e.target.selectedIndex].text)
+          onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'typeOfMovement', e.target.options[e.target.selectedIndex].text)
         }
         }
       >

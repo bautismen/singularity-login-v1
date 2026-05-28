@@ -110,7 +110,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         Referencia de envio
                         <input
                           type="text"
-                          value={detail.shippingReferenceNumber || ""}
+                          value={detail?.shippingReferenceNumber || ""}
                           className={styles.textInput}
                           onChange={(e) => onUpdateServiceFormData(
                             infoControl.idServiceItem,
@@ -126,7 +126,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         Guia master
                         <input
                           type="text"
-                          value={detail.masterGuide}
+                          value={detail?.masterGuide}
                           onChange={(e) => onUpdateServiceFormData(
                             infoControl.idServiceItem,
                             detail.sequence,
@@ -146,7 +146,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         Envio referencia
                         <input
                           type="datetime-local"
-                          value={detail.shippingDate} //? new Date(detail.shippingDate).toISOString().slice(0, 16) : ''
+                          value={detail?.shippingDate} //? new Date(detail.shippingDate).toISOString().slice(0, 16) : ''
                           onChange={(e) => onUpdateServiceFormData(
                             infoControl.idServiceItem,
                             detail.sequence,
@@ -162,25 +162,23 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 
                 <h2 className="title"> Transporte </h2>
 
-                {detail?.transports?.map((transport) => (
+                <div className={styles.fourColumnGrid}>
 
-                  <div className={styles.fourColumnGrid}>
+                  <div className={styles.firstColumn}>
 
-                    <div className={styles.firstColumn}>
-                      
-                      {/* Transportista */}
-                      <div className={styles.fieldGroup}>
-                        <Transportista
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.sequence}
-                          transports={transport}
-                          onUpdateServiceDetail={onUpdateServiceDetail}
-                          transportista={suppliers.filter(s => s.status === 1 && [7, 32].includes(parseInt(s.sectorId)))}
-                        />
-                      </div>
+                    {/* Transportista */}
+                    <div className={styles.fieldGroup}>
+                      <Transportista
+                        itemService={infoControl.idServiceItem}
+                        sequencedetail={detail.sequence}
+                        transport={detail?.transport}
+                        onUpdateServiceDetail={onUpdateServiceDetail}
+                        transportista={suppliers.filter(s => s.status === 1 && [7, 32].includes(parseInt(s.sectorId)))}
+                      />
+                    </div>
 
-                      {/* Guia/Tipo */}
-                      {/* <div className={styles.fieldGroup}>
+                    {/* Guia/Tipo */}
+                    {/* <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
                           Guia/Tipo
                           <input
@@ -192,35 +190,35 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         </label>
                       </div> */}
 
+                  </div>
+
+                  <div className={styles.secondColumn}>
+
+                    {/* Tipo de unidad */}
+                    <div className={styles.fieldGroup}>
+                      <TipoUnidad
+                        itemService={infoControl.idServiceItem}
+                        sequencedetail={detail.sequence}
+                        transport={detail?.transport}
+                        onUpdateServiceDetail={onUpdateServiceDetail}
+                      />
                     </div>
 
-                    <div className={styles.secondColumn}>
-
-                      {/* Tipo de unidad */}
-                      <div className={styles.fieldGroup}>
-                        <TipoUnidad
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.sequence}
-                          transports={transport}
-                          onUpdateServiceDetail={onUpdateServiceDetail}
-                        />
-                      </div>
-
-                      {/* Tipo de movimiento */}
-                      <div className={styles.fieldGroup}>
-                        <TipoMovimeiento
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.sequence}
-                          transports={transport}
-                          onUpdateServiceDetail={onUpdateServiceDetail}
-                        />
-                      </div>
-
+                    {/* Tipo de movimiento */}
+                    <div className={styles.fieldGroup}>
+                      <TipoMovimeiento
+                        itemService={infoControl.idServiceItem}
+                        sequencedetail={detail.sequence}
+                        transport={detail?.transport}
+                        onUpdateServiceDetail={onUpdateServiceDetail}
+                      />
                     </div>
 
-                    <div className={styles.thirdColumn}>
-                      {/* CAAT */}
-                      {/* <div className={styles.fieldGroup}>
+                  </div>
+
+                  <div className={styles.thirdColumn}>
+                    {/* CAAT */}
+                    {/* <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
                           CAAT
                           <input
@@ -232,23 +230,21 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         </label>
                       </div> */}
 
-                      
-                              
+                  </div>
+
+                  <div className={styles.fourthColumn}>
+                    {/* Tipo de ruta */}
+                    <div className={styles.fieldGroup}>
+                      <TipoRuta
+                        itemService={infoControl.idServiceItem}
+                        sequencedetail={detail.sequence}
+                        transport={detail?.transport}
+                        onUpdateServiceDetail={onUpdateServiceDetail}
+                      />
                     </div>
 
-                    <div className={styles.fourthColumn}>
-                      {/* Tipo de ruta */}
-                      <div className={styles.fieldGroup}>
-                        <TipoRuta
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.sequence}
-                          transports={transport}
-                          onUpdateServiceDetail={onUpdateServiceDetail}
-                        />
-                      </div>
-
-                      {/* Placas */}
-                      {/* <div className={styles.fieldGroup}>
+                    {/* Placas */}
+                    {/* <div className={styles.fieldGroup}>
                                     <label className={styles.fieldLabel}>
                                     Placas
                                     <input
@@ -259,8 +255,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                                     </label>
                                 </div> */}
 
-                      {/* Numero de rastreo/Tipo */}
-                      {/* <div className={styles.fieldGroup}>
+                    {/* Numero de rastreo/Tipo */}
+                    {/* <div className={styles.fieldGroup}>
                                     <label className={styles.fieldLabel}>
                                     Numero de rastreo/Tipo
                                     <input
@@ -270,168 +266,167 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                                     />
                                     </label>
                                 </div> */}
-                    </div>
                   </div>
-
-                ))
-                }
+                </div>
 
                 <h2 className="title"> Origen / Destino </h2>
+
                 <div className={styles.fourColumnGrid}>
+
                   <div className={styles.firstColumn}>
-                    <div className={styles.firstColumn}>
-                      {/* Pais de carga */}
-                      {/* <div className={styles.fieldGroup}>
-                                    <label className={styles.fieldLabel}>
-                                    Pais de carga
-                                    <input
-                                        type="text"
-                                        value={detail.origin.city}
-                                        readOnly
-                                        className={styles.textInput}
-                                    />
-                                    </label>
-                                </div> */}
-
-                      {/* Llegada a planta */}
-                      {/* <div className={styles.fieldGroup}>
-                                    <label className={styles.fieldLabel}>
-                                    Llegada a planta
-                                    <input
-                                        type="text"
-                                        value={detail.typeReference}
-                                        className={styles.textInput}
-                                    />
-                                    </label>
-                                </div> */}
-
-                      {/* Pais de descarga */}
-                      {/* <div className={styles.fieldGroup}>
-                                    <label className={styles.fieldLabel}>
-                                    Pais de descarga
-                                    <input
-                                        type="text"
-                                        value={detail.destination.city}
-                                        readOnly
-                                        className={styles.textInput}
-                                    />
-                                    </label>
-                                </div> */}
+                   
+                    {/* Pais de carga */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        Pais de carga
+                        <input
+                          type="text"
+                          value={detail?.origin?.country}
+                          readOnly
+                          className={styles.textInput}
+                        />
+                      </label>
                     </div>
+
+                    {/* Llegada a planta */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        Llegada a planta
+                        <input
+                          type="datetime-local"
+                          value={detail?.origin}
+                          className={styles.textInput}
+                        />
+                      </label>
+                    </div>
+
+                    {/* Pais de descarga */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        Pais de descarga
+                        <input
+                          type="text"
+                          value={detail?.destination?.city}
+                          readOnly
+                          className={styles.textInput}
+                        />
+                      </label>
+                    </div>
+
                   </div>
 
                   <div className={styles.secondColumn}>
                     {/* Lugar de recoleccion */}
-                    {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Lugar de recoleccion
-                              <input
-                                type="text"
-                                value={detail.incoterm}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        Lugar de recoleccion
+                        <input
+                          type="text"
+                          value={detail?.origin?.placeOfReceipt}
+                          className={styles.textInput}
+                        />
+                      </label>
+                    </div>
 
                     {/* Salida de planta */}
-                    {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Salida de planta
-                              <input
-                                type="text"
-                                value={detail.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        Salida de planta
+                        <input
+                          type="datetime-local"
+                          value={detail?.origin}
+                          className={styles.textInput}
+                        />
+                      </label>
+                    </div>
 
-                          {/* Puerto de descarga */}
-                    {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Puerto de descarga
-                              <input
-                                type="text"
-                                value={detail.origin.portCode}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
+                    {/* Puerto de descarga */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        Puerto de descarga
+                        <input
+                          type="text"
+                          value={detail?.destination?.Port}
+                          className={styles.textInput}
+                        />
+                      </label>
+                    </div>
                   </div>
 
                   <div className={styles.thirdColumn}>
                     {/* ETD (Salida estimada) */}
-                    {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              ETD (Salida estimada)
-                              <input
-                                type="datetime-local"
-                                value={detail.departureDateAproximate}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        ETD (Salida estimada)
+                        <input
+                          type="datetime-local"
+                          value={detail.origin?.estimatedDepartureDateETD}
+                          className={styles.textInput}
+                        />
+                      </label>
+                    </div>
 
                     {/*  */}
-                    {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              .
-                              <input
-                                type="text"
-                                value={detail.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        .
+                        <input
+                          type="text"
+                          value={detail?.origin}
+                          className={styles.textInput}
+                        />
+                      </label>
+                    </div>
 
                     {/* Planta */}
-                    {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Planta
-                              <input
-                                type="text"
-                                value={detail.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        Planta
+                        <input
+                          type="text"
+                          value={detail.destination?.plant}
+                          className={styles.textInput}
+                        />
+                      </label>
+                    </div>
                   </div>
 
                   <div className={styles.fourthColumn}>
                     {/* Despacho / recoleccion */}
-                    {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Despacho / recoleccion
-                              <input
-                                type="datetime-local"
-                                value={detail.masterBill}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        Despacho / recoleccion
+                        <input
+                          type="datetime-local"
+                          value={detail?.origin}
+                          className={styles.textInput}
+                        />
+                      </label>
+                    </div>
 
                     {/*  */}
-                    {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              .
-                              <input
-                                type="text"
-                                value={detail.masterBill}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        .
+                        <input
+                          type="text"
+                          value={detail.origin}
+                          className={styles.textInput}
+                        />
+                      </label>
+                    </div>
 
                     {/* ETA (Llegada estimada) */}
-                    {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              ETA (Llegada estimada)
-                              <input
-                                type="datetime-local"
-                                value={detail.masterBill}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>
+                        ETA (Llegada estimada)
+                        <input
+                          type="datetime-local"
+                          value={detail?.destination?.arrivalDateATA}
+                          className={styles.textInput}
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
 
