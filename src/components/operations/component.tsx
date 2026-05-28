@@ -105,7 +105,7 @@ export const Transportista = ({ itemService, sequencedetail, transport, onUpdate
     <label className={styles.fieldLabel}>
       Transportista *
       <select
-        value={transport.idcarrier || ''}
+        value={transport?.idcarrier || ''}
         className={styles.selectInput}
         // readOnly
         // required
@@ -130,7 +130,7 @@ export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateSer
     <label className={styles.fieldLabel}>
       Tipo unidad
       <select
-        value={transport.typeUnit || ''}
+        value={transport?.typeUnit || ''}
         className={styles.selectInput}
         // readOnly
         required
@@ -153,7 +153,7 @@ export const TipoRuta = ({ itemService, sequencedetail, transport, onUpdateServi
     <label className={styles.fieldLabel}>
       Tipo ruta
       <select
-        value={transport.typeRoute || ''}
+        value={transport?.typeRoute || ''}
         className={styles.selectInput}
         // readOnly
         required
@@ -176,7 +176,7 @@ export const TipoMovimeiento = ({ itemService, sequencedetail, transport, onUpda
     <label className={styles.fieldLabel}>
       Tipo movimiento
       <select
-        value={transport.typeOfMovement || ''}
+        value={transport?.typeOfMovement || ''}
         className={styles.selectInput}
         // readOnly
         required
