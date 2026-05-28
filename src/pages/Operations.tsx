@@ -56,6 +56,7 @@ export default function Operations() {
     updateFormData, 
     updateServiceFormData,
     updateServiceDetail,
+    duplicateDetail
   } = useOperations()
 
   //   const handleStatusFilterChange = (status: 'todos' | 'activo' | 'inactivo') => {
@@ -383,15 +384,15 @@ export default function Operations() {
     if (service.shipments?.length > 0) {
       detail = service.shipments.map((shipment: any) => ({
         ...shipment,
-        transports:
+        transport:
           shipment.transports?.length > 0
             ? shipment.transports
             : [{}],
-        origins:
+        origin:
           shipment.origins?.length > 0
             ? shipment.origins
             : [{}],
-        destinations:
+        destination:
           shipment.destinations?.length > 0
             ? shipment.destinations
             : [{}],
@@ -467,805 +468,805 @@ export default function Operations() {
     };
   };
 
-  const loadInfoControl = (info: object) => {
+  // const loadInfoControl = (info: object) => {
 
-    let infoControl = formData.Services?.find(
-      s =>
-        s.idControl === activeTab.id &&
-        s.idServiceItem === activeTab.item
-    );
+  //   let infoControl = formData.Services?.find(
+  //     s =>
+  //       s.idControl === activeTab.id &&
+  //       s.idServiceItem === activeTab.item
+  //   );
 
-    if (infoControl) {
+  //   if (infoControl) {
 
-      return (
-        <div className={styles.formRow}>
-          <span key={infoControl.idServiceItem} className={styles.serviceItem}>
-            {infoControl?.serviceDetail?.map((detail, index) => (
+  //     return (
+  //       <div className={styles.formRow}>
+  //         <span key={infoControl.idServiceItem} className={styles.serviceItem}>
+  //           {infoControl?.serviceDetail?.map((detail, index) => (
 
-              <div
-                key={detail.sequence || index}
-                className="
-                        border border-gray-200
-                        dark:border-gray-700
-                        rounded-xl
-                        p-4
-                        mb-4
-                        bg-white
-                        dark:bg-[#1e293b]"
-              >
+  //             <div
+  //               key={detail.sequence || index}
+  //               className="
+  //                       border border-gray-200
+  //                       dark:border-gray-700
+  //                       rounded-xl
+  //                       p-4
+  //                       mb-4
+  //                       bg-white
+  //                       dark:bg-[#1e293b]"
+  //             >
 
-                {/* Header Card */}
-                <div className="flex items-center justify-between mb-4">
+  //               {/* Header Card */}
+  //               <div className="flex items-center justify-between mb-4">
 
-                  <h3 className="font-semibold text-sm dark:text-white">
-                    Card #{index + 1}
-                  </h3>
+  //                 <h3 className="font-semibold text-sm dark:text-white">
+  //                   Card #{index + 1}
+  //                 </h3>
 
-                </div>
+  //               </div>
 
-                <span key={index + 1} className={styles.serviceItem}>
-                  <div className={styles.serviceCard}>
-                    <h2 className='title'> Envio </h2>
+  //               <span key={index + 1} className={styles.serviceItem}>
+  //                 <div className={styles.serviceCard}>
+  //                   <h2 className='title'> Envio </h2>
 
-                    <div className={styles.fourColumnGrid}>
+  //                   <div className={styles.fourColumnGrid}>
 
-                      <div className={styles.firstColumn}>
+  //                     <div className={styles.firstColumn}>
 
-                        {/* Tipo de envío */}
-                        <div className={styles.fieldGroup}>
-                          <TipoEnvio
-                            item={infoControl.idServiceItem}
-                            detail={detail}
-                            updateService={updateService}
-                          />
-                        </div>
+  //                       {/* Tipo de envío */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <TipoEnvio
+  //                           item={infoControl.idServiceItem}
+  //                           detail={detail}
+  //                           updateService={updateService}
+  //                         />
+  //                       </div>
 
-                        {/* Incoterm */}
-                        <div className={styles.fieldGroup}>
-                          <Incoterm
-                            item={infoControl.idServiceItem}
-                            detail={detail}
-                            updateService={updateService}
-                          />
-                        </div>
+  //                       {/* Incoterm */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <Incoterm
+  //                           item={infoControl.idServiceItem}
+  //                           detail={detail}
+  //                           updateService={updateService}
+  //                         />
+  //                       </div>
 
-                      </div>
+  //                     </div>
 
-                      <div className={styles.secondColumn}>
+  //                     <div className={styles.secondColumn}>
 
-                        {/* Tipo de referencia */}
-                        <div className={styles.fieldGroup}>
-                          <TipoReferencia
-                            item={infoControl.idServiceItem}
-                            detail={detail}
-                            updateService={updateService}
-                          />
-                        </div>
+  //                       {/* Tipo de referencia */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <TipoReferencia
+  //                           item={infoControl.idServiceItem}
+  //                           detail={detail}
+  //                           updateService={updateService}
+  //                         />
+  //                       </div>
 
-                        {/* Tipo operación */}
-                        <div className={styles.fieldGroup}>
-                          <TipoOperacion
-                            item={infoControl.idServiceItem}
-                            detail={detail}
-                            updateService={updateService}
-                          />
-                        </div>
+  //                       {/* Tipo operación */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <TipoOperacion
+  //                           item={infoControl.idServiceItem}
+  //                           detail={detail}
+  //                           updateService={updateService}
+  //                         />
+  //                       </div>
 
-                      </div>
+  //                     </div>
 
-                      <div className={styles.thirdColumn}>
+  //                     <div className={styles.thirdColumn}>
 
-                        {/* Referencia de envio */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Referencia de envio
-                            <input
-                              type="text"
-                              value={detail.shippingReferenceNumber || ''}
-                              className={styles.textInput}
-                              onChange={(e) =>
-                                updateService(
-                                  infoControl.idServiceItem,
-                                  detail.sequence,
-                                  'shippingReferenceNumber',
-                                  (e.target.value))
-                              }
-                            />
+  //                       {/* Referencia de envio */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           Referencia de envio
+  //                           <input
+  //                             type="text"
+  //                             value={detail.shippingReferenceNumber || ''}
+  //                             className={styles.textInput}
+  //                             onChange={(e) =>
+  //                               updateService(
+  //                                 infoControl.idServiceItem,
+  //                                 detail.sequence,
+  //                                 'shippingReferenceNumber',
+  //                                 (e.target.value))
+  //                             }
+  //                           />
 
-                          </label>
-                        </div>
+  //                         </label>
+  //                       </div>
 
-                        {/* Guia master */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Guia master
-                            <input
-                              type="text"
-                              value={detail?.masterGuide}
-                              onChange={(e) =>
-                                updateService(
-                                  infoControl.idServiceItem,
-                                  detail.sequence,
-                                  'masterGuide',
-                                  (e.target.value))
-                              }
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div>
+  //                       {/* Guia master */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           Guia master
+  //                           <input
+  //                             type="text"
+  //                             value={detail?.masterGuide}
+  //                             onChange={(e) =>
+  //                               updateService(
+  //                                 infoControl.idServiceItem,
+  //                                 detail.sequence,
+  //                                 'masterGuide',
+  //                                 (e.target.value))
+  //                             }
+  //                             className={styles.textInput}
+  //                           />
+  //                         </label>
+  //                       </div>
 
-                      </div>
+  //                     </div>
 
-                      <div className={styles.fourthColumn}>
+  //                     <div className={styles.fourthColumn}>
 
-                        {/* Envio referencia */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Envio referencia
-                            <input
-                              type="datetime-local"
-                              value={detail.shippingDate} //? new Date(detail.shippingDate).toISOString().slice(0, 16) : ''
-                              onChange={(e) =>
-                                updateService(
-                                  infoControl.idServiceItem,
-                                  detail.sequence,
-                                  'shippingDate',
-                                  (e.target.value))
-                              }
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div>
+  //                       {/* Envio referencia */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           Envio referencia
+  //                           <input
+  //                             type="datetime-local"
+  //                             value={detail.shippingDate} //? new Date(detail.shippingDate).toISOString().slice(0, 16) : ''
+  //                             onChange={(e) =>
+  //                               updateService(
+  //                                 infoControl.idServiceItem,
+  //                                 detail.sequence,
+  //                                 'shippingDate',
+  //                                 (e.target.value))
+  //                             }
+  //                             className={styles.textInput}
+  //                           />
+  //                         </label>
+  //                       </div>
 
-                      </div>
+  //                     </div>
 
-                    </div>
+  //                   </div>
                     
-                    <h2 className='title'> Transporte </h2>
+  //                   <h2 className='title'> Transporte </h2>
 
-                    {detail?.transports?.map((transport, index) => (
+  //                   {detail?.transports?.map((transport, index) => (
                       
-                      <div className={styles.fourColumnGrid}>
+  //                     <div className={styles.fourColumnGrid}>
 
-                        <div className={styles.firstColumn}>
+  //                       <div className={styles.firstColumn}>
 
-                          {/* Transportista */}
-                          <Transportista
-                            item={infoControl.idServiceItem}
-                            key={1}
-                            transport={transport}
-                            detail={detail.sequence}
-                            updateNestedDetail={updateNestedDetail}
-                          />
+  //                         {/* Transportista */}
+  //                         <Transportista
+  //                           item={infoControl.idServiceItem}
+  //                           key={1}
+  //                           transport={transport}
+  //                           detail={detail.sequence}
+  //                           updateNestedDetail={updateNestedDetail}
+  //                         />
 
-                          {/* Tipo de unidad */}
-                          {/* <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Tipo de unidad
-                            <input
-                              type="text"
-                              value={detail.transports.typeUnit}
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div> */}
-                        </div>
+  //                         {/* Tipo de unidad */}
+  //                         {/* <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           Tipo de unidad
+  //                           <input
+  //                             type="text"
+  //                             value={detail.transports.typeUnit}
+  //                             className={styles.textInput}
+  //                           />
+  //                         </label>
+  //                       </div> */}
+  //                       </div>
 
-                        <div className={styles.secondColumn}>
+  //                       <div className={styles.secondColumn}>
 
-                          {/* CAAT */}
-                          {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              CAAT
-                              <input
-                                type="text"
-                                value={detail.incoterm}
-                                readOnly
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
+  //                         {/* CAAT */}
+  //                         {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             CAAT
+  //                             <input
+  //                               type="text"
+  //                               value={detail.incoterm}
+  //                               readOnly
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div>
 
-                          {/* Tipo de ruta */}
-                          {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Tipo de ruta
-                              <input
-                                type="text"
-                                value={detail.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
+  //                         {/* Tipo de ruta */}
+  //                         {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             Tipo de ruta
+  //                             <input
+  //                               type="text"
+  //                               value={detail.typeReference}
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
 
-                        </div>
+  //                       </div>
 
-                        <div className={styles.thirdColumn}>
+  //                       <div className={styles.thirdColumn}>
 
-                          {/* Guia/Tipo */}
-                          {/* <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Guia/Tipo
-                            <input
-                              type="text"
-                              value={detail.typeOperation}
-                              readOnly
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div> */}
+  //                         {/* Guia/Tipo */}
+  //                         {/* <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           Guia/Tipo
+  //                           <input
+  //                             type="text"
+  //                             value={detail.typeOperation}
+  //                             readOnly
+  //                             className={styles.textInput}
+  //                           />
+  //                         </label>
+  //                       </div> */}
 
-                          {/* Tipo de movimiento */}
-                          {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Tipo de movimiento
-                              <input
-                                type="text"
-                                value={detail.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
+  //                         {/* Tipo de movimiento */}
+  //                         {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             Tipo de movimiento
+  //                             <input
+  //                               type="text"
+  //                               value={detail.typeReference}
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
 
-                        </div>
+  //                       </div>
 
-                        <div className={styles.fourthColumn}>
+  //                       <div className={styles.fourthColumn}>
 
-                          {/* Placas */}
-                          {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Placas
-                              <input
-                                type="text"
-                                value={detail.masterBill}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
+  //                         {/* Placas */}
+  //                         {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             Placas
+  //                             <input
+  //                               type="text"
+  //                               value={detail.masterBill}
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
 
-                          {/* Numero de rastreo/Tipo */}
-                          {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Numero de rastreo/Tipo
-                              <input
-                                type="text"
-                                value={detail.masterBill}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
+  //                         {/* Numero de rastreo/Tipo */}
+  //                         {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             Numero de rastreo/Tipo
+  //                             <input
+  //                               type="text"
+  //                               value={detail.masterBill}
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
 
-                        </div>
+  //                       </div>
 
-                      </div>
-                    ))
-                    }
+  //                     </div>
+  //                   ))
+  //                   }
                     
-                    <h2 className='title'> Origen / Destino </h2>
-
-                    <div className={styles.fourColumnGrid}>
-
-                      <div className={styles.firstColumn}>
-
-                        {/* Pais de carga */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Pais de carga
-                              <input
-                                type="text"
-                                value={detail.origin.city}
-                                readOnly
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
-
-                        {/* Llegada a planta */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Llegada a planta
-                              <input
-                                type="text"
-                                value={detail.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
-
-                        {/* Pais de descarga */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Pais de descarga
-                              <input
-                                type="text"
-                                value={detail.destination.city}
-                                readOnly
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
-
-                      </div>
-
-                      <div className={styles.secondColumn}>
-
-                        {/* Lugar de recoleccion */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Lugar de recoleccion
-                              <input
-                                type="text"
-                                value={detail.incoterm}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
-
-                        {/* Salida de planta */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Salida de planta
-                              <input
-                                type="text"
-                                value={detail.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div>
-
-                          {/* Puerto de descarga */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Puerto de descarga
-                              <input
-                                type="text"
-                                value={detail.origin.portCode}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
-
-                      </div>
-
-                      <div className={styles.thirdColumn}>
-
-                        {/* ETD (Salida estimada) */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              ETD (Salida estimada)
-                              <input
-                                type="datetime-local"
-                                value={detail.departureDateAproximate}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
-
-                        {/*  */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              .
-                              <input
-                                type="text"
-                                value={detail.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
-
-                        {/* Planta */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Planta
-                              <input
-                                type="text"
-                                value={detail.typeReference}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
-
-                      </div>
-
-                      <div className={styles.fourthColumn}>
-
-                        {/* Despacho / recoleccion */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Despacho / recoleccion
-                              <input
-                                type="datetime-local"
-                                value={detail.masterBill}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
-
-                        {/*  */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              .
-                              <input
-                                type="text"
-                                value={detail.masterBill}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
-
-                        {/* ETA (Llegada estimada) */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              ETA (Llegada estimada)
-                              <input
-                                type="datetime-local"
-                                value={detail.masterBill}
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
-
-                      </div>
-
-                    </div>
-
-                    {/* Observaciones del servicio*/}
-                    <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
-                      <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
-                        {t('operations.observations')}
-                      </label>
-
-                      <textarea
-                        value={detail.observationsService || ''}
-                        className={styles.textArea}
-                        onChange={(e) =>
-                          updateService(
-                            infoControl.idServiceItem,
-                            detail.sequence,
-                            'observationsService',
-                            (e.target.value))
-                        }
-                      />
-                      {/* <input
-                          type="text"
-                          id="observationsService"
-                          name="observations"
-                          value={
-                            formData.Services.find(
-                              s => s.idServiceItem === serv.idServiceItem
-                            )?.observations || ''
-                          }
-                          onChange={(e) =>
-                            updateService(
-                              serv.idServiceItem,
-                              'observations',
-                              e.target.value
-                            )
-                          }
-                          className="min-h-[30px] w-full p-2 rounded-lg
-                                  bg-transparent text-black dark:text-white
-                                  border border-gray-300 dark:border-gray-700
-                                  hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
-                                  focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
-                                  outline-none appearance-none text-body-sm transition-colors"
-                        /> */}
-                    </div>
-                  </div>
-
-                  <div className={styles.serviceCard}>
-                    <h2 className='title'> Referencia aduanal </h2>
-
-                  </div>
-
-                  <div className={styles.serviceCard}>
-                    <h2 className='title'> Contenedor </h2>
-
-                  </div>
-
-                  <div className={styles.serviceCard}>
-                    <h2 className='title'> Mercancia </h2>
-
-                  </div>
-
-                </span>
-
-              </div>
-
-            ))}
-          </span>
-        </div>
-      )
-
-    }
-
-    toggleSection('services')
-
-  };
-
-  const loadInfoControlServicio = (info: object) => {
-
-    let infoControlService = formData.Services.find(
-      s =>
-        s.idControl === activeTab.id &&
-        s.idServiceItem === activeTab.item
-    );
-
-    if (infoControlService) {
-
-      return (
-        <div className={styles.formRow}>
-          {infoControlService.map(infoControlS => (
-            <span key={infoControlS.id} className={styles.serviceItem}>
-              {infoControlS.services?.map(serv => (
-                // serv.orderService?.map(otherservice => (
-
-                <span key={serv.orderService.idTypeShipment} className={styles.serviceItem}>
-                  <div className={styles.serviceCard}>
-                    <h2 className='title'> Otro servicio </h2>
-
-                    <div className={styles.fourColumnGrid}>
-
-                      <div className={styles.firstColumn}>
-
-                        {/* Tipo de envio */}
-                        <div className={styles.fieldGroup}>
-                          <TipoEnvio detail={
-                            editingOperation ? serviceDetail :
-                              serv.shipments ? serv.orderService : serv.shipments
-                          }
-                            updateService={updateService}
-                          />
-                          {/* <label className={styles.fieldLabel}>
-                              Tipo de envio
-                              <input
-                                type="text"
-                                value={serv.orderService.typeShipment}
-                                readOnly
-                                className={styles.textInput}
-                              />
-                            </label> */}
-                        </div>
-
-                        {/* Tipo de referencia */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Tipo de referencia
-                            <input
-                              type="text"
-                              value={serv.orderService.typeReference}
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div>
-
-                        {/* Tipo de movimiento */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Tipo de movimiento
-                            <input
-                              type="text"
-                              value={serv.orderService.typeReference}
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div>
-
-                      </div>
-
-                      <div className={styles.secondColumn}>
-
-                        {/* Incoterm */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Incoterm
-                            <input
-                              type="text"
-                              value={serv.orderService.incoterm}
-                              // readOnly
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div>
-
-                        {/* Referencia de envio */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Referencia de envio
-                            <input
-                              type="text"
-                              value={serv.orderService.typeReference}
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div>
-
-                      </div>
-
-                      <div className={styles.thirdColumn}>
-
-                        {/* Tipo operación */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Tipo de operación
-                            <input
-                              type="text"
-                              value={serv.orderService.typeOperation}
-                              readOnly
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div>
-
-                        {/* Envio referencia */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Envio referencia
-                            <input
-                              type="datetime-local"
-                              value={serv.orderService.typeReference}
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div>
-
-                      </div>
-
-                      <div className={styles.fourthColumn}>
-
-                        {/* Guia master */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Guia master
-                            <input
-                              type="text"
-                              value={serv.orderService.masterBill}
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div>
-
-                        {/* Guia/Tipo */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Guia/Tipo
-                            <input
-                              type="text"
-                              value={serv.orderService.typeOperation}
-                              readOnly
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                    <h2 className='title'> Origen / Destino </h2>
-
-                    <div className={styles.fourColumnGrid}>
-
-                      <div className={styles.firstColumn}>
-
-                        {/* Pais de carga */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Pais de carga
-                              <input
-                                type="text"
-                                value={serv.orderService.origin.city}
-                                readOnly
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
-
-                        {/* Pais de descarga */}
-                        {/* <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Pais de descarga
-                              <input
-                                type="text"
-                                value={serv.orderService.destination.city}
-                                readOnly
-                                className={styles.textInput}
-                              />
-                            </label>
-                          </div> */}
-
-                      </div>
-
-                      <div className={styles.secondColumn}>
-
-                        {/* Lugar de recoleccion */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Lugar de recoleccion
-                            <input
-                              type="text"
-                              value={serv.orderService.incoterm}
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div>
-
-                      </div>
-
-                      <div className={styles.thirdColumn}>
-
-                        {/* ETD (Salida estimada) */}
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            ETD (Salida estimada)
-                            <input
-                              type="datetime-local"
-                              value={serv.orderService.departureDateAproximate}
-                              className={styles.textInput}
-                            />
-                          </label>
-                        </div>
-
-                      </div>
-
-                      <div className={styles.fourthColumn}>
-
-
-                      </div>
-
-                    </div>
-
-                    {/* Observaciones del servicio*/}
-                    <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
-                      <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
-                        {t('operations.observations')}
-                      </label>
-                      <input
-                        type="text"
-                        id="observationsService"
-                        name="observations"
-                        value={serv.orderService.comments}
-                        onChange={(e) => updateFormData({ ...formData, Observations: e.target.value })} //setformata
-                        className="min-h-[30px] w-full p-2 rounded-lg
-                                  bg-transparent text-black dark:text-white
-                                  border border-gray-300 dark:border-gray-700
-                                  hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
-                                  focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
-                                  outline-none appearance-none text-body-sm transition-colors"
-                      />
-                    </div>
-                  </div>
-
-                  <div className={styles.serviceCard}>
-                    <h2 className='title'> Referencia aduanal </h2>
-
-                  </div>
-
-                  <div className={styles.serviceCard}>
-                    <h2 className='title'> Contenedor </h2>
-
-                  </div>
-
-                  <div className={styles.serviceCard}>
-                    <h2 className='title'> Mercancia </h2>
-
-                  </div>
-
-                </span>
-
-                // ))
-
-              ))}
-
-            </span>
-          ))}
-        </div>
-      )
-
-    }
-
-    toggleSection('services')
-
-  }
+  //                   <h2 className='title'> Origen / Destino </h2>
+
+  //                   <div className={styles.fourColumnGrid}>
+
+  //                     <div className={styles.firstColumn}>
+
+  //                       {/* Pais de carga */}
+  //                       {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             Pais de carga
+  //                             <input
+  //                               type="text"
+  //                               value={detail.origin.city}
+  //                               readOnly
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
+
+  //                       {/* Llegada a planta */}
+  //                       {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             Llegada a planta
+  //                             <input
+  //                               type="text"
+  //                               value={detail.typeReference}
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
+
+  //                       {/* Pais de descarga */}
+  //                       {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             Pais de descarga
+  //                             <input
+  //                               type="text"
+  //                               value={detail.destination.city}
+  //                               readOnly
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
+
+  //                     </div>
+
+  //                     <div className={styles.secondColumn}>
+
+  //                       {/* Lugar de recoleccion */}
+  //                       {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             Lugar de recoleccion
+  //                             <input
+  //                               type="text"
+  //                               value={detail.incoterm}
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
+
+  //                       {/* Salida de planta */}
+  //                       {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             Salida de planta
+  //                             <input
+  //                               type="text"
+  //                               value={detail.typeReference}
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div>
+
+  //                         {/* Puerto de descarga */}
+  //                       {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             Puerto de descarga
+  //                             <input
+  //                               type="text"
+  //                               value={detail.origin.portCode}
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
+
+  //                     </div>
+
+  //                     <div className={styles.thirdColumn}>
+
+  //                       {/* ETD (Salida estimada) */}
+  //                       {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             ETD (Salida estimada)
+  //                             <input
+  //                               type="datetime-local"
+  //                               value={detail.departureDateAproximate}
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
+
+  //                       {/*  */}
+  //                       {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             .
+  //                             <input
+  //                               type="text"
+  //                               value={detail.typeReference}
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
+
+  //                       {/* Planta */}
+  //                       {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             Planta
+  //                             <input
+  //                               type="text"
+  //                               value={detail.typeReference}
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
+
+  //                     </div>
+
+  //                     <div className={styles.fourthColumn}>
+
+  //                       {/* Despacho / recoleccion */}
+  //                       {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             Despacho / recoleccion
+  //                             <input
+  //                               type="datetime-local"
+  //                               value={detail.masterBill}
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
+
+  //                       {/*  */}
+  //                       {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             .
+  //                             <input
+  //                               type="text"
+  //                               value={detail.masterBill}
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
+
+  //                       {/* ETA (Llegada estimada) */}
+  //                       {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             ETA (Llegada estimada)
+  //                             <input
+  //                               type="datetime-local"
+  //                               value={detail.masterBill}
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
+
+  //                     </div>
+
+  //                   </div>
+
+  //                   {/* Observaciones del servicio*/}
+  //                   <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
+  //                     <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
+  //                       {t('operations.observations')}
+  //                     </label>
+
+  //                     <textarea
+  //                       value={detail.observationsService || ''}
+  //                       className={styles.textArea}
+  //                       onChange={(e) =>
+  //                         updateService(
+  //                           infoControl.idServiceItem,
+  //                           detail.sequence,
+  //                           'observationsService',
+  //                           (e.target.value))
+  //                       }
+  //                     />
+  //                     {/* <input
+  //                         type="text"
+  //                         id="observationsService"
+  //                         name="observations"
+  //                         value={
+  //                           formData.Services.find(
+  //                             s => s.idServiceItem === serv.idServiceItem
+  //                           )?.observations || ''
+  //                         }
+  //                         onChange={(e) =>
+  //                           updateService(
+  //                             serv.idServiceItem,
+  //                             'observations',
+  //                             e.target.value
+  //                           )
+  //                         }
+  //                         className="min-h-[30px] w-full p-2 rounded-lg
+  //                                 bg-transparent text-black dark:text-white
+  //                                 border border-gray-300 dark:border-gray-700
+  //                                 hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
+  //                                 focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
+  //                                 outline-none appearance-none text-body-sm transition-colors"
+  //                       /> */}
+  //                   </div>
+  //                 </div>
+
+  //                 <div className={styles.serviceCard}>
+  //                   <h2 className='title'> Referencia aduanal </h2>
+
+  //                 </div>
+
+  //                 <div className={styles.serviceCard}>
+  //                   <h2 className='title'> Contenedor </h2>
+
+  //                 </div>
+
+  //                 <div className={styles.serviceCard}>
+  //                   <h2 className='title'> Mercancia </h2>
+
+  //                 </div>
+
+  //               </span>
+
+  //             </div>
+
+  //           ))}
+  //         </span>
+  //       </div>
+  //     )
+
+  //   }
+
+  //   toggleSection('services')
+
+  // };
+
+  // const loadInfoControlServicio = (info: object) => {
+
+  //   let infoControlService = formData.Services.find(
+  //     s =>
+  //       s.idControl === activeTab.id &&
+  //       s.idServiceItem === activeTab.item
+  //   );
+
+  //   if (infoControlService) {
+
+  //     return (
+  //       <div className={styles.formRow}>
+  //         {infoControlService.map(infoControlS => (
+  //           <span key={infoControlS.id} className={styles.serviceItem}>
+  //             {infoControlS.services?.map(serv => (
+  //               // serv.orderService?.map(otherservice => (
+
+  //               <span key={serv.orderService.idTypeShipment} className={styles.serviceItem}>
+  //                 <div className={styles.serviceCard}>
+  //                   <h2 className='title'> Otro servicio </h2>
+
+  //                   <div className={styles.fourColumnGrid}>
+
+  //                     <div className={styles.firstColumn}>
+
+  //                       {/* Tipo de envio */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <TipoEnvio detail={
+  //                           editingOperation ? serviceDetail :
+  //                             serv.shipments ? serv.orderService : serv.shipments
+  //                         }
+  //                           updateService={updateService}
+  //                         />
+  //                         {/* <label className={styles.fieldLabel}>
+  //                             Tipo de envio
+  //                             <input
+  //                               type="text"
+  //                               value={serv.orderService.typeShipment}
+  //                               readOnly
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label> */}
+  //                       </div>
+
+  //                       {/* Tipo de referencia */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           Tipo de referencia
+  //                           <input
+  //                             type="text"
+  //                             value={serv.orderService.typeReference}
+  //                             className={styles.textInput}
+  //                           />
+  //                         </label>
+  //                       </div>
+
+  //                       {/* Tipo de movimiento */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           Tipo de movimiento
+  //                           <input
+  //                             type="text"
+  //                             value={serv.orderService.typeReference}
+  //                             className={styles.textInput}
+  //                           />
+  //                         </label>
+  //                       </div>
+
+  //                     </div>
+
+  //                     <div className={styles.secondColumn}>
+
+  //                       {/* Incoterm */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           Incoterm
+  //                           <input
+  //                             type="text"
+  //                             value={serv.orderService.incoterm}
+  //                             // readOnly
+  //                             className={styles.textInput}
+  //                           />
+  //                         </label>
+  //                       </div>
+
+  //                       {/* Referencia de envio */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           Referencia de envio
+  //                           <input
+  //                             type="text"
+  //                             value={serv.orderService.typeReference}
+  //                             className={styles.textInput}
+  //                           />
+  //                         </label>
+  //                       </div>
+
+  //                     </div>
+
+  //                     <div className={styles.thirdColumn}>
+
+  //                       {/* Tipo operación */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           Tipo de operación
+  //                           <input
+  //                             type="text"
+  //                             value={serv.orderService.typeOperation}
+  //                             readOnly
+  //                             className={styles.textInput}
+  //                           />
+  //                         </label>
+  //                       </div>
+
+  //                       {/* Envio referencia */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           Envio referencia
+  //                           <input
+  //                             type="datetime-local"
+  //                             value={serv.orderService.typeReference}
+  //                             className={styles.textInput}
+  //                           />
+  //                         </label>
+  //                       </div>
+
+  //                     </div>
+
+  //                     <div className={styles.fourthColumn}>
+
+  //                       {/* Guia master */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           Guia master
+  //                           <input
+  //                             type="text"
+  //                             value={serv.orderService.masterBill}
+  //                             className={styles.textInput}
+  //                           />
+  //                         </label>
+  //                       </div>
+
+  //                       {/* Guia/Tipo */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           Guia/Tipo
+  //                           <input
+  //                             type="text"
+  //                             value={serv.orderService.typeOperation}
+  //                             readOnly
+  //                             className={styles.textInput}
+  //                           />
+  //                         </label>
+  //                       </div>
+
+  //                     </div>
+
+  //                   </div>
+
+  //                   <h2 className='title'> Origen / Destino </h2>
+
+  //                   <div className={styles.fourColumnGrid}>
+
+  //                     <div className={styles.firstColumn}>
+
+  //                       {/* Pais de carga */}
+  //                       {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             Pais de carga
+  //                             <input
+  //                               type="text"
+  //                               value={serv.orderService.origin.city}
+  //                               readOnly
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
+
+  //                       {/* Pais de descarga */}
+  //                       {/* <div className={styles.fieldGroup}>
+  //                           <label className={styles.fieldLabel}>
+  //                             Pais de descarga
+  //                             <input
+  //                               type="text"
+  //                               value={serv.orderService.destination.city}
+  //                               readOnly
+  //                               className={styles.textInput}
+  //                             />
+  //                           </label>
+  //                         </div> */}
+
+  //                     </div>
+
+  //                     <div className={styles.secondColumn}>
+
+  //                       {/* Lugar de recoleccion */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           Lugar de recoleccion
+  //                           <input
+  //                             type="text"
+  //                             value={serv.orderService.incoterm}
+  //                             className={styles.textInput}
+  //                           />
+  //                         </label>
+  //                       </div>
+
+  //                     </div>
+
+  //                     <div className={styles.thirdColumn}>
+
+  //                       {/* ETD (Salida estimada) */}
+  //                       <div className={styles.fieldGroup}>
+  //                         <label className={styles.fieldLabel}>
+  //                           ETD (Salida estimada)
+  //                           <input
+  //                             type="datetime-local"
+  //                             value={serv.orderService.departureDateAproximate}
+  //                             className={styles.textInput}
+  //                           />
+  //                         </label>
+  //                       </div>
+
+  //                     </div>
+
+  //                     <div className={styles.fourthColumn}>
+
+
+  //                     </div>
+
+  //                   </div>
+
+  //                   {/* Observaciones del servicio*/}
+  //                   <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
+  //                     <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
+  //                       {t('operations.observations')}
+  //                     </label>
+  //                     <input
+  //                       type="text"
+  //                       id="observationsService"
+  //                       name="observations"
+  //                       value={serv.orderService.comments}
+  //                       onChange={(e) => updateFormData({ ...formData, Observations: e.target.value })} //setformata
+  //                       className="min-h-[30px] w-full p-2 rounded-lg
+  //                                 bg-transparent text-black dark:text-white
+  //                                 border border-gray-300 dark:border-gray-700
+  //                                 hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
+  //                                 focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
+  //                                 outline-none appearance-none text-body-sm transition-colors"
+  //                     />
+  //                   </div>
+  //                 </div>
+
+  //                 <div className={styles.serviceCard}>
+  //                   <h2 className='title'> Referencia aduanal </h2>
+
+  //                 </div>
+
+  //                 <div className={styles.serviceCard}>
+  //                   <h2 className='title'> Contenedor </h2>
+
+  //                 </div>
+
+  //                 <div className={styles.serviceCard}>
+  //                   <h2 className='title'> Mercancia </h2>
+
+  //                 </div>
+
+  //               </span>
+
+  //               // ))
+
+  //             ))}
+
+  //           </span>
+  //         ))}
+  //       </div>
+  //     )
+
+  //   }
+
+  //   toggleSection('services')
+
+  // }
 
   const filteredOperations = operations.filter(operation => {
     const matchesSearch = operation.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1500,132 +1501,133 @@ export default function Operations() {
 
   // };
 
-  const TipoEnvio = ({ item, detail, updateService }) => {
+  // const TipoEnvio = ({ item, detail, updateService }) => {
 
-    return (
-      <label className={styles.fieldLabel}>
-        Tipo de envío / Shipping type
-        <select
-          value={detail.idTypeShipment || ''}
-          className={styles.selectInput}
-          // readOnly
-          required
-          onChange={(e) => {
-            updateService(item, detail.sequence, 'idTypeShipment', Number(e.target.value))
-            updateService(item, detail.sequence, 'typeShipment', e.target.options[e.target.selectedIndex].text)
-          }
-          }
-        >
-          <option value="">Seleccionar ...</option>
-          <option value={1}>Puerta a Puerta</option>
-          <option value={2}>Puerto a Puerto</option>
-          <option value={3}>Puerta a Puerto</option>
-          <option value={4}>Puerto a Puerta</option>
-        </select>
-      </label>
-    );
-  };
+  //   return (
+  //     <label className={styles.fieldLabel}>
+  //       Tipo de envío / Shipping type
+  //       <select
+  //         value={detail.idTypeShipment || ''}
+  //         className={styles.selectInput}
+  //         // readOnly
+  //         required
+  //         onChange={(e) => {
+  //           updateService(item, detail.sequence, 'idTypeShipment', Number(e.target.value))
+  //           updateService(item, detail.sequence, 'typeShipment', e.target.options[e.target.selectedIndex].text)
+  //         }
+  //         }
+  //       >
+  //         <option value="">Seleccionar ...</option>
+  //         <option value={1}>Puerta a Puerta</option>
+  //         <option value={2}>Puerto a Puerto</option>
+  //         <option value={3}>Puerta a Puerto</option>
+  //         <option value={4}>Puerto a Puerta</option>
+  //       </select>
+  //     </label>
+  //   );
+  // };
 
-  const TipoOperacion = ({ item, detail, updateService }) => {
+  // const TipoOperacion = ({ item, detail, updateService }) => {
 
-    return (
-      <label className={styles.fieldLabel}>
-        Tipo operación / Operation type
-        <select
-          value={detail.idTypeOperation || ''}
-          className={styles.selectInput}
-          // readOnly
-          required
-          onChange={(e) => {
-            updateService(item, detail.sequence, 'idTypeOperation', Number(e.target.value))
-            updateService(item, detail.sequence, 'typeOperation', e.target.options[e.target.selectedIndex].text)
-          }
-          }
-        >
-          <option value="">Seleccionar ...</option>
-          <option value={1}>Importación</option>
-          <option value={2}>Exportación</option>
-          <option value={3}>Nacional</option>
-          <option value={4}>Local USA</option>
-          <option value={5}>Triangulacion</option>
-        </select>
-      </label>
-    );
-  };
+  //   return (
+  //     <label className={styles.fieldLabel}>
+  //       Tipo operación / Operation type
+  //       <select
+  //         value={detail.idTypeOperation || ''}
+  //         className={styles.selectInput}
+  //         // readOnly
+  //         required
+  //         onChange={(e) => {
+  //           updateService(item, detail.sequence, 'idTypeOperation', Number(e.target.value))
+  //           updateService(item, detail.sequence, 'typeOperation', e.target.options[e.target.selectedIndex].text)
+  //         }
+  //         }
+  //       >
+  //         <option value="">Seleccionar ...</option>
+  //         <option value={1}>Importación</option>
+  //         <option value={2}>Exportación</option>
+  //         <option value={3}>Nacional</option>
+  //         <option value={4}>Local USA</option>
+  //         <option value={5}>Triangulacion</option>
+  //       </select>
+  //     </label>
+  //   );
+  // };
 
-  const Incoterm = ({ item, detail, updateService }) => {
+  // const Incoterm = ({ item, detail, updateService }) => {
 
-    return (
-      <label className={styles.fieldLabel}>
-        Incoterm
-        <select
-          value={detail.idIncoterm}
-          className={styles.selectInput}
-          // readOnly
-          required
-          onChange={(e) => {
-            updateService(item, detail.sequence, 'idIncoterm', Number(e.target.value))
-            updateService(item, detail.sequence, 'incoterm', e.target.options[e.target.selectedIndex].text)
-          }
-          }
-        >
-          <option value="">Seleccionar ...</option>
-          {incoterm.map((inc) => (
-            <option key={inc._Id} value={inc._Id}>{inc.incoterm}</option>
-          ))}
-        </select>
-      </label>
-    );
-  };
+  //   return (
+  //     <label className={styles.fieldLabel}>
+  //       Incoterm
+  //       <select
+  //         value={detail.idIncoterm}
+  //         className={styles.selectInput}
+  //         // readOnly
+  //         required
+  //         onChange={(e) => {
+  //           updateService(item, detail.sequence, 'idIncoterm', Number(e.target.value))
+  //           updateService(item, detail.sequence, 'incoterm', e.target.options[e.target.selectedIndex].text)
+  //         }
+  //         }
+  //       >
+  //         <option value="">Seleccionar ...</option>
+  //         {incoterm.map((inc) => (
+  //           <option key={inc._Id} value={inc._Id}>{inc.incoterm}</option>
+  //         ))}
+  //       </select>
+  //     </label>
+  //   );
+  // };
 
-  const TipoReferencia = ({ item, detail, updateService }) => {
+  // const TipoReferencia = ({ item, detail, updateService }) => {
 
-    return (
-      <label className={styles.fieldLabel}>
-        Tipo de referencia envio
-        <select
-          value={detail.typeShippingReference || ''}
-          className={styles.selectInput}
-          // readOnly
-          required
-          onChange={(e) => {
-            updateService(item, detail.sequence, 'typeShippingReference', e.target.options[e.target.selectedIndex].text)
-            // updateService(item, detail.sequence, 'NameShippingReference', e.target.options[e.target.selectedIndex].text)
-          }
-          }
-        >
-          <option value="">Seleccionar ...</option>
-          <option value={"Booking"}>Booking</option>
-          <option value={"Carta porte"}>Carta porte</option>
-        </select>
-      </label>
-    );
-  };
+  //   return (
+  //     <label className={styles.fieldLabel}>
+  //       Tipo de referencia envio
+  //       <select
+  //         value={detail.typeShippingReference || ''}
+  //         className={styles.selectInput}
+  //         // readOnly
+  //         required
+  //         onChange={(e) => {
+  //           updateService(item, detail.sequence, 'typeShippingReference', e.target.options[e.target.selectedIndex].text)
+  //           // updateService(item, detail.sequence, 'NameShippingReference', e.target.options[e.target.selectedIndex].text)
+  //         }
+  //         }
+  //       >
+  //         <option value="">Seleccionar ...</option>
+  //         <option value={"Booking"}>Booking</option>
+  //         <option value={"Carta porte"}>Carta porte</option>
+  //       </select>
+  //     </label>
+  //   );
+  // };
 
-  const Transportista = ({ item, key, transport, detail, updateNestedDetail }) => {
+  // const Transportista = ({ item, key, transport, detail, updateNestedDetail }) => {
 
-    return (
-      <label className={styles.fieldLabel}>
-        Transportista *
-        <select
-          value={transport.idTransport || ''}
-          className={styles.selectInput}
-          // readOnly
-          // required
-          onChange={(e) => {
-            updateNestedDetail(item, detail, 'transports', 1, 'idTransport', e.target.value)
-            updateNestedDetail(item, detail, 'transports', 1, 'nameTransport', e.target.options[e.target.selectedIndex].text)
-          }
-          }
-        >
-          <option value="">Seleccionar ...</option>
-          {supplier.map((inc) => (
-            <option key={inc.id} value={inc.id}>{inc.fiscalData.businessName}</option>
-          ))}
-        </select>
-      </label>
-    );
-  };
+  //   return (
+  //     <label className={styles.fieldLabel}>
+  //       Transportista *
+  //       <select
+  //         value={transport.idTransport || ''}
+  //         className={styles.selectInput}
+  //         // readOnly
+  //         // required
+  //         onChange={(e) => {
+  //           updateNestedDetail(item, detail, 'transports', 1, 'idTransport', e.target.value)
+  //           updateNestedDetail(item, detail, 'transports', 1, 'nameTransport', e.target.options[e.target.selectedIndex].text)
+  //         }
+  //         }
+  //       >
+  //         <option value="">Seleccionar ...</option>
+  //         {supplier.map((inc) => (
+  //           <option key={inc.id} value={inc.id}>{inc.fiscalData.businessName}</option>
+  //         ))}
+  //       </select>
+  //     </label>
+  //   );
+  // };
+
 
   if (isFormOpen) {
     return (
@@ -2038,6 +2040,7 @@ export default function Operations() {
                       onUpdateFormData={updateFormData}
                       onUpdateServiceFormData={updateServiceFormData}
                       onUpdateServiceDetail={updateServiceDetail}
+                      onDuplicateDetail={duplicateDetail}
                     />) :
                     [17].includes(parseInt(activeTab.idService)) ?
                       (<PrevioForm
@@ -2072,6 +2075,10 @@ export default function Operations() {
 
           </div>
 
+          <script>
+            
+          </script>
+    
         </form>
       </>
     );

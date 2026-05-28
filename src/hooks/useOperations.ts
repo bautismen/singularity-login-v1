@@ -155,12 +155,34 @@ const updateFormData = (changes:
   // console.log(formData)
   };
 
+  const duplicateDetail = (idServiceItem: number, detailId: number, newDetail: object) => {
+
+    setFormData(prev => ({
+      ...prev,
+      Services: prev.Services.map(service =>
+        service.idServiceItem === idServiceItem
+          ? {
+            ...service,
+            serviceDetail: [
+              ...service.serviceDetail,
+              newDetail
+            ]
+          }
+          : service
+      )
+    }));
+ 
+    console.log(formData)
+  };
+
+
 return {
     formData, 
     resetFormData,
     setCompleteFormData,
     updateFormData, 
     updateServiceFormData,
-    updateServiceDetail
+    updateServiceDetail,
+    duplicateDetail
 }
 }

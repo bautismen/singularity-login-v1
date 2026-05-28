@@ -591,7 +591,48 @@
 
 .serviceActions {
   display: flex;
+  justify-content: flex-end; /* Alinea todo el contenido a la derecha */
   gap: 0.5rem;
+}
+
+.iconButton {
+  padding: 0.5rem;
+  background-color: var(--hover);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+
+.iconButton:hover {
+  background-color: var(--hover);
+  color: #14b8a6;
+  border: 1px solid #14b8a6;
+}
+
+.iconButtonRemove {
+  padding: 0.5rem;
+  background-color: var(--hover);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+
+.iconButtonRemove:hover {
+  background-color: var(--hover);
+  color: #e60b0b;
+  border: 1px solid #b81414;
 }
 
 .servicesList {
@@ -754,6 +795,26 @@
   box-sizing: border-box;
 }
 
+.accordion-content {
+    transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+    max-height: 1000px;
+    overflow: hidden;
+  }
+  
+  .accordion-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  .chevron-icon {
+    transition: transform 0.3s ease;
+  }
+  
+  .chevron-icon.rotate-180 {
+    transform: rotate(180deg);
+  }
+  
 @media (max-width: 1024px) {
   .container {
     padding: 1.25rem 1.5rem;
