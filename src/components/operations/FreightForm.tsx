@@ -1,37 +1,79 @@
 import React, { useState } from "react";
 import { useLanguage } from "../../contexts/LanguageContext";
 import styles from "../../pages/Operations.module.css";
+import { InputCountry } from "../InputCountry";
+import { InputPort } from "../InputPort";
+import { InputAirport } from "../InputAirport";
 import { PricingControl } from "../../types/pricingControl";
 import { OperationsFormData } from "../../hooks/useOperations";
-import { TipoEnvio, TipoReferencia, TipoOperacion, Incoterm, Transportista, TipoUnidad, TipoRuta, TipoMovimeiento } from "../operations/component";
-import { Copy, X, ChevronLeft, ChevronRight, ChevronUp, Package, Truck, MapPin } from "lucide-react";
+import {
+  TipoEnvio,
+  TipoReferencia,
+  TipoOperacion,
+  Incoterm,
+  Transportista,
+  TipoUnidad,
+  TipoRuta,
+  TipoMovimeiento,
+} from "../operations/component";
+import {
+  Copy,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Package,
+  Truck,
+  MapPin,
+} from "lucide-react";
 
 export interface FreightFormProps {
   // Catálogos
   incoterms: any[];
   suppliers: any[];
+  countries: any[];
+  //info
   info: object;
   controlsData: PricingControl[];
   formData: OperationsFormData;
-  onUpdateFormData: (changes: | Partial<OperationsFormData>
-    | ((prev: OperationsFormData) => Partial<OperationsFormData>)) => void;
-  onUpdateServiceFormData: (idServiceItem: number, detailId: number, field: string, value: any) => void;
-  onUpdateServiceDetail: (idServiceItem: number, detailId: number, collection: string, field: string, value: any) => void;
-  onDuplicateDetail: (idServiceItem: number, detailId: number, newDetail: object) => void;
+  onUpdateFormData: (
+    changes:
+      | Partial<OperationsFormData>
+      | ((prev: OperationsFormData) => Partial<OperationsFormData>),
+  ) => void;
+  onUpdateServiceFormData: (
+    idServiceItem: number,
+    detailId: number,
+    field: string,
+    value: any,
+  ) => void;
+  onUpdateServiceDetail: (
+    idServiceItem: number,
+    detailId: number,
+    collection: string,
+    field: string,
+    value: any,
+  ) => void;
+  onDuplicateDetail: (
+    idServiceItem: number,
+    detailId: number,
+    newDetail: object,
+  ) => void;
 }
 
 export const FreightForm: React.FC<FreightFormProps> = ({
   incoterms,
   suppliers,
+  countries,
   info,
   formData,
   onUpdateFormData,
   onUpdateServiceFormData,
   onUpdateServiceDetail,
-  onDuplicateDetail
+  onDuplicateDetail,
 }) => {
   const { t } = useLanguage();
-  
+
   const infoControl = formData.Services?.find(
     (s) => s.idControl === info.id && s.idServiceItem === info.item,
   );
@@ -39,6 +81,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const detail = infoControl?.serviceDetail?.[currentIndex]; //currentDetail
+  //Puertos o Aeropuertos
+  const isAir = info.idService === 5 ? true : false;
 
   const [accordionOpen, setAccordionOpen] = React.useState({});
 
@@ -46,31 +90,30 @@ export const FreightForm: React.FC<FreightFormProps> = ({
   let totalVersions = 1;
 
   const toggleAccordion = (key) => {
-
-    setAccordionOpen(prev => ({
+    setAccordionOpen((prev) => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: !prev[key],
     }));
-
   };
 
   function updateCounter() {
-    document.getElementById('pageCounter').textContent = `${currentVersion} de ${totalVersions}`;
+    document.getElementById("pageCounter").textContent =
+      `${currentVersion} de ${totalVersions}`;
   }
 
   const nextPage = () => {
-    if (currentIndex < infoControl.serviceDetail.length - 1 ) {
-      setCurrentIndex(prev => prev + 1);
+    if (currentIndex < infoControl.serviceDetail.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
     }
   };
 
   const prevPage = () => {
     if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
+      setCurrentIndex((prev) => prev - 1);
     }
   };
 
-  function animateTransition() {
+  /*function animateTransition() {
     const card = document.getElementById('mainFormCard');
     card.style.opacity = '0';
     card.style.transform = 'translateX(20px)';
@@ -78,13 +121,12 @@ export const FreightForm: React.FC<FreightFormProps> = ({
       card.style.opacity = '1';
       card.style.transform = 'translateX(0)';
     }, 150);
-  }
+  }*/
 
-  const duplicateCard = (idServiceItem, detail ) => {
-
+  const duplicateCard = (idServiceItem, detail) => {
     const newDetail = structuredClone(detail);
 
-    let newsequence = detail.sequence + 1
+    let newsequence = detail.sequence + 1;
     // Nuevo detail
     newDetail.sequence = newsequence;
 
@@ -114,13 +156,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
     //   newDetail.goods.id = Date.now() + 6;
     // }
 
-    onDuplicateDetail(idServiceItem, newsequence, newDetail );
+    onDuplicateDetail(idServiceItem, newsequence, newDetail);
 
-    const card = document.getElementById('mainFormCard');
-    card.style.opacity = '0.5';
-    card.style.transform = 'scale(0.98)';
+    const card = document.getElementById("mainFormCard");
+    card.style.opacity = "0.5";
+    card.style.transform = "scale(0.98)";
 
-    setTimeout(() => {
+    /*setTimeout(() => {
       totalVersions++;
       currentVersion = totalVersions;
       updateCounter();
@@ -130,58 +172,63 @@ export const FreightForm: React.FC<FreightFormProps> = ({
       const btn = event.currentTarget;
       btn.classList.add('bg-secondary-container');
       setTimeout(() => btn.classList.remove('bg-secondary-container'), 500);
-    }, 300);
-
-  }
+    }, 300);*/
+  };
 
   return (
     <div className={styles.formRow}>
       <span key={infoControl?.idServiceItem} className={styles.serviceItem}>
-        { detail && (
-          <div key={detail.sequence} id="mainFormCard"
-            className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-4 bg-white dark:bg-[#1e293b]">
+        {detail && (
+          <div
+            key={detail.sequence}
+            id="mainFormCard"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-4 bg-white dark:bg-[#1e293b]"
+          >
             {/* Header Card */}
-            <div id="pageCounter" >
-
+            <div id="pageCounter">
               <div className={styles.serviceActions}>
                 <button
-                  type="button" 
+                  type="button"
                   className={styles.iconButton}
                   // disabled={isDisabled}
-                  onClick={() => 
-                    duplicateCard(
-                      infoControl?.idServiceItem, 
-                      detail
-                    )
-                  }>
+                  onClick={() =>
+                    duplicateCard(infoControl?.idServiceItem, detail)
+                  }
+                >
                   <Copy size={18} />
                 </button>
 
-                <span 
-                  className="text-label-bold font-label-bold text-on-surface-variant dark:text-white">
-                  {currentIndex + 1} de {infoControl?.serviceDetail?.length || 1 }
+                <span className="text-label-bold font-label-bold text-on-surface-variant dark:text-white">
+                  {currentIndex + 1} de{" "}
+                  {infoControl?.serviceDetail?.length || 1}
                 </span>
 
                 <div className="flex gap-1">
                   <button
-                    type="button" 
+                    type="button"
                     className={styles.iconButton}
-                    onClick={prevPage}>
+                    onClick={prevPage}
+                  >
                     <ChevronLeft size={18} />
                   </button>
                   <button
-                    type="button" className={styles.iconButton}
-                    disabled={currentIndex === infoControl?.serviceDetail?.length - 1}
-                    onClick={nextPage}>
+                    type="button"
+                    className={styles.iconButton}
+                    disabled={
+                      currentIndex === infoControl?.serviceDetail?.length - 1
+                    }
+                    onClick={nextPage}
+                  >
                     <ChevronRight size={18} />
                   </button>
-
                 </div>
 
                 <button
-                  type="button" className={`${styles.iconButtonRemove} ${styles.danger}`}
+                  type="button"
+                  className={`${styles.iconButtonRemove} ${styles.danger}`}
                   // disabled={isDisabled}
-                  onClick={() => ("")}>
+                  onClick={() => ""}
+                >
                   <X size={18} />
                 </button>
               </div>
@@ -194,42 +241,41 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 </div>
                 
               </div> */}
-
             </div>
-
             <span key={currentIndex + 1} className={styles.serviceItem}>
-
               <div className={styles.serviceCard}>
-                
-                <div className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary" 
-                  onClick={() => toggleAccordion(`envio-${detail.sequence}`)}>
+                <div
+                  className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
+                  onClick={() => toggleAccordion(`envio-${detail.sequence}`)}
+                >
                   <div className="flex items-center gap-3">
                     <span className="dark:text-white">
                       <Package />
                     </span>
                     <h2 className="title">Envio</h2>
                   </div>
-                  <span className={`
+                  <span
+                    className={`
                                     material-symbols-outlined
                                     text-primary
                                     chevron-icon
                                     dark:text-white
-                                    ${accordionOpen.envio ? 'rotate-180' : ''}
-                                  `} 
-                    id="envios-chevron">
-                      <ChevronUp />
+                                    ${accordionOpen.envio ? "rotate-180" : ""}
+                                  `}
+                    id="envios-chevron"
+                  >
+                    <ChevronUp />
                   </span>
                 </div>
-                
-                <div className={`
+
+                <div
+                  className={`
                       accordion-content
-                      ${!accordionOpen.envio ? 'collapsed' : ''}
+                      ${!accordionOpen.envio ? "collapsed" : ""}
                     `}
                 >
                   <div className={styles.fourColumnGrid}>
-
                     <div className={styles.firstColumn}>
-
                       {/* Tipo de envío */}
                       <div className={styles.fieldGroup}>
                         <TipoEnvio
@@ -250,11 +296,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           incoterms={incoterms}
                         />
                       </div>
-
                     </div>
 
                     <div className={styles.secondColumn}>
-
                       {/* Tipo de referencia */}
                       <div className={styles.fieldGroup}>
                         <TipoReferencia
@@ -274,97 +318,108 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           onUpdateServiceFormData={onUpdateServiceFormData}
                         />
                       </div>
-
                     </div>
 
                     <div className={styles.thirdColumn}>
-
                       {/* Referencia de envio */}
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
                           Referencia de envio
+                        </label>
                           <input
                             type="text"
                             value={detail?.shippingReferenceNumber || ""}
                             className={styles.textInput}
-                            onChange={(e) => onUpdateServiceFormData(
-                              infoControl.idServiceItem,
-                              detail.sequence,
-                              'shippingReferenceNumber',
-                              (e.target.value))} />
-                        </label>
+                            onChange={(e) =>
+                              onUpdateServiceFormData(
+                                infoControl.idServiceItem,
+                                detail.sequence,
+                                "shippingReferenceNumber",
+                                e.target.value,
+                              )
+                            }
+                          />                        
                       </div>
 
                       {/* Guia master */}
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
                           Guia master
+                        </label>
                           <input
                             type="text"
                             value={detail?.masterGuide}
-                            onChange={(e) => onUpdateServiceFormData(
-                              infoControl.idServiceItem,
-                              detail.sequence,
-                              'masterGuide',
-                              (e.target.value))}
-                            className={styles.textInput} />
-                        </label>
+                            onChange={(e) =>
+                              onUpdateServiceFormData(
+                                infoControl.idServiceItem,
+                                detail.sequence,
+                                "masterGuide",
+                                e.target.value,
+                              )
+                            }
+                            className={styles.textInput}
+                          />                        
                       </div>
-
                     </div>
 
                     <div className={styles.fourthColumn}>
-
                       {/* Envio referencia */}
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
                           Envio referencia
+                        </label>
                           <input
                             type="datetime-local"
                             value={detail?.shippingDate} //? new Date(detail.shippingDate).toISOString().slice(0, 16) : ''
-                            onChange={(e) => onUpdateServiceFormData(
-                              infoControl.idServiceItem,
-                              detail.sequence,
-                              'shippingDate',
-                              (e.target.value))}
-                            className={styles.textInput} />
-                        </label>
+                            onChange={(e) =>
+                              onUpdateServiceFormData(
+                                infoControl.idServiceItem,
+                                detail.sequence,
+                                "shippingDate",
+                                e.target.value,
+                              )
+                            }
+                            className={styles.textInput}
+                          />                       
                       </div>
-
                     </div>
-
                   </div>
                 </div>
 
-                <div className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary" 
-                  onClick={() => toggleAccordion(`transporte-${detail.sequence}`)}>
+                <div
+                  className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
+                  onClick={() =>
+                    toggleAccordion(`transporte-${detail.sequence}`)
+                  }
+                >
                   <div className="flex items-center gap-3">
                     <span className="dark:text-white">
                       <Truck />
                     </span>
                     <h2 className="title">Transporte</h2>
                   </div>
-                  <span className={`
+                  <span
+                    className={`
                                     material-symbols-outlined
                                     text-primary
                                     chevron-icon
                                     dark:text-white
-                                    ${accordionOpen.transporte ? 'rotate-180' : ''}
-                                  `} 
-                    id="transporte-chevron">
-                      <ChevronUp />
+                                    ${accordionOpen.transporte ? "rotate-180" : ""}
+                                  `}
+                    id="transporte-chevron"
+                  >
+                    <ChevronUp />
                   </span>
                 </div>
-                
-                <div className={`
+
+                <div
+                  className={`
                       accordion-content
-                      ${!accordionOpen.transporte ? 'collapsed' : ''}
+                      ${!accordionOpen.transporte ? "collapsed" : ""}
                     `}
                 >
                   <div className={styles.fourColumnGrid}>
-
                     <div className={styles.firstColumn}>
-
                       {/* Transportista */}
                       <div className={styles.fieldGroup}>
                         <Transportista
@@ -372,7 +427,11 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           sequencedetail={detail.sequence}
                           transport={detail?.transport}
                           onUpdateServiceDetail={onUpdateServiceDetail}
-                          transportista={suppliers.filter(s => s.status === 1 && [7, 32].includes(parseInt(s.sectorId)))}
+                          transportista={suppliers.filter(
+                            (s) =>
+                              s.status === 1 &&
+                              [7, 32].includes(parseInt(s.sectorId)),
+                          )}
                         />
                       </div>
 
@@ -388,11 +447,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           />
                         </label>
                       </div> */}
-
                     </div>
 
                     <div className={styles.secondColumn}>
-
                       {/* Tipo de unidad */}
                       <div className={styles.fieldGroup}>
                         <TipoUnidad
@@ -412,7 +469,6 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           onUpdateServiceDetail={onUpdateServiceDetail}
                         />
                       </div>
-
                     </div>
 
                     <div className={styles.thirdColumn}>
@@ -428,7 +484,6 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           />
                         </label>
                       </div> */}
-
                     </div>
 
                     <div className={styles.fourthColumn}>
@@ -468,112 +523,195 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     </div>
                   </div>
                 </div>
-                         
-                <div className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary" 
-                  onClick={() => toggleAccordion(`origin-${detail.sequence}`)}>
+
+                <div
+                  className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
+                  onClick={() => toggleAccordion(`origin-${detail.sequence}`)}
+                >
                   <div className="flex items-center gap-3">
                     <span className="dark:text-white">
                       <MapPin />
                     </span>
                     <h2 className="title">Origen / Destino</h2>
                   </div>
-                  <span className={`
+                  <span
+                    className={`
                                     material-symbols-outlined
                                     text-primary
                                     chevron-icon
                                     dark:text-white
-                                    ${accordionOpen.origin ? 'rotate-180' : ''}
+                                    ${accordionOpen.origin ? "rotate-180" : ""}
                                   `}
-                    id="origin-chevron">
-                      <ChevronUp />
+                    id="origin-chevron"
+                  >
+                    <ChevronUp />
                   </span>
                 </div>
 
-                <div className={`
+                <div
+                  className={`
                       accordion-content
-                      ${!accordionOpen.origen ? 'collapsed' : ''}
+                      ${!accordionOpen.origen ? "collapsed" : ""}
                     `}
                 >
                   <div className={styles.fourColumnGrid}>
-
                     <div className={styles.firstColumn}>
-
-                      {/* Pais de carga */}
-                      <div className={styles.fieldGroup}>
+                      <div className={styles.firstColumn}>
+                         {/* ORIGEN */}
+                        {/* Pais de carga */}
+                        <InputCountry
+                          type="origin"
+                          countries={countries}
+                          selectedCountryId={detail.origin?.idCountry}
+                          serviceIdItem={detail.sequence}
+                          isDisabled={false}
+                          placeholder={t("quote.select")}
+                          label={t("operations.countryCharge")}
+                          onChangeCountry={({ type, changes }) => {
+                            onUpdateServiceFormData(
+                              infoControl.idServiceItem,
+                              detail.sequence,
+                              "origin",
+                              {
+                                ...(detail.origin ?? {}),
+                                ...changes,
+                              },
+                            );
+                          }}
+                          groupClassName={styles.fieldGroup}
+                          labelClassName={styles.fieldLabel}
+                          inputClassName={styles.textInput}
+                        />
+                        {/*
+                        <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
-                          Pais de carga
-                          <input
-                            type="text"
-                            value={detail?.origin?.country}
-                            readOnly
-                            className={styles.textInput}
-                          />
+                        {t('operations.countryCharge')}
+                        <input
+                          type="text"
+                          value={detail.origin?.city}
+                          readOnly
+                          className={styles.textInput}/>
                         </label>
-                      </div>
+                      </div> */}
+                        {/* Llegada a planta */}
+                        {detail.idTypeShipment !== 2 && isAir === false && (
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              {t("operations.arrivalPlant")}
+                            </label>
+                            <input
+                              type="datetime-local"
+                              value={detail?.origin}
+                              className={styles.textInput}
+                            />
+                          </div>
+                        )}
 
-                      {/* Llegada a planta */}
-                      <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                          Llegada a planta
-                          <input
-                            type="datetime-local"
-                            value={detail?.origin}
-                            className={styles.textInput}
-                          />
+                        {/*DESTINO */}
+                        {/* Pais de descarga */}
+                        <InputCountry
+                          groupClassName={styles.fieldGroup}
+                          labelClassName={styles.fieldLabel}
+                          inputClassName={styles.textInput}
+                          type="destination"
+                          countries={countries}
+                          selectedCountryId={detail.destination?.idCountry}
+                          serviceIdItem={detail.sequence}
+                          isDisabled={false}
+                          placeholder={t("quote.select")}
+                          label="pais de descarga"
+                          onChangeCountry={({ type, changes }) => {
+                            onUpdateServiceFormData(
+                              infoControl.idServiceItem,
+                              detail.sequence,
+                              "destination",
+                              {
+                                ...(detail.destination ?? {}),
+                                ...changes,
+                              },
+                            );
+                          }}
+                        />
+                        {/*<input
+                          type="text"
+                          //value={detail.destination?.city}
+                          readOnly
+                          className={styles.textInput}/>
                         </label>
+                      </div> */}
                       </div>
-
-                      {/* Pais de descarga */}
-                      <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                          Pais de descarga
-                          <input
-                            type="text"
-                            value={detail?.destination?.city}
-                            readOnly
-                            className={styles.textInput}
-                          />
-                        </label>
-                      </div>
-
                     </div>
-
                     <div className={styles.secondColumn}>
-                      {/* Lugar de recoleccion */}
-                      <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                          Lugar de recoleccion
-                          <input
-                            type="text"
-                            value={detail?.origin?.placeOfReceipt}
-                            className={styles.textInput}
-                          />
-                        </label>
-                      </div>
+                      {detail.idTypeShipment !== 2 && isAir === false && (
+                        <>
+                          {/* Lugar de recoleccion */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Lugar de recoleccion
+                            </label>
+                            <input
+                              type="text"
+                              value={detail?.origin?.placeOfReceipt}
+                              className={styles.textInput}
+                            />
+                          </div>
+                          {/* Salida de planta */}
+                          <div className={styles.fieldGroup}>
+                            <label className={styles.fieldLabel}>
+                              Salida de planta
+                            </label>
+                            <input
+                              type="datetime-local"
+                              value={detail?.origin}
+                              className={styles.textInput}
+                            />
+                          </div>
+                        </>
+                      )}
 
-                      {/* Salida de planta */}
-                      <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                          Salida de planta
-                          <input
-                            type="datetime-local"
-                            value={detail?.origin}
-                            className={styles.textInput}
+                      {/* Puerto o Aeropuerto de descarga */}
+                        {isAir ? 
+                          <InputAirport
+                            idCountry={detail.destination?.idCountry}
+                            value={detail?.destination?.airport ?? ""}
+                            serviceIdItem={detail.sequence}
+                            label={t("operations.airportDischarge")}
+                            groupClassName={styles.fieldGroup}
+                            labelClassName={styles.fieldLabel}
+                            inputClassName={styles.textInput}
+                            onChangeAirport={(airport) => {
+                              onUpdateServiceFormData(
+                                infoControl.idServiceItem,
+                                detail.sequence,
+                                "destination",
+                                {
+                                  ...(detail.destination ?? {}),
+                                  airport: airport?.airport_code ?? "",
+                                },
+                              );
+                            }}
+                          /> :
+                          <InputPort
+                            idCountry={detail.destination?.idCountry}
+                            value={detail?.destination?.Port ?? ""}
+                            serviceIdItem={detail.sequence}
+                            label={t("operations.portDischarge")}
+                            groupClassName={styles.fieldGroup}
+                            labelClassName={styles.fieldLabel}
+                            inputClassName={styles.textInput}
+                            onChangePort={(port) => {
+                              onUpdateServiceFormData(
+                                infoControl.idServiceItem,
+                                detail.sequence,
+                                "destination",
+                                {
+                                  ...(detail.destination ?? {}),
+                                  portCode: port?.port_code ?? "",
+                                },
+                              );
+                            }}
                           />
-                        </label>
-                      </div>
-
-                      {/* Puerto de descarga */}
-                      <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                          Puerto de descarga
-                          <input
-                            type="text"
-                            value={detail?.destination?.Port}
-                            className={styles.textInput}
-                          />
-                        </label>
-                      </div>
+                        }
                     </div>
 
                     <div className={styles.thirdColumn}>
@@ -581,36 +719,40 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
                           ETD (Salida estimada)
-                          <input
-                            type="datetime-local"
-                            value={detail.origin?.estimatedDepartureDateETD}
-                            className={styles.textInput}
-                          />
                         </label>
+                        <input
+                          type="datetime-local"
+                          value={detail.origin?.estimatedDepartureDateETD}
+                          className={styles.textInput}
+                          onChange={(e) =>
+                            onUpdateServiceFormData(
+                              infoControl.idServiceItem,
+                              detail.sequence,
+                              "departureDateAproximate",
+                              e.target.value,
+                            )
+                          }
+                        />
                       </div>
 
                       {/*  */}
                       <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                          .
-                          <input
-                            type="text"
-                            value={detail?.origin}
-                            className={styles.textInput}
-                          />
-                        </label>
+                        <label className={styles.fieldLabel}>.</label>
+                        <input
+                          type="text"
+                          value={detail?.origin}
+                          className={styles.textInput}
+                        />
                       </div>
 
                       {/* Planta */}
                       <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                          Planta
-                          <input
-                            type="text"
-                            value={detail.destination?.plant}
-                            className={styles.textInput}
-                          />
-                        </label>
+                        <label className={styles.fieldLabel}>Planta</label>
+                        <input
+                          type="text"
+                          value={detail.destination?.plant}
+                          className={styles.textInput}
+                        />
                       </div>
                     </div>
 
@@ -619,54 +761,51 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
                           Despacho / recoleccion
-                          <input
-                            type="datetime-local"
-                            value={detail?.origin}
-                            className={styles.textInput}
-                          />
                         </label>
+                        <input
+                          type="datetime-local"
+                          value={detail?.origin}
+                          className={styles.textInput}
+                        />
                       </div>
 
                       {/*  */}
                       <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                          .
-                          <input
-                            type="text"
-                            value={detail.origin}
-                            className={styles.textInput}
-                          />
-                        </label>
+                        <label className={styles.fieldLabel}>.</label>
+                        <input
+                          type="text"
+                          value={detail.origin}
+                          className={styles.textInput}
+                        />
                       </div>
 
                       {/* ETA (Llegada estimada) */}
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
                           ETA (Llegada estimada)
-                          <input
-                            type="datetime-local"
-                            value={detail?.destination?.arrivalDateATA}
-                            className={styles.textInput}
-                          />
                         </label>
+                        <input
+                          type="datetime-local"
+                          value={detail?.destination?.arrivalDateATA}
+                          className={styles.textInput}
+                        />
                       </div>
                     </div>
                   </div>
-                </div>
-                
-                {/* Observaciones del servicio*/}
-                <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
-                  <label
-                    htmlFor="observations"
-                    className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white"
-                  >
-                    {t("operations.observations")}
-                  </label>
 
-                  <textarea
-                    value={detail.observationsService || ""}
-                    className={styles.textArea}
-                  /*onChange={(e) =>
+                  {/* Observaciones del servicio*/}
+                  <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
+                    <label
+                      htmlFor="observations"
+                      className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white"
+                    >
+                      {t("operations.observations")}
+                    </label>
+
+                    <textarea
+                      value={detail.observationsService || ""}
+                      className={styles.textArea}
+                      /*onChange={(e) =>
                     updateService(
                       infoControl.idServiceItem,
                       detail.sequence,
@@ -674,30 +813,31 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       e.target.value,
                     )
                   }*/
-                  />
-                  {/* <input
-                                      type="text"
-                                      id="observationsService"
-                                      name="observations"
-                                      value={
-                                        formData.Services.find(
-                                          s => s.idServiceItem === serv.idServiceItem
-                                        )?.observations || ''
-                                      }
-                                      onChange={(e) =>
-                                        updateService(
-                                          serv.idServiceItem,
-                                          'observations',
-                                          e.target.value
-                                        )
-                                      }
-                                      className="min-h-[30px] w-full p-2 rounded-lg
-                                              bg-transparent text-black dark:text-white
-                                              border border-gray-300 dark:border-gray-700
-                                              hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
-                                              focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
-                                              outline-none appearance-none text-body-sm transition-colors"
-                                    /> */}
+                    />
+                    {/* <input
+                              type="text"
+                              id="observationsService"
+                              name="observations"
+                              value={
+                                formData.Services.find(
+                                  s => s.idServiceItem === serv.idServiceItem
+                                )?.observations || ''
+                              }
+                              onChange={(e) =>
+                                updateService(
+                                  serv.idServiceItem,
+                                  'observations',
+                                  e.target.value
+                                )
+                              }
+                              className="min-h-[30px] w-full p-2 rounded-lg
+                                      bg-transparent text-black dark:text-white
+                                      border border-gray-300 dark:border-gray-700
+                                      hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
+                                      focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
+                                      outline-none appearance-none text-body-sm transition-colors"
+                            /> */}
+                  </div>
                 </div>
               </div>
 

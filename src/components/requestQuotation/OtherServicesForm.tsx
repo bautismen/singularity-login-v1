@@ -274,7 +274,9 @@ const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         required
         placeholder={t("quote.select")}
         label={t("quote.origin")}
-        onUpdateLocation={onUpdateOrigin}
+        onChangeCountry={({idServiceItem, changes}) => {
+          onUpdateOrigin(idServiceItem, changes);
+        }}
         />
 
         <InputCountry 
@@ -286,7 +288,9 @@ const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         required= {false}
         placeholder={t("quote.select")}
         label={t("quote.destination")}
-        onUpdateLocation={onUpdateDestination}
+        onChangeCountry={({idServiceItem, changes}) => {
+          onUpdateDestination(idServiceItem, changes);
+        }}
         />
         
         {/*<div className={styles.formGroup}>

@@ -14,7 +14,9 @@ import { Supplier } from '../types/supplier';
 import { FreightForm, FreightFormProps } from '../components/operations/FreightForm'
 import { PrevioForm , PrevioFormProps} from '../components/operations/PrevioForm'
 import { OtherServiceForm, OtherServiceFormProps } from '../components/operations/OtherServiceForm'
-import { useOperations } from '../hooks/useOperations'
+import {useOperations} from '../hooks/useOperations'
+import { useCatalogs } from "../hooks/useCatalogs";
+
 
 export default function Operations() {
   const { t } = useLanguage();
@@ -31,6 +33,7 @@ export default function Operations() {
   const [serviceDetail, setServiceDetail] = useState<ServiceDetail[]>([]);
   const [incoterm, setIncoterm] = useState<Service[]>([]);
   const [supplier, setSupplier] = useState<Supplier[]>([]);
+  const {countries} = useCatalogs();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -103,6 +106,7 @@ export default function Operations() {
     try {
       const data = await getControls();
       setControls(data);
+      console.log(data);
     } catch (error) {
       showError(t('controls.loadError'));
       console.error('Error loading controls:', error);
@@ -2034,6 +2038,7 @@ export default function Operations() {
                     (<FreightForm
                       incoterms={incoterm}
                       suppliers={supplier}
+                      countries={countries}
                       info={activeTab}
                       controlsData={controlsData}
                       formData={formData}

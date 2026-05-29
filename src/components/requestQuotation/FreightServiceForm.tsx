@@ -356,7 +356,9 @@ export const FreightShipmentForm: React.FC<FreightShipmentFormProps> = ({
         required
         placeholder={t("quote.select")}
         label={t("quote.origin")}
-        onUpdateLocation={onUpdateOrigin}
+        onChangeCountry={({idServiceItem, changes, idShipment}) => {
+          onUpdateOrigin(idServiceItem, changes, idShipment); 
+        }}
         />
 
         <InputCountry 
@@ -368,7 +370,9 @@ export const FreightShipmentForm: React.FC<FreightShipmentFormProps> = ({
         required
         placeholder={t("quote.select")}
         label={t("quote.destination")}
-        onUpdateLocation={onUpdateDestination}
+        onChangeCountry={({idServiceItem, changes, idShipment}) => {
+          onUpdateDestination(idServiceItem, changes, idShipment);
+        }}
         />
 
         {/*<div className={styles.formGroup}>

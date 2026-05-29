@@ -854,7 +854,13 @@ const translations = {
     "operations.addService": "Agregar servicio",
     "operations.selectServiceWarning": "por favor, selecciona un servicio para agregar",
     "operations.observations": "Observaciones",
-    "operations.listaparafacturar": "Lista para facturar"
+    "operations.listaparafacturar": "Lista para facturar",
+    "operations.originDestination": "Origen / Destino",
+    "operations.countryCharge": "Pais de carga",
+    "operations.arrivalPlant": "Llegada a planta",
+    "operations.portDischarge": "Puerto de descarga",
+    "operations.airportDischarge": "Aeropuerto de descarga",
+
   },
   en: {
     'app.title': 'Singularity',
@@ -1693,7 +1699,12 @@ const translations = {
     "operations.addService": "Add service",
     "operations.selectServiceWarning": "Please select a service to add",
     "operations.observations": "Observations",
-    "operations.listaparafacturar": "Ready to invoice"
+    "operations.listaparafacturar": "Ready to invoice",
+    "operations.originDestination": "Origin / Destination",
+    "operations.countryCharge": "Country Charge",
+    "operations.arrivalPlant": "Arrival at plant",
+    "operations.portDischarge": "Discharge port",
+    "operations.airportDischarge": "Discharge airport",
   },
 };
 

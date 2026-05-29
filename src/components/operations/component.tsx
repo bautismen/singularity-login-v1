@@ -3,8 +3,10 @@ import styles from '../../pages/Operations.module.css';
 export const TipoEnvio = ({ itemService, sequencedetail, detail, onUpdateServiceFormData }) => {
 
   return (
+    <>
     <label className={styles.fieldLabel}>
       Tipo de envío / Shipping type
+    </label>
       <select
         value={detail.idTypeShipment || ""}
         className={styles.selectInput}
@@ -18,16 +20,18 @@ export const TipoEnvio = ({ itemService, sequencedetail, detail, onUpdateService
         <option value={2}>Puerto a Puerto</option>
         <option value={3}>Puerta a Puerto</option>
         <option value={4}>Puerto a Puerta</option>
-      </select>
-    </label>
+      </select>    
+     </>
   );
 };
 
 export const TipoReferencia = ({ itemService, sequencedetail, detail, onUpdateServiceFormData }) => {
 
   return (
+    <> 
     <label className={styles.fieldLabel}>
       Tipo de referencia envio
+    </label>
       <select
         value={detail.typeShippingReference || ''}
         className={styles.selectInput}
@@ -43,15 +47,17 @@ export const TipoReferencia = ({ itemService, sequencedetail, detail, onUpdateSe
         <option value={"Booking"}>Booking</option>
         <option value={"Carta porte"}>Carta porte</option>
       </select>
-    </label>
+    </>
   );
 };
 
 export const TipoOperacion = ({ itemService, sequencedetail, detail, onUpdateServiceFormData }) => {
 
   return (
+    <> 
     <label className={styles.fieldLabel}>
       Tipo operación / Operation type
+      </label>
       <select
         value={detail.idTypeOperation || ''}
         className={styles.selectInput}
@@ -61,24 +67,25 @@ export const TipoOperacion = ({ itemService, sequencedetail, detail, onUpdateSer
           onUpdateServiceFormData(itemService, sequencedetail, 'idTypeOperation', Number(e.target.value))
           onUpdateServiceFormData(itemService, sequencedetail, 'typeOperation', e.target.options[e.target.selectedIndex].text)
         }
-        }
-      >
+        }>
         <option value="">Seleccionar ...</option>
         <option value={1}>Importación</option>
         <option value={2}>Exportación</option>
         <option value={3}>Nacional</option>
         <option value={4}>Local USA</option>
         <option value={5}>Triangulacion</option>
-      </select>
-    </label>
+      </select>    
+    </>
   );
 };
 
 export const Incoterm = ({ itemService, sequencedetail, detail, onUpdateServiceFormData, incoterms }) => {
 
   return (
+    <> 
     <label className={styles.fieldLabel}>
       Incoterm
+    </label>
       <select
         value={detail.idIncoterm || ''}
         className={styles.selectInput}
@@ -95,15 +102,17 @@ export const Incoterm = ({ itemService, sequencedetail, detail, onUpdateServiceF
           <option key={inc._Id} value={inc._Id}>{inc.incoterm}</option>
         ))}
       </select>
-    </label>
+    </>
   );
 };
   
 export const Transportista = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, transportista }) => {
 
   return (
+    <> 
     <label className={styles.fieldLabel}>
       Transportista *
+      </label>
       <select
         value={transport?.idcarrier || ''}
         className={styles.selectInput}
@@ -120,15 +129,17 @@ export const Transportista = ({ itemService, sequencedetail, transport, onUpdate
           <option key={tr.id} value={tr.id}>{tr.fiscalData.businessName}</option>
         ))}
       </select>
-    </label>
+    </>
   );
 };
 
 export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateServiceDetail }) => {
 
   return (
+    <>
     <label className={styles.fieldLabel}>
       Tipo unidad
+    </label>
       <select
         value={transport?.typeUnit || ''}
         className={styles.selectInput}
@@ -143,15 +154,18 @@ export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateSer
         <option value={"Tracto"}>Tracto</option>
         <option value={"Buque"}>Buque</option>
       </select>
-    </label>
+    
+    </>
   );
 };
 
 export const TipoRuta = ({ itemService, sequencedetail, transport, onUpdateServiceDetail }) => {
 
   return (
+    <> 
     <label className={styles.fieldLabel}>
       Tipo ruta
+      </label>
       <select
         value={transport?.typeRoute || ''}
         className={styles.selectInput}
@@ -166,15 +180,17 @@ export const TipoRuta = ({ itemService, sequencedetail, transport, onUpdateServi
         <option value={"Directo"}>Directo</option>
         <option value={"Transbordo"}>Transbordo</option>
       </select>
-    </label>
+    </>
   );
 };
 
 export const TipoMovimeiento = ({ itemService, sequencedetail, transport, onUpdateServiceDetail }) => {
 
   return (
+    <> 
     <label className={styles.fieldLabel}>
       Tipo movimiento
+      </label>
       <select
         value={transport?.typeOfMovement || ''}
         className={styles.selectInput}
@@ -189,6 +205,6 @@ export const TipoMovimeiento = ({ itemService, sequencedetail, transport, onUpda
         <option value={"Full"}>Full</option>
         <option value={"Sencillo"}>Sencillo</option>
       </select>
-    </label>
+    </>
   );
 };
