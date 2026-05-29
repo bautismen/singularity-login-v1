@@ -5,7 +5,7 @@ export const TipoEnvio = ({ itemService, sequencedetail, detail, onUpdateService
   return (
     <>
     <label className={styles.fieldLabel}>
-      Tipo de envío / Shipping type
+      Modalidad
     </label>
       <select
         value={detail.idTypeShipment || ""}
@@ -30,7 +30,7 @@ export const TipoReferencia = ({ itemService, sequencedetail, detail, onUpdateSe
   return (
     <> 
     <label className={styles.fieldLabel}>
-      Tipo de referencia envio
+      Tipo solicitud de reserva
     </label>
       <select
         value={detail.typeShippingReference || ''}
@@ -151,8 +151,24 @@ export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateSer
         }
       >
         <option value="">Seleccionar ...</option>
-        <option value={"Tracto"}>Tracto</option>
         <option value={"Buque"}>Buque</option>
+        {/* Ambos */}
+        <option value={"Plataforma"}>Plataforma</option>
+        {/* Articuladas */}
+        <option value={"Caja seca 20"}>Caja seca 20</option>
+        <option value={"Caja seca 40"}>Caja seca 40</option>
+        <option value={"Caja seca 48"}>Caja seca 48</option>
+        <option value={"Caja seca 53"}>Caja seca 53</option>
+        <option value={"Remolque"}>Remolque</option>
+        {/* No articuladas */}
+        <option value={"Nissan"}>Nissan / Estaquitas</option>
+        <option value={"Camión 3.5"}>Camión 3.5</option>
+        <option value={"Rabón"}>Camión rabón</option>
+        <option value={"Torton"}>Camión torton</option>
+        <option value={"Torton"}>Camión mudancero</option>
+
+        <option value={"PAX"}>PAX</option> {/* Carga mixta pasajeros y carga con restricciones */}
+        <option value={"CAO"}>CAO</option> {/* Sólo carga (Cargo Aircraft ONLY) */}
       </select>
     
     </>

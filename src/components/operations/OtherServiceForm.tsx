@@ -45,7 +45,7 @@ export const OtherServiceForm: React.FC<OtherServiceFormProps> = ({
 
                   <div className={styles.firstColumn}>
 
-                    {/* Tipo de envio */}
+                    {/* Modalidad */}
                     <div className={styles.fieldGroup}>
                       <TipoEnvio
                         itemService={infoControlService.idServiceItem}

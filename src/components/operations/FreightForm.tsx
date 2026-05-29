@@ -96,10 +96,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
     }));
   };
 
-  function updateCounter() {
-    document.getElementById("pageCounter").textContent =
-      `${currentVersion} de ${totalVersions}`;
-  }
+  // function updateCounter() {
+  //   document.getElementById('pageCounter').textContent = `${currentVersion} de ${totalVersions}`;
+  // }
 
   const nextPage = () => {
     if (currentIndex < infoControl.serviceDetail.length - 1) {
@@ -113,66 +112,22 @@ export const FreightForm: React.FC<FreightFormProps> = ({
     }
   };
 
-  /*function animateTransition() {
-    const card = document.getElementById('mainFormCard');
-    card.style.opacity = '0';
-    card.style.transform = 'translateX(20px)';
-    setTimeout(() => {
-      card.style.opacity = '1';
-      card.style.transform = 'translateX(0)';
-    }, 150);
-  }*/
-
   const duplicateCard = (idServiceItem, detail) => {
+
+    const card = document.getElementById('mainFormCard');
+    card.style.opacity = '0.5';
+    card.style.transform = 'scale(0.98)';
+
     const newDetail = structuredClone(detail);
 
-    let newsequence = detail.sequence + 1;
+    let newsequence = infoControl.serviceDetail.length + 1
     // Nuevo detail
     newDetail.sequence = newsequence;
 
     setCurrentIndex(infoControl.serviceDetail.length);
-    // // Nuevos IDs internos
-    // if (newDetail.transports) {
-    //   newDetail.transports.id = Date.now() + 1;
-    // }
-
-    // if (newDetail.origins) {
-    //   newDetail.origins.id = Date.now() + 2;
-    // }
-
-    // if (newDetail.destinations) {
-    //   newDetail.destinations.id = Date.now() + 3;
-    // }
-
-    // if (newDetail.references) {
-    //   newDetail.references.id = Date.now() + 4;
-    // }
-
-    // if (newDetail.containers) {
-    //   newDetail.containers.id = Date.now() + 5;
-    // }
-
-    // if (newDetail.goods) {
-    //   newDetail.goods.id = Date.now() + 6;
-    // }
 
     onDuplicateDetail(idServiceItem, newsequence, newDetail);
 
-    const card = document.getElementById("mainFormCard");
-    card.style.opacity = "0.5";
-    card.style.transform = "scale(0.98)";
-
-    /*setTimeout(() => {
-      totalVersions++;
-      currentVersion = totalVersions;
-      updateCounter();
-      card.style.opacity = '1';
-      card.style.transform = 'scale(1)';
-
-      const btn = event.currentTarget;
-      btn.classList.add('bg-secondary-container');
-      setTimeout(() => btn.classList.remove('bg-secondary-container'), 500);
-    }, 300);*/
   };
 
   return (
@@ -268,15 +223,18 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                   </span>
                 </div>
 
-                <div
-                  className={`
-                      accordion-content
+                {/* <details>
+                </details> */}
+
+                <div className={`accordion-content
                       ${!accordionOpen.envio ? "collapsed" : ""}
                     `}
                 >
                   <div className={styles.fourColumnGrid}>
+
                     <div className={styles.firstColumn}>
-                      {/* Tipo de envío */}
+
+                      {/* Modalidad */}
                       <div className={styles.fieldGroup}>
                         <TipoEnvio
                           itemService={infoControl.idServiceItem}
@@ -285,6 +243,24 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           onUpdateServiceFormData={onUpdateServiceFormData}
                         />
                       </div>
+
+                    </div>
+
+                    <div className={styles.secondColumn}>
+
+                      {/* Tipo operación */}
+                      <div className={styles.fieldGroup}>
+                        <TipoOperacion
+                          itemService={infoControl.idServiceItem}
+                          sequencedetail={detail.sequence}
+                          detail={detail}
+                          onUpdateServiceFormData={onUpdateServiceFormData}
+                        />
+                      </div>
+
+                    </div>
+
+                    <div className={styles.thirdColumn}>
 
                       {/* Incoterm */}
                       <div className={styles.fieldGroup}>
@@ -296,93 +272,33 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           incoterms={incoterms}
                         />
                       </div>
+
                     </div>
 
-                    <div className={styles.secondColumn}>
-                      {/* Tipo de referencia */}
-                      <div className={styles.fieldGroup}>
-                        <TipoReferencia
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.sequence}
-                          detail={detail}
-                          onUpdateServiceFormData={onUpdateServiceFormData}
-                        />
-                      </div>
-
-                      {/* Tipo operación */}
-                      <div className={styles.fieldGroup}>
-                        <TipoOperacion
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.sequence}
-                          detail={detail}
-                          onUpdateServiceFormData={onUpdateServiceFormData}
-                        />
-                      </div>
-                    </div>
-
-                    <div className={styles.thirdColumn}>
-                      {/* Referencia de envio */}
-                      <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                          Referencia de envio
-                        </label>
-                          <input
-                            type="text"
-                            value={detail?.shippingReferenceNumber || ""}
-                            className={styles.textInput}
-                            onChange={(e) =>
-                              onUpdateServiceFormData(
-                                infoControl.idServiceItem,
-                                detail.sequence,
-                                "shippingReferenceNumber",
-                                e.target.value,
-                              )
-                            }
-                          />                        
-                      </div>
+                    <div className={styles.fourthColumn}>
 
                       {/* Guia master */}
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
                           Guia master
                         </label>
-                          <input
-                            type="text"
-                            value={detail?.masterGuide}
-                            onChange={(e) =>
-                              onUpdateServiceFormData(
-                                infoControl.idServiceItem,
-                                detail.sequence,
-                                "masterGuide",
-                                e.target.value,
-                              )
-                            }
-                            className={styles.textInput}
-                          />                        
+                        <input
+                          type="text"
+                          value={detail?.masterGuide}
+                          onChange={(e) =>
+                            onUpdateServiceFormData(
+                              infoControl.idServiceItem,
+                              detail.sequence,
+                              "masterGuide",
+                              e.target.value,
+                            )
+                          }
+                          className={styles.textInput}
+                        />
                       </div>
+
                     </div>
 
-                    <div className={styles.fourthColumn}>
-                      {/* Envio referencia */}
-                      <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                          Envio referencia
-                        </label>
-                          <input
-                            type="datetime-local"
-                            value={detail?.shippingDate} //? new Date(detail.shippingDate).toISOString().slice(0, 16) : ''
-                            onChange={(e) =>
-                              onUpdateServiceFormData(
-                                infoControl.idServiceItem,
-                                detail.sequence,
-                                "shippingDate",
-                                e.target.value,
-                              )
-                            }
-                            className={styles.textInput}
-                          />                       
-                      </div>
-                    </div>
                   </div>
                 </div>
 
@@ -413,13 +329,14 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 </div>
 
                 <div
-                  className={`
-                      accordion-content
+                  className={`accordion-content
                       ${!accordionOpen.transporte ? "collapsed" : ""}
                     `}
                 >
                   <div className={styles.fourColumnGrid}>
+
                     <div className={styles.firstColumn}>
+
                       {/* Transportista */}
                       <div className={styles.fieldGroup}>
                         <Transportista
@@ -435,21 +352,6 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         />
                       </div>
 
-                      {/* Guia/Tipo */}
-                      {/* <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                          Guia/Tipo
-                          <input
-                            type="text"
-                            value={shipment.typeOperation}
-                            readOnly
-                            className={styles.textInput}
-                          />
-                        </label>
-                      </div> */}
-                    </div>
-
-                    <div className={styles.secondColumn}>
                       {/* Tipo de unidad */}
                       <div className={styles.fieldGroup}>
                         <TipoUnidad
@@ -460,6 +362,98 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         />
                       </div>
 
+                      {/* Guia | Tipo */}
+                      <div className={styles.fieldGroup}>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-label-md font-label-md text-on-surface-variant">Guía | Tipo</label>
+                          <div className="flex items-center bg-surface-container focus-within:border-secondary transition-all">
+                            <input
+                              type="text"
+                              className={styles.textInput}
+                              // placeholder="ID de Guía" 
+                              value={detail?.transport.guide}
+                            />
+                            {/* <!-- Vertical Divider --> */}
+                            <div className="h-6 w-px bg-outline-variant dark:text-white"></div>
+                            {/* <!-- Dropdown for Tipo --> */}
+                            <div className="relative w-1/2">
+                              <select
+                                className={styles.selectInput}>
+                                {/* Maritimas */}
+                                {/* <option value="Master_Bill_Of_Lading">MBL</option> */}
+                                <option value="Bill_Of_Lading">BL</option> {/* Liberación de carga con original */}
+                                <option value="Sea_WayBill">SWB</option> {/* Liberación de carga contra copia */}
+                                <option value="House_Bill_Of_Lading">HBL</option>
+                                {/* Terrestres */}
+                                <option value="Bill_Of_Lading">BOL</option>
+                                {/* Aereas */}
+                                {/* <option value="Master_Of_Air_Way_Bill">MAWB</option> */}
+                                <option value="House_of_Air_Way_Bill">HAWB</option>
+                              </select>
+                            </div>
+
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <div className={styles.secondColumn}>
+
+                      {/* Tipo de solicitud de reserva */}
+                      <div className={styles.fieldGroup}>
+                        <TipoReferencia
+                          itemService={infoControl.idServiceItem}
+                          sequencedetail={detail.sequence}
+                          detail={detail}
+                          onUpdateServiceFormData={onUpdateServiceFormData}
+                        />
+                      </div>
+
+                      {/* Nombre Unidad */}
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel}>
+                          Número de unidad
+                        </label>
+                        <input
+                          type="text"
+                          value={detail?.masterGuide}
+                          onChange={(e) =>
+                            onUpdateServiceFormData(
+                              infoControl.idServiceItem,
+                              detail.sequence,
+                              "masterGuide",
+                              e.target.value,
+                            )
+                          }
+                          className={styles.textInput}
+                        />
+                      </div>
+
+                    </div>
+
+                    <div className={styles.thirdColumn}>
+                      
+                      {/* Número de reserva */}
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel}>
+                          Número de reserva
+                        </label>
+                        <input
+                          type="text"
+                          value={detail?.shippingReferenceNumber || ""}
+                          className={styles.textInput}
+                          onChange={(e) =>
+                            onUpdateServiceFormData(
+                              infoControl.idServiceItem,
+                              detail.sequence,
+                              "shippingReferenceNumber",
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </div>
+                      
                       {/* Tipo de movimiento */}
                       <div className={styles.fieldGroup}>
                         <TipoMovimeiento
@@ -469,9 +463,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           onUpdateServiceDetail={onUpdateServiceDetail}
                         />
                       </div>
-                    </div>
 
-                    <div className={styles.thirdColumn}>
                       {/* CAAT */}
                       {/* <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
@@ -487,6 +479,27 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     </div>
 
                     <div className={styles.fourthColumn}>
+
+                      {/* Fecha reserva */}
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel}>
+                          Fecha de reserva
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={detail?.shippingDate} //? new Date(detail.shippingDate).toISOString().slice(0, 16) : ''
+                          onChange={(e) =>
+                            onUpdateServiceFormData(
+                              infoControl.idServiceItem,
+                              detail.sequence,
+                              "shippingDate",
+                              e.target.value,
+                            )
+                          }
+                          className={styles.textInput}
+                        />
+                      </div>
+
                       {/* Tipo de ruta */}
                       <div className={styles.fieldGroup}>
                         <TipoRuta
@@ -557,7 +570,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
                       <div className={styles.firstColumn}>
-                         {/* ORIGEN */}
+                        {/* ORIGEN */}
                         {/* Pais de carga */}
                         <InputCountry
                           type="origin"
@@ -582,17 +595,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           labelClassName={styles.fieldLabel}
                           inputClassName={styles.textInput}
                         />
-                        {/*
-                        <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                        {t('operations.countryCharge')}
-                        <input
-                          type="text"
-                          value={detail.origin?.city}
-                          readOnly
-                          className={styles.textInput}/>
-                        </label>
-                      </div> */}
+
                         {/* Llegada a planta */}
                         {detail.idTypeShipment !== 2 && isAir === false && (
                           <div className={styles.fieldGroup}>
@@ -619,7 +622,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           serviceIdItem={detail.sequence}
                           isDisabled={false}
                           placeholder={t("quote.select")}
-                          label="pais de descarga"
+                          label="País de descarga"
                           onChangeCountry={({ type, changes }) => {
                             onUpdateServiceFormData(
                               infoControl.idServiceItem,
@@ -632,13 +635,6 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                             );
                           }}
                         />
-                        {/*<input
-                          type="text"
-                          //value={detail.destination?.city}
-                          readOnly
-                          className={styles.textInput}/>
-                        </label>
-                      </div> */}
                       </div>
                     </div>
                     <div className={styles.secondColumn}>
@@ -670,48 +666,48 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       )}
 
                       {/* Puerto o Aeropuerto de descarga */}
-                        {isAir ? 
-                          <InputAirport
-                            idCountry={detail.destination?.idCountry}
-                            value={detail?.destination?.airport ?? ""}
-                            serviceIdItem={detail.sequence}
-                            label={t("operations.airportDischarge")}
-                            groupClassName={styles.fieldGroup}
-                            labelClassName={styles.fieldLabel}
-                            inputClassName={styles.textInput}
-                            onChangeAirport={(airport) => {
-                              onUpdateServiceFormData(
-                                infoControl.idServiceItem,
-                                detail.sequence,
-                                "destination",
-                                {
-                                  ...(detail.destination ?? {}),
-                                  airport: airport?.airport_code ?? "",
-                                },
-                              );
-                            }}
-                          /> :
-                          <InputPort
-                            idCountry={detail.destination?.idCountry}
-                            value={detail?.destination?.Port ?? ""}
-                            serviceIdItem={detail.sequence}
-                            label={t("operations.portDischarge")}
-                            groupClassName={styles.fieldGroup}
-                            labelClassName={styles.fieldLabel}
-                            inputClassName={styles.textInput}
-                            onChangePort={(port) => {
-                              onUpdateServiceFormData(
-                                infoControl.idServiceItem,
-                                detail.sequence,
-                                "destination",
-                                {
-                                  ...(detail.destination ?? {}),
-                                  portCode: port?.port_code ?? "",
-                                },
-                              );
-                            }}
-                          />
-                        }
+                      {isAir ?
+                        <InputAirport
+                          idCountry={detail.destination?.idCountry}
+                          value={detail?.destination?.airport ?? ""}
+                          serviceIdItem={detail.sequence}
+                          label={t("operations.airportDischarge")}
+                          groupClassName={styles.fieldGroup}
+                          labelClassName={styles.fieldLabel}
+                          inputClassName={styles.textInput}
+                          onChangeAirport={(airport) => {
+                            onUpdateServiceFormData(
+                              infoControl.idServiceItem,
+                              detail.sequence,
+                              "destination",
+                              {
+                                ...(detail.destination ?? {}),
+                                airport: airport?.airport_code ?? "",
+                              },
+                            );
+                          }}
+                        /> :
+                        <InputPort
+                          idCountry={detail.destination?.idCountry}
+                          value={detail?.destination?.Port ?? ""}
+                          serviceIdItem={detail.sequence}
+                          label={t("operations.portDischarge")}
+                          groupClassName={styles.fieldGroup}
+                          labelClassName={styles.fieldLabel}
+                          inputClassName={styles.textInput}
+                          onChangePort={(port) => {
+                            onUpdateServiceFormData(
+                              infoControl.idServiceItem,
+                              detail.sequence,
+                              "destination",
+                              {
+                                ...(detail.destination ?? {}),
+                                portCode: port?.port_code ?? "",
+                              },
+                            );
+                          }}
+                        />
+                      }
                     </div>
 
                     <div className={styles.thirdColumn}>
@@ -805,14 +801,14 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     <textarea
                       value={detail.observationsService || ""}
                       className={styles.textArea}
-                      /*onChange={(e) =>
-                    updateService(
-                      infoControl.idServiceItem,
-                      detail.sequence,
-                      "observationsService",
-                      e.target.value,
-                    )
-                  }*/
+                    /*onChange={(e) =>
+                  updateService(
+                    infoControl.idServiceItem,
+                    detail.sequence,
+                    "observationsService",
+                    e.target.value,
+                  )
+                }*/
                     />
                     {/* <input
                               type="text"
