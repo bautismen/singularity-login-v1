@@ -133,7 +133,22 @@ export const Transportista = ({ itemService, sequencedetail, transport, onUpdate
   );
 };
 
-export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateServiceDetail }) => {
+export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, modalidad }) => {
+
+  const tipoUnidad =  [
+    {value: "Buque", name: "Buque", modalidad: "maritimo"},
+    {value: "Plataforma", name: "Plataforma", modalidad: "terrestre"},
+    {value: "Caja seca 20", name: "Caja seca 20", modalidad: "terrestre"},
+    {value: "Caja seca 40", name: "Caja seca 40", modalidad: "terrestre"},
+    {value: "Caja seca 48", name: "Caja seca 48", modalidad: "terrestre"},
+    {value: "Caja seca 53", name: "Caja seca 53", modalidad: "terrestre"},
+    {value: "Remolque", name: "Remolque", modalidad: "terrestre"},
+    {value: "Nissan", name: "Nissan", modalidad: "terrestre"},
+    {value: "Rabón", name: "Rabón", modalidad: "terrestre"},
+    {value: "Torton", name: "Torton", modalidad: "terrestre"},
+    {value: "PAX", name: "PAX", modalidad: "aereo"}, /* Carga mixta pasajeros y carga con restricciones */
+    {value: "CAO", name: "CAO", modalidad: "aereo"} /* Sólo carga (Cargo Aircraft ONLY) */
+  ]
 
   return (
     <>
@@ -151,24 +166,10 @@ export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateSer
         }
       >
         <option value="">Seleccionar ...</option>
-        <option value={"Buque"}>Buque</option>
-        {/* Ambos */}
-        <option value={"Plataforma"}>Plataforma</option>
-        {/* Articuladas */}
-        <option value={"Caja seca 20"}>Caja seca 20</option>
-        <option value={"Caja seca 40"}>Caja seca 40</option>
-        <option value={"Caja seca 48"}>Caja seca 48</option>
-        <option value={"Caja seca 53"}>Caja seca 53</option>
-        <option value={"Remolque"}>Remolque</option>
-        {/* No articuladas */}
-        <option value={"Nissan"}>Nissan / Estaquitas</option>
-        <option value={"Camión 3.5"}>Camión 3.5</option>
-        <option value={"Rabón"}>Camión rabón</option>
-        <option value={"Torton"}>Camión torton</option>
-        <option value={"Torton"}>Camión mudancero</option>
+        {tipoUnidad.filter( tu => tu.modalidad === modalidad).map((tu) => (
+          <option key={tu.value} value={tu.value}>{tu.name}</option>
+        ))}
 
-        <option value={"PAX"}>PAX</option> {/* Carga mixta pasajeros y carga con restricciones */}
-        <option value={"CAO"}>CAO</option> {/* Sólo carga (Cargo Aircraft ONLY) */}
       </select>
     
     </>
