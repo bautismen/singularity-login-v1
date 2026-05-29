@@ -3,7 +3,6 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import styles from "../../pages/Operations.module.css";
 import { InputCountry } from "../InputCountry";
 import { InputPort } from "../InputPort";
-import { InputAirport } from "../InputAirport";
 import { PricingControl } from "../../types/pricingControl";
 import { OperationsFormData } from "../../hooks/useOperations";
 import {
@@ -81,8 +80,6 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const detail = infoControl?.serviceDetail?.[currentIndex]; //currentDetail
-  //Puertos o Aeropuertos
-  const isAir = info.idService === 5 ? true : false;
 
   const [accordionOpen, setAccordionOpen] = React.useState({});
 
@@ -113,21 +110,19 @@ export const FreightForm: React.FC<FreightFormProps> = ({
   };
 
   const duplicateCard = (idServiceItem, detail) => {
-
-    const card = document.getElementById('mainFormCard');
-    card.style.opacity = '0.5';
-    card.style.transform = 'scale(0.98)';
+    const card = document.getElementById("mainFormCard");
+    card.style.opacity = "0.5";
+    card.style.transform = "scale(0.98)";
 
     const newDetail = structuredClone(detail);
 
-    let newsequence = infoControl.serviceDetail.length + 1
+    let newsequence = infoControl.serviceDetail.length + 1;
     // Nuevo detail
     newDetail.sequence = newsequence;
 
     setCurrentIndex(infoControl.serviceDetail.length);
 
     onDuplicateDetail(idServiceItem, newsequence, newDetail);
-
   };
 
   return (
@@ -226,14 +221,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 {/* <details>
                 </details> */}
 
-                <div className={`accordion-content
+                <div
+                  className={`accordion-content
                       ${!accordionOpen.envio ? "collapsed" : ""}
                     `}
                 >
                   <div className={styles.fourColumnGrid}>
-
                     <div className={styles.firstColumn}>
-
                       {/* Modalidad */}
                       <div className={styles.fieldGroup}>
                         <TipoEnvio
@@ -243,11 +237,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           onUpdateServiceFormData={onUpdateServiceFormData}
                         />
                       </div>
-
                     </div>
 
                     <div className={styles.secondColumn}>
-
                       {/* Tipo operación */}
                       <div className={styles.fieldGroup}>
                         <TipoOperacion
@@ -257,11 +249,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           onUpdateServiceFormData={onUpdateServiceFormData}
                         />
                       </div>
-
                     </div>
 
                     <div className={styles.thirdColumn}>
-
                       {/* Incoterm */}
                       <div className={styles.fieldGroup}>
                         <Incoterm
@@ -272,16 +262,12 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           incoterms={incoterms}
                         />
                       </div>
-
                     </div>
 
                     <div className={styles.fourthColumn}>
-
                       {/* Guia master */}
                       <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                          Guia master
-                        </label>
+                        <label className={styles.fieldLabel}>Guia master</label>
                         <input
                           type="text"
                           value={detail?.masterGuide}
@@ -296,9 +282,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           className={styles.textInput}
                         />
                       </div>
-
                     </div>
-
                   </div>
                 </div>
 
@@ -334,9 +318,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     `}
                 >
                   <div className={styles.fourColumnGrid}>
-
                     <div className={styles.firstColumn}>
-
                       {/* Transportista */}
                       <div className={styles.fieldGroup}>
                         <Transportista
@@ -365,41 +347,45 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       {/* Guia | Tipo */}
                       <div className={styles.fieldGroup}>
                         <div className="flex flex-col gap-1">
-                          <label className="text-label-md font-label-md text-on-surface-variant">Guía | Tipo</label>
+                          <label className="text-label-md font-label-md text-on-surface-variant">
+                            Guía | Tipo
+                          </label>
                           <div className="flex items-center bg-surface-container focus-within:border-secondary transition-all">
                             <input
                               type="text"
                               className={styles.textInput}
-                              // placeholder="ID de Guía" 
+                              // placeholder="ID de Guía"
                               value={detail?.transport.guide}
                             />
                             {/* <!-- Vertical Divider --> */}
                             <div className="h-6 w-px bg-outline-variant dark:text-white"></div>
                             {/* <!-- Dropdown for Tipo --> */}
                             <div className="relative w-1/2">
-                              <select
-                                className={styles.selectInput}>
+                              <select className={styles.selectInput}>
                                 {/* Maritimas */}
                                 {/* <option value="Master_Bill_Of_Lading">MBL</option> */}
-                                <option value="Bill_Of_Lading">BL</option> {/* Liberación de carga con original */}
-                                <option value="Sea_WayBill">SWB</option> {/* Liberación de carga contra copia */}
-                                <option value="House_Bill_Of_Lading">HBL</option>
+                                <option value="Bill_Of_Lading">BL</option>{" "}
+                                {/* Liberación de carga con original */}
+                                <option value="Sea_WayBill">SWB</option>{" "}
+                                {/* Liberación de carga contra copia */}
+                                <option value="House_Bill_Of_Lading">
+                                  HBL
+                                </option>
                                 {/* Terrestres */}
                                 <option value="Bill_Of_Lading">BOL</option>
                                 {/* Aereas */}
                                 {/* <option value="Master_Of_Air_Way_Bill">MAWB</option> */}
-                                <option value="House_of_Air_Way_Bill">HAWB</option>
+                                <option value="House_of_Air_Way_Bill">
+                                  HAWB
+                                </option>
                               </select>
                             </div>
-
                           </div>
                         </div>
                       </div>
-
                     </div>
 
                     <div className={styles.secondColumn}>
-
                       {/* Tipo de solicitud de reserva */}
                       <div className={styles.fieldGroup}>
                         <TipoReferencia
@@ -429,11 +415,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           className={styles.textInput}
                         />
                       </div>
-
                     </div>
 
                     <div className={styles.thirdColumn}>
-                      
                       {/* Número de reserva */}
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
@@ -453,7 +437,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           }
                         />
                       </div>
-                      
+
                       {/* Tipo de movimiento */}
                       <div className={styles.fieldGroup}>
                         <TipoMovimeiento
@@ -479,7 +463,6 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     </div>
 
                     <div className={styles.fourthColumn}>
-
                       {/* Fecha reserva */}
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
@@ -537,6 +520,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                   </div>
                 </div>
 
+                {/**ORIGEN */}         
                 <div
                   className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
                   onClick={() => toggleAccordion(`origin-${detail.sequence}`)}
@@ -545,7 +529,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     <span className="dark:text-white">
                       <MapPin />
                     </span>
-                    <h2 className="title">Origen / Destino</h2>
+                    <h2 className="title">Origen </h2>
                   </div>
                   <span
                     className={`
@@ -560,156 +544,124 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     <ChevronUp />
                   </span>
                 </div>
-
-                <div
-                  className={`
-                      accordion-content
-                      ${!accordionOpen.origen ? "collapsed" : ""}
-                    `}
-                >
+                <div className={` accordion-content ${!accordionOpen.origen ? "collapsed" : ""}`}>
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
-                      <div className={styles.firstColumn}>
-                        {/* ORIGEN */}
-                        {/* Pais de carga */}
-                        <InputCountry
-                          type="origin"
-                          countries={countries}
-                          selectedCountryId={detail.origin?.idCountry}
-                          serviceIdItem={detail.sequence}
-                          isDisabled={false}
-                          placeholder={t("quote.select")}
-                          label={t("operations.countryCharge")}
-                          onChangeCountry={({ type, changes }) => {
-                            onUpdateServiceFormData(
-                              infoControl.idServiceItem,
-                              detail.sequence,
-                              "origin",
-                              {
-                                ...(detail.origin ?? {}),
-                                ...changes,
-                              },
-                            );
-                          }}
-                          groupClassName={styles.fieldGroup}
-                          labelClassName={styles.fieldLabel}
-                          inputClassName={styles.textInput}
-                        />
-
-                        {/* Llegada a planta */}
-                        {detail.idTypeShipment !== 2 && isAir === false && (
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              {t("operations.arrivalPlant")}
-                            </label>
-                            <input
-                              type="datetime-local"
-                              value={detail?.origin}
-                              className={styles.textInput}
-                            />
-                          </div>
-                        )}
-
-                        {/*DESTINO */}
-                        {/* Pais de descarga */}
-                        <InputCountry
-                          groupClassName={styles.fieldGroup}
-                          labelClassName={styles.fieldLabel}
-                          inputClassName={styles.textInput}
-                          type="destination"
-                          countries={countries}
-                          selectedCountryId={detail.destination?.idCountry}
-                          serviceIdItem={detail.sequence}
-                          isDisabled={false}
-                          placeholder={t("quote.select")}
-                          label="País de descarga"
-                          onChangeCountry={({ type, changes }) => {
-                            onUpdateServiceFormData(
-                              infoControl.idServiceItem,
-                              detail.sequence,
-                              "destination",
-                              {
-                                ...(detail.destination ?? {}),
-                                ...changes,
-                              },
-                            );
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.secondColumn}>
-                      {detail.idTypeShipment !== 2 && isAir === false && (
-                        <>
-                          {/* Lugar de recoleccion */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Lugar de recoleccion
-                            </label>
-                            <input
-                              type="text"
-                              value={detail?.origin?.placeOfReceipt}
-                              className={styles.textInput}
-                            />
-                          </div>
-                          {/* Salida de planta */}
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Salida de planta
-                            </label>
-                            <input
-                              type="datetime-local"
-                              value={detail?.origin}
-                              className={styles.textInput}
-                            />
-                          </div>
-                        </>
+                      {/* ORIGEN */}
+                      {/* Pais de carga */}
+                      <InputCountry
+                        type="origin"
+                        countries={countries}
+                        selectedCountryId={detail.origin?.idCountry}
+                        serviceIdItem={detail.sequence}
+                        isDisabled={false}
+                        placeholder={t("quote.select")}
+                        label={t("operations.countryCharge")}
+                        onChangeCountry={({ type, changes }) => {
+                          onUpdateServiceFormData(
+                            infoControl.idServiceItem,
+                            detail.sequence,
+                            "origin",
+                            {
+                              ...(detail.origin ?? {}),
+                              ...changes,
+                            },
+                          );
+                        }}
+                        groupClassName={styles.fieldGroup}
+                        labelClassName={styles.fieldLabel}
+                        inputClassName={styles.textInput}
+                       >
+                        <div className="h-6 w-px bg-outline-variant dark:text-white"></div>
+                            {/* <!-- Dropdown for Tipo --> */}
+                            <div className="relative w-1/2">
+                              <select className={styles.selectInput}>
+                                {/* Maritimas */}
+                                {/* <option value="Master_Bill_Of_Lading">MBL</option> */}
+                                <option value="Bill_Of">BL</option>{" "}
+                                {/* Liberación de carga con original */}
+                                <option value="Sea_">SWB</option>{" "}
+                                {/* Liberación de carga contra copia */}
+                                <option value="House_Of_Lading">
+                                  HBL
+                                </option>
+                                {/* Terrestres */}
+                                <option value="Bill_">BOL</option>
+                                {/* Aereas */}
+                                {/* <option value="Master_Of_Air_Way_Bill">MAWB</option> */}
+                                <option value="House_of_Air_Way_Bill">
+                                  HAWB
+                                </option>
+                              </select>
+                            </div> 
+                         
+                       </InputCountry>
+                                                                                                          
+                      {/* Llegada a planta  */}
+                      {detail.idTypeShipment !== 2  && (                        
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            {t("operations.arrivalPlant")}
+                          </label>
+                          <input
+                            type="datetime-local"
+                            value={detail?.origin}
+                            className={styles.textInput}
+                          />                          
+                        </div>                        
                       )}
-
-                      {/* Puerto o Aeropuerto de descarga */}
-                      {isAir ?
-                        <InputAirport
-                          idCountry={detail.destination?.idCountry}
-                          value={detail?.destination?.airport ?? ""}
-                          serviceIdItem={detail.sequence}
-                          label={t("operations.airportDischarge")}
-                          groupClassName={styles.fieldGroup}
-                          labelClassName={styles.fieldLabel}
-                          inputClassName={styles.textInput}
-                          onChangeAirport={(airport) => {
-                            onUpdateServiceFormData(
-                              infoControl.idServiceItem,
-                              detail.sequence,
-                              "destination",
-                              {
-                                ...(detail.destination ?? {}),
-                                airport: airport?.airport_code ?? "",
-                              },
-                            );
-                          }}
-                        /> :
-                        <InputPort
-                          idCountry={detail.destination?.idCountry}
-                          value={detail?.destination?.Port ?? ""}
-                          serviceIdItem={detail.sequence}
-                          label={t("operations.portDischarge")}
-                          groupClassName={styles.fieldGroup}
-                          labelClassName={styles.fieldLabel}
-                          inputClassName={styles.textInput}
-                          onChangePort={(port) => {
-                            onUpdateServiceFormData(
-                              infoControl.idServiceItem,
-                              detail.sequence,
-                              "destination",
-                              {
-                                ...(detail.destination ?? {}),
-                                portCode: port?.port_code ?? "",
-                              },
-                            );
-                          }}
-                        />
+                    </div>  
+                    <div className={styles.secondColumn}>
+                      {[2, 4].includes(detail.idTypeShipment) ?  
+                          <InputPort
+                            idCountry={detail.origin?.idCountry}
+                            value={detail?.origin?.Port ?? ""}
+                            serviceIdItem={detail.sequence}
+                            type="origin"
+                            label="Puerto de carga"
+                            groupClassName={styles.fieldGroup}
+                            labelClassName={styles.fieldLabel}
+                            inputClassName={styles.textInput}
+                            onChangePort={(port) => {
+                              onUpdateServiceFormData(
+                                infoControl.idServiceItem,
+                                detail.sequence,
+                                "origin",
+                                {
+                                  ...(detail.origin ?? {}),
+                                  portCode: port?.port_code ?? "",
+                                },
+                              );
+                            }}
+                          />
+                      : 
+                      /* Lugar de recoleccion */
+                      <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Lugar de recoleccion
+                          </label>
+                          <input
+                            type="text"
+                            value={detail?.origin?.placeOfReceipt}
+                            className={styles.textInput}
+                          />
+                      </div>
                       }
-                    </div>
 
+                      {/* Salida de planta */}
+                      {detail.idTypeShipment !== 2  && (
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                                Salida de planta
+                          </label>
+                          <input
+                            type="datetime-local"
+                            value={detail?.origin}
+                            className={styles.textInput}
+                          />
+                      </div>
+                      )}                      
+                    </div>      
                     <div className={styles.thirdColumn}>
                       {/* ETD (Salida estimada) */}
                       <div className={styles.fieldGroup}>
@@ -730,28 +682,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           }
                         />
                       </div>
-
-                      {/*  */}
-                      <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>.</label>
-                        <input
-                          type="text"
-                          value={detail?.origin}
-                          className={styles.textInput}
-                        />
-                      </div>
-
-                      {/* Planta */}
-                      <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>Planta</label>
-                        <input
-                          type="text"
-                          value={detail.destination?.plant}
-                          className={styles.textInput}
-                        />
-                      </div>
-                    </div>
-
+                    </div> 
                     <div className={styles.fourthColumn}>
                       {/* Despacho / recoleccion */}
                       <div className={styles.fieldGroup}>
@@ -764,17 +695,142 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           className={styles.textInput}
                         />
                       </div>
+                    </div>             
+                  </div>                  
+                </div>
+                
+                {/**DESTINO */}
+                <div
+                  className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
+                  onClick={() =>
+                    toggleAccordion(`destination-${detail.sequence}`)
+                  }
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="dark:text-white">
+                      <MapPin />
+                    </span>
+                    <h2 className="title">Destino</h2>
+                  </div>
+                  <span className={`material-symbols-outlined
+                                    text-primary
+                                    chevron-icon
+                                    dark:text-white
+                                    ${accordionOpen.origin ? "rotate-180" : ""}`}
+                        id="origin-chevron">
+                    <ChevronUp />
+                  </span>
+                </div>
 
-                      {/*  */}
+                <div className={`accordion-content ${!accordionOpen.destino ? "collapsed" : ""}`}>
+                   <div className={styles.fourColumnGrid}>
+                    <div className={styles.firstColumn}>
+                      {/*DESTINO */}
+                      {/* Pais de descarga */}
+                      <InputCountry
+                        groupClassName={styles.fieldGroup}
+                        labelClassName={styles.fieldLabel}
+                        inputClassName={styles.textInput}
+                        type="destination"
+                        countries={countries}
+                        selectedCountryId={detail.destination?.idCountry}
+                        serviceIdItem={detail.sequence}
+                        isDisabled={false}
+                        placeholder={t("quote.select")}
+                        label="Pais de descarga"
+                        onChangeCountry={({ type, changes }) => {
+                          onUpdateServiceFormData(
+                            infoControl.idServiceItem,
+                            detail.sequence,
+                            "destination",
+                            {
+                              ...(detail.destination ?? {}),
+                              ...changes,
+                            },
+                          );
+                        }}
+                      />
+                      
+                      
+                      {/* ATA (Atraque) */}
                       <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>.</label>
+                        <label className={styles.fieldLabel}>
+                          {" "}
+                          ATA (Atraque)
+                        </label>
                         <input
-                          type="text"
-                          value={detail.origin}
+                          type="datetime-local"
+                          //value={detail?.destination}
                           className={styles.textInput}
                         />
                       </div>
+                     
+                      {/* Llegada a planta y Salida de planta */}
+                      {[1, 4].includes(detail.idTypeShipment) && (
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Salida de destino
+                          </label>
+                          <input
+                            type="datetime-local"
+                            value={detail?.destination}
+                            className={styles.textInput}
+                          />
+                        </div>
+                      )}
+                    </div>
 
+                    <div className={styles.secondColumn}>
+                      {/* Puerto o Aeropuerto de descarga */}
+                      {[2, 3].includes(detail.idTypeShipment) ?                                                   
+                        <InputPort
+                          idCountry={detail.destination?.idCountry}
+                          value={detail?.destination?.Port ?? ""}
+                          serviceIdItem={detail.sequence}
+                          type="destination"
+                          label={t("operations.portDischarge")}
+                          groupClassName={styles.fieldGroup}
+                          labelClassName={styles.fieldLabel}
+                          inputClassName={styles.textInput}
+                          onChangePort={(port) => {
+                            onUpdateServiceFormData(
+                              infoControl.idServiceItem,
+                              detail.sequence,
+                              "destination",
+                              {
+                                ...(detail.destination ?? {}),
+                                portCode: port?.port_code ?? "",
+                              },
+                            );
+                          }}
+                        />
+                      : (
+                        /* Lugar de recoleccion */
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Lugar de recoleccion
+                          </label>
+                          <input
+                            type="text"
+                            value={detail?.origin?.placeOfReceipt}
+                            className={styles.textInput}
+                          />
+                        </div>
+                      )}
+                      {/* Entrega en destino */}
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel}>
+                          Entrega en destino
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={detail?.destination}
+                          className={styles.textInput}
+                        />
+                      </div>
+                    </div>
+
+                    <div className={styles.thirdColumn}>
                       {/* ETA (Llegada estimada) */}
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
@@ -786,10 +842,55 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           className={styles.textInput}
                         />
                       </div>
+                     
+                      
+                       {/* Llegada a planta  */}
+                      {detail.idTypeShipment !== 2 &&                         
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            {t("operations.arrivalPlant")}
+                          </label>
+                          <input
+                            type="datetime-local"
+                            value={detail?.origin}
+                            className={styles.textInput}
+                          />                          
+                        </div>                        
+                      }
                     </div>
-                  </div>
 
-                  {/* Observaciones del servicio*/}
+                    <div className={styles.fourthColumn}>
+                      {/* Planta */}
+                      { [1,4].includes(detail.idTypeShipment)  && 
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Planta
+                          </label>
+                          <input
+                            type="text"
+                            value={detail.destination?.plant}
+                            className={styles.textInput}
+                          />
+                        </div>
+                      }
+                      
+                       {/* Salida de planta */}
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel}>
+                              Salida de planta
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={detail?.origin}
+                          className={styles.textInput}
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* Observaciones del servicio*/}
                   <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
                     <label
                       htmlFor="observations"
@@ -801,40 +902,39 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     <textarea
                       value={detail.observationsService || ""}
                       className={styles.textArea}
-                    /*onChange={(e) =>
-                  updateService(
-                    infoControl.idServiceItem,
-                    detail.sequence,
-                    "observationsService",
-                    e.target.value,
-                  )
-                }*/
+                      /*onChange={(e) =>
+                    updateService(
+                      infoControl.idServiceItem,
+                      detail.sequence,
+                      "observationsService",
+                      e.target.value,
+                    )
+                  }*/
                     />
                     {/* <input
-                              type="text"
-                              id="observationsService"
-                              name="observations"
-                              value={
-                                formData.Services.find(
-                                  s => s.idServiceItem === serv.idServiceItem
-                                )?.observations || ''
-                              }
-                              onChange={(e) =>
-                                updateService(
-                                  serv.idServiceItem,
-                                  'observations',
-                                  e.target.value
-                                )
-                              }
-                              className="min-h-[30px] w-full p-2 rounded-lg
-                                      bg-transparent text-black dark:text-white
-                                      border border-gray-300 dark:border-gray-700
-                                      hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
-                                      focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
-                                      outline-none appearance-none text-body-sm transition-colors"
-                            /> */}
+                                type="text"
+                                id="observationsService"
+                                name="observations"
+                                value={
+                                  formData.Services.find(
+                                    s => s.idServiceItem === serv.idServiceItem
+                                  )?.observations || ''
+                                }
+                                onChange={(e) =>
+                                  updateService(
+                                    serv.idServiceItem,
+                                    'observations',
+                                    e.target.value
+                                  )
+                                }
+                                className="min-h-[30px] w-full p-2 rounded-lg
+                                        bg-transparent text-black dark:text-white
+                                        border border-gray-300 dark:border-gray-700
+                                        hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
+                                        focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
+                                        outline-none appearance-none text-body-sm transition-colors"
+                              /> */}
                   </div>
-                </div>
               </div>
 
               <div className={styles.serviceCard}>

@@ -4,11 +4,14 @@ import styles from "../pages/Quotations.module.css";
 import { Port } from '../types/port';
 import { catalogService } from '../services/catalogsService';
 
+type LocationType = "origin" | "destination";
+
 interface PortInputProps {
     //data
     idCountry?: string;
     value?: string;
     serviceIdItem?: number;
+    type? :LocationType;
     //configuracion
     label: string;
     required?: boolean;
@@ -25,6 +28,7 @@ export const InputPort: React.FC<PortInputProps> = ({
   idCountry,
   value,
   serviceIdItem,
+  type,
   label,
   required = false,
   isDisabled = false,
@@ -41,9 +45,10 @@ export const InputPort: React.FC<PortInputProps> = ({
     const [inputValue, setInputValue] = useState("");
 
     const datalistId = useMemo(
-        () => `ports-${serviceIdItem}`,
+        () => `ports-${type ?? 0}-${serviceIdItem}`,
         [serviceIdItem]
     );
+    console.log('PUERTO: ',datalistId, value);
 
     //Seteo del valor de port
     useEffect(() => {
