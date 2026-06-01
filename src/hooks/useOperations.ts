@@ -145,14 +145,22 @@ const updateFormData = (changes:
               ...detail,
               [collection]: {
                 ...detail[collection],
-                [field]: value
+                [field]:
+                  typeof value === 'object' &&
+                  value !== null &&
+                  !Array.isArray(value)
+                    ? {
+                        ...detail[collection]?.[field],
+                        ...value
+                      }
+                    : value
               }
             } : detail
           )
         } : service
       )
     }));
-  // console.log(formData)
+   console.log(formData)
   };
 
   const duplicateDetail = (idServiceItem: number, detailId: number, newDetail: object) => {

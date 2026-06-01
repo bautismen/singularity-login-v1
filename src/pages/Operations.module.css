@@ -796,25 +796,42 @@
 }
 
 .accordion-content {
-    transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
-    max-height: 1000px;
-    overflow: hidden;
-  }
+  transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+  max-height: 1000px;
+  overflow: hidden;
+}
   
-  .accordion-content.collapsed {
-    max-height: 0;
-    opacity: 0;
-    pointer-events: none;
-  }
+.accordion-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
   
-  .chevron-icon {
-    transition: transform 0.3s ease;
-  }
+.chevron-icon {
+  transition: transform 0.3s ease;
+}
   
-  .chevron-icon.rotate-180 {
-    transform: rotate(180deg);
-  }
+.chevron-icon.rotate-180 {
+  transform: rotate(180deg);
+}
   
+details{
+  border-radius: 12px;
+  overflow: hidden;
+  transition: 0.3s;
+  margin-bottom: 14px;
+  background: transparent;
+}
+
+details.hover{
+  border-color: #03738C;
+}
+
+details[open]{
+  border-color: #2563eb;
+  box-shadow: 0 5px rgba(37, 99, 235, 0.1);
+}
+
 @media (max-width: 1024px) {
   .container {
     padding: 1.25rem 1.5rem;

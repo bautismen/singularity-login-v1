@@ -14,6 +14,7 @@ import {
   TipoUnidad,
   TipoRuta,
   TipoMovimeiento,
+  TipoGuia
 } from "../operations/component";
 import {
   Copy,
@@ -22,7 +23,7 @@ import {
   ChevronRight,
   ChevronUp,
   Package,
-  Truck,
+  Container,
   MapPin,
 } from "lucide-react";
 
@@ -294,7 +295,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 >
                   <div className="flex items-center gap-3">
                     <span className="dark:text-white">
-                      <Truck />
+                      <Container />
                     </span>
                     <h2 className="title">Transporte</h2>
                   </div>
@@ -341,47 +342,19 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           sequencedetail={detail.sequence}
                           transport={detail?.transport}
                           onUpdateServiceDetail={onUpdateServiceDetail}
+                          modalidad={"maritimo"}
                         />
                       </div>
 
                       {/* Guia | Tipo */}
                       <div className={styles.fieldGroup}>
-                        <div className="flex flex-col gap-1">
-                          <label className="text-label-md font-label-md text-on-surface-variant">
-                            Guía | Tipo
-                          </label>
-                          <div className="flex items-center bg-surface-container focus-within:border-secondary transition-all">
-                            <input
-                              type="text"
-                              className={styles.textInput}
-                              // placeholder="ID de Guía"
-                              value={detail?.transport.guide}
-                            />
-                            {/* <!-- Vertical Divider --> */}
-                            <div className="h-6 w-px bg-outline-variant dark:text-white"></div>
-                            {/* <!-- Dropdown for Tipo --> */}
-                            <div className="relative w-1/2">
-                              <select className={styles.selectInput}>
-                                {/* Maritimas */}
-                                {/* <option value="Master_Bill_Of_Lading">MBL</option> */}
-                                <option value="Bill_Of_Lading">BL</option>{" "}
-                                {/* Liberación de carga con original */}
-                                <option value="Sea_WayBill">SWB</option>{" "}
-                                {/* Liberación de carga contra copia */}
-                                <option value="House_Bill_Of_Lading">
-                                  HBL
-                                </option>
-                                {/* Terrestres */}
-                                <option value="Bill_Of_Lading">BOL</option>
-                                {/* Aereas */}
-                                {/* <option value="Master_Of_Air_Way_Bill">MAWB</option> */}
-                                <option value="House_of_Air_Way_Bill">
-                                  HAWB
-                                </option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
+                        <TipoGuia
+                          itemService={infoControl.idServiceItem}
+                          sequencedetail={detail.sequence}
+                          transport={detail?.transport}
+                          onUpdateServiceDetail={onUpdateServiceDetail}
+                          modalidad={"maritimo"}
+                        />
                       </div>
                     </div>
 
@@ -396,21 +369,16 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         />
                       </div>
 
-                      {/* Nombre Unidad */}
+                      {/* Nombre de la unidad de transporte*/}
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
                           Número de unidad
                         </label>
                         <input
                           type="text"
-                          value={detail?.masterGuide}
+                          value={detail?.transport?.nameTransport}
                           onChange={(e) =>
-                            onUpdateServiceFormData(
-                              infoControl.idServiceItem,
-                              detail.sequence,
-                              "masterGuide",
-                              e.target.value,
-                            )
+                            onUpdateServiceDetail(infoControl.idServiceItem, detail.sequence, 'transport', 'nameTransport', e.target.value)
                           }
                           className={styles.textInput}
                         />
