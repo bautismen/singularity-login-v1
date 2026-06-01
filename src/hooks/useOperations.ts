@@ -164,7 +164,6 @@ const updateFormData = (changes:
   };
 
   const duplicateDetail = (idServiceItem: number, detailId: number, newDetail: object) => {
-
     setFormData(prev => ({
       ...prev,
       Services: prev.Services.map(service =>
@@ -179,8 +178,21 @@ const updateFormData = (changes:
           : service
       )
     }));
- 
     console.log(formData)
+  };
+
+  const removeDetail = (idServiceItem: number, sequence: number) => {
+    setFormData(prev => ({
+      ...prev,
+      Services: prev.Services.map(service => service.idServiceItem === idServiceItem ? 
+        {
+          ...service,
+          serviceDetail: service.serviceDetail.filter(det => det.sequence !== sequence)
+
+        } : service
+      )
+    })
+    )
   };
 
 
@@ -191,6 +203,7 @@ return {
     updateFormData, 
     updateServiceFormData,
     updateServiceDetail,
-    duplicateDetail
+    duplicateDetail,
+    removeDetail
 }
 }

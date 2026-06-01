@@ -11,9 +11,9 @@ import { catalogService } from '../services/catalogsService';
 import { PricingControl } from '../types/pricingControl';
 import { getSuppliers } from '../services/supplierService';
 import { Supplier } from '../types/supplier';
-import { FreightForm, FreightFormProps } from '../components/operations/FreightForm'
-import { PrevioForm , PrevioFormProps} from '../components/operations/PrevioForm'
-import { OtherServiceForm, OtherServiceFormProps } from '../components/operations/OtherServiceForm'
+import { FreightForm } from '../components/operations/FreightForm'
+import { PrevioForm } from '../components/operations/PrevioForm'
+import { OtherServiceForm } from '../components/operations/OtherServiceForm'
 import {useOperations} from '../hooks/useOperations'
 import { useCatalogs } from "../hooks/useCatalogs";
 import { AirFreightForm } from '../components/operations/AirFreightForm';
@@ -60,7 +60,8 @@ export default function Operations() {
     updateFormData, 
     updateServiceFormData,
     updateServiceDetail,
-    duplicateDetail
+    duplicateDetail,
+    removeDetail
   } = useOperations()
 
   //   const handleStatusFilterChange = (status: 'todos' | 'activo' | 'inactivo') => {
@@ -310,6 +311,7 @@ export default function Operations() {
 
     setControlsOperation(prev => [
       ...prev,
+      //control
       {
         _id: control._id,
         control: control.control,
@@ -317,7 +319,7 @@ export default function Operations() {
       }
     ]);
 
-    //console.log('CONTROLES',control, 'formdata',formData )
+    console.log('CONTROLES OP',controlsOperation, )
 
     // Quitamos el control seleccionado de la lista de controles disponibles para el cliente
     setControlsClient(prev =>
@@ -374,7 +376,7 @@ export default function Operations() {
   };
 
   const removeService = (_idservice: number) => {
-
+    console.log('servicesOperation',servicesOperation, _idservice)
     setServicesOperation(servicesOperation.filter(s => s._id !== _idservice));  // Eliminar el servicio seleccionado de la lista de servicios asociados a la operación
 
     // controlsClient.push(controlsOperation.find(c => c._id === _idcontrol) as PricingControl); // Volver a agregar el control eliminado a la lista de controles disponibles para el cliente
@@ -1763,9 +1765,7 @@ export default function Operations() {
                                 ✕
                               </button>
                             </span>
-
                           ))
-
                         ))
                       ) : (
                         <span className=''></span>
@@ -1860,8 +1860,7 @@ export default function Operations() {
                               type="button"
                               value={service._id}
                               className="ml-1 text-gray-500 hover:text-red-500 dark:text-gray-300"
-                              onClick={() => { removeService(service._id as number) }}
-                            >
+                              onClick={(e) => {  removeService(service._id as number) }}>
                               ✕
                             </button>
                           </span>
@@ -1891,7 +1890,10 @@ export default function Operations() {
                 id="observations"
                 name="observations"
                 value={formData.Observations}
-                onChange={(e) => updateFormData({ ...formData, Observations: e.target.value })} //setformdata
+                onChange={(e) => {
+                  console.log(formData)
+                  updateFormData({ ...formData, Observations: e.target.value })} //setformdata
+                }
                 className="min-h-[30px] w-full p-2 rounded-lg
                            bg-transparent text-black dark:text-white
                            border border-gray-300 dark:border-gray-700
@@ -2061,6 +2063,7 @@ export default function Operations() {
                       onUpdateServiceFormData={updateServiceFormData}
                       onUpdateServiceDetail={updateServiceDetail}
                       onDuplicateDetail={duplicateDetail}
+                      onRemoveDetail={removeDetail}
                     />) :                    
                     [17].includes(parseInt(activeTab.idService)) ?
                       (<PrevioForm

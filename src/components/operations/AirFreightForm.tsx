@@ -58,6 +58,10 @@ export interface AirFreightFormProps {
     detailId: number,
     newDetail: object,
   ) => void;
+  onRemoveDetail: (
+    idServiceItem: number,
+    detailId: number
+  ) =>void;
 }
 
 export const AirFreightForm: React.FC<AirFreightFormProps> = ({
@@ -71,13 +75,14 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
   onUpdateServiceFormData,
   onUpdateServiceDetail,
   onDuplicateDetail,
+  onRemoveDetail
 }) => {
   const { t } = useLanguage();
   const [accordionOpen, setAccordionOpen] = React.useState({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const airServiceControl = formData.Services?.find((s) => s.idControl === info.id && s.idServiceItem === info.item);  
-  const detail = airServiceControl?.serviceDetail?.[currentIndex]; //currentDetail
-  console.log('AIR FORM',formData, 'detail: ', detail);
+  const detail = airServiceControl?.serviceDetail?.[currentIndex]; 
+  //console.log('AIR* ',formData, 'detail: ', detail);
 
   let currentVersion = 1;
   let totalVersions = 1;
@@ -113,12 +118,12 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
     const newDetail = structuredClone(detail);
 
     let newsequence = airServiceControl.serviceDetail.length + 1;
-    // Nuevo detail
-    newDetail.sequence = newsequence;
+    newDetail.sequence = newsequence;    // Nuevo detail
 
-    setCurrentIndex(airServiceControl.serviceDetail.length);
-
+    setCurrentIndex(airServiceControl?.serviceDetail?.length);
     onDuplicateDetail(idServiceItem, newsequence, newDetail);
+
+    console.log('dupl',newDetail, newsequence, )
   };
 
   return (
@@ -127,7 +132,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
         {detail && (
           <div key={detail.sequence} id="mainFormCard" className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-4 bg-white dark:bg-[#1e293b]">
             {/* Header Card */}
-            <div id="pageCounter">
+            <div id="pageCounter">  {detail.sequence}
               <div className={styles.serviceActions}>
                 <button type="button" className={styles.iconButton} // disabled={isDisabled}
                   onClick={() =>
@@ -165,7 +170,14 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                   type="button"
                   className={`${styles.iconButtonRemove} ${styles.danger}`}
                   // disabled={isDisabled}
-                  onClick={() => ""}
+                  onClick={() => {
+                    console.log('remove', airServiceControl, currentIndex)
+                    onRemoveDetail(airServiceControl?.idServiceItem, detail.sequence )
+                    prevPage();
+                    console.log(currentIndex)
+                    //setCurrentIndex()
+                  }
+                  }
                 >
                   <X size={18} />
                 </button>
@@ -502,15 +514,16 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                     <ChevronUp />
                   </span>
                 </div>
-                <div className={` accordion-content ${!accordionOpen.origen ? "collapsed" : ""}`}>
+                <div className={` accordion-content ${!accordionOpen.origin ? "collapsed" : ""}`}>
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
                       {/* ORIGEN */}
                       {/* Pais de carga */}
+                      
                       <InputCountry
                         type="origin"
                         countries={countries}
-                        selectedCountryId={detail.origin?.idCountry}
+                        selectedCountryId={detail?.origin?.idCountry}
                         serviceIdItem={detail.sequence}
                         isDisabled={false}
                         placeholder={t("quote.select")}
@@ -529,31 +542,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                         groupClassName={styles.fieldGroup}
                         labelClassName={styles.fieldLabel}
                         inputClassName={styles.textInput}
-                       >
-                        <div className="h-6 w-px bg-outline-variant dark:text-white"></div>
-                            {/* <!-- Dropdown for Tipo --> */}
-                            <div className="relative w-1/2">
-                              <select className={styles.selectInput}>
-                                {/* Maritimas */}
-                                {/* <option value="Master_Bill_Of_Lading">MBL</option> */}
-                                <option value="Bill_Of">BL</option>{" "}
-                                {/* Liberación de carga con original */}
-                                <option value="Sea_">SWB</option>{" "}
-                                {/* Liberación de carga contra copia */}
-                                <option value="House_Of_Lading">
-                                  HBL
-                                </option>
-                                {/* Terrestres */}
-                                <option value="Bill_">BOL</option>
-                                {/* Aereas */}
-                                {/* <option value="Master_Of_Air_Way_Bill">MAWB</option> */}
-                                <option value="House_of_Air_Way_Bill">
-                                  HAWB
-                                </option>
-                              </select>
-                            </div> 
-                         
-                       </InputCountry>
+                      />                                                                    
                                                                                                           
                       {/* Llegada a planta  */}
                       {detail.idTypeShipment !== 2  && (                        
