@@ -795,16 +795,21 @@
   box-sizing: border-box;
 }
 
-.accordion-content {
+.accordionContent {
   transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
   max-height: 1000px;
   overflow: hidden;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.2s ease;
 }
   
-.accordion-content.collapsed {
+.collapsed {
   max-height: 0;
   opacity: 0;
   pointer-events: none;
+  overflow: hidden;
+  display: none;
 }
   
 .chevron-icon {
@@ -830,6 +835,18 @@ details.hover{
 details[open]{
   border-color: #2563eb;
   box-shadow: 0 5px rgba(37, 99, 235, 0.1);
+}
+
+.table {
+  border-collapse: collapse;
+  background:  var(--hover);
+  border-radius: 10px;
+  overflow: hidden;
+  width: max-content; /* o 100% dependiendo del caso */
+  min-width: 100%;
+  table-layout: fixed; /* clave para evitar expansión */
+  color: var(--text-secondary);
+  
 }
 
 @media (max-width: 1024px) {

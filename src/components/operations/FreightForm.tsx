@@ -21,7 +21,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
+  ChevronDown,
   Package,
   Container,
   MapPin,
@@ -82,21 +82,25 @@ export const FreightForm: React.FC<FreightFormProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const detail = infoControl?.serviceDetail?.[currentIndex]; //currentDetail
 
-  const [accordionOpen, setAccordionOpen] = React.useState({});
-
-  let currentVersion = 1;
-  let totalVersions = 1;
+  const [accordionOpen, setAccordionOpen] = React.useState({
+    [`envio-${detail?.sequence}`]: true,
+    [`transporte-${detail?.sequence}`]: false,
+    [`origin-${detail?.sequence}`]: false,
+    [`destination-${detail?.sequence}`]: false,
+  });
 
   const toggleAccordion = (key) => {
     setAccordionOpen((prev) => ({
       ...prev,
       [key]: !prev[key],
     }));
-  };
 
-  // function updateCounter() {
-  //   document.getElementById('pageCounter').textContent = `${currentVersion} de ${totalVersions}`;
-  // }
+    console.log(
+  `envio-${detail.sequence}`,
+  accordionOpen[`envio-${detail.sequence}`]
+);
+
+  };
 
   const nextPage = () => {
     if (currentIndex < infoControl.serviceDetail.length - 1) {
@@ -206,16 +210,15 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     <h2 className="title">Envio</h2>
                   </div>
                   <span
-                    className={`
-                                    material-symbols-outlined
-                                    text-primary
-                                    chevron-icon
-                                    dark:text-white
-                                    ${accordionOpen.envio ? "rotate-180" : ""}
-                                  `}
+                    className={`material-symbols-outlined
+                                text-primary
+                                chevron-icon
+                                dark:text-white
+                                ${accordionOpen[`envio-${detail.sequence}`] ? "rotate-180" : ""}
+                                `}
                     id="envios-chevron"
                   >
-                    <ChevronUp />
+                    <ChevronDown />
                   </span>
                 </div>
 
@@ -223,9 +226,11 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 </details> */}
 
                 <div
-                  className={`accordion-content
-                      ${!accordionOpen.envio ? "collapsed" : ""}
-                    `}
+                  className={`${styles.accordionContent}
+                              ${!accordionOpen[`envio-${detail.sequence}`]
+                                  ? styles.collapsed
+                                  : ""
+                              }`}
                 >
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
@@ -300,23 +305,24 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     <h2 className="title">Transporte</h2>
                   </div>
                   <span
-                    className={`
-                                    material-symbols-outlined
-                                    text-primary
-                                    chevron-icon
-                                    dark:text-white
-                                    ${accordionOpen.transporte ? "rotate-180" : ""}
-                                  `}
+                    className={`material-symbols-outlined
+                                text-primary
+                                chevron-icon
+                                dark:text-white
+                                ${accordionOpen[`transporte-${detail.sequence}`] ? "rotate-180" : ""}
+                                `}
                     id="transporte-chevron"
                   >
-                    <ChevronUp />
+                    <ChevronDown />
                   </span>
                 </div>
 
                 <div
-                  className={`accordion-content
-                      ${!accordionOpen.transporte ? "collapsed" : ""}
-                    `}
+                  className={`${styles.accordionContent}
+                              ${!accordionOpen[`transporte-${detail.sequence}`]
+                                  ? styles.collapsed
+                                  : ""
+                              }`}
                 >
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
@@ -372,7 +378,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       {/* Nombre de la unidad de transporte*/}
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
-                          Número de unidad
+                          Nombre de la unidad
                         </label>
                         <input
                           type="text"
@@ -500,19 +506,24 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     <h2 className="title">Origen </h2>
                   </div>
                   <span
-                    className={`
-                                    material-symbols-outlined
-                                    text-primary
-                                    chevron-icon
-                                    dark:text-white
-                                    ${accordionOpen.origin ? "rotate-180" : ""}
-                                  `}
+                    className={`material-symbols-outlined
+                                text-primary
+                                chevron-icon
+                                dark:text-white
+                                ${accordionOpen[`origin-${detail.sequence}`] ? "rotate-180" : ""}
+                              `}
                     id="origin-chevron"
                   >
-                    <ChevronUp />
+                    <ChevronDown />
                   </span>
                 </div>
-                <div className={` accordion-content ${!accordionOpen.origen ? "collapsed" : ""}`}>
+                <div
+                  className={`${styles.accordionContent}
+                              ${!accordionOpen[`origin-${detail.sequence}`]
+                                  ? styles.collapsed
+                                  : ""
+                              }`}
+                >
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
                       {/* ORIGEN */}
@@ -530,39 +541,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                             infoControl.idServiceItem,
                             detail.sequence,
                             "origin",
-                            {
-                              ...(detail.origin ?? {}),
-                              ...changes,
-                            },
+                            changes
                           );
                         }}
                         groupClassName={styles.fieldGroup}
                         labelClassName={styles.fieldLabel}
                         inputClassName={styles.textInput}
-                       >
-                        <div className="h-6 w-px bg-outline-variant dark:text-white"></div>
-                            {/* <!-- Dropdown for Tipo --> */}
-                            <div className="relative w-1/2">
-                              <select className={styles.selectInput}>
-                                {/* Maritimas */}
-                                {/* <option value="Master_Bill_Of_Lading">MBL</option> */}
-                                <option value="Bill_Of">BL</option>{" "}
-                                {/* Liberación de carga con original */}
-                                <option value="Sea_">SWB</option>{" "}
-                                {/* Liberación de carga contra copia */}
-                                <option value="House_Of_Lading">
-                                  HBL
-                                </option>
-                                {/* Terrestres */}
-                                <option value="Bill_">BOL</option>
-                                {/* Aereas */}
-                                {/* <option value="Master_Of_Air_Way_Bill">MAWB</option> */}
-                                <option value="House_of_Air_Way_Bill">
-                                  HAWB
-                                </option>
-                              </select>
-                            </div> 
-                         
+                       >                         
                        </InputCountry>
                                                                                                           
                       {/* Llegada a planta  */}
@@ -680,17 +665,24 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     </span>
                     <h2 className="title">Destino</h2>
                   </div>
+                  
                   <span className={`material-symbols-outlined
                                     text-primary
                                     chevron-icon
                                     dark:text-white
-                                    ${accordionOpen.origin ? "rotate-180" : ""}`}
-                        id="origin-chevron">
-                    <ChevronUp />
+                                    ${accordionOpen.destination ? "rotate-180" : ""}`}
+                        id="destination-chevron">
+                    <ChevronDown />
                   </span>
                 </div>
 
-                <div className={`accordion-content ${!accordionOpen.destino ? "collapsed" : ""}`}>
+                <div
+                  className={`${styles.accordionContent}
+                              ${!accordionOpen[`destination-${detail.sequence}`]
+                                  ? styles.collapsed
+                                  : ""
+                              }`}
+                >
                    <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
                       {/*DESTINO */}
@@ -911,10 +903,49 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 
               <div className={styles.serviceCard}>
                 <h2 className="title"> Contenedor </h2>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Tipo de contenedor</th>
+                      <th>Número de contenedor</th>
+                      <th>Seal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {detail.containers?.map((container, index) => (
+                      <tr key={index}>
+                        <td>{container.type}</td>
+                        <td>{container.number}</td>
+                        <td>{container.seal}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
               </div>
 
               <div className={styles.serviceCard}>
                 <h2 className="title"> Mercancia </h2>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Mercancia</th>
+                      <th>Descripción</th>
+                      <th>Cantidad</th>
+                      <th>Unidad de medida</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {detail.cargo?.map((cargo, index) => (
+                      <tr key={index}>
+                        <td>{cargo.name}</td>
+                        <td>{cargo.description}</td>
+                        <td>{cargo.quantity}</td>
+                        <td>{cargo.unit}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </span>
           </div>
