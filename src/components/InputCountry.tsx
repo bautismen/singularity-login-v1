@@ -84,17 +84,19 @@ export const InputCountry: React.FC<CountryInputProps> = ({
   const { t } = useLanguage();
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
-  
+  console.log('country', selectedCountryId)
   //Mantiene compatibilidad. Si manda selectedCountry se usa , sino se toma desde shipment/orderservice
-  const resolvedSelectedCountryId  = selectedCountryId = (type === "origin" ? 
-    shipment?.origin?.idCountry ?? orderService?.origin?.idCountry: 
-    shipment?.destination?.idCountry ?? orderService?.destination?.idCountry);
+  const resolvedSelectedCountryId  = 
+    selectedCountryId = (type === "origin" ? 
+      (shipment?.origin?.idCountry ?? orderService?.origin?.idCountry) || selectedCountryId: 
+      (shipment?.destination?.idCountry ?? orderService?.destination?.idCountry) || selectedCountryId
+    );
   
   const datalistId = useMemo(
     () => `countries-${type}-${serviceIdItem}-${shipment?.idShipment ?? 0}`,
     [type, serviceIdItem, shipment?.idShipment],
   );
-
+console.log('country',type, selectedCountryId,'resolvedSelectedCountryId', resolvedSelectedCountryId )
   //si el padre manda value , se sincroniza sino busca el nombre del pais usando el id seleccionado. 
   useEffect(() => {
     if(value !== undefined) {
@@ -106,7 +108,8 @@ export const InputCountry: React.FC<CountryInputProps> = ({
     );
 
     setInputValue(selectedCountry?.name_country ?? "");
-  }, [countries, resolvedSelectedCountryId, value]);
+    console.log('useef', selectedCountry)
+  }, [countries,resolvedSelectedCountryId, value]);
 
   //mapeo por defecto (primera estructura: Solicitudes). 
   const defaultMapCountryToChanges = (country: any | null) => ({
