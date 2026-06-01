@@ -1,8 +1,11 @@
 .container {
-   width: 100%;               /* ✅ ocupa todo el ancho disponible */
-  max-width: 1300px;         /* ✅ pero nunca más de 1300px */
-  margin: 0 auto;            /* ✅ centrado horizontal */  
-  box-sizing: border-box;    /* ✅ padding no desborda el ancho */
+  background: var(--background);
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  max-width: 100%;
+  min-height: 100vh;
+  margin: 0;
 }
 .Pricing {
   background-color: #d3e2f5;
@@ -20,6 +23,7 @@
   display: flex;
   align-items: center;
   margin-bottom: 1.5rem;
+  margin: 1.5rem 2rem;
 }
 
 .dark .header {
@@ -113,9 +117,10 @@
 .headercard {
   margin-top: 1rem;           /* mt-4 */
   background-color: var(--surface);  /* bg-white */
-  border-radius: 0.75rem;     /* rounded-xl */
+  border-radius: 0.6rem;     /* rounded-xl */
   border: 1px solid var(--border);  /* border + border-gray-200 */
   overflow: hidden;           /* overflow-hidden */
+  margin: 1.5rem 2rem;
 }
 .headercardhover {
   margin-top: 1rem;           /* mt-4 */
@@ -123,6 +128,7 @@
   border-radius: 0.75rem;     /* rounded-xl */
   border: 1px solid var(--border);  /* border + border-gray-200 */
   overflow: hidden;           /* overflow-hidden */
+  margin: 1.5rem 2rem;
 }
 .table {
   width: 100%;        /* w-full */
@@ -340,6 +346,7 @@
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
    margin-bottom: 2rem;
    max-width: 100%;
+   margin: 1.5rem 2rem;
 }
 
 .divparameter {
@@ -415,6 +422,7 @@
   transition: border-color 0.2s;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   color: var(--text-secondary);
+  margin: 1.5rem 2rem;
 }
 
 .searchBar2 {
@@ -635,22 +643,28 @@
   /* ✅ Limita el ancho máximo al viewport disponible */
   max-width: 100%;
   box-sizing: border-box;
+  margin: 1.5rem 2rem;
 }
 
 /* ── Contenedor del overflow de la tabla ── */
 .tableResultWrapper {
-  overflow-x: auto;          /* scroll horizontal */
-  overflow-y: auto;          /* scroll vertical */
-  max-height: 60vh;          /* altura máxima antes de hacer scroll */
-  max-width: 100%;          /* altura máxima antes de hacer scroll */
-  -webkit-overflow-scrolling: touch; /* scroll suave en mobile */
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 60vh;
+  -webkit-overflow-scrolling: touch;
+
+ width: 100%;
+  min-width: 320px;
+  max-width: 1200px;
+
+  margin: 0 auto;
 }
 
 /* ── Tabla de resultados ── */
-.tableResult {  
-  min-width: 100%;           /* pero al menos ocupa todo el ancho */
+.tableResult {    
   text-align: left;
   border-collapse: collapse;
+  max-width: 200px;
 }
 
 /* ── Header sticky al hacer scroll vertical ── */
@@ -660,6 +674,7 @@
   z-index: 10;
   background-color: #f9fafb;
   white-space: nowrap;       /* evita que el header se parta */
+  max-width: 1200px;
 }
 
 :global(.dark) .tableResultHead th {
@@ -683,28 +698,28 @@
 
 /* 2. Tablets (Portrait) y Móviles grandes - 480px a 768px */
 @media screen and (min-width: 480px) {
-   .container {
+   .tableResultWrapper {
      max-width: 480px;
   }
 }
 
 /* 3. Tablets (Landscape) y Portátiles pequeños - 768px a 1024px */
 @media screen and (min-width: 768px) {
-    .container {
+    .tableResultWrapper {
      max-width: 768px;
   }
 }
 
 /* 4. Laptops y Escritorios - 1024px a 1200px */
 @media screen and (min-width: 1024px) {
-    .container {
+    .tableResultWrapper {
      max-width: 1024px;
   }
 }
   
 /* 5. Pantallas Grandes (TV / Escritorio) - 1200px en adelante */
 @media screen and (min-width: 1200px) {
-    .container {
+    .tableResultWrapper {
      max-width: 1200px;
   }
 }

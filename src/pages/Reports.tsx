@@ -403,6 +403,13 @@ const handlecreate = async () => {
       params
     );
 
+    if (result.length === 0) {
+      showWarning('El reporte no generó resultados con los parámetros proporcionados.');
+      setisviewResult(false);
+      setLoading(false);
+      return;
+    }
+
     setReportResult(
       Array.isArray(result)
         ? result
