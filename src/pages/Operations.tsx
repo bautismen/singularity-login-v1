@@ -16,6 +16,7 @@ import { PrevioForm , PrevioFormProps} from '../components/operations/PrevioForm
 import { OtherServiceForm, OtherServiceFormProps } from '../components/operations/OtherServiceForm'
 import {useOperations} from '../hooks/useOperations'
 import { useCatalogs } from "../hooks/useCatalogs";
+import { AirFreightForm } from '../components/operations/AirFreightForm';
 
 
 export default function Operations() {
@@ -279,11 +280,10 @@ export default function Operations() {
     });
 
     setControlsClient(controlsClient);
-
   };
 
   const addControl = () => {
-
+    
     if (control === undefined || control._id === undefined ||
       control._id === '' || control.control === '') {
       showWarning(t('operations.selectControlWarning'));
@@ -298,7 +298,7 @@ export default function Operations() {
     const normalizedServices = control.services.map(service =>
       normalizeService(service, control)
     );
-
+    //console.log('control', control, 'normalized', normalizedServices);
     //setFormData
     updateFormData(prev => ({
       ...prev,
@@ -316,6 +316,8 @@ export default function Operations() {
         services: normalizedServices
       }
     ]);
+
+    //console.log('CONTROLES',control, 'formdata',formData )
 
     // Quitamos el control seleccionado de la lista de controles disponibles para el cliente
     setControlsClient(prev =>
@@ -393,12 +395,12 @@ export default function Operations() {
             ? shipment.transports
             : [{}],
         origin:
-          shipment.origins?.length > 0
-            ? shipment.origins
+          shipment.origin 
+            ? shipment.origin
             : [{}],
         destination:
-          shipment.destinations?.length > 0
-            ? shipment.destinations
+          shipment.destination 
+            ? shipment.destination
             : [{}],
         references:
           shipment.references?.length > 0
@@ -434,13 +436,13 @@ export default function Operations() {
           detail.transports?.length > 0
             ? detail.transports
             : [{}],
-        origins:
-          detail.origins?.length > 0
-            ? detail.origins
+        origin:
+          detail.origin
+            ? detail.origin
             : [{}],
-        destinations:
-          detail.destinations?.length > 0
-            ? detail.destinations
+        destination:
+          detail.destination
+            ? detail.destination
             : [{}],
         references:
           detail.references?.length > 0
@@ -1703,7 +1705,6 @@ export default function Operations() {
                                      outline-none appearance-none text-body-sm transition-colors"
                         onChange={(e) => {
                           const dataC = JSON.parse(e.target.value);
-
                           setControl({
                             ...control,
                             _id: dataC.id,
@@ -1712,6 +1713,7 @@ export default function Operations() {
                             suppliers: dataC.suppliers
                           })
                         }}
+                        
                       // multiple
                       >
                         <option className="bg-white text-black dark:bg-[#1e293b] dark:text-white appearance-none" value="">
@@ -1960,9 +1962,9 @@ export default function Operations() {
             {!collapsedSections.services && (
               <div className={styles.sectionContent}>
                 <div className={styles.serviceSpace}>
-                  <div className="flex gap-2">
+                  <div className="flex ">
                     {/* Tabs */}
-                    <div className="border-b border-outline-variant flex items-center justify-between mb-2">
+                    <div className="border-b border-outline-variant flex gap-4 items-center justify-between mb-2">
                       {controlsOperation.length > 0 ? (
                         controlsOperation?.map(controlService => (
                           controlService.services?.map(service => (                            
@@ -2034,7 +2036,7 @@ export default function Operations() {
                 
                 {/*ServiceForm && <ServiceForm {...formProps} />*/}                
                 {
-                  [1, 2, 3, 4, 5, 10, 11].includes(parseInt(activeTab.idService)) ?
+                  [1, 2, 3, 4, 10, 11].includes(parseInt(activeTab.idService)) ?
                     (<FreightForm
                       incoterms={incoterm}
                       suppliers={supplier}
@@ -2047,6 +2049,19 @@ export default function Operations() {
                       onUpdateServiceDetail={updateServiceDetail}
                       onDuplicateDetail={duplicateDetail}
                     />) :
+                    [5].includes(parseInt(activeTab.idService)) ?
+                    (<AirFreightForm 
+                      incoterms={incoterm}
+                      suppliers={supplier}
+                      countries={countries}
+                      info={activeTab}
+                      controlsData={controlsData}
+                      formData={formData}
+                      onUpdateFormData={updateFormData}
+                      onUpdateServiceFormData={updateServiceFormData}
+                      onUpdateServiceDetail={updateServiceDetail}
+                      onDuplicateDetail={duplicateDetail}
+                    />) :                    
                     [17].includes(parseInt(activeTab.idService)) ?
                       (<PrevioForm
                         info={activeTab}
