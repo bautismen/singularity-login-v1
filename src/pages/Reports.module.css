@@ -143,10 +143,15 @@
   border-bottom: 1px solid #334155; /* gray-700 */
 }
 .thheader {
-  padding: 0.75rem 1.5rem;   /* py-3 px-6 */
-  font-size: 15px;           /* text-[15px] */
-  font-weight: bold;         /* font-bold */
-  letter-spacing: 0.1em;     /* tracking-widest */
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  font-size: .75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-align: left;
   color: var(--text-primary);
 }
 .thheaderCenter {
@@ -159,47 +164,55 @@
   transition: background-color 0.2s ease;
 }
 .trbody:hover {
-  background-color: var(--hover);
+  background-color: #037f8C;
 }
 .trbodySelected {
-  background-color: rgba(16, 185, 129, 0.3); /* bg-emerald-50/30 */
+  background-color:#037f8C; /* bg-emerald-50/30 */
 }
 .tdid {
-  padding-left: 1.5rem;   /* px-6 */
+  padding-left: 1.5rem;
   padding-right: 1.5rem;
-  padding-top: 1rem;      /* py-4 */
+  padding-top: 1rem;
   padding-bottom: 1rem;
-  font-size: 0.75rem;     /* text-xs */
-  font-weight: 700;       /* font-bold */
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;       /* font-bold */
   color: var(--text-secondary);
 }
 .tdcategory {
-  padding-left: 1.5rem;   /* px-6 */
+   padding-left: 1.5rem;
   padding-right: 1.5rem;
-  padding-top: 1rem;      /* py-4 */
+  padding-top: 1rem;
   padding-bottom: 1rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
 }
 .spancategory {
-  padding: 0.25rem 0.5rem;  /* py-1 px-2 */
-  border-radius: 0.25rem;    /* rounded */
-  font-size: 10px;           /* text-[10px] */
-  font-weight: 700;          /* font-bold */
-  text-transform: uppercase; /* uppercase */
+   padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+   color: var(--text-secondary);
+  font-weight: 600;          /* font-bold */
 }
 .tdreport {
-  padding-left: 1.5rem;   /* px-6 */
+  padding-left: 1.5rem;
   padding-right: 1.5rem;
-  padding-top: 1rem;      /* py-4 */
+  padding-top: 1rem;
   padding-bottom: 1rem;
-  font-size: 0.875rem;    /* text-sm */
+  font-size: 0.75rem;
+  line-height: 1rem;
   color: var(--text-secondary);
 }
 .tddescription {
-  padding-left: 1.5rem;   /* px-6 */
+   padding-left: 1.5rem;
   padding-right: 1.5rem;
-  padding-top: 1rem;      /* py-4 */
+  padding-top: 1rem;
   padding-bottom: 1rem;
-  font-size: 0.875rem;     /* text-xs */
+  font-size: 0.75rem;
+  line-height: 1rem;
   color: var(--text-secondary);
 }
 .tdcreation {
@@ -597,8 +610,7 @@
 }
 
 :global(.dark) .subtitleParameter {  
-  background-color: #1e293b; /* gray-800 */
-  border-bottom: 1px solid #334155; /* gray-700 */
+  background-color: #1e293b; /* gray-800 */  
 }
 
 .headerActions {
@@ -683,10 +695,10 @@
 
 /* ── Celdas sin wrap para datos ── */
 .tdResult {
-  padding-left: 2rem;
-  padding-right: 2rem;
-  padding-top: 1.25rem;
-  padding-bottom: 1.25rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
   font-size: 0.75rem;
   line-height: 1rem;
   color: var(--text-secondary);

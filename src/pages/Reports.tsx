@@ -428,6 +428,45 @@ const handlecreate = async () => {
   }
 };
 
+const parseDate = (value: string): Date | null => {
+  if (!value || typeof value !== 'string') return null;
+
+  const clean = value.trim();
+
+  // yyyy-mm-dd o yyyy/mm/dd
+  let match = clean.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if (match) {
+    const [, y, m, d] = match;
+    return new Date(Number(y), Number(m) - 1, Number(d));
+  }
+
+  // dd-mm-yyyy | dd/mm/yyyy | mm-dd-yyyy | mm/dd/yyyy
+  match = clean.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (match) {
+    let [, p1, p2, y] = match;
+
+    const n1 = Number(p1);
+    const n2 = Number(p2);
+
+    // Si el primer número es > 12 asumimos dd-mm-yyyy
+    if (n1 > 12) {
+      return new Date(Number(y), n2 - 1, n1);
+    }
+
+    // Si el segundo número es > 12 asumimos mm-dd-yyyy
+    if (n2 > 12) {
+      return new Date(Number(y), n1 - 1, n2);
+    }
+
+    // Ambiguo (05-06-2025)
+    // Por defecto lo tratamos como dd-mm-yyyy
+    return new Date(Number(y), n2 - 1, n1);
+  }
+
+  const date = new Date(clean);
+  return isNaN(date.getTime()) ? null : date;
+};
+
 const exportToExcel = () => {
   if (!reportResult || reportResult.length === 0) return;
 
@@ -497,19 +536,35 @@ const exportToExcel = () => {
     wch: Math.max(h.length + 5, 20)
   }));
 
+  // ===== FILTROS =====
+  // La fila 4 contiene los encabezados
+  const rangeH = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+
+  worksheet['!autofilter'] = {
+    ref: XLSX.utils.encode_range({
+      s: { r: 3, c: 0 }, // A4
+      e: {
+        r: rangeH.e.r,
+        c: mappedHeaders.length - 1
+      }
+    })
+  };
+
   // ===== ESTILOS =====
 
   // Título fila 1
   if (worksheet['A1']) {
     worksheet['A1'].s = {
       font: {
-        sz: 18,
-        bold: true
-      },      
+        sz: 14,
+        bold: true,
+        color: { rgb: '037F8C' },
+        fontName: 'Arial',
+      },
       alignment: {
         horizontal: 'left',
         vertical: 'center'
-      }
+      }       
     };
   }
 
@@ -517,7 +572,23 @@ const exportToExcel = () => {
   if (worksheet['A2']) {
     worksheet['A2'].s = {
       font: {
-        sz: 12,             
+        sz: 9,
+        fontName: 'Arial',
+        bold: true,
+
+      },
+      alignment: {
+        horizontal: 'left',
+        vertical: 'center'
+      }
+    };
+  }
+
+  if (worksheet['A3']) {
+    worksheet['A3'].s = {
+      font: {
+        sz: 9,
+        fontName: 'Arial',
       },
       alignment: {
         horizontal: 'left',
@@ -536,15 +607,90 @@ const exportToExcel = () => {
     if (worksheet[cellRef]) {
       worksheet[cellRef].s = {
         font: {
-          bold: true
+          bold: true,
+          sz: 10,
+          fontName: 'Arial',
+            color: { rgb: 'FFFFFF' }
+        },
+        fill: {
+          fgColor: { rgb: '037F8C' },
         },
         alignment: {
-          horizontal: 'center',
+          horizontal: 'left',
           vertical: 'center'
+        },
+        border: {
+          top: {
+            style: 'thin',
+            color: { rgb: '000000' }
+          },
+          bottom: {
+            style: 'thin',
+            color: { rgb: '000000' }
+          },
+          left: {
+            style: 'thin',
+            color: { rgb: '000000' }
+          },
+          right: {
+            style: 'thin',
+            color: { rgb: '000000' }
+          }
         }
       };
     }
   });
+  
+  // Datos desde fila 5 (Arial 8 + detección de tipos)
+  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+
+  for (let row = 4; row <= range.e.r; row++) {
+    for (let col = 0; col <= range.e.c; col++) {
+      const cellRef = XLSX.utils.encode_cell({
+        r: row,
+        c: col
+      });
+
+      const cell = worksheet[cellRef];
+
+      if (!cell) continue;
+
+      const value = cell.v;
+
+      // Detectar números
+      if (
+        typeof value === 'string' &&
+        value.trim() !== '' &&
+        !isNaN(Number(value))
+      ) {
+        cell.v = Number(value);
+        cell.t = 'n';
+        cell.z = '#,##0.00';
+      }
+
+      // Detectar fechas
+      else if (typeof value === 'string') {
+        const parsedDate = parseDate(value);
+
+        if (parsedDate) {
+          const date = new Date(parsedDate);
+          cell.v = date;
+          cell.t = 'd';
+          cell.z = 'dd/mm/yyyy';
+        }
+      }
+
+      // Estilo Arial 8
+      cell.s = {
+        ...(cell.s || {}),
+        font: {
+          ...(cell.s?.font || {}),
+          fontName: 'Arial',
+          sz: 8
+        }
+      };
+    }
+  }
 
   // Crear workbook
   const workbook = XLSX.utils.book_new();
@@ -654,7 +800,7 @@ const printPdf = useReactToPrint({
           <thead>
             <tr className={styles.trheader}>
               {HEADERS.map((h, index) => (
-                <th key={`${h}-${index}`} className={`${styles.thheader} ${h === 'ACCIÓN' ? styles.thheaderCenter : ''}`}>
+                <th key={`${h}-${index}`} className={styles.thheader}>
                   {h}
                 </th>
               ))}
@@ -667,15 +813,7 @@ const printPdf = useReactToPrint({
                 <td className={styles.tdid}>{r.id_report}</td>
                 <td className={styles.tdcategory}>
                   <span
-                    className={`${styles.spancategory} ${
-                      r.category.toLowerCase() === 'pricing'
-                        ? styles.Pricing
-                        : r.category.toLowerCase() === 'operations'
-                        ? styles.Operations
-                        : r.category.toLowerCase() === 'customer'
-                        ? styles.Customer
-                        : ''
-                    }`}
+                    className={styles.spancategory}
                   >{r.category}</span>
                 </td>
                 <td className={styles.tdreport}>{r.name_report}</td>
@@ -778,9 +916,9 @@ const printPdf = useReactToPrint({
       <button className="bg-[#d3e2f5] text-[#3c5d8a] px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all" onClick={exportToExcel}>
       <span className="material-symbols-outlined text-lg"><Table size={20} /></span> Excel
                               </button>
-      <button className="bg-[#5c6c84] text-white px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all" onClick={printPdf}>
+      {/*<button className="bg-[#5c6c84] text-white px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all" onClick={printPdf}>
       <span className="material-symbols-outlined text-lg"><FileText size={20} /></span> PDF
-      </button>
+      </button>*/}
       <span className={styles.headerActionsLabel2}>
               {t('report.show')}:
         </span>
