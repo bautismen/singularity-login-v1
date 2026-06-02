@@ -61,7 +61,7 @@ const translations = {
     'quote.isQuote': 'Es licitación',
     'quote.requestType': 'Tipo de solicitud',
     'quote.orderBy': 'Ordenar por',
-    'quote.orderDesc': 'Descendiente',
+    'quote.orderDesc': 'Descendente',
     'quote.applicant': 'Solicitante',
     'quote.created': 'Creado',
     'quote.responseDeadline': 'Límite de respuesta',
