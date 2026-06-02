@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLanguage } from "../../contexts/LanguageContext";
 import styles from "../../pages/Operations.module.css";
+import { catalogService } from '../../services/catalogsService';
 import { InputCountry } from "../InputCountry";
 import { InputAirport } from "../InputAirport";
 import { PricingControl } from "../../types/pricingControl";
 import { OperationsFormData } from "../../hooks/useOperations";
 import {
   TipoEnvio,
+  TipoGuia,
   TipoReferencia,
   TipoOperacion,
   Incoterm,
@@ -25,6 +27,7 @@ import {
   Truck,
   MapPin,
 } from "lucide-react";
+import { Airport } from "../../types/airport";
 
 export interface AirFreightFormProps {
   // Catálogos
@@ -78,20 +81,95 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
   onRemoveDetail
 }) => {
   const { t } = useLanguage();
-  const [accordionOpen, setAccordionOpen] = React.useState({});
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [airportsOrigin, setAirportsOrigin] = useState<Airport[]>([]);
+  const [airportsDestination, setAirportsDestination] = useState<Airport[]>([]);
   const airServiceControl = formData.Services?.find((s) => s.idControl === info.id && s.idServiceItem === info.item);  
   const detail = airServiceControl?.serviceDetail?.[currentIndex]; 
-  //console.log('AIR* ',formData, 'detail: ', detail);
+  const [accordionOpen, setAccordionOpen] = React.useState({
+    [`envio-${detail?.sequence}`]: true,
+    [`transporte-${detail?.sequence}`]: false,
+    [`origin-${detail?.sequence}`]: false,
+    [`destination-${detail?.sequence}`]: false,
+  });
 
-  let currentVersion = 1;
-  let totalVersions = 1;
+  //use effect de carga de aeropuertos origen
+  useEffect(() => {
+    const fetchData = async () => {
+      try {                
+        const result = await catalogService.getAirportsByIdCountry(detail?.origin?.country?.idCountry);
+        const airportsResult = result ?? [];
+        setAirportsOrigin(airportsResult);
+        const airportKey = detail?.origin?.airport?.airportKey;
+        if (!airportKey) return;
+        const airportSelected = airportsResult.find(
+          (airport) =>
+            airport.airport_code?.toLowerCase() === airportKey.toLowerCase()
+        );
+
+        if (!airportSelected) return;
+
+        onUpdateServiceFormData(
+          airServiceControl.idServiceItem,
+          detail.sequence,
+          "origin",
+          {
+            ...(detail.origin ?? {}),
+            airport: {
+              idAirport: airportSelected._Id,
+              airport: airportSelected.name_airport,
+              airportKey: airportSelected.airport_code ?? "",
+            },
+          }
+        );          
+      } catch {
+          setAirportsOrigin([]);
+      } 
+    };
+    fetchData();
+  },[detail?.origin?.country?.idCountry])
+
+  //use effect de carga de aeropuertos destino
+  useEffect(() => {
+    const fetchData = async () => {
+      try {                
+        const result = await catalogService.getAirportsByIdCountry(detail?.destination?.country?.idCountry);
+        const airportsResult = result ?? [];
+        setAirportsDestination(airportsResult);
+        const airportKey = detail?.destination?.airport?.airportKey;
+        if (!airportKey) return;
+        const airportSelected = airportsResult.find(
+          (airport) =>
+            airport.airport_code?.toLowerCase() === airportKey.toLowerCase()
+        );
+
+        if (!airportSelected) return;
+
+        onUpdateServiceFormData(
+          airServiceControl.idServiceItem,
+          detail.sequence,
+          "destination",
+          {
+            ...(detail.destination ?? {}),
+            airport: {
+              idAirport: airportSelected._Id,
+              airport: airportSelected.name_airport,
+              airportKey: airportSelected.airport_code ?? "",
+            },
+          }
+        );          
+      } catch {
+          setAirportsDestination([]);
+      } 
+    };
+    fetchData();
+  },[detail?.destination?.country?.idCountry])
 
   const toggleAccordion = (key) => {
     setAccordionOpen((prev) => ({
       ...prev,
       [key]: !prev[key],
-    }));
+    }));    
   };
 
   // function updateCounter() {
@@ -99,7 +177,8 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
   // }
 
   const nextPage = () => {
-    if (currentIndex < airServiceControl.serviceDetail.length - 1) {
+    console.log(airportsOrigin, airportsDestination)
+    if (currentIndex < airServiceControl?.serviceDetail.length - 1) {
       setCurrentIndex((prev) => prev + 1);
     }
   };
@@ -110,7 +189,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
     }
   };
 
-  const duplicateCard = (idServiceItem, detail) => {
+  const duplicateCard = (idServiceItem: any, detail: any) => {
     const card = document.getElementById("mainFormCard");
     card.style.opacity = "0.5";
     card.style.transform = "scale(0.98)";
@@ -199,14 +278,17 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                                     text-primary
                                     chevron-icon
                                     dark:text-white
-                                    ${accordionOpen.envio ? "rotate-180" : ""}
+                                    ${accordionOpen[`envio-${detail.sequence}`] ? "rotate-180" : ""}
                                   `}
                     id="envios-chevron">
                     <ChevronUp />
                   </span>
                 </div>
 
-                <div className={`accordion-content ${!accordionOpen.envio ? "collapsed" : ""} `}>
+                <div className={`${styles.accordionContent} 
+                                  ${!accordionOpen[`envio-${detail.sequence}`]
+                                  ? styles.collapsed
+                                  : ""}`}>
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
                       {/* Modalidad */}
@@ -280,24 +362,20 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                     <h2 className="title">Transporte</h2>
                   </div>
                   <span
-                    className={`
-                                    material-symbols-outlined
-                                    text-primary
-                                    chevron-icon
-                                    dark:text-white
-                                    ${accordionOpen.transporte ? "rotate-180" : ""}
-                                  `}
-                    id="transporte-chevron"
-                  >
+                    className={`material-symbols-outlined
+                                text-primary
+                                chevron-icon
+                                dark:text-white
+                                ${accordionOpen[`transporte-${detail.sequence}`] ? "rotate-180" : ""}
+                              `}
+                    id="transporte-chevron">
                     <ChevronUp />
                   </span>
                 </div>
 
                 <div
                   className={`accordion-content
-                      ${!accordionOpen.transporte ? "collapsed" : ""}
-                    `}
-                >
+                              ${!accordionOpen[`transporte-${detail.sequence}`] ? styles.collapsed : ""}`}>
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
                       {/* Transportista */}
@@ -322,36 +400,19 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           sequencedetail={detail.sequence}
                           transport={detail?.transport}
                           onUpdateServiceDetail={onUpdateServiceDetail}
+                          modalidad={"aereo"}
                         />
                       </div>
 
                       {/* Guia | Tipo */}
                       <div className={styles.fieldGroup}>
-                        <div className="flex flex-col gap-1">
-                          <label className="text-label-md font-label-md text-on-surface-variant">
-                            Guía | Tipo
-                          </label>
-                          <div className="flex items-center bg-surface-container focus-within:border-secondary transition-all">
-                            <input
-                              type="text"
-                              className={styles.textInput}
-                              // placeholder="ID de Guía"
-                              value={detail?.transport.guide}
-                            />
-                            {/* <!-- Vertical Divider --> */}
-                            <div className="h-6 w-px bg-outline-variant dark:text-white"></div>
-                            {/* <!-- Dropdown for Tipo --> */}
-                            <div className="relative w-1/2">
-                              <select className={styles.selectInput}>                                
-                                {/* Aereas */}
-                                {/* <option value="Master_Of_Air_Way_Bill">MAWB</option> */}
-                                <option value="House_of_Air_Way_Bill">
-                                  HAWB
-                                </option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
+                        <TipoGuia
+                          itemService={airServiceControl.idServiceItem}
+                          sequencedetail={detail.sequence}
+                          transport={detail?.transport}
+                          onUpdateServiceDetail={onUpdateServiceDetail}
+                          modalidad={"aereo"}
+                        />
                       </div>
                     </div>
 
@@ -369,7 +430,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                       {/* Nombre Unidad */}
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
-                          Número de unidad
+                          Nombre de la unidad
                         </label>
                         <input
                           type="text"
@@ -378,7 +439,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                             onUpdateServiceFormData(
                               airServiceControl.idServiceItem,
                               detail.sequence,
-                              "masterGuide",
+                              "nameTransport",
                               e.target.value,
                             )
                           }
@@ -507,36 +568,41 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                                     text-primary
                                     chevron-icon
                                     dark:text-white
-                                    ${accordionOpen.origin ? "rotate-180" : ""}
+                                    ${accordionOpen[`origin-${detail.sequence}`] ? "rotate-180" : ""}
                                   `}
                     id="origin-chevron"
                   >
                     <ChevronUp />
                   </span>
                 </div>
-                <div className={` accordion-content ${!accordionOpen.origin ? "collapsed" : ""}`}>
+                <div className={`${styles.accordionContent} ${!accordionOpen[`origin-${detail.sequence}`] ? styles.collapsed : ""}`}>
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
                       {/* ORIGEN */}
-                      {/* Pais de carga */}
-                      
+                      {/* Pais de carga */}                      
                       <InputCountry
                         type="origin"
                         countries={countries}
-                        selectedCountryId={detail?.origin?.idCountry}
+                        selectedCountryId={detail?.origin?.country?.idCountry}
                         serviceIdItem={detail.sequence}
                         isDisabled={false}
                         placeholder={t("quote.select")}
                         label={t("operations.countryCharge")}
-                        onChangeCountry={({ type, changes }) => {
-                          onUpdateServiceFormData(
+                        mapCountryToChanges={(country) => {  
+                          console.log('map',country)                        
+                          return {
+                            idCountry: country?._Id ?? "",
+                            country: country?.name_country ?? "",
+                            countryKey:country?.country_code ?? ""  }                        
+                        }}
+                        onChangeCountry={({ changes }) => {
+                          console.log('onChangeCountry',changes) 
+                          onUpdateServiceDetail(
                             airServiceControl.idServiceItem,
                             detail.sequence,
                             "origin",
-                            {
-                              ...(detail.origin ?? {}),
-                              ...changes,
-                            },
+                            "country",                                                         
+                            changes                            
                           );
                         }}
                         groupClassName={styles.fieldGroup}
@@ -559,10 +625,13 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                       )}
                     </div>  
                     <div className={styles.secondColumn}>
+                      {/* Aeropuerto de carga */}
                       {[2, 4].includes(detail.idTypeShipment) ? (                        
                         <InputAirport
-                          idCountry={detail.origin?.idCountry}
-                          value={detail?.origin?.airport ?? ""}
+                          type="origin"
+                          airports={airportsOrigin}
+                          idCountry={detail.origin?.country?.idCountry}
+                          value={detail?.origin?.airport.airportKey ?? ""}
                           serviceIdItem={detail.sequence}
                           label="Aeropuerto de carga"
                           groupClassName={styles.fieldGroup}
@@ -575,7 +644,11 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                               "origin",
                               {
                                 ...(detail.origin ?? {}),
-                                airport: airport?.airport_code ?? "",
+                                airport: {
+                                  idAirport: airport?._Id,
+                                  airport: airport?.name_airport,
+                                  airportKey: airport?.airport_code ?? ""
+                                },
                               },
                             );
                           }}
@@ -660,42 +733,45 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                                     text-primary
                                     chevron-icon
                                     dark:text-white
-                                    ${accordionOpen.origin ? "rotate-180" : ""}`}
+                                    ${accordionOpen.destination ? "rotate-180" : ""}`}
                         id="origin-chevron">
                     <ChevronUp />
                   </span>
                 </div>
 
-                <div className={`accordion-content ${!accordionOpen.destino ? "collapsed" : ""}`}>
+                <div className={`${styles.accordionContent} ${!accordionOpen[`destination-${detail.sequence}`] ? styles.collapsed : ""}`}>
                    <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
                       {/*DESTINO */}
                       {/* Pais de descarga */}
-                      <InputCountry
-                        groupClassName={styles.fieldGroup}
-                        labelClassName={styles.fieldLabel}
-                        inputClassName={styles.textInput}
+                      <InputCountry                        
                         type="destination"
                         countries={countries}
-                        selectedCountryId={detail.destination?.idCountry}
+                        selectedCountryId={detail.destination?.country?.idCountry}
                         serviceIdItem={detail.sequence}
                         isDisabled={false}
                         placeholder={t("quote.select")}
                         label="Pais de descarga"
-                        onChangeCountry={({ type, changes }) => {
-                          onUpdateServiceFormData(
+                        mapCountryToChanges={(country) => {  
+                            return {
+                              idCountry: country?._Id ?? "",
+                              country: country?.name_country ?? "",
+                              countryKey:country?.country_code ?? "" }                        
+                        }}
+                        onChangeCountry={({changes }) => {
+                          onUpdateServiceDetail(
                             airServiceControl.idServiceItem,
                             detail.sequence,
                             "destination",
-                            {
-                              ...(detail.destination ?? {}),
-                              ...changes,
-                            },
+                            "country",                                                                                      
+                            changes                                                                             
                           );
                         }}
+                        groupClassName={styles.fieldGroup}
+                        labelClassName={styles.fieldLabel}
+                        inputClassName={styles.textInput}
                       />
-                      
-                      
+                                            
                       {/* ATA (Atraque) */}
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
@@ -728,8 +804,10 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                       {/* Aeropuerto de descarga */}
                       {[2, 3].includes(detail.idTypeShipment) ?                                             
                         <InputAirport
-                          idCountry={detail.destination?.idCountry}
-                          value={detail?.destination?.airport ?? ""}
+                          type="destination"
+                          airports={airportsDestination}
+                          idCountry={detail.destination?.country?.idCountry}
+                          value={detail?.destination?.airport?.airportKey ?? ""}
                           serviceIdItem={detail.sequence}
                           label={t("operations.airportDischarge")}
                           groupClassName={styles.fieldGroup}
@@ -742,7 +820,11 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                               "destination",
                               {
                                 ...(detail.destination ?? {}),
-                                airport: airport?.airport_code ?? "",
+                                airport: {
+                                  idAirport: airport?._Id,
+                                  airport: airport?.name_airport,
+                                  airportKey: airport?.airport_code ?? ""
+                                },
                               },
                             );
                           }}

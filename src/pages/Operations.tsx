@@ -108,7 +108,6 @@ export default function Operations() {
     try {
       const data = await getControls();
       setControls(data);
-      console.log(data);
     } catch (error) {
       showError(t('controls.loadError'));
       console.error('Error loading controls:', error);
@@ -319,7 +318,7 @@ export default function Operations() {
       }
     ]);
 
-    console.log('CONTROLES OP',controlsOperation, )
+    console.log('formdata OP', formData, normalizedServices )
 
     // Quitamos el control seleccionado de la lista de controles disponibles para el cliente
     setControlsClient(prev =>
@@ -382,6 +381,17 @@ export default function Operations() {
     // controlsClient.push(controlsOperation.find(c => c._id === _idcontrol) as PricingControl); // Volver a agregar el control eliminado a la lista de controles disponibles para el cliente
   };
 
+  const normalizeCountry = (country: any) => {
+    const catalogCountry = countries.find(
+      (c) => String(c._Id) === String(country?.idCountry)
+    );
+    return {
+       idCountry: catalogCountry?._Id ?? "",
+       country: catalogCountry?.name_country ?? "",
+       countryKey:catalogCountry?.country_code ?? ""
+    }
+  }
+
   const normalizeService = (service: any, control: any = null) => {
 
     let detail = [];
@@ -398,11 +408,29 @@ export default function Operations() {
             : [{}],
         origin:
           shipment.origin 
-            ? shipment.origin
+            ? {
+                country: normalizeCountry(shipment.origin) ,
+                ...(shipment.origin?.portCode && {
+                  port: {portKey: shipment.origin.portCode}
+                }),
+                ...(shipment.origin?.airportCode && {
+                  airport: {airportKey: shipment.origin.airportCode}
+                }),              
+                placeOfReceipt: shipment.origin.city + (shipment.origin.zipCode ?? ''),             
+              }
             : [{}],
         destination:
           shipment.destination 
-            ? shipment.destination
+            ? {
+              country: normalizeCountry(shipment.destination),
+              ...(shipment.destination?.portCode && {
+                  port: {portKey: shipment.destination.portCode}
+                }),
+                ...(shipment.destination?.airportCode && {
+                  airport: {airportKey: shipment.destination.airportCode}
+                }), 
+              placeOfDelivery: shipment.destination.city + (shipment.destination.zipCode ?? ''),  
+            }            
             : [{}],
         references:
           shipment.references?.length > 0

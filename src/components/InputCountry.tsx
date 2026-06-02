@@ -84,7 +84,6 @@ export const InputCountry: React.FC<CountryInputProps> = ({
   const { t } = useLanguage();
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
-  console.log('country', selectedCountryId)
   //Mantiene compatibilidad. Si manda selectedCountry se usa , sino se toma desde shipment/orderservice
   const resolvedSelectedCountryId  = 
     selectedCountryId = (type === "origin" ? 
@@ -96,20 +95,20 @@ export const InputCountry: React.FC<CountryInputProps> = ({
     () => `countries-${type}-${serviceIdItem}-${shipment?.idShipment ?? 0}`,
     [type, serviceIdItem, shipment?.idShipment],
   );
-console.log('country',type, selectedCountryId,'resolvedSelectedCountryId', resolvedSelectedCountryId )
+//console.log('country',type, selectedCountryId,'resolvedSelectedCountryId', resolvedSelectedCountryId )
   //si el padre manda value , se sincroniza sino busca el nombre del pais usando el id seleccionado. 
   useEffect(() => {
     if(value !== undefined) {
       setInputValue(value);
       return;
     }
+   
     const selectedCountry = countries.find(
       (c) => String(c._Id) === String(selectedCountryId),
     );
 
     setInputValue(selectedCountry?.name_country ?? "");
-    console.log('useef', selectedCountry)
-  }, [countries,resolvedSelectedCountryId, value]);
+  }, [countries, resolvedSelectedCountryId, value]);
 
   //mapeo por defecto (primera estructura: Solicitudes). 
   const defaultMapCountryToChanges = (country: any | null) => ({
@@ -120,7 +119,9 @@ console.log('country',type, selectedCountryId,'resolvedSelectedCountryId', resol
   //convierte el pais seleccionado a changes y emite el evento . 
   const updateCountry = (countrySelected: any | null, nextValue: string) => {
     //si el padre manda mapCountryToChanges usamos esa funcion para construir el objeto sino usamos el formato viejo
-    const changes = mapCountryToChanges ? onChangeCountry(countrySelected) : defaultMapCountryToChanges(countrySelected)
+    const changes = mapCountryToChanges ? mapCountryToChanges(countrySelected)  : defaultMapCountryToChanges(countrySelected)
+    console.log('updateCountry',type, resolvedSelectedCountryId, selectedCountryId)
+    console.log('changes',changes)
     //aqui solo se avisa al padre que objeto se construyó. 
     onChangeCountry ({
       type, 
@@ -140,14 +141,7 @@ console.log('country',type, selectedCountryId,'resolvedSelectedCountryId', resol
       (c) => c.name_country.toLowerCase() === value.toLowerCase(),
     );
     updateCountry(countrySelected ?? null, value)
-    /*onUpdateLocation(
-      serviceIdItem,
-      {
-        idCountry: countrySelected?._Id ?? "",
-        countryCode: countrySelected?.country_code ?? "",
-      },
-      shipment?.idShipment,
-    );*/
+    console.log('handleChange ', value,  countrySelected)    
   };
 
   const handleBlur = () => {
