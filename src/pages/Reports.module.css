@@ -185,7 +185,7 @@
   padding-top: 1rem;
   padding-bottom: 1rem;
   font-size: 0.75rem;
-  line-height: 1rem;
+  line-height: 1rem;  
 }
 .spancategory {
    padding-left: 1.5rem;
@@ -224,6 +224,14 @@
   display: flex;          /* flex */
   align-items: center;    /* items-center */
   gap: 0.5rem;            /* gap-2 */
+}
+.trbody:hover td,
+.trbody:hover span {
+  color: #fff !important;
+}
+.trbodySelected td,
+.trbodySelected span {
+  color: #fff !important;
 }
 .avatar {
   width: 1.5rem;             /* w-6 */

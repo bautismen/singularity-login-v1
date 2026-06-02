@@ -810,7 +810,7 @@ const printPdf = useReactToPrint({
             {paginatedTopData?.map(r => (
               <tr key={r.id_report}  className={`${styles.trbody} ${
                 r.selected ? styles.trbodySelected : styles.trbodyHover}`} onClick={() => toggleSelected(r.id_report)}>
-                <td className={styles.tdid}>{r.id_report}</td>
+                <td className= {styles.tdid}>{r.id_report}</td>
                 <td className={styles.tdcategory}>
                   <span
                     className={styles.spancategory}
