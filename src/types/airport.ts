@@ -4,7 +4,7 @@ export interface Airport {
     id_country: string;
     country_code: string;
     airport_code: string;
-    name_airport: number;
+    name_airport: string;
     status: number;
     data_state: number;
     archived: boolean; 

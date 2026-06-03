@@ -93,23 +93,58 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
     [`origin-${detail?.sequence}`]: false,
     [`destination-${detail?.sequence}`]: false,
   });
+  const formatDateForInput = (date: string) => date ? date.split('T')[0] : '';
+
 
   //use effect de carga de aeropuertos origen
   useEffect(() => {
     const fetchData = async () => {
-      try {                
+      try {          
+        if(detail?.origin?.country?.idCountry === undefined || detail?.origin?.country?.idCountry === ""){
+          onUpdateServiceFormData(
+            airServiceControl.idServiceItem,
+            detail.sequence,
+            "origin",
+            {
+              ...(detail?.origin ?? {}),
+              airport: {
+                idAirport: "",
+                airport: "",
+                airportKey: "",
+              },
+            }
+          )
+          setAirportsOrigin([]);
+        return;
+        } 
+               
         const result = await catalogService.getAirportsByIdCountry(detail?.origin?.country?.idCountry);
         const airportsResult = result ?? [];
         setAirportsOrigin(airportsResult);
         const airportKey = detail?.origin?.airport?.airportKey;
-        if (!airportKey) return;
+        if (!airportKey) return;        
         const airportSelected = airportsResult.find(
           (airport) =>
             airport.airport_code?.toLowerCase() === airportKey.toLowerCase()
         );
-
-        if (!airportSelected) return;
-
+        if (!airportSelected){
+          onUpdateServiceFormData(
+            airServiceControl.idServiceItem,
+            detail.sequence,
+            "origin",
+            {
+              ...(detail.origin ?? {}),
+              airport: {
+                idAirport: "",
+                airport: "",
+                airportKey: "",
+              },
+            }
+          );
+          setAirportsOrigin([]);
+          return;
+        } 
+          
         onUpdateServiceFormData(
           airServiceControl.idServiceItem,
           detail.sequence,
@@ -133,7 +168,24 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
   //use effect de carga de aeropuertos destino
   useEffect(() => {
     const fetchData = async () => {
-      try {                
+      try {   
+        if(detail?.destination?.country?.idCountry === undefined || detail?.destination?.country?.idCountry === "") {
+          onUpdateServiceFormData(
+            airServiceControl.idServiceItem,
+            detail.sequence,
+            "destination",
+            {
+              ...(detail?.destination ?? {}),
+              airport: {
+                idAirport: "",
+                airport: "",
+                airportKey: "",
+              },
+            }
+          ); 
+          setAirportsDestination([]); 
+          return;
+        }         
         const result = await catalogService.getAirportsByIdCountry(detail?.destination?.country?.idCountry);
         const airportsResult = result ?? [];
         setAirportsDestination(airportsResult);
@@ -144,7 +196,23 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
             airport.airport_code?.toLowerCase() === airportKey.toLowerCase()
         );
 
-        if (!airportSelected) return;
+        if (!airportSelected) {
+          onUpdateServiceFormData(
+            airServiceControl.idServiceItem,
+            detail.sequence,
+            "destination",
+            {
+              ...(detail?.destination ?? {}),
+              airport: {
+                idAirport: "",
+                airport: "",
+                airportKey: "",
+              },
+            }
+          ); 
+          setAirportsDestination([]); 
+          return;
+        }
 
         onUpdateServiceFormData(
           airServiceControl.idServiceItem,
@@ -153,9 +221,9 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
           {
             ...(detail.destination ?? {}),
             airport: {
-              idAirport: airportSelected._Id,
-              airport: airportSelected.name_airport,
-              airportKey: airportSelected.airport_code ?? "",
+              idAirport: airportSelected?._Id,
+              airport: airportSelected?.name_airport,
+              airportKey: airportSelected?.airport_code ?? "",
             },
           }
         );          
@@ -631,8 +699,8 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                         <InputAirport
                           type="origin"
                           airports={airportsOrigin}
-                          idCountry={detail.origin?.country?.idCountry}
-                          value={detail?.origin?.airport.airportKey ?? ""}
+                          nameAirport={detail?.origin?.airport?.airport} 
+                          codeAirport={detail?.origin?.airport?.airportKey}
                           serviceIdItem={detail.sequence}
                           label="Aeropuerto de carga"
                           groupClassName={styles.fieldGroup}
@@ -647,7 +715,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                                 ...(detail.origin ?? {}),
                                 airport: {
                                   idAirport: airport?._Id,
-                                  airport: airport?.name_airport,
+                                  airport: airport?.name_airport ?? "",
                                   airportKey: airport?.airport_code ?? ""
                                 },
                               },
@@ -807,8 +875,8 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                         <InputAirport
                           type="destination"
                           airports={airportsDestination}
-                          idCountry={detail.destination?.country?.idCountry}
-                          value={detail?.destination?.airport?.airportKey ?? ""}
+                          nameAirport={detail?.destination?.airport?.airport} 
+                          codeAirport={detail?.destination?.airport?.airportKey}
                           serviceIdItem={detail.sequence}
                           label={t("operations.airportDischarge")}
                           groupClassName={styles.fieldGroup}
