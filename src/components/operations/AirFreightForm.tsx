@@ -16,6 +16,7 @@ import {
   TipoUnidad,
   TipoRuta,
   TipoMovimeiento,
+  Goods,
 } from "./component";
 import {
   Copy,
@@ -961,11 +962,14 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
               </div>
 
               <div className={styles.serviceCard}>
-                <h2 className="title"> Contenedor </h2>
-              </div>
-
-              <div className={styles.serviceCard}>
                 <h2 className="title"> Mercancia </h2>
+                
+                <Goods
+                  infoControl={airServiceControl}
+                  detail={detail}
+                  onUpdateServiceFormData={onUpdateServiceFormData}
+                />
+              
               </div>
             </span>
           </div>
