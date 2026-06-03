@@ -283,7 +283,7 @@ export default function Operations() {
   };
 
   const addControl = () => {
-    
+
     if (control === undefined || control._id === undefined ||
       control._id === '' || control.control === '') {
       showWarning(t('operations.selectControlWarning'));
@@ -318,8 +318,6 @@ export default function Operations() {
       }
     ]);
 
-    console.log('formdata OP', formData, normalizedServices )
-
     // Quitamos el control seleccionado de la lista de controles disponibles para el cliente
     setControlsClient(prev =>
       prev.filter(c => c.id !== control._id)
@@ -330,16 +328,14 @@ export default function Operations() {
   };
 
   const removeControl = (_idcontrol: string, item: number) => {
-
-    const updated = formData.Controls?.filter((control: any) => control._id !== _idcontrol);
+    const updated = formData.Services?.filter((service: any) => service.idControl !== _idcontrol);
 
     updateFormData({ //setformdata
       ...formData,
-      Controls: updated
+      Services: updated
     });
 
     controlsClient.push(controlsOperation.find(c => c._id === _idcontrol) as PricingControl); // Volver a agregar el control eliminado a la lista de controles disponibles para el cliente
-
     // Eliminar el control seleccionado de la lista de controles asociados a la operación
     setControlsOperation(co =>
       co.filter(c => c._id !== _idcontrol)
@@ -1753,7 +1749,7 @@ export default function Operations() {
                           <option className="bg-white text-black dark:bg-[#1e293b] dark:text-white appearance-none"
                             key={controlCliente.id}
                             value={JSON.stringify({
-                              id: controlCliente.id,
+                              id: controlCliente.id || controlCliente._id ,
                               control: controlCliente.control,
                               services: controlCliente.services,
                               suppliers: controlCliente.suppliers

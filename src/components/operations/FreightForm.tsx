@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLanguage } from "../../contexts/LanguageContext";
 import styles from "../../pages/Operations.module.css";
 import { InputCountry } from "../InputCountry";
@@ -27,6 +27,9 @@ import {
   Container,
   MapPin,
 } from "lucide-react";
+import { Port } from "../../types/port";
+import { catalogService } from '../../services/catalogsService';
+
 
 export interface FreightFormProps {
   // Catálogos
@@ -95,6 +98,142 @@ export const FreightForm: React.FC<FreightFormProps> = ({
     [`origin-${detail?.sequence}`]: false,
     [`destination-${detail?.sequence}`]: false,
   });
+  const [portsOrigin, setPortsOrigin] = useState<Port[]>([]);
+  const [portsDestination, setPortsDestination] = useState<Port[]>([]);
+
+  //carga de puertos de origen
+  useEffect(()=> {
+    const fetchData = async () => {
+      try {     
+        if(detail?.origin?.country?.idCountry === undefined || detail?.origin?.country?.idCountry === ""){
+          onUpdateServiceFormData(
+            infoControl.idServiceItem,
+            detail.sequence,
+            "origin",
+            {
+              ...(detail?.origin ?? {}),
+              port: {
+                idPort: "",
+                port: "",
+                portKey: "",
+              },
+            }
+          );
+          setPortsOrigin([])
+          return;  
+        }           
+        const result = await catalogService.getPortsByIdCountry(detail?.origin?.country?.idCountry);
+        const portsResult = result ?? [];
+        setPortsOrigin(portsResult);
+        const portKeyCode = detail?.origin?.port?.portKey;
+        if (!portKeyCode) return;
+        const portSelected = portsResult.find(
+          (port) =>
+            port.port_code?.toLowerCase() === portKeyCode.toLowerCase()
+        );
+        if (!portSelected) {
+          onUpdateServiceFormData(
+            infoControl.idServiceItem,
+            detail.sequence,
+            "origin",
+            {
+              ...(detail?.origin ?? {}),
+              port: {
+                idPort: "",
+                port: "",
+                portKey: "",
+              },
+            }
+          );
+          setPortsOrigin([])
+          return;
+        }    
+        onUpdateServiceFormData(
+          infoControl.idServiceItem,
+          detail.sequence,
+          "origin",
+          {
+            ...(detail.origin ?? {}),
+            port: {
+              idPort: portSelected._Id,
+              port: portSelected.name_port,
+              portKey: portSelected.port_code ?? "",
+            },
+          }
+        );          
+      } catch {
+          setPortsOrigin([]);
+      } 
+    };
+    fetchData();
+  },[detail?.origin?.country?.idCountry])
+
+  //carga de puertos destino
+   useEffect(()=> {
+    const fetchData = async () => {
+      try {  
+        if(detail?.destination?.country?.idCountry === undefined || detail?.destination?.country?.idCountry === "") {
+          onUpdateServiceFormData(
+            infoControl.idServiceItem,
+            detail.sequence,
+            "destination",
+            {
+              ...(detail?.destination ?? {}),
+              port: {
+                idPort: "",
+                port: "",
+                portKey: "",
+              },
+            }
+          );   
+          setPortsDestination([]);
+        return;
+        }              
+        const result = await catalogService.getPortsByIdCountry(detail?.destination?.country?.idCountry);
+        const portsResult = result ?? [];
+        setPortsDestination(portsResult);
+        const portKeyCode = detail?.destination?.port?.portKey;
+        if (!portKeyCode) return;
+        const portSelected = portsResult.find(
+          (port) =>
+            port.port_code?.toLowerCase() === portKeyCode.toLowerCase()
+        );
+        if (!portSelected) {
+          onUpdateServiceFormData(
+            infoControl.idServiceItem,
+            detail.sequence,
+            "destination",
+            {
+              ...(detail?.destination ?? {}),
+              port: {
+                idPort: "",
+                port: "",
+                portKey: "",
+              },
+            }
+          );   
+          setPortsDestination([]);
+          return;
+        }    
+        onUpdateServiceFormData(
+          infoControl.idServiceItem,
+          detail.sequence,
+          "destination",
+          {
+            ...(detail.destination ?? {}),
+            port: {
+              idPort: portSelected._Id,
+              port: portSelected.name_port,
+              portKey: portSelected.port_code ?? "",
+            },
+          }
+        );          
+      } catch {
+        setPortsDestination([]);
+      } 
+    };
+    fetchData();
+  },[detail?.destination?.country?.idCountry])
 
   const toggleAccordion = (key) => {
     setAccordionOpen((prev) => ({
@@ -544,16 +683,23 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       <InputCountry
                         type="origin"
                         countries={countries}
-                        selectedCountryId={detail.origin?.idCountry}
+                        selectedCountryId={detail.origin?.country.idCountry}
                         serviceIdItem={detail.sequence}
                         isDisabled={false}
                         placeholder={t("quote.select")}
                         label={t("operations.countryCharge")}
-                        onChangeCountry={({ type, changes }) => {
-                          onUpdateServiceFormData(
+                        mapCountryToChanges={(country) => {  
+                          return {
+                            idCountry: country?._Id ?? "",
+                            country: country?.name_country ?? "",
+                            countryKey:country?.country_code ?? ""  }                        
+                        }}
+                        onChangeCountry={({ changes }) => {
+                          onUpdateServiceDetail(
                             infoControl.idServiceItem,
                             detail.sequence,
                             "origin",
+                            "country",
                             changes
                           );
                         }}
@@ -581,8 +727,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     <div className={styles.secondColumn}>
                       {[2, 4].includes(detail.idTypeShipment) ?  
                           <InputPort
-                            idCountry={detail.origin?.idCountry}
-                            value={detail?.origin?.Port ?? ""}
+                            ports={portsOrigin}
+                            namePort={detail?.origin?.port?.port}
+                            codePort={detail?.origin?.port?.portKey}
                             serviceIdItem={detail.sequence}
                             type="origin"
                             label="Puerto de carga"
@@ -596,7 +743,11 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                                 "origin",
                                 {
                                   ...(detail.origin ?? {}),
-                                  portCode: port?.port_code ?? "",
+                                  port: {
+                                    idPort: port?._Id,
+                                    port: port?.name_port ?? "",
+                                    portKey: port?.port_code ?? ""
+                                  }
                                 },
                               );
                             }}
@@ -710,20 +861,24 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         inputClassName={styles.textInput}
                         type="destination"
                         countries={countries}
-                        selectedCountryId={detail.destination?.idCountry}
+                        selectedCountryId={detail.destination?.country?.idCountry}
                         serviceIdItem={detail.sequence}
                         isDisabled={false}
                         placeholder={t("quote.select")}
                         label="Pais de descarga"
-                        onChangeCountry={({ type, changes }) => {
-                          onUpdateServiceFormData(
+                        mapCountryToChanges={(country) => {  
+                            return {
+                              idCountry: country?._Id ?? "",
+                              country: country?.name_country ?? "",
+                              countryKey:country?.country_code ?? "" }                        
+                        }}
+                        onChangeCountry={({ changes }) => {
+                          onUpdateServiceDetail(
                             infoControl.idServiceItem,
                             detail.sequence,
                             "destination",
-                            {
-                              ...(detail.destination ?? {}),
-                              ...changes,
-                            },
+                            "country",
+                            changes,
                           );
                         }}
                       />
@@ -763,8 +918,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       {/* Puerto o Aeropuerto de descarga */}
                       {[2, 3].includes(detail.idTypeShipment) ?                                                   
                         <InputPort
-                          idCountry={detail.destination?.idCountry}
-                          value={detail?.destination?.Port ?? ""}
+                          ports={portsDestination}
+                          namePort={detail?.destination?.port?.port}
+                          codePort={detail?.destination?.port?.portKey}
                           serviceIdItem={detail.sequence}
                           type="destination"
                           label={t("operations.portDischarge")}
@@ -778,7 +934,11 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                               "destination",
                               {
                                 ...(detail.destination ?? {}),
-                                portCode: port?.port_code ?? "",
+                                port: {
+                                  idPort: port?._Id,
+                                  port: port?.name_port ?? "",
+                                  portKey: port?.port_code ?? ""
+                                }                                
                               },
                             );
                           }}
