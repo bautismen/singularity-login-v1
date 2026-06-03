@@ -292,3 +292,245 @@ export const TipoGuia = ({ itemService, sequencedetail, transport, onUpdateServi
     </>
   )
 }
+
+export const UnidadMedida = ({ itemService, sequencedetail, goods, onUpdateServiceFormData }) => {
+
+  return (
+    <>
+      <div className={styles.measureContainer}>
+
+        {/* Unidad */}
+        <select
+          value={goods?.idUnitMeasurement || ''}
+          className= {styles.measureSelect}
+          onChange={(e) => {
+            onUpdateServiceFormData(
+              itemService,
+              sequencedetail,
+              'goods',
+              [{
+                ...(goods || {}),
+                idUnitMeasurement: Number(e.target.value),
+                unitMeasurement:
+                  e.target.options[e.target.selectedIndex].text
+              }]
+            );
+          }}
+        >
+          <option value="">...</option>
+          <option value={1}>cm</option>
+          <option value={2}>in</option>
+        </select>
+
+        {/* Separador */}
+        <div className="h-4 w-px bg-gray-300 dark:bg-gray-600"></div>
+
+        {/* Valor */}
+        <input
+          type="text"
+          value={goods?.volumeTotal || ''}
+          className= {styles.measureInput}
+          onChange={(e) => {
+            onUpdateServiceFormData(
+              itemService,
+              sequencedetail,
+              'goods',
+              [{
+                ...(goods || {}),
+                volumeTotal: e.target.value
+              }]
+            );
+          }}
+        />
+
+      </div>
+
+    </>
+  )
+
+};
+
+export const TipoCarga = ({ itemService, sequencedetail, goods, onUpdateServiceFormData }) => {
+
+  return (
+    <>
+      <select
+        value={goods?.shipmentTypeCargo || goods?.typeCargo || ''}
+        className={styles.selectTable}
+        // readOnly
+        required
+        onChange={(e) => {
+          onUpdateServiceFormData(itemService, sequencedetail, 'goods', [{
+            ...(goods || {}),
+            typeCargo: e.target.value
+          }])
+        }
+        }
+      >
+        <option value=''>Seleccionar ...</option>
+        <option value={"Contenerizada"}>Contenerizada</option>
+        <option value={"Suelta"}>Suelta</option>
+      </select>
+    </>
+  );
+};
+
+export const TipoClasificacion = ({ itemService, sequencedetail, goods, onUpdateServiceFormData }) => {
+
+  return (
+    <>
+      <select
+        value={goods?.idUnitMeasurement || ''}
+        className={styles.selectTable}
+        // readOnly
+        required
+        onChange={(e) => {
+          onUpdateServiceFormData(itemService, sequencedetail, 'goods', [{
+            ...(goods || {}),
+            idUnitMeasurement: e.target.value,
+            unitMeasurement: e.target.options[e.target.selectedIndex].text
+          }])
+        }
+        }
+      >
+        <option value=''>Seleccionar ...</option>
+        <option value={1}>Peligrosa</option>
+        <option value={2}>Refrigerada</option>
+        <option value={3}>Sobredimensionada</option>
+        <option value={4}>Granel</option>
+        <option value={5}>General</option>
+      </select>
+    </>
+  );
+};
+
+export const TipoEmbalaje = ({ itemService, sequencedetail, goods, onUpdateServiceFormData }) => {
+
+  return (
+    <>
+      <select
+        value={goods?.idUnitMeasurement || ''}
+        className={styles.selectTable}
+        // readOnly
+        required
+        onChange={(e) => {
+          onUpdateServiceFormData(itemService, sequencedetail, 'goods', [{
+            ...(goods || {}),
+            idUnitMeasurement: e.target.value,
+            unitMeasurement: e.target.options[e.target.selectedIndex].text
+          }])
+        }
+        }
+      >
+        <option value=''>Seleccionar ...</option>
+        <option value={1}>Caja</option>
+        <option value={2}>Pallet</option>
+        <option value={3}>Saco</option>
+      </select>
+    </>
+  );
+};
+
+export const Goods = ({ infoControl, detail, onUpdateServiceFormData }) => {
+
+  return (
+    <table className={styles.table}>
+      <thead>
+        <tr>
+          <th className={styles.colItem}>Item</th>
+          <th className={styles.colGoods}>Mercancía</th>
+          <th className={styles.colDescription}>Descripción</th>
+          <th className={styles.colPieces}>Piezas</th>
+          <th className={styles.colMeasure}>Unidad de medida</th>
+          <th className={styles.colCargo}>Tipo de carga</th>
+        </tr>
+      </thead>
+      <tbody>
+        {detail.goods?.map((good, index) => (
+          <tr key={good.idgood ? good.idgood : 1}>
+            <td>
+              {/* Item */}
+              <label className="px-2 py-1">
+                # {index + 1}
+                {/* # {good.idgood ? good.idgood : index + 1} */}
+              </label>
+            </td>
+            <td>
+              {/* Mercancia */}
+              <input
+                className={styles.textTable}
+                value={good?.name || ''}
+                onChange={(e) => {
+                  onUpdateServiceFormData(
+                    infoControl.idServiceItem,
+                    detail.sequence,
+                    'goods',
+                    [{
+                      ...(detail.goods?.[detail.goods?.indexOf(good) ?? 0] ?? {}),
+                      name: e.target.value,
+                    }]
+                  )
+                }
+                }
+              />
+            </td>
+            <td>
+              {/* Descripción */}
+              <input
+                className={styles.textTable}
+                value={good?.description || ''}
+                onChange={(e) =>
+                  onUpdateServiceFormData(
+                    infoControl.idServiceItem,
+                    detail.sequence,
+                    'goods',
+                    [{
+                      ...(detail.goods?.[detail.goods?.indexOf(good) ?? 0] ?? {}),
+                      description: e.target.value
+                    }]
+                  )
+                }
+              />
+            </td>
+            <td>
+              {/* Piezas */}
+              <input
+                type="number"
+                className={styles.smallInput}
+                value={good?.pieces || good?.numberOfPieces || ''}
+                onChange={(e) =>
+                  onUpdateServiceFormData(
+                    infoControl.idServiceItem,
+                    detail.sequence,
+                    'goods',
+                    [{
+                      ...(detail.goods?.[detail.goods?.indexOf(good) ?? 0] ?? {}),
+                      numberOfPieces: Number(e.target.value)
+                    }]
+                  )
+                }
+              />
+            </td>
+            <td>
+              <UnidadMedida
+                itemService={infoControl.idServiceItem}
+                sequencedetail={detail.sequence}
+                goods={good}
+                onUpdateServiceFormData={onUpdateServiceFormData}
+              />
+            </td>
+            <td>
+              {/* Tipo de carga */}
+              <TipoCarga
+                itemService={infoControl.idServiceItem}
+                sequencedetail={detail.sequence}
+                goods={good}
+                onUpdateServiceFormData={onUpdateServiceFormData}
+              />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}

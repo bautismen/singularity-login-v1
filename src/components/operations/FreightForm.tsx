@@ -14,7 +14,8 @@ import {
   TipoUnidad,
   TipoRuta,
   TipoMovimeiento,
-  TipoGuia
+  TipoGuia,
+  Goods
 } from "../operations/component";
 import {
   Copy,
@@ -59,6 +60,10 @@ export interface FreightFormProps {
     detailId: number,
     newDetail: object,
   ) => void;
+  onRemoveDetail: (
+    idServiceItem: number,
+    detailId: number
+  ) =>void;
 }
 
 export const FreightForm: React.FC<FreightFormProps> = ({
@@ -71,13 +76,15 @@ export const FreightForm: React.FC<FreightFormProps> = ({
   onUpdateServiceFormData,
   onUpdateServiceDetail,
   onDuplicateDetail,
+  onRemoveDetail
 }) => {
   const { t } = useLanguage();
 
   const infoControl = formData.Services?.find(
     (s) => s.idControl === info.id && s.idServiceItem === info.item,
   );
-  //console.log('freight', infoControl, formData.Services)
+  
+  console.log('infoControl', infoControl, formData.Services)
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const detail = infoControl?.serviceDetail?.[currentIndex]; //currentDetail
@@ -182,7 +189,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                   type="button"
                   className={`${styles.iconButtonRemove} ${styles.danger}`}
                   // disabled={isDisabled}
-                  onClick={() => ""}
+                  onClick={() => {
+                    onRemoveDetail(infoControl?.idServiceItem, detail.sequence )
+                    prevPage();
+                  }}
                 >
                   <X size={18} />
                 </button>
@@ -221,9 +231,6 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     <ChevronDown />
                   </span>
                 </div>
-
-                {/* <details>
-                </details> */}
 
                 <div
                   className={`${styles.accordionContent}
@@ -384,7 +391,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           type="text"
                           value={detail?.transport?.nameTransport}
                           onChange={(e) =>
-                            onUpdateServiceDetail(infoControl.idServiceItem, detail.sequence, 'transport', 'nameTransport', e.target.value)
+                            onUpdateServiceDetail(
+                              infoControl.idServiceItem, 
+                              detail.sequence, 
+                              'transport', 
+                              'nameTransport',
+                              e.target.value
+                            )
                           }
                           className={styles.textInput}
                         />
@@ -560,6 +573,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                             type="datetime-local"
                             value={detail?.origin}
                             className={styles.textInput}
+                            readOnly
                           />                          
                         </div>                        
                       )}
@@ -597,6 +611,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                             type="text"
                             value={detail?.origin?.placeOfReceipt}
                             className={styles.textInput}
+                            readOnly
                           />
                       </div>
                       }
@@ -611,6 +626,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                             type="datetime-local"
                             value={detail?.origin}
                             className={styles.textInput}
+                            readOnly
                           />
                       </div>
                       )}                      
@@ -646,6 +662,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           type="datetime-local"
                           value={detail?.origin}
                           className={styles.textInput}
+                          readOnly
                         />
                       </div>
                     </div>             
@@ -722,6 +739,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           type="datetime-local"
                           //value={detail?.destination}
                           className={styles.textInput}
+                          readOnly
                         />
                       </div>
                      
@@ -735,6 +753,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                             type="datetime-local"
                             value={detail?.destination}
                             className={styles.textInput}
+                            readOnly
                           />
                         </div>
                       )}
@@ -774,6 +793,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                             type="text"
                             value={detail?.origin?.placeOfReceipt}
                             className={styles.textInput}
+                            readOnly
                           />
                         </div>
                       )}
@@ -786,6 +806,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           type="datetime-local"
                           value={detail?.destination}
                           className={styles.textInput}
+                          readOnly
                         />
                       </div>
                     </div>
@@ -800,6 +821,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           type="datetime-local"
                           value={detail?.destination?.arrivalDateATA}
                           className={styles.textInput}
+                          readOnly
                         />
                       </div>
                      
@@ -814,6 +836,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                             type="datetime-local"
                             value={detail?.origin}
                             className={styles.textInput}
+                            readOnly
                           />                          
                         </div>                        
                       }
@@ -830,6 +853,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                             type="text"
                             value={detail.destination?.plant}
                             className={styles.textInput}
+                            readOnly
                           />
                         </div>
                       }
@@ -843,6 +867,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           type="datetime-local"
                           value={detail?.origin}
                           className={styles.textInput}
+                          readOnly
                         />
                       </div>
                     </div>
@@ -870,6 +895,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       e.target.value,
                     )
                   }*/
+                    readOnly
                     />
                     {/* <input
                                 type="text"
@@ -926,26 +952,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 
               <div className={styles.serviceCard}>
                 <h2 className="title"> Mercancia </h2>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Mercancia</th>
-                      <th>Descripción</th>
-                      <th>Cantidad</th>
-                      <th>Unidad de medida</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {detail.cargo?.map((cargo, index) => (
-                      <tr key={index}>
-                        <td>{cargo.name}</td>
-                        <td>{cargo.description}</td>
-                        <td>{cargo.quantity}</td>
-                        <td>{cargo.unit}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+
+                <Goods 
+                  infoControl={infoControl} 
+                  detail={detail}
+                  onUpdateServiceFormData={onUpdateServiceFormData}
+                />
+
               </div>
             </span>
           </div>

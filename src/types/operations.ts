@@ -52,6 +52,7 @@ export interface ServiceDetail {
   transport?: any;
   origin?: any;
   destination?: any;
+  goods?: any;
   
 //   // Fechas
 //   departureDateAproximate?: Date;

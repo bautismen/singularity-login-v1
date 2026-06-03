@@ -125,12 +125,22 @@ const updateFormData = (changes:
           serviceDetail: service.serviceDetail.map(detail =>
             detail.sequence === detailId ? {
               ...detail,
-              [field]: value
+              [field]:
+                value !== null &&
+                  typeof value === 'object' &&
+                  !Array.isArray(value)
+                  ? {
+                    ...(detail[field] || {}),
+                    ...value
+                  } : value
             } : detail
           )
         } : service
       )
     }));
+    
+    console.log('updateServiceFormData', formData);
+
   };
 
   const updateServiceDetail = (idServiceItem: number, detailId: number, collection: string, field: string, value: any) => {
@@ -160,7 +170,9 @@ const updateFormData = (changes:
         } : service
       )
     }));
-   console.log(formData)
+
+    console.log('updateServiceDetail', formData);
+
   };
 
   const duplicateDetail = (idServiceItem: number, detailId: number, newDetail: object) => {
@@ -178,7 +190,7 @@ const updateFormData = (changes:
           : service
       )
     }));
-    console.log(formData)
+
   };
 
   const removeDetail = (idServiceItem: number, sequence: number) => {
