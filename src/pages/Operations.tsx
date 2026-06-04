@@ -930,10 +930,10 @@ export default function Operations() {
                 <span className={styles.greenDot}></span>
                 <span>{t('operations.services')}</span>
               </div>
-              {collapsedSections['services'] ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+              {collapsedSections['services'] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </div>
 
-            {!collapsedSections.services && (
+            {collapsedSections.services && (
               <div className={styles.sectionContent}>
                 <div className={styles.serviceSpace}>
                   <div className="flex ">
@@ -1066,7 +1066,7 @@ export default function Operations() {
                 <span className={styles.greenDot}></span>
                 <span>{t('operations.expedientes')}</span>
               </div>
-              {collapsedSections['expedientes'] ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+              {collapsedSections['expedientes'] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </div>
 
           </div>
