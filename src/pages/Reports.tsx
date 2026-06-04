@@ -71,7 +71,7 @@ export function Reports() {
   };
   const [currentPageTop, setCurrentPageTop] = useState(1);
   const [pageSizeTop, setPageSizeTop] = useState(10);
-  const { showError, showWarning} = useNotification();
+  const { showError, showWarning, showInfo } = useNotification();
 
   const totalPagesTop = Math.ceil(filteredItems.length / pageSizeTop);
 
@@ -392,7 +392,7 @@ const handlecreate = async () => {
     const params = buildParams();
 
     if(!params || Object.keys(params).length === 0) {
-      showWarning('Debe capturar al menos un parámetro para generar el reporte.');
+      showWarning(t('report.mesage1'));
       setisviewResult(false);
       setLoading(false);
       return;
@@ -402,9 +402,9 @@ const handlecreate = async () => {
       idReport,
       params
     );
-
+    
     if (result.length === 0) {
-      showWarning('El reporte no generó resultados con los parámetros proporcionados.');
+      showInfo(t('report.mesage2'));
       setisviewResult(false);
       setLoading(false);
       return;
