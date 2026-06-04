@@ -14,7 +14,7 @@ import { Supplier } from '../types/supplier';
 import { FreightForm } from '../components/operations/FreightForm'
 import { PrevioForm } from '../components/operations/PrevioForm'
 import { OtherServiceForm } from '../components/operations/OtherServiceForm'
-import {useOperations} from '../hooks/useOperations'
+import { useOperations } from '../hooks/useOperations'
 import { useCatalogs } from "../hooks/useCatalogs";
 import { AirFreightForm } from '../components/operations/AirFreightForm';
 
@@ -34,7 +34,7 @@ export default function Operations() {
   const [serviceDetail, setServiceDetail] = useState<ServiceDetail[]>([]);
   const [incoterm, setIncoterm] = useState<Service[]>([]);
   const [supplier, setSupplier] = useState<Supplier[]>([]);
-  const {countries} = useCatalogs();
+  const { countries } = useCatalogs();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -54,10 +54,10 @@ export default function Operations() {
   const { user } = useAuth();
 
   const {
-    formData, 
-    resetFormData, 
-    setCompleteFormData, 
-    updateFormData, 
+    formData,
+    resetFormData,
+    setCompleteFormData,
+    updateFormData,
     updateServiceFormData,
     updateServiceDetail,
     duplicateDetail,
@@ -142,7 +142,7 @@ export default function Operations() {
   }
 
   function handleNewOperation() {
-    setActiveTab({ id: '',  idService: '', item: '', name: ''})
+    setActiveTab({ id: '', idService: '', item: '', name: '' })
     setControlsClient([]);
     setControl({} as PricingControl);
     setControlsOperation([]);
@@ -156,7 +156,7 @@ export default function Operations() {
   }
 
   function handleEditOperation(operation: Operation) {
-    setActiveTab({ id: '',  idService: '', item: '', name: ''})
+    setActiveTab({ id: '', idService: '', item: '', name: '' })
     setServicesOperation([]);
     setService({} as Service);
 
@@ -182,7 +182,7 @@ export default function Operations() {
       );
 
       const normalizedService =
-      normalizeService(service);
+        normalizeService(service);
 
       if (!existingControl) {
 
@@ -305,8 +305,8 @@ export default function Operations() {
       Services: [
         ...prev.Services,
         ...normalizedServices
-      ]    
-      }));
+      ]
+    }));
 
     setControlsOperation(prev => [
       ...prev,
@@ -371,7 +371,7 @@ export default function Operations() {
   };
 
   const removeService = (_idservice: number) => {
-    console.log('servicesOperation',servicesOperation, _idservice)
+    console.log('servicesOperation', servicesOperation, _idservice)
     setServicesOperation(servicesOperation.filter(s => s._id !== _idservice));  // Eliminar el servicio seleccionado de la lista de servicios asociados a la operación
 
     // controlsClient.push(controlsOperation.find(c => c._id === _idcontrol) as PricingControl); // Volver a agregar el control eliminado a la lista de controles disponibles para el cliente
@@ -382,9 +382,9 @@ export default function Operations() {
       (c) => String(c._Id) === String(country?.idCountry)
     );
     return {
-       idCountry: catalogCountry?._Id ?? "",
-       country: catalogCountry?.name_country ?? "",
-       countryKey:catalogCountry?.country_code ?? ""
+      idCountry: catalogCountry?._Id ?? "",
+      country: catalogCountry?.name_country ?? "",
+      countryKey: catalogCountry?.country_code ?? ""
     }
   }
 
@@ -403,30 +403,30 @@ export default function Operations() {
             ? shipment.transports
             : [{}],
         origin:
-          shipment.origin 
+          shipment.origin
             ? {
-                country: normalizeCountry(shipment.origin) ,
-                ...(shipment.origin?.portCode && {
-                  port: {portKey: shipment.origin.portCode}
-                }),
-                ...(shipment.origin?.airportCode && {
-                  airport: {airportKey: shipment.origin.airportCode}
-                }),              
-                placeOfReceipt: shipment.origin.city + (shipment.origin.zipCode ?? ''),             
-              }
+              country: normalizeCountry(shipment.origin),
+              ...(shipment.origin?.portCode && {
+                port: { portKey: shipment.origin.portCode }
+              }),
+              ...(shipment.origin?.airportCode && {
+                airport: { airportKey: shipment.origin.airportCode }
+              }),
+              placeOfReceipt: shipment.origin.city + (shipment.origin.zipCode ?? ''),
+            }
             : [{}],
         destination:
-          shipment.destination 
+          shipment.destination
             ? {
               country: normalizeCountry(shipment.destination),
               ...(shipment.destination?.portCode && {
-                  port: {portKey: shipment.destination.portCode}
-                }),
-                ...(shipment.destination?.airportCode && {
-                  airport: {airportKey: shipment.destination.airportCode}
-                }), 
-              placeOfDelivery: shipment.destination.city + (shipment.destination.zipCode ?? ''),  
-            }            
+                port: { portKey: shipment.destination.portCode }
+              }),
+              ...(shipment.destination?.airportCode && {
+                airport: { airportKey: shipment.destination.airportCode }
+              }),
+              placeOfDelivery: shipment.destination.city + (shipment.destination.zipCode ?? ''),
+            }
             : [{}],
         references:
           shipment.references?.length > 0
@@ -439,7 +439,7 @@ export default function Operations() {
         goods:
           shipment.cargo?.length > 0
             ? shipment.cargo
-            : [{idgood: 1, name: '', units: 0, weight: 0, volume: 0, classification: [], stowable: 0, shipmentTypeCargo: '', idUnitMeasurement: 1, unitMeasurement: '', idUnitWeight: 1, unitWeight: ''}],
+            : [{ idgood: 1, name: '', units: 0, weight: 0, volume: 0, classification: [], stowable: 0, shipmentTypeCargo: '', idUnitMeasurement: 1, unitMeasurement: '', idUnitWeight: 1, unitWeight: '' }],
         detailType: 'shipment',
         sequence: secuencia
       }));
@@ -481,7 +481,7 @@ export default function Operations() {
         goods:
           detail.cargo?.length > 0
             ? detail.cargo
-            : [{idgood: 1, name: '', units: 0, weight: 0, volume: 0, classification: [], stowable: 0, shipmentTypeCargo: '', idUnitMeasurement: 1, unitMeasurement: '', idUnitWeight: 1, unitWeight: ''}],
+            : [{ idgood: 1, name: '', units: 0, weight: 0, volume: 0, classification: [], stowable: 0, shipmentTypeCargo: '', idUnitMeasurement: 1, unitMeasurement: '', idUnitWeight: 1, unitWeight: '' }],
         detailType: 'detail',
         sequence: secuencia
       }));
@@ -499,806 +499,6 @@ export default function Operations() {
       serviceDetail: detail
     };
   };
-
-  // const loadInfoControl = (info: object) => {
-
-  //   let infoControl = formData.Services?.find(
-  //     s =>
-  //       s.idControl === activeTab.id &&
-  //       s.idServiceItem === activeTab.item
-  //   );
-
-  //   if (infoControl) {
-
-  //     return (
-  //       <div className={styles.formRow}>
-  //         <span key={infoControl.idServiceItem} className={styles.serviceItem}>
-  //           {infoControl?.serviceDetail?.map((detail, index) => (
-
-  //             <div
-  //               key={detail.sequence || index}
-  //               className="
-  //                       border border-gray-200
-  //                       dark:border-gray-700
-  //                       rounded-xl
-  //                       p-4
-  //                       mb-4
-  //                       bg-white
-  //                       dark:bg-[#1e293b]"
-  //             >
-
-  //               {/* Header Card */}
-  //               <div className="flex items-center justify-between mb-4">
-
-  //                 <h3 className="font-semibold text-sm dark:text-white">
-  //                   Card #{index + 1}
-  //                 </h3>
-
-  //               </div>
-
-  //               <span key={index + 1} className={styles.serviceItem}>
-  //                 <div className={styles.serviceCard}>
-  //                   <h2 className='title'> Envio </h2>
-
-  //                   <div className={styles.fourColumnGrid}>
-
-  //                     <div className={styles.firstColumn}>
-
-  //                       {/* Tipo de envío */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <TipoEnvio
-  //                           item={infoControl.idServiceItem}
-  //                           detail={detail}
-  //                           updateService={updateService}
-  //                         />
-  //                       </div>
-
-  //                       {/* Incoterm */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <Incoterm
-  //                           item={infoControl.idServiceItem}
-  //                           detail={detail}
-  //                           updateService={updateService}
-  //                         />
-  //                       </div>
-
-  //                     </div>
-
-  //                     <div className={styles.secondColumn}>
-
-  //                       {/* Tipo de referencia */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <TipoReferencia
-  //                           item={infoControl.idServiceItem}
-  //                           detail={detail}
-  //                           updateService={updateService}
-  //                         />
-  //                       </div>
-
-  //                       {/* Tipo operación */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <TipoOperacion
-  //                           item={infoControl.idServiceItem}
-  //                           detail={detail}
-  //                           updateService={updateService}
-  //                         />
-  //                       </div>
-
-  //                     </div>
-
-  //                     <div className={styles.thirdColumn}>
-
-  //                       {/* Referencia de envio */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           Referencia de envio
-  //                           <input
-  //                             type="text"
-  //                             value={detail.shippingReferenceNumber || ''}
-  //                             className={styles.textInput}
-  //                             onChange={(e) =>
-  //                               updateService(
-  //                                 infoControl.idServiceItem,
-  //                                 detail.sequence,
-  //                                 'shippingReferenceNumber',
-  //                                 (e.target.value))
-  //                             }
-  //                           />
-
-  //                         </label>
-  //                       </div>
-
-  //                       {/* Guia master */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           Guia master
-  //                           <input
-  //                             type="text"
-  //                             value={detail?.masterGuide}
-  //                             onChange={(e) =>
-  //                               updateService(
-  //                                 infoControl.idServiceItem,
-  //                                 detail.sequence,
-  //                                 'masterGuide',
-  //                                 (e.target.value))
-  //                             }
-  //                             className={styles.textInput}
-  //                           />
-  //                         </label>
-  //                       </div>
-
-  //                     </div>
-
-  //                     <div className={styles.fourthColumn}>
-
-  //                       {/* Envio referencia */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           Envio referencia
-  //                           <input
-  //                             type="datetime-local"
-  //                             value={detail.shippingDate} //? new Date(detail.shippingDate).toISOString().slice(0, 16) : ''
-  //                             onChange={(e) =>
-  //                               updateService(
-  //                                 infoControl.idServiceItem,
-  //                                 detail.sequence,
-  //                                 'shippingDate',
-  //                                 (e.target.value))
-  //                             }
-  //                             className={styles.textInput}
-  //                           />
-  //                         </label>
-  //                       </div>
-
-  //                     </div>
-
-  //                   </div>
-                    
-  //                   <h2 className='title'> Transporte </h2>
-
-  //                   {detail?.transports?.map((transport, index) => (
-                      
-  //                     <div className={styles.fourColumnGrid}>
-
-  //                       <div className={styles.firstColumn}>
-
-  //                         {/* Transportista */}
-  //                         <Transportista
-  //                           item={infoControl.idServiceItem}
-  //                           key={1}
-  //                           transport={transport}
-  //                           detail={detail.sequence}
-  //                           updateNestedDetail={updateNestedDetail}
-  //                         />
-
-  //                         {/* Tipo de unidad */}
-  //                         {/* <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           Tipo de unidad
-  //                           <input
-  //                             type="text"
-  //                             value={detail.transports.typeUnit}
-  //                             className={styles.textInput}
-  //                           />
-  //                         </label>
-  //                       </div> */}
-  //                       </div>
-
-  //                       <div className={styles.secondColumn}>
-
-  //                         {/* CAAT */}
-  //                         {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             CAAT
-  //                             <input
-  //                               type="text"
-  //                               value={detail.incoterm}
-  //                               readOnly
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div>
-
-  //                         {/* Tipo de ruta */}
-  //                         {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             Tipo de ruta
-  //                             <input
-  //                               type="text"
-  //                               value={detail.typeReference}
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                       </div>
-
-  //                       <div className={styles.thirdColumn}>
-
-  //                         {/* Guia/Tipo */}
-  //                         {/* <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           Guia/Tipo
-  //                           <input
-  //                             type="text"
-  //                             value={detail.typeOperation}
-  //                             readOnly
-  //                             className={styles.textInput}
-  //                           />
-  //                         </label>
-  //                       </div> */}
-
-  //                         {/* Tipo de movimiento */}
-  //                         {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             Tipo de movimiento
-  //                             <input
-  //                               type="text"
-  //                               value={detail.typeReference}
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                       </div>
-
-  //                       <div className={styles.fourthColumn}>
-
-  //                         {/* Placas */}
-  //                         {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             Placas
-  //                             <input
-  //                               type="text"
-  //                               value={detail.masterBill}
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                         {/* Numero de rastreo/Tipo */}
-  //                         {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             Numero de rastreo/Tipo
-  //                             <input
-  //                               type="text"
-  //                               value={detail.masterBill}
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                       </div>
-
-  //                     </div>
-  //                   ))
-  //                   }
-                    
-  //                   <h2 className='title'> Origen / Destino </h2>
-
-  //                   <div className={styles.fourColumnGrid}>
-
-  //                     <div className={styles.firstColumn}>
-
-  //                       {/* Pais de carga */}
-  //                       {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             Pais de carga
-  //                             <input
-  //                               type="text"
-  //                               value={detail.origin.city}
-  //                               readOnly
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                       {/* Llegada a planta */}
-  //                       {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             Llegada a planta
-  //                             <input
-  //                               type="text"
-  //                               value={detail.typeReference}
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                       {/* Pais de descarga */}
-  //                       {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             Pais de descarga
-  //                             <input
-  //                               type="text"
-  //                               value={detail.destination.city}
-  //                               readOnly
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                     </div>
-
-  //                     <div className={styles.secondColumn}>
-
-  //                       {/* Lugar de recoleccion */}
-  //                       {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             Lugar de recoleccion
-  //                             <input
-  //                               type="text"
-  //                               value={detail.incoterm}
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                       {/* Salida de planta */}
-  //                       {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             Salida de planta
-  //                             <input
-  //                               type="text"
-  //                               value={detail.typeReference}
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div>
-
-  //                         {/* Puerto de descarga */}
-  //                       {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             Puerto de descarga
-  //                             <input
-  //                               type="text"
-  //                               value={detail.origin.portCode}
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                     </div>
-
-  //                     <div className={styles.thirdColumn}>
-
-  //                       {/* ETD (Salida estimada) */}
-  //                       {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             ETD (Salida estimada)
-  //                             <input
-  //                               type="datetime-local"
-  //                               value={detail.departureDateAproximate}
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                       {/*  */}
-  //                       {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             .
-  //                             <input
-  //                               type="text"
-  //                               value={detail.typeReference}
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                       {/* Planta */}
-  //                       {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             Planta
-  //                             <input
-  //                               type="text"
-  //                               value={detail.typeReference}
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                     </div>
-
-  //                     <div className={styles.fourthColumn}>
-
-  //                       {/* Despacho / recoleccion */}
-  //                       {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             Despacho / recoleccion
-  //                             <input
-  //                               type="datetime-local"
-  //                               value={detail.masterBill}
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                       {/*  */}
-  //                       {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             .
-  //                             <input
-  //                               type="text"
-  //                               value={detail.masterBill}
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                       {/* ETA (Llegada estimada) */}
-  //                       {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             ETA (Llegada estimada)
-  //                             <input
-  //                               type="datetime-local"
-  //                               value={detail.masterBill}
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                     </div>
-
-  //                   </div>
-
-  //                   {/* Observaciones del servicio*/}
-  //                   <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
-  //                     <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
-  //                       {t('operations.observations')}
-  //                     </label>
-
-  //                     <textarea
-  //                       value={detail.observationsService || ''}
-  //                       className={styles.textArea}
-  //                       onChange={(e) =>
-  //                         updateService(
-  //                           infoControl.idServiceItem,
-  //                           detail.sequence,
-  //                           'observationsService',
-  //                           (e.target.value))
-  //                       }
-  //                     />
-  //                     {/* <input
-  //                         type="text"
-  //                         id="observationsService"
-  //                         name="observations"
-  //                         value={
-  //                           formData.Services.find(
-  //                             s => s.idServiceItem === serv.idServiceItem
-  //                           )?.observations || ''
-  //                         }
-  //                         onChange={(e) =>
-  //                           updateService(
-  //                             serv.idServiceItem,
-  //                             'observations',
-  //                             e.target.value
-  //                           )
-  //                         }
-  //                         className="min-h-[30px] w-full p-2 rounded-lg
-  //                                 bg-transparent text-black dark:text-white
-  //                                 border border-gray-300 dark:border-gray-700
-  //                                 hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
-  //                                 focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
-  //                                 outline-none appearance-none text-body-sm transition-colors"
-  //                       /> */}
-  //                   </div>
-  //                 </div>
-
-  //                 <div className={styles.serviceCard}>
-  //                   <h2 className='title'> Referencia aduanal </h2>
-
-  //                 </div>
-
-  //                 <div className={styles.serviceCard}>
-  //                   <h2 className='title'> Contenedor </h2>
-
-  //                 </div>
-
-  //                 <div className={styles.serviceCard}>
-  //                   <h2 className='title'> Mercancia </h2>
-
-  //                 </div>
-
-  //               </span>
-
-  //             </div>
-
-  //           ))}
-  //         </span>
-  //       </div>
-  //     )
-
-  //   }
-
-  //   toggleSection('services')
-
-  // };
-
-  // const loadInfoControlServicio = (info: object) => {
-
-  //   let infoControlService = formData.Services.find(
-  //     s =>
-  //       s.idControl === activeTab.id &&
-  //       s.idServiceItem === activeTab.item
-  //   );
-
-  //   if (infoControlService) {
-
-  //     return (
-  //       <div className={styles.formRow}>
-  //         {infoControlService.map(infoControlS => (
-  //           <span key={infoControlS.id} className={styles.serviceItem}>
-  //             {infoControlS.services?.map(serv => (
-  //               // serv.orderService?.map(otherservice => (
-
-  //               <span key={serv.orderService.idTypeShipment} className={styles.serviceItem}>
-  //                 <div className={styles.serviceCard}>
-  //                   <h2 className='title'> Otro servicio </h2>
-
-  //                   <div className={styles.fourColumnGrid}>
-
-  //                     <div className={styles.firstColumn}>
-
-  //                       {/* Tipo de envio */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <TipoEnvio detail={
-  //                           editingOperation ? serviceDetail :
-  //                             serv.shipments ? serv.orderService : serv.shipments
-  //                         }
-  //                           updateService={updateService}
-  //                         />
-  //                         {/* <label className={styles.fieldLabel}>
-  //                             Tipo de envio
-  //                             <input
-  //                               type="text"
-  //                               value={serv.orderService.typeShipment}
-  //                               readOnly
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label> */}
-  //                       </div>
-
-  //                       {/* Tipo de referencia */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           Tipo de referencia
-  //                           <input
-  //                             type="text"
-  //                             value={serv.orderService.typeReference}
-  //                             className={styles.textInput}
-  //                           />
-  //                         </label>
-  //                       </div>
-
-  //                       {/* Tipo de movimiento */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           Tipo de movimiento
-  //                           <input
-  //                             type="text"
-  //                             value={serv.orderService.typeReference}
-  //                             className={styles.textInput}
-  //                           />
-  //                         </label>
-  //                       </div>
-
-  //                     </div>
-
-  //                     <div className={styles.secondColumn}>
-
-  //                       {/* Incoterm */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           Incoterm
-  //                           <input
-  //                             type="text"
-  //                             value={serv.orderService.incoterm}
-  //                             // readOnly
-  //                             className={styles.textInput}
-  //                           />
-  //                         </label>
-  //                       </div>
-
-  //                       {/* Referencia de envio */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           Referencia de envio
-  //                           <input
-  //                             type="text"
-  //                             value={serv.orderService.typeReference}
-  //                             className={styles.textInput}
-  //                           />
-  //                         </label>
-  //                       </div>
-
-  //                     </div>
-
-  //                     <div className={styles.thirdColumn}>
-
-  //                       {/* Tipo operación */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           Tipo de operación
-  //                           <input
-  //                             type="text"
-  //                             value={serv.orderService.typeOperation}
-  //                             readOnly
-  //                             className={styles.textInput}
-  //                           />
-  //                         </label>
-  //                       </div>
-
-  //                       {/* Envio referencia */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           Envio referencia
-  //                           <input
-  //                             type="datetime-local"
-  //                             value={serv.orderService.typeReference}
-  //                             className={styles.textInput}
-  //                           />
-  //                         </label>
-  //                       </div>
-
-  //                     </div>
-
-  //                     <div className={styles.fourthColumn}>
-
-  //                       {/* Guia master */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           Guia master
-  //                           <input
-  //                             type="text"
-  //                             value={serv.orderService.masterBill}
-  //                             className={styles.textInput}
-  //                           />
-  //                         </label>
-  //                       </div>
-
-  //                       {/* Guia/Tipo */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           Guia/Tipo
-  //                           <input
-  //                             type="text"
-  //                             value={serv.orderService.typeOperation}
-  //                             readOnly
-  //                             className={styles.textInput}
-  //                           />
-  //                         </label>
-  //                       </div>
-
-  //                     </div>
-
-  //                   </div>
-
-  //                   <h2 className='title'> Origen / Destino </h2>
-
-  //                   <div className={styles.fourColumnGrid}>
-
-  //                     <div className={styles.firstColumn}>
-
-  //                       {/* Pais de carga */}
-  //                       {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             Pais de carga
-  //                             <input
-  //                               type="text"
-  //                               value={serv.orderService.origin.city}
-  //                               readOnly
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                       {/* Pais de descarga */}
-  //                       {/* <div className={styles.fieldGroup}>
-  //                           <label className={styles.fieldLabel}>
-  //                             Pais de descarga
-  //                             <input
-  //                               type="text"
-  //                               value={serv.orderService.destination.city}
-  //                               readOnly
-  //                               className={styles.textInput}
-  //                             />
-  //                           </label>
-  //                         </div> */}
-
-  //                     </div>
-
-  //                     <div className={styles.secondColumn}>
-
-  //                       {/* Lugar de recoleccion */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           Lugar de recoleccion
-  //                           <input
-  //                             type="text"
-  //                             value={serv.orderService.incoterm}
-  //                             className={styles.textInput}
-  //                           />
-  //                         </label>
-  //                       </div>
-
-  //                     </div>
-
-  //                     <div className={styles.thirdColumn}>
-
-  //                       {/* ETD (Salida estimada) */}
-  //                       <div className={styles.fieldGroup}>
-  //                         <label className={styles.fieldLabel}>
-  //                           ETD (Salida estimada)
-  //                           <input
-  //                             type="datetime-local"
-  //                             value={serv.orderService.departureDateAproximate}
-  //                             className={styles.textInput}
-  //                           />
-  //                         </label>
-  //                       </div>
-
-  //                     </div>
-
-  //                     <div className={styles.fourthColumn}>
-
-
-  //                     </div>
-
-  //                   </div>
-
-  //                   {/* Observaciones del servicio*/}
-  //                   <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
-  //                     <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
-  //                       {t('operations.observations')}
-  //                     </label>
-  //                     <input
-  //                       type="text"
-  //                       id="observationsService"
-  //                       name="observations"
-  //                       value={serv.orderService.comments}
-  //                       onChange={(e) => updateFormData({ ...formData, Observations: e.target.value })} //setformata
-  //                       className="min-h-[30px] w-full p-2 rounded-lg
-  //                                 bg-transparent text-black dark:text-white
-  //                                 border border-gray-300 dark:border-gray-700
-  //                                 hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
-  //                                 focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
-  //                                 outline-none appearance-none text-body-sm transition-colors"
-  //                     />
-  //                   </div>
-  //                 </div>
-
-  //                 <div className={styles.serviceCard}>
-  //                   <h2 className='title'> Referencia aduanal </h2>
-
-  //                 </div>
-
-  //                 <div className={styles.serviceCard}>
-  //                   <h2 className='title'> Contenedor </h2>
-
-  //                 </div>
-
-  //                 <div className={styles.serviceCard}>
-  //                   <h2 className='title'> Mercancia </h2>
-
-  //                 </div>
-
-  //               </span>
-
-  //               // ))
-
-  //             ))}
-
-  //           </span>
-  //         ))}
-  //       </div>
-  //     )
-
-  //   }
-
-  //   toggleSection('services')
-
-  // }
 
   const filteredOperations = operations.filter(operation => {
     const matchesSearch = operation.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1319,6 +519,11 @@ export default function Operations() {
       setLoading(true);
       e.preventDefault();
 
+      if (controlsOperation.length === 0 && servicesOperation.length === 0) {
+        showWarning("Se debe agregar un control o servicio a la operación");
+        return;
+      }
+
       const dataToSave = {
         ...formData,
         UpdatedAt: null,
@@ -1338,9 +543,9 @@ export default function Operations() {
           },
         };
 
-       await updateOperation(editingOperation.Id!, dataToSave);
+        await updateOperation(editingOperation.Id!, dataToSave);
       } else {
-       await createOperation(dataToSave);
+        await createOperation(dataToSave);
       }
       await loadOperations();
       setIsFormOpen(false);
@@ -1378,287 +583,29 @@ export default function Operations() {
 
   }
 
-  const updateService = (idServiceItem, detailId, field, value) => {
-
-    updateFormData(formData => ({ //setformdata
-      ...formData,
-      Services: formData.Services.map(service =>
-        service.idServiceItem === idServiceItem ? {
-          ...service,
-          serviceDetail: service.serviceDetail.map(detail =>
-            detail.sequence === detailId ? {
-              ...detail,
-              [field]: value
-            } : detail
-          )
-        } : service
-      )
-    }));
-  };
-
-  const updateNestedDetail = (idServiceItem, detailId, collection, itemId, field, value) => {
-
-    updateFormData(formData => ({ //setformdata
-      ...formData,
-      Services: formData.Services.map(service =>
-        service.idServiceItem === idServiceItem ? {
-          ...service,
-          serviceDetail: service.serviceDetail.map(detail =>
-            detail.sequence === detailId ? {
-              ...detail,
-              [collection]:
-                detail[collection]?.map(item =>
-                  item.id === itemId ? {
-                    ...item,
-                    [field]: value
-                  } : item
-                )
-            } : detail
-          )
-        } : service
-      )
-    }));
-  };
-
-  const addNestedItem = (idServiceItem, detailId, collection, newItem) => {
-
-    updateFormData(prev => ({//setFormData
-      ...prev,
-      Services: prev.Services.map(service =>
-        service.idServiceItem === idServiceItem ? {
-          ...service,
-          serviceDetail: service.serviceDetail.map(detail =>
-            detail.sequence === detailId ? {
-              ...detail,
-              [collection]: [
-                ...(detail[collection] || []),
-                newItem
-              ]
-            } : detail
-          )
-        } : service
-      )
-
-    }));
-
-  };
-
-  const removeNestedItem = (idServiceItem, detailId, collection, itemId) => {
-
-    updateFormData(prev => ({//setFormData
-      ...prev,
-      Services: prev.Services.map(service =>
-        service.idServiceItem === idServiceItem ? {
-          ...service,
-          serviceDetail: service.serviceDetail.map(detail =>
-            detail.sequence === detailId ? {
-              ...detail,
-              [collection]:
-                detail[collection]?.filter(
-                  item => item.id !== itemId
-                )
-            } : detail
-          )
-        } : service
-      )
-    }));
-  };
-
-  // const updateNestedDetail = (idServiceItem, detailId, collection, itemId, field, value) => {
-
-  //   updateFormData(formData => ({//setFormData
-  //     ...formData,
-  //     Services: formData.Services.map(service =>
-  //       service.idServiceItem === idServiceItem ? {
-  //         ...service,
-  //         serviceDetail: service.serviceDetail.map(detail =>
-  //           detail.sequence === detailId ? {
-  //             ...detail,
-  //             [collection]:
-  //               detail[collection]?.map(item =>
-  //                 item.id === itemId ? {
-  //                   ...item,
-  //                   [field]: value
-  //                 } : item
-  //               )
-  //           } : detail
-  //         )
-  //       } : service
-  //     )
-  //   }));
-  // };
-
-  // const addNestedItem = (idServiceItem, detailId, collection, newItem) => {
-
-  //   updateFormData(prev => ({//setFormData
-  //     ...prev,
-  //     Services: prev.Services.map(service =>
-  //       service.idServiceItem === idServiceItem ? {
-  //         ...service,
-  //         serviceDetail: service.serviceDetail.map(detail =>
-  //           detail.sequence === detailId ? {
-  //             ...detail,
-  //             [collection]: [
-  //               ...(detail[collection] || []),
-  //               newItem
-  //             ]
-  //           } : detail
-  //         )
-  //       } : service
-  //     )
-
-  //   }));
-
-  // };
-
-  // const removeNestedItem = (idServiceItem, detailId, collection, itemId) => {
-
-  //   updateFormData(prev => ({//setFormData
-  //     ...prev,
-  //     Services: prev.Services.map(service =>
-  //       service.idServiceItem === idServiceItem ? {
-  //         ...service,
-  //         serviceDetail: service.serviceDetail.map(detail =>
-  //           detail.sequence === detailId ? {
-  //             ...detail,
-  //             [collection]:
-  //               detail[collection]?.filter(
-  //                 item => item.id !== itemId
-  //               )
-  //           } : detail
-  //         )
-  //       } : service
-  //     )
-  //   }));
-
-  // };
-
-  // const TipoEnvio = ({ item, detail, updateService }) => {
-
-  //   return (
-  //     <label className={styles.fieldLabel}>
-  //       Tipo de envío / Shipping type
-  //       <select
-  //         value={detail.idTypeShipment || ''}
-  //         className={styles.selectInput}
-  //         // readOnly
-  //         required
-  //         onChange={(e) => {
-  //           updateService(item, detail.sequence, 'idTypeShipment', Number(e.target.value))
-  //           updateService(item, detail.sequence, 'typeShipment', e.target.options[e.target.selectedIndex].text)
-  //         }
-  //         }
-  //       >
-  //         <option value="">Seleccionar ...</option>
-  //         <option value={1}>Puerta a Puerta</option>
-  //         <option value={2}>Puerto a Puerto</option>
-  //         <option value={3}>Puerta a Puerto</option>
-  //         <option value={4}>Puerto a Puerta</option>
-  //       </select>
-  //     </label>
-  //   );
-  // };
-
-  // const TipoOperacion = ({ item, detail, updateService }) => {
-
-  //   return (
-  //     <label className={styles.fieldLabel}>
-  //       Tipo operación / Operation type
-  //       <select
-  //         value={detail.idTypeOperation || ''}
-  //         className={styles.selectInput}
-  //         // readOnly
-  //         required
-  //         onChange={(e) => {
-  //           updateService(item, detail.sequence, 'idTypeOperation', Number(e.target.value))
-  //           updateService(item, detail.sequence, 'typeOperation', e.target.options[e.target.selectedIndex].text)
-  //         }
-  //         }
-  //       >
-  //         <option value="">Seleccionar ...</option>
-  //         <option value={1}>Importación</option>
-  //         <option value={2}>Exportación</option>
-  //         <option value={3}>Nacional</option>
-  //         <option value={4}>Local USA</option>
-  //         <option value={5}>Triangulacion</option>
-  //       </select>
-  //     </label>
-  //   );
-  // };
-
-  // const Incoterm = ({ item, detail, updateService }) => {
-
-  //   return (
-  //     <label className={styles.fieldLabel}>
-  //       Incoterm
-  //       <select
-  //         value={detail.idIncoterm}
-  //         className={styles.selectInput}
-  //         // readOnly
-  //         required
-  //         onChange={(e) => {
-  //           updateService(item, detail.sequence, 'idIncoterm', Number(e.target.value))
-  //           updateService(item, detail.sequence, 'incoterm', e.target.options[e.target.selectedIndex].text)
-  //         }
-  //         }
-  //       >
-  //         <option value="">Seleccionar ...</option>
-  //         {incoterm.map((inc) => (
-  //           <option key={inc._Id} value={inc._Id}>{inc.incoterm}</option>
-  //         ))}
-  //       </select>
-  //     </label>
-  //   );
-  // };
-
-  // const TipoReferencia = ({ item, detail, updateService }) => {
-
-  //   return (
-  //     <label className={styles.fieldLabel}>
-  //       Tipo de referencia envio
-  //       <select
-  //         value={detail.typeShippingReference || ''}
-  //         className={styles.selectInput}
-  //         // readOnly
-  //         required
-  //         onChange={(e) => {
-  //           updateService(item, detail.sequence, 'typeShippingReference', e.target.options[e.target.selectedIndex].text)
-  //           // updateService(item, detail.sequence, 'NameShippingReference', e.target.options[e.target.selectedIndex].text)
-  //         }
-  //         }
-  //       >
-  //         <option value="">Seleccionar ...</option>
-  //         <option value={"Booking"}>Booking</option>
-  //         <option value={"Carta porte"}>Carta porte</option>
-  //       </select>
-  //     </label>
-  //   );
-  // };
-
-  // const Transportista = ({ item, key, transport, detail, updateNestedDetail }) => {
-
-  //   return (
-  //     <label className={styles.fieldLabel}>
-  //       Transportista *
-  //       <select
-  //         value={transport.idTransport || ''}
-  //         className={styles.selectInput}
-  //         // readOnly
-  //         // required
-  //         onChange={(e) => {
-  //           updateNestedDetail(item, detail, 'transports', 1, 'idTransport', e.target.value)
-  //           updateNestedDetail(item, detail, 'transports', 1, 'nameTransport', e.target.options[e.target.selectedIndex].text)
-  //         }
-  //         }
-  //       >
-  //         <option value="">Seleccionar ...</option>
-  //         {supplier.map((inc) => (
-  //           <option key={inc.id} value={inc.id}>{inc.fiscalData.businessName}</option>
-  //         ))}
-  //       </select>
-  //     </label>
-  //   );
-  // };
+  // function buildOperationData(): Operation {
+  //   return {
+  //     Id: formData.Id,
+  //     IdReference: formData.IdReference,
+  //     Reference: formData.Reference,  
+  //     Customer: formData.Customer,
+  //     Services: [
+  //       ...controlsOperation.flatMap(control =>
+  //         control.services?.map(service => buildOperationService(control, service)) || []
+  //       ),
+  //       ...servicesOperation.map(service => buildOperationService(null, service))
+  //     ],
+  //     OperationStatus: formData.OperationStatus,
+  //     Observations: formData.Observations,
+  //     CreatedAt: formData.CreatedAt,
+  //     CreatedBy: formData.CreatedBy,
+  //     UpdatedAt: formData.UpdatedAt,
+  //     UpdateBy: formData.UpdateBy,
+  //     Status: formData.Status,
+  //     Archived: formData.Archived,
+  //     DataState: formData.DataState,
+  //   }
+  // }
 
 
   if (isFormOpen) {
@@ -1739,7 +686,7 @@ export default function Operations() {
                             suppliers: dataC.suppliers
                           })
                         }}
-                        
+
                       // multiple
                       >
                         <option className="bg-white text-black dark:bg-[#1e293b] dark:text-white appearance-none" value="">
@@ -1749,7 +696,7 @@ export default function Operations() {
                           <option className="bg-white text-black dark:bg-[#1e293b] dark:text-white appearance-none"
                             key={controlCliente.id}
                             value={JSON.stringify({
-                              id: controlCliente.id || controlCliente._id ,
+                              id: controlCliente.id || controlCliente._id,
                               control: controlCliente.control,
                               services: controlCliente.services,
                               suppliers: controlCliente.suppliers
@@ -1884,7 +831,7 @@ export default function Operations() {
                               type="button"
                               value={service._id}
                               className="ml-1 text-gray-500 hover:text-red-500 dark:text-gray-300"
-                              onClick={(e) => {  removeService(service._id as number) }}>
+                              onClick={(e) => { removeService(service._id as number) }}>
                               ✕
                             </button>
                           </span>
@@ -1916,7 +863,8 @@ export default function Operations() {
                 value={formData.Observations}
                 onChange={(e) => {
                   console.log(formData)
-                  updateFormData({ ...formData, Observations: e.target.value })} //setformdata
+                  updateFormData({ ...formData, Observations: e.target.value })
+                } //setformdata
                 }
                 className="min-h-[30px] w-full p-2 rounded-lg
                            bg-transparent text-black dark:text-white
@@ -1993,23 +941,23 @@ export default function Operations() {
                     <div className="border-b border-outline-variant flex gap-4 items-center justify-between mb-2">
                       {controlsOperation.length > 0 ? (
                         controlsOperation?.map(controlService => (
-                          controlService.services?.map(service => (                            
+                          controlService.services?.map(service => (
                             <div key={`${controlService._id}-${service.idServiceItem}`}
                               className={`${styles.tabItem} ${activeTab.item === service.idServiceItem ? styles.active : ''}`}
                               onClick={() => {
                                 setActiveTab({
                                   id: controlService._id,
-                                  idService: service.idService, 
-                                  item: service.idServiceItem, 
-                                  name: service.nameService 
+                                  idService: service.idService,
+                                  item: service.idServiceItem,
+                                  name: service.nameService
                                 });
-                                const newService = buildOperationService(controlService,service);
+                                const newService = buildOperationService(controlService, service);
                                 updateFormData(prev => {
                                   const exists = prev.Services?.some(
                                     s => s.IdControl === newService.IdControl &&
-                                         s.IdServiceItem === newService.IdServiceItem
+                                      s.IdServiceItem === newService.IdServiceItem
                                   );
-                                  
+
                                   if (exists) return prev;
                                   return {
                                     ...prev,
@@ -2028,25 +976,25 @@ export default function Operations() {
                             className={`${styles.tabItem} ${activeTab.item === serviceOperation._id ? styles.active : ''}`}
                             onClick={() => {
                               setActiveTab(
-                                { 
+                                {
                                   id: serviceOperation._id,
-                                  idService:  '', 
-                                  item: '', 
-                                  name:serviceOperation.service_name 
-                                })                           
-                              const newService = buildOperationService(null,service);
-                                updateFormData(prev => { //setformdata
-                                  const exists = prev.Services.some(
-                                    s =>
-                                      s.IdControl === newService.IdControl &&
-                                      s.IdServiceItem === newService.IdServiceItem
-                                  );
-                                  if (exists) return prev;
-                                  return {
-                                    ...prev,
-                                    Services: [...prev.Services, newService]
-                                  };
-                                }
+                                  idService: '',
+                                  item: '',
+                                  name: serviceOperation.service_name
+                                })
+                              const newService = buildOperationService(null, service);
+                              updateFormData(prev => { //setformdata
+                                const exists = prev.Services.some(
+                                  s =>
+                                    s.IdControl === newService.IdControl &&
+                                    s.IdServiceItem === newService.IdServiceItem
+                                );
+                                if (exists) return prev;
+                                return {
+                                  ...prev,
+                                  Services: [...prev.Services, newService]
+                                };
+                              }
                               );
                             }}>
                             {serviceOperation._id}-{serviceOperation.service_name}
@@ -2059,8 +1007,8 @@ export default function Operations() {
                     </div>
                   </div>
                 </div>
-                
-                {/*ServiceForm && <ServiceForm {...formProps} />*/}                
+
+                {/*ServiceForm && <ServiceForm {...formProps} />*/}
                 {
                   [1, 2, 3, 4, 10, 11].includes(parseInt(activeTab.idService)) ?
                     (<FreightForm
@@ -2074,39 +1022,40 @@ export default function Operations() {
                       onUpdateServiceFormData={updateServiceFormData}
                       onUpdateServiceDetail={updateServiceDetail}
                       onDuplicateDetail={duplicateDetail}
+                      onRemoveDetail={removeDetail}
                     />) :
                     [5].includes(parseInt(activeTab.idService)) ?
-                    (<AirFreightForm 
-                      incoterms={incoterm}
-                      suppliers={supplier}
-                      countries={countries}
-                      info={activeTab}
-                      controlsData={controlsData}
-                      formData={formData}
-                      onUpdateFormData={updateFormData}
-                      onUpdateServiceFormData={updateServiceFormData}
-                      onUpdateServiceDetail={updateServiceDetail}
-                      onDuplicateDetail={duplicateDetail}
-                      onRemoveDetail={removeDetail}
-                    />) :                    
-                    [17].includes(parseInt(activeTab.idService)) ?
-                      (<PrevioForm
+                      (<AirFreightForm
+                        incoterms={incoterm}
+                        suppliers={supplier}
+                        countries={countries}
                         info={activeTab}
                         controlsData={controlsData}
                         formData={formData}
                         onUpdateFormData={updateFormData}
                         onUpdateServiceFormData={updateServiceFormData}
+                        onUpdateServiceDetail={updateServiceDetail}
+                        onDuplicateDetail={duplicateDetail}
+                        onRemoveDetail={removeDetail}
                       />) :
-                      <OtherServiceForm
-                        incoterms={incoterm}
-                        info={activeTab}
-                        controlsData={controlsData}
-                        formData={formData}
-                        onUpdateFormData={updateFormData}
-                        onUpdateServiceFormData={updateServiceFormData} />
+                      [17].includes(parseInt(activeTab.idService)) ?
+                        (<PrevioForm
+                          info={activeTab}
+                          controlsData={controlsData}
+                          formData={formData}
+                          onUpdateFormData={updateFormData}
+                          onUpdateServiceFormData={updateServiceFormData}
+                        />) :
+                        <OtherServiceForm
+                          incoterms={incoterm}
+                          info={activeTab}
+                          controlsData={controlsData}
+                          formData={formData}
+                          onUpdateFormData={updateFormData}
+                          onUpdateServiceFormData={updateServiceFormData} />
                 }
-               
-              </div>              
+
+              </div>
             )}
           </div>
 
@@ -2123,9 +1072,9 @@ export default function Operations() {
           </div>
 
           <script>
-            
+
           </script>
-    
+
         </form>
       </>
     );
