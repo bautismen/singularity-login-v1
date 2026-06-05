@@ -240,12 +240,6 @@ export const FreightForm: React.FC<FreightFormProps> = ({
       ...prev,
       [key]: !prev[key],
     }));
-
-    console.log(
-  `envio-${detail.sequence}`,
-  accordionOpen[`envio-${detail.sequence}`]
-);
-
   };
 
   const nextPage = () => {
@@ -683,7 +677,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       <InputCountry
                         type="origin"
                         countries={countries}
-                        selectedCountryId={detail.origin?.country.idCountry}
+                        selectedCountryId={detail.origin?.country?.idCountry}
                         serviceIdItem={detail.sequence}
                         isDisabled={false}
                         placeholder={t("quote.select")}
