@@ -5,7 +5,7 @@ import styles from './Reports.module.css';
 import { useAuth } from '../contexts/AuthContext';
 import { Report } from '../types/reports';
 import { reportsServices } from '../services/reportsService';
-import { getExecutives } from '../services/executiveService';
+import { getExecutivesByDepartment } from '../services/executiveService';
 import { getCustomers } from '../services/customerService';
 import * as XLSX from 'xlsx-js-style';
 import { useReactToPrint } from "react-to-print";
@@ -113,8 +113,8 @@ useEffect(() => {
 
     for (const p of report.parameter) {
       if (p.type === 'catalogo') {
-        if (p.catalog === 'Ejecutivos') {
-          newCatalogs[p.catalog] = await getExecutives();
+        if (p.catalog === 'EjecutivosPricing') {
+          newCatalogs[p.catalog] = await getExecutivesByDepartment("Pricing");
         }
         if (p.catalog === 'Clientes') {
           newCatalogs[p.catalog] = await getCustomers();
@@ -294,7 +294,11 @@ const renderParameter = (id: string) => {
              <datalist id={`catalog-${p.name}`}>
               {catalogs[p.catalog]?.map((dat: any, index: number) => (
                 <option
-                  key={dat.id ?? dat._id ?? `${p.name}-option-${index}`}
+                  key={
+                    p.catalog === 'EjecutivosPricing'
+                      ? dat._Iduser
+                      : (dat._Id ?? dat.id ?? `${p.name}-option-${index}`)
+                  }
                   value={getOptionLabel(p.catalog, dat)}
                 />
               ))}
@@ -308,23 +312,30 @@ const renderParameter = (id: string) => {
 };
 
 const handleDatalistChange = (name: string, catalog: string, inputText: string) => {
-  // Muestra el texto en el input
   setDisplayValues(prev => ({ ...prev, [name]: inputText }));
 
-  // Busca el item por el texto y guarda su ID
   const match = catalogs[catalog]?.find(
     (item: any) => getOptionLabel(catalog, item) === inputText
   );
 
+  // ✅ Resuelve el ID correcto según el catálogo
+  const resolveId = (item: any): string => {
+    if (!item) return '';
+    if (catalog === 'EjecutivosPricing') return String(item._Iduser ?? '');
+    return String(item._Id ?? item.id ?? '');
+  };
+
   setFormValues(prev => ({
     ...prev,
-    [name]: match ? String(match.id ?? match._Id ?? '') : ''
+    [name]: match ? resolveId(match) : ''
   }));
 };
 
 const getOptionLabel = (catalog: string, dat: any) => {
   switch (catalog) {
     case 'Ejecutivos':
+      return `${dat.nombre} ${dat.apellido_paterno} ${dat.apellido_materno}`;
+    case 'EjecutivosPricing':
       return `${dat.nombre} ${dat.apellido_paterno} ${dat.apellido_materno}`;
     case 'Clientes':
       return dat.fiscalData?.businessName;
