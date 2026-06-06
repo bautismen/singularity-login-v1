@@ -19,7 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const API_BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auth`;
 
-const API_CATALOGS = import.meta.env.VITE_API_CATALOGS2;
+const API_CATALOGS = import.meta.env.VITE_API_CATALOGS;
 const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 const API_KEYSL = import.meta.env.VITE_APIKEYSL;
 

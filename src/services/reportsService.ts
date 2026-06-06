@@ -1,6 +1,6 @@
 import { Report } from '../types/reports';
 
-const REPORT_API_URL = import.meta.env.VITE_API_REPORT;
+const REPORT_API_URL = import.meta.env.VITE_API_PDFGENERATOR;
 const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 const API_KEYSL = import.meta.env.VITE_APIKEYSL;
 
