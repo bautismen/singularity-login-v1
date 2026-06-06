@@ -345,6 +345,11 @@
   color: var(--text-secondary);
 }
 
+.iconbutonlucide2 {
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+
 .filterTitle {
   font-size: 0.875rem;
   font-weight: 600;
@@ -362,7 +367,9 @@
 .seccionparameter {
   background-color: var(--surface);
   border-radius: 1rem;
-  padding: 2rem;
+  padding-left: 2rem;
+  padding-top: 1rem;
+  padding-bottom: 2rem;
   border: 1px solid var(--border);
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
    margin-bottom: 2rem;
@@ -742,4 +749,20 @@
     .tableResultWrapper {
      max-width: 1200px;
   }
+}
+
+.divParameter2 {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  column-gap: 3rem; /* gap-x-12 */
+  row-gap: 2.5rem;  /* gap-y-10 */
+  width: 100%;      /* w-full */  
+  padding-right: 2rem;   /* px-8 */
+}
+
+.divbuttonparameter {
+  margin-top: 3rem;      /* mt-12 */
+  display: flex;         /* flex */
+  justify-content: flex-end; /* justify-end */
+  padding-right: 2rem;   /* px-8 */
 }

@@ -46,6 +46,8 @@ export function Reports() {
   const [displayValues, setDisplayValues] = useState<{ [key: string]: string }>({});
   const [isOpen, setIsOpen] = useState(true);
   const contentRef = useRef(null);
+  const [isOpenParam, setIsOpenParam] = useState(true);
+  const contentParam = useRef(null);
   const [title, settitle] = useState('');
   const { t, language } = useLanguage();
   const { user } = useAuth();
@@ -406,6 +408,7 @@ const handlecreate = async () => {
       showWarning(t('report.mesage1'));
       setisviewResult(false);
       setLoading(false);
+      setIsOpenParam(true);
       return;
     }
 
@@ -418,6 +421,7 @@ const handlecreate = async () => {
       showInfo(t('report.mesage2'));
       setisviewResult(false);
       setLoading(false);
+      setIsOpenParam(true);
       return;
     }
 
@@ -436,6 +440,7 @@ const handlecreate = async () => {
 
   } finally {
     setLoading(false);
+    setIsOpenParam(false);
   }
 };
 
@@ -894,25 +899,39 @@ const printPdf = useReactToPrint({
     </div>
     </div>
       </section>
-      <section className={styles.seccionparameter} hidden={!isviewParameters}>
-        <div className={styles.divparameter}>
+      <section className={styles.seccionparameter} hidden={!isviewParameters}>      
+        <div className={styles.divparameter}>          
           <div className={styles.diviconparameter}>
             <span className={styles.spaniconparameter}><SlidersHorizontal  size={20} /></span>
           </div>
-          <div>
+          <div className={styles.parameterContent}>
             <h3 className={styles.h3parameter}>{t('report.titleparameter')}</h3>
             <p className={styles.subtitleParameter}>{t('report.subtitleparameter')}</p>
           </div>
+          <button onClick={() => setIsOpenParam(!isOpenParam)} className={styles.iconbutonlucide2}>
+              {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>                   
         </div>
-        <div className="grid grid-cols-1 gap-x-12 gap-y-10 w-full">
-          {idSelected && renderParameter(idSelected)}
-        </div>
-        <div className="mt-12 flex justify-end">
-          <button className="bg-[#00685d] text-white px-8 py-3.5 rounded-lg font-bold text-sm shadow-xl hover:shadow-[#00685d]/20 transition-all flex items-center gap-2" onClick={() => {
-                handlecreate();                 
-              }}>
-            <span className="material-symbols-outlined text-lg"><BarChart2 size={20} /></span> {t('report.button')}
-          </button>
+        <div
+          ref={contentParam}
+          style={{
+            maxHeight: isOpenParam
+            ? contentParam.current?.scrollHeight + "px"
+              : "0px",
+              overflow: "hidden",
+              transition: "max-height 0.3s ease",
+          }}
+        >
+          <div className={styles.divParameter2}>
+            {idSelected && renderParameter(idSelected)}
+          </div>
+          <div className={styles.divbuttonparameter}>
+            <button className="bg-[#00685d] text-white px-8 py-3.5 rounded-lg font-bold text-sm shadow-xl hover:shadow-[#00685d]/20 transition-all flex items-center gap-2" onClick={() => {
+                  handlecreate();                 
+                }}>
+              <span className="material-symbols-outlined text-lg"><BarChart2 size={20} /></span> {t('report.button')}
+            </button>
+          </div>
         </div>
       </section>
 

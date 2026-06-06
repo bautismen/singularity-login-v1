@@ -100,8 +100,7 @@ export function Sidebar({ onCollapsedChange, currentRoute = 'dashboard', onNavig
               // ocultar reports y operations
               if (
                 !isAdmin &&
-                (
-                  item.route === 'reports' ||
+                (                  
                   item.route === 'operations'
                 )
               ) {
