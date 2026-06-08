@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const token = localStorage.getItem('authToken');
         if (token) {
-          const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/autoken/${token}`, {
+          const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/auth/autoken/${token}`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${API_TOKENSL}`,
@@ -122,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };*/
 
   const signIn = async (email: string, password: string) => {   
-    const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/signin`, {
+    const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/auth/signin`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${API_TOKENSL}`,
