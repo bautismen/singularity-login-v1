@@ -16,7 +16,7 @@ import {
   TipoUnidad,
   TipoRuta,
   TipoMovimeiento,
-  Goods,
+  Cargo,
   ReferencesAduanal
 } from "./component";
 import {
@@ -469,27 +469,27 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                         />
                       </div>
 
-                      {/* Tipo de unidad */}
+                      {/* Nombre Unidad */}
                       <div className={styles.fieldGroup}>
-                        <TipoUnidad
-                          itemService={airServiceControl.idServiceItem}
-                          sequencedetail={detail.sequence}
-                          transport={detail?.transport}
-                          onUpdateServiceDetail={onUpdateServiceDetail}
-                          modalidad={"aereo"}
+                        <label className={styles.fieldLabel}>
+                          Nombre de la unidad
+                        </label>
+                        <input
+                          type="text"
+                          value={detail?.transport?.nameTransport}
+                          onChange={(e) =>
+                            onUpdateServiceDetail(
+                              airServiceControl.idServiceItem,
+                              detail.sequence,
+                              'transport', 
+                              'nameTransport',
+                              e.target.value
+                            )
+                          }
+                          className={styles.textInput}
                         />
                       </div>
 
-                      {/* Guia | Tipo */}
-                      <div className={styles.fieldGroup}>
-                        <TipoGuia
-                          itemService={airServiceControl.idServiceItem}
-                          sequencedetail={detail.sequence}
-                          transport={detail?.transport }
-                          onUpdateServiceDetail={onUpdateServiceDetail}
-                          modalidad={"aereo"}
-                        />
-                      </div>
                     </div>
 
                     <div className={styles.secondColumn}>
@@ -523,27 +523,17 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           }
                         />
                       </div>
-
-                      {/* Nombre Unidad */}
+                        
+                      {/* Tipo de ruta */}
                       <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                          Nombre de la unidad
-                        </label>
-                        <input
-                          type="text"
-                          value={detail?.transport?.nameTransport}
-                          onChange={(e) =>
-                            onUpdateServiceDetail(
-                              airServiceControl.idServiceItem,
-                              detail.sequence,
-                              'transport', 
-                              'nameTransport',
-                              e.target.value
-                            )
-                          }
-                          className={styles.textInput}
+                        <TipoRuta
+                          itemService={airServiceControl.idServiceItem}
+                          sequencedetail={detail.sequence}
+                          transport={detail?.transport}
+                          onUpdateServiceDetail={onUpdateServiceDetail}
                         />
                       </div>
+                      
                     </div>
 
                     <div className={styles.thirdColumn}>
@@ -568,13 +558,14 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                         />
                       </div>
                       
-                      {/* Tipo de ruta */}
+                      {/* Guia | Tipo */}
                       <div className={styles.fieldGroup}>
-                        <TipoRuta
+                        <TipoGuia
                           itemService={airServiceControl.idServiceItem}
                           sequencedetail={detail.sequence}
                           transport={detail?.transport}
                           onUpdateServiceDetail={onUpdateServiceDetail}
+                          modalidad={"aereo"}
                         />
                       </div>
 
@@ -595,18 +586,18 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                     <div className={styles.fourthColumn}>
                       
                       {/* Tipo de movimiento */}
-                      <div className={styles.fieldGroup}>
+                      {/* <div className={styles.fieldGroup}>
                         <TipoMovimeiento
                           itemService={airServiceControl.idServiceItem}
                           sequencedetail={detail.sequence}
                           transport={detail?.transport}
                           onUpdateServiceDetail={onUpdateServiceDetail}
                         />
-                      </div>
+                      </div> */}
 
-                      {/* Guia | Tipo */}
+                      {/* Tipo de unidad */}
                       <div className={styles.fieldGroup}>
-                        <TipoGuia
+                        <TipoUnidad
                           itemService={airServiceControl.idServiceItem}
                           sequencedetail={detail.sequence}
                           transport={detail?.transport}
@@ -615,6 +606,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                         />
                       </div>
 
+                      
                       {/* Placas */}
                       {/* <div className={styles.fieldGroup}>
                                     <label className={styles.fieldLabel}>
@@ -1083,7 +1075,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
               <div className={styles.serviceCard}>
                 <h2 className="title"> Mercancia </h2>
                 
-                <Goods
+                <Cargo
                   infoControl={airServiceControl}
                   detail={detail}
                   onUpdateServiceFormData={onUpdateServiceFormData}

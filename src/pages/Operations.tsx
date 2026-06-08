@@ -538,10 +538,10 @@ export default function Operations() {
           shipment.containers?.length > 0
             ? shipment.containers
             : [{}],
-        goods:
+        cargo:
           shipment.cargo?.length > 0
             ? shipment.cargo
-            : [{ idgood: 1, name: '', units: 0, weight: 0, volume: 0, classification: [], stowable: 0, shipmentTypeCargo: '', idUnitMeasurement: 1, unitMeasurement: '', idUnitWeight: 1, unitWeight: '' }],
+            : [{ idcargo: 1, name: '', units: 0, weight: 0, volume: 0, classification: [], stowable: 0, shipmentTypeCargo: '', idUnitMeasurement: 1, unitMeasurement: '', idUnitWeight: 1, unitWeight: '' }],
         detailType: 'shipment',
         sequence: secuencia
       }));
@@ -580,10 +580,10 @@ export default function Operations() {
           detail.containers?.length > 0
             ? detail.containers
             : [{}],
-        goods:
+        cargo:
           detail.cargo?.length > 0
             ? detail.cargo
-            : [{ idgood: 1, name: '', units: 0, weight: 0, volume: 0, classification: [], stowable: 0, shipmentTypeCargo: '', idUnitMeasurement: 1, unitMeasurement: '', idUnitWeight: 1, unitWeight: '' }],
+            : [{ idcargo: 1, name: '', units: 0, weight: 0, volume: 0, classification: [], stowable: 0, shipmentTypeCargo: '', idUnitMeasurement: 1, unitMeasurement: '', idUnitWeight: 1, unitWeight: '' }],
         detailType: 'detail',
         sequence: secuencia
       }));

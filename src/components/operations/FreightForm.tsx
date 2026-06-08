@@ -15,7 +15,7 @@ import {
   TipoRuta,
   TipoMovimeiento,
   TipoGuia,
-  Goods,
+  Cargo,
   Containers
 } from "../operations/component";
 import {
@@ -1161,7 +1161,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
               <div className={styles.serviceCard}>
                 <h2 className="title"> Mercancia </h2>
 
-                <Goods 
+                <Cargo 
                   infoControl={infoControl} 
                   detail={detail}
                   onUpdateServiceFormData={onUpdateServiceFormData}
