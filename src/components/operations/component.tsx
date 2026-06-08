@@ -1,4 +1,6 @@
 import styles from '../../pages/Operations.module.css';
+import { Plus, Trash2, Eye, X , Copy, Search, Trash} from 'lucide-react';
+
 
 export const TipoEnvio = ({ itemService, sequencedetail, detail, onUpdateServiceFormData }) => {
 
@@ -337,7 +339,7 @@ export const UnidadMedida = ({ itemService, sequencedetail, goods, onUpdateServi
               'goods',
               [{
                 ...(goods || {}),
-                volumeTotal: Number(e.target.value)
+                volumeTotal: Number(e.target.value)                
               }]
             );
           }}
@@ -616,4 +618,182 @@ export const Containers = ({ infoControl, detail, onUpdateServiceFormData }) => 
       </tbody>
     </table>
   )
-}
+};
+
+export const ReferencesAduanal = ({infoControl, detail,onUpdateServiceFormData}) => {
+   return (
+    <div> 
+      <div className="flex flex-1 gap-2 border border-gray-200 dark:border-gray-700 rounded-tr-xl rounded-tl-xl p-2 w-1/4">
+        <button type="button" className={styles.iconButton} >
+          <Plus size={18} />
+        </button>      
+        <button type="button" className={styles.iconButton}>
+          <Copy size={18} />
+        </button>  
+          <button type="button" className={styles.iconButton}>
+          <Trash size={18} />
+        </button>           
+        <div className="relative w-50">
+          <input
+            type="text"
+            className={styles.textTable}/>
+          <Search
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300"
+            size={18}
+          />
+        </div>     
+        
+      </div>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th className={styles.colItem}>Item</th>
+            <th className={styles.colItem}></th>
+            <th className={styles.colGoods}>Referencia</th>
+            <th className={styles.colGoods}>Pedimento</th>
+            <th className={styles.colDescription}>Guia</th>
+            <th className={styles.colDescription}>Proveedor</th>
+            <th className={styles.colDescription}>Facturas</th>
+            <th className={styles.colPieces}></th>
+          </tr>
+        </thead>
+        <tbody>
+          {detail?.references?.map((reference, index) => (
+            <tr key={reference.id ? reference.id : 1}>
+              <td>
+                {/* Item */}
+                <label className="px-2 py-1">
+                  {index + 1}
+                  {/* # {good.idgood ? good.idgood : index + 1} */}
+                </label>
+              </td>
+              <td>
+                {/* checkbox */}
+                <input
+                type='checkbox'
+                />
+              </td>
+              <td>
+                {/* Referencias */}
+                <input
+                  type="text"
+                  className={styles.textTable}
+                  value={reference?.reference || ''}
+                  onChange={(e) => {
+                    onUpdateServiceFormData(
+                      infoControl.idServiceItem,
+                      detail.sequence,
+                      'references',
+                      [{
+                        ...(detail.references?.[detail.references?.indexOf(reference) ?? 0] ?? {}),
+                        reference: e.target.value,
+                      }]
+                    )
+                  }
+                  }
+                />
+              </td>
+              <td>
+                {/* Pedimento */}
+                <input
+                  type="text"
+                  className={styles.textTable}
+                  value={reference?.pediment || ''}
+                  onChange={(e) =>
+                    onUpdateServiceFormData(
+                      infoControl.idServiceItem,
+                      detail.sequence,
+                      'references',
+                      [{
+                        ...(detail.references?.[detail.references?.indexOf(reference) ?? 0] ?? {}),
+                        description: e.target.value
+                      }]
+                    )
+                  }
+                />
+              </td>
+              <td>
+                {/* Guia */}
+                <input
+                  type="text"
+                  className={styles.textTable}
+                  value={reference?.guide || ''}
+                  onChange={(e) =>
+                    onUpdateServiceFormData(
+                      infoControl.idServiceItem,
+                      detail.sequence,
+                      'references',
+                      [{
+                        ...(detail.references?.[detail.goods?.indexOf(reference) ?? 0] ?? {}),
+                        numberOfPieces: e.target.value
+                      }]
+                    )
+                  }
+                />
+              </td>
+              <td>
+                {/* Proveedor */}
+                <input
+                  type="text"
+                  className={styles.textTable}
+                  value={reference?.supplier || ''}
+                  onChange={(e) =>
+                    onUpdateServiceFormData(
+                      infoControl.idServiceItem,
+                      detail.sequence,
+                      'references',
+                      [{
+                        ...(detail.references?.[detail.references?.indexOf(reference) ?? 0] ?? {}),
+                        numberOfPieces: e.target.value
+                      }]
+                    )
+                  }
+                />
+              </td>
+              <td>
+                {/* Facturas */}
+                <input
+                  type="text"
+                  className={styles.textTable}
+                  value={reference?.invoice || ''}
+                  onChange={(e) =>
+                    onUpdateServiceFormData(
+                      infoControl.idServiceItem,
+                      detail.sequence,
+                      'references',
+                      [{
+                        ...(detail.references?.[detail.references?.indexOf(reference) ?? 0] ?? {}),
+                        numberOfPieces: e.target.value
+                      }]
+                    )
+                  }
+                />
+              </td>
+              <td>
+                {/* Botones Ver y Delete */}
+                <div className={styles.serviceActions}>
+                  <button
+                    type="button"
+                    className={styles.iconButton}
+                    title="delete"
+                    //onClick={() => onRemoveMerchandise(service.idServiceItem, merch)}
+                  >
+                    <Eye size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.iconButton}
+                    title="ver"
+                    //onClick={() => onOpenMerchandiseModal(service, merch)}
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+};

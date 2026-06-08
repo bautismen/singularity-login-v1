@@ -295,40 +295,65 @@ export default function Operations() {
   };
 
   const addControl = () => {
-
-    if (control === undefined || control._id === undefined ||
-      control._id === '' || control.control === '') {
-      showWarning(t('operations.selectControlWarning'));
+    if (
+      control === undefined ||
+      control._id === undefined ||
+      control._id === "" ||
+      control.control === ""
+    ) {
+      showWarning(t("operations.selectControlWarning"));
       return;
     }
 
-    if (controlsOperation?.some(c => c._id === control?._id)) {
-      showError(t('operations.alreadyadded'));
+    if (controlsOperation?.some((c) => c._id === control?._id && c.services === control.services)) {
+      showError(t("operations.alreadyadded"));
       return;
     }
 
-    const normalizedServices = control.services.map(service =>
+    const normalizedServices = control.services.map((service) =>
       normalizeService(service, control)
     );
-    //console.log('control', control, 'normalized', normalizedServices);
+
     //setFormData
-    updateFormData(prev => ({
+    updateFormData((prev) => ({
       ...prev,
-      Services: [
-        ...prev.Services,
-        ...normalizedServices
-      ]
+      Services: [...prev.Services, ...normalizedServices],
     }));
 
-    setControlsOperation(prev => [
-      ...prev,
-      //control
-      {
-        _id: control._id,
-        control: control.control,
-        services: normalizedServices
+    setControlsOperation((prev) => {
+      const existsControl = prev.some((c) => c._id === control._id);
+
+      if (!existsControl) {
+        return [
+          ...prev,
+          {
+            _id: control._id,
+            control: control.control,
+            services: normalizedServices,
+          },
+        ];
       }
-    ]);
+
+      return prev.map((c) => {
+        if (c._id !== control._id) return c;
+
+        const currentServices = c.services ?? [];
+
+        const servicesToAdd = normalizedServices.filter(
+          (newService) =>
+            !currentServices.some(
+              (existingService) =>
+                String(existingService.idServiceItem) ===
+                String(newService.idServiceItem),
+            ),
+        );
+
+        return {
+          ...c,
+          services: [...currentServices, ...servicesToAdd],
+        };
+      });
+    });
 
     // Quitamos el control seleccionado de la lista de controles disponibles para el cliente
     setControlsClient(prev =>
@@ -347,33 +372,82 @@ export default function Operations() {
         name: normalizedServices[0].nameService,
       });
     }
-
   };
 
   const removeControl = (_idcontrol: string, item: number) => {
-    const updated = formData.Services?.filter((service: any) => service.idControl !== _idcontrol);
+    updateFormData((prev) => ({
+      ...prev,
+      Services:
+        prev.Services.filter(
+          (service) =>
+            service.idControl !== _idcontrol || service.idServiceItem !== item,
+        ) || [],
+    }));
 
-    updateFormData({ //setformdata
-      ...formData,
-      Services: updated
-    });
-
-    controlsClient.push(controlsOperation.find(c => c._id === _idcontrol) as PricingControl); // Volver a agregar el control eliminado a la lista de controles disponibles para el cliente
-    // Eliminar el control seleccionado de la lista de controles asociados a la operación
-    setControlsOperation(co =>
-      co.filter(c => c._id !== _idcontrol)
-        .map(c => ({
+    setControlsClient((prevControl) => {
+      const selectedControls = controlsOperation
+        .filter((c) => c._id === _idcontrol)
+        .map((c) => ({
           ...c,
-          services: c.services?.filter(
-            s => String(s.idServiceItem) !== String(item)
-          )
+          services:
+            c.services?.filter(
+              (s) => String(s.idServiceItem) === String(item),
+            ) ?? [],
         }))
+        .filter((c) => c.services.length > 0) as PricingControl[];
+
+      return selectedControls.reduce<PricingControl[]>(
+        (acc, selectedControl) => {
+          const existingIndex = acc.findIndex(
+            (c) => c._id === selectedControl._id,
+          );
+
+          if (existingIndex === -1) {
+            return [...acc, selectedControl];
+          }
+
+          return acc.map((control, index) => {
+            if (index !== existingIndex) return control;
+
+            const currentServices = control.services ?? [];
+
+            const servicesToAdd =
+              selectedControl.services?.filter(
+                (newService) =>
+                  !currentServices.some(
+                    (existingService) =>
+                      String(existingService.idServiceItem) ===
+                      String(newService.idServiceItem),
+                  ),
+              ) ?? [];
+
+            return {
+              ...control,
+              services: [...currentServices, ...servicesToAdd],
+            };
+          });
+        },
+        prevControl,
+      );
+    });
+    // controlsClient.push(controlsOperation.find(c => c._id === _idcontrol) as PricingControl); // Volver a agregar el control eliminado a la lista de controles disponibles para el cliente
+    // Eliminar el control seleccionado de la lista de controles asociados a la operación
+    setControlsOperation((co) =>
+      co
+        .map((c) =>
+          c._id === _idcontrol
+            ? {
+                ...c,
+                services: c.services?.filter((s) => s.idServiceItem !== item),
+              }
+            : c,
+        )
+        .filter((c) => c.services?.length > 0),
     );
 
     if (controlsOperation.length === 0) {
-      toggleSection('services');
+      toggleSection("services");
     }
-
   };
 
   const addService = () => {
@@ -711,7 +785,7 @@ export default function Operations() {
                             _id: dataC.id,
                             control: dataC.control,
                             services: dataC.services,
-                            suppliers: dataC.suppliers
+                            suppliers: dataC.suppliers,
                           })
                         }}
 
@@ -747,13 +821,12 @@ export default function Operations() {
                       {controlsOperation.length > 0 ? (
                         controlsOperation?.map(controlService => (
                           controlService.services?.map(service => (
-
                             <span key={`${controlService._id}-${service.idServiceItem}`}
                               className="border border-[#14b8a6] bg-transparent rounded-full
                                        flex items-center gap-1 px-3 py-1 text-xs
                                        dark:bg-[#374151] dark:text-white"
                             >
-                              {controlService.control}-{service.nameService}
+                              {controlService.control} {service.nameService}
                               <button
                                 type="button"
                                 value={controlService.idcontrol}
