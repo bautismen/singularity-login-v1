@@ -153,6 +153,11 @@ export default function Operations() {
     setEditingOperation(null);
     resetFormData();
     setIsFormOpen(true);
+
+    setCollapsedSections({
+      services: false,
+      expedientes: false
+    });
   }
 
   function handleEditOperation(operation: Operation) {
@@ -196,7 +201,6 @@ export default function Operations() {
       } else {
 
         existingControl.services.push(normalizedService);
-
       }
 
       return acc;
@@ -216,13 +220,21 @@ export default function Operations() {
     setServicesOperation(loadedServices)
 
     if (loadedControls.length > 0) {
-      //setActiveTab(loadedControls[0]._id);
+      setActiveTab({
+          id: loadedControls[0]._id,
+          idService: loadedControls[0].services[0].idService,
+          item: loadedControls[0].services[0].idServiceItem,
+          name: loadedControls[0].services[0].nameService,
+        });
+
+      // toggleSection('services');
     }
 
     setCompleteFormData(operation, selectedCustomer);
 
     setIsFormOpen(true);
 
+    
   }
 
   function handleCustomerChange(selectedCustomerId: string) {
@@ -323,7 +335,18 @@ export default function Operations() {
       prev.filter(c => c.id !== control._id)
     );
 
-    toggleSection('services')
+    if (controlsOperation.length === 0) {
+      toggleSection('services');
+    }
+
+    if (normalizedServices.length > 0) {
+      setActiveTab({
+        id: normalizedServices[0].idControl || control._id,
+        idService: normalizedServices[0].idService,
+        item: normalizedServices[0].idServiceItem,
+        name: normalizedServices[0].nameService,
+      });
+    }
 
   };
 
@@ -346,6 +369,11 @@ export default function Operations() {
           )
         }))
     );
+
+    if (controlsOperation.length === 0) {
+      toggleSection('services');
+    }
+
   };
 
   const addService = () => {
@@ -943,7 +971,7 @@ export default function Operations() {
                         controlsOperation?.map(controlService => (
                           controlService.services?.map(service => (
                             <div key={`${controlService._id}-${service.idServiceItem}`}
-                              className={`${styles.tabItem} ${activeTab.item === service.idServiceItem ? styles.active : ''}`}
+                              className={`${styles.tabItem} ${activeTab.item === service.idServiceItem && activeTab.id === controlService._id ? styles.active : ''}`}
                               onClick={() => {
                                 setActiveTab({
                                   id: controlService._id,

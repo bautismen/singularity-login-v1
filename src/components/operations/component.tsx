@@ -5,7 +5,7 @@ export const TipoEnvio = ({ itemService, sequencedetail, detail, onUpdateService
   return (
     <>
       <label className={styles.fieldLabel}>
-        Modalidad
+        Modalidad *
       </label>
       <select
         value={detail.idTypeShipment || ""}
@@ -25,31 +25,31 @@ export const TipoEnvio = ({ itemService, sequencedetail, detail, onUpdateService
   );
 };
 
-export const TipoReferencia = ({ itemService, sequencedetail, detail, onUpdateServiceFormData }) => {
+// export const TipoReferencia = ({ itemService, sequencedetail, detail, onUpdateServiceFormData }) => {
 
-  return (
-    <>
-      <label className={styles.fieldLabel}>
-        Tipo solicitud de reserva
-      </label>
-      <select
-        value={detail.typeShippingReference || ''}
-        className={styles.selectInput}
-        // readOnly
-        required
-        onChange={(e) => {
-          onUpdateServiceFormData(itemService, sequencedetail, 'typeShippingReference', e.target.options[e.target.selectedIndex].text)
-          // updateService(item, detail.sequence, 'NameShippingReference', e.target.options[e.target.selectedIndex].text)
-        }
-        }
-      >
-        <option value="">Seleccionar ...</option>
-        <option value={"Booking"}>Booking</option>
-        <option value={"Carta porte"}>Carta porte</option>
-      </select>
-    </>
-  );
-};
+//   return (
+//     <>
+//       <label className={styles.fieldLabel}>
+//         Tipo solicitud de reserva
+//       </label>
+//       <select
+//         value={detail.typeShippingReference || ''}
+//         className={styles.selectInput}
+//         // readOnly
+//         required
+//         onChange={(e) => {
+//           onUpdateServiceFormData(itemService, sequencedetail, 'typeShippingReference', e.target.options[e.target.selectedIndex].text)
+//           // updateService(item, detail.sequence, 'NameShippingReference', e.target.options[e.target.selectedIndex].text)
+//         }
+//         }
+//       >
+//         <option value="">Seleccionar ...</option>
+//         <option value={"Booking"}>Booking</option>
+//         <option value={"Carta porte"}>Carta porte</option>
+//       </select>
+//     </>
+//   );
+// };
 
 export const TipoOperacion = ({ itemService, sequencedetail, detail, onUpdateServiceFormData }) => {
 
@@ -90,7 +90,7 @@ export const Incoterm = ({ itemService, sequencedetail, detail, onUpdateServiceF
         value={detail.idIncoterm || ''}
         className={styles.selectInput}
         // readOnly
-        required
+        // required
         onChange={(e) => {
           onUpdateServiceFormData(itemService, sequencedetail, 'idIncoterm', Number(e.target.value))
           onUpdateServiceFormData(itemService, sequencedetail, 'incoterm', e.target.options[e.target.selectedIndex].text)
@@ -117,7 +117,7 @@ export const Transportista = ({ itemService, sequencedetail, transport, onUpdate
         value={transport?.idcarrier || ''}
         className={styles.selectInput}
         // readOnly
-        // required
+        required
         onChange={(e) => {
           onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'idcarrier', e.target.value)
           onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'carrier', e.target.options[e.target.selectedIndex].text)
@@ -182,7 +182,7 @@ export const TipoRuta = ({ itemService, sequencedetail, transport, onUpdateServi
   return (
     <>
       <label className={styles.fieldLabel}>
-        Tipo ruta
+        Tipo ruta *
       </label>
       <select
         value={transport?.typeRoute || ''}
@@ -207,7 +207,7 @@ export const TipoMovimeiento = ({ itemService, sequencedetail, transport, onUpda
   return (
     <>
       <label className={styles.fieldLabel}>
-        Tipo movimiento
+        Tipo movimiento *
       </label>
       <select
         value={transport?.typeOfMovement || ''}
@@ -327,8 +327,8 @@ export const UnidadMedida = ({ itemService, sequencedetail, goods, onUpdateServi
 
         {/* Valor */}
         <input
-          type="text"
-          value={goods?.volumeTotal || ''}
+          type="number"
+          value={goods?.volumeTotal || 0}
           className= {styles.measureInput}
           onChange={(e) => {
             onUpdateServiceFormData(
@@ -337,7 +337,7 @@ export const UnidadMedida = ({ itemService, sequencedetail, goods, onUpdateServi
               'goods',
               [{
                 ...(goods || {}),
-                volumeTotal: e.target.value
+                volumeTotal: Number(e.target.value)
               }]
             );
           }}
@@ -347,7 +347,6 @@ export const UnidadMedida = ({ itemService, sequencedetail, goods, onUpdateServi
 
     </>
   )
-
 };
 
 export const TipoCarga = ({ itemService, sequencedetail, goods, onUpdateServiceFormData }) => {
@@ -528,6 +527,90 @@ export const Goods = ({ infoControl, detail, onUpdateServiceFormData }) => {
                 onUpdateServiceFormData={onUpdateServiceFormData}
               />
             </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+export const Containers = ({ infoControl, detail, onUpdateServiceFormData }) => {
+
+  return (
+    <table className={styles.table}>
+      <thead>
+        <tr>
+          <th className={styles.colItem}>Item</th>
+          <th className={styles.colGoods}>Tipo de contenedor</th>
+          <th className={styles.colDescription}>Número de contenedor</th>
+          <th className={styles.colPieces}>Seal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {detail.containers?.map((container, index) => (
+          <tr key={container.idContainer + index}>
+            <td>
+              {/* Item */}
+              <label className="px-2 py-1">
+                # {index + 1}
+                {/* # {container.idcontainer ? container.idcontainer : index + 1} */}
+              </label>
+            </td>
+            <td>
+              {/* Tipo de contenedor */}
+              <input
+                className={styles.textTable}
+                value={container?.nameTypeContainer || ''}
+                onChange={(e) => {
+                  onUpdateServiceFormData(
+                    infoControl.idServiceItem,
+                    detail.sequence,
+                    'containers',
+                    [{
+                      ...(detail.containers?.[detail.containers?.indexOf(container) ?? 0] ?? {}),
+                      nameTypeContainer: e.target.value,
+                    }]
+                  )
+                }
+                }
+              />
+            </td>
+            <td>
+              {/* Número de contenedor */}
+              <input
+                className={styles.textTable}
+                value={container?.number || ''}
+                onChange={(e) =>
+                  onUpdateServiceFormData(
+                    infoControl.idServiceItem,
+                    detail.sequence,
+                    'containers',
+                    [{
+                      ...(detail.containers?.[detail.containers?.indexOf(container) ?? 0] ?? {}),
+                      number: e.target.value,
+                    }]
+                  )
+                }
+              />
+            </td>
+            <td>
+              {/* Seal */}
+              <input
+                className={styles.textTable}
+                value={container?.seal || ''}
+                onChange={(e) =>
+                  onUpdateServiceFormData(
+                    infoControl.idServiceItem,
+                    detail.sequence,
+                    'containers',
+                    [{
+                      ...(detail.containers?.[detail.containers?.indexOf(container) ?? 0] ?? {}),
+                      seal: e.target.value,
+                    }]
+                  )
+                }
+              />
+            </td> 
           </tr>
         ))}
       </tbody>

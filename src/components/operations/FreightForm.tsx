@@ -7,7 +7,7 @@ import { PricingControl } from "../../types/pricingControl";
 import { OperationsFormData } from "../../hooks/useOperations";
 import {
   TipoEnvio,
-  TipoReferencia,
+  // TipoReferencia,
   TipoOperacion,
   Incoterm,
   Transportista,
@@ -15,7 +15,8 @@ import {
   TipoRuta,
   TipoMovimeiento,
   TipoGuia,
-  Goods
+  Goods,
+  Containers
 } from "../operations/component";
 import {
   Copy,
@@ -26,6 +27,7 @@ import {
   Package,
   Container,
   MapPin,
+  Ship
 } from "lucide-react";
 import { Port } from "../../types/port";
 import { catalogService } from '../../services/catalogsService';
@@ -87,7 +89,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
     (s) => s.idControl === info.id && s.idServiceItem === info.item,
   );
   
-  console.log('infoControl', infoControl, formData.Services)
+  //console.log('infoControl', infoControl, formData.Services)
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const detail = infoControl?.serviceDetail?.[currentIndex]; //currentDetail
@@ -440,7 +442,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 >
                   <div className="flex items-center gap-3">
                     <span className="dark:text-white">
-                      <Container />
+                      <Ship />
                     </span>
                     <h2 className="title">Transporte</h2>
                   </div>
@@ -492,26 +494,37 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         />
                       </div>
 
-                      {/* Guia | Tipo */}
-                      <div className={styles.fieldGroup}>
-                        <TipoGuia
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.sequence}
-                          transport={detail?.transport}
-                          onUpdateServiceDetail={onUpdateServiceDetail}
-                          modalidad={"maritimo"}
-                        />
-                      </div>
                     </div>
 
                     <div className={styles.secondColumn}>
                       {/* Tipo de solicitud de reserva */}
-                      <div className={styles.fieldGroup}>
+                      {/* <div className={styles.fieldGroup}>
                         <TipoReferencia
                           itemService={infoControl.idServiceItem}
                           sequencedetail={detail.sequence}
                           detail={detail}
                           onUpdateServiceFormData={onUpdateServiceFormData}
+                        />
+                      </div> */}
+
+                      {/* Número de reserva */}
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel}>
+                          Número de reserva / Booking
+                        </label>
+                        <input
+                          type="text"
+                          value={detail?.transport?.bookingNumeber || ""}
+                          className={styles.textInput}
+                          onChange={(e) =>
+                            onUpdateServiceDetail(
+                              infoControl.idServiceItem, 
+                              detail.sequence, 
+                              'transport', 
+                              'bookingNumeber',
+                              e.target.value
+                            )
+                          }
                         />
                       </div>
 
@@ -538,29 +551,31 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     </div>
 
                     <div className={styles.thirdColumn}>
-                      {/* Número de reserva */}
+                      
+                      {/* Fecha reserva */}
                       <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>
-                          Número de reserva
+                          Fecha de reserva
                         </label>
                         <input
-                          type="text"
-                          value={detail?.shippingReferenceNumber || ""}
-                          className={styles.textInput}
+                          type="datetime-local"
+                          value={detail?.transport?.shippingDate} //? new Date(detail.shippingDate).toISOString().slice(0, 16) : ''
                           onChange={(e) =>
-                            onUpdateServiceFormData(
-                              infoControl.idServiceItem,
-                              detail.sequence,
-                              "shippingReferenceNumber",
-                              e.target.value,
+                            onUpdateServiceDetail(
+                              infoControl.idServiceItem, 
+                              detail.sequence, 
+                              'transport', 
+                              'shippingDate',
+                              e.target.value
                             )
                           }
+                          className={styles.textInput}
                         />
                       </div>
 
-                      {/* Tipo de movimiento */}
+                      {/* Tipo de ruta */}
                       <div className={styles.fieldGroup}>
-                        <TipoMovimeiento
+                        <TipoRuta
                           itemService={infoControl.idServiceItem}
                           sequencedetail={detail.sequence}
                           transport={detail?.transport}
@@ -583,29 +598,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     </div>
 
                     <div className={styles.fourthColumn}>
-                      {/* Fecha reserva */}
+                      {/* Tipo de movimiento */}
                       <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>
-                          Fecha de reserva
-                        </label>
-                        <input
-                          type="datetime-local"
-                          value={detail?.shippingDate} //? new Date(detail.shippingDate).toISOString().slice(0, 16) : ''
-                          onChange={(e) =>
-                            onUpdateServiceFormData(
-                              infoControl.idServiceItem,
-                              detail.sequence,
-                              "shippingDate",
-                              e.target.value,
-                            )
-                          }
-                          className={styles.textInput}
-                        />
-                      </div>
-
-                      {/* Tipo de ruta */}
-                      <div className={styles.fieldGroup}>
-                        <TipoRuta
+                        <TipoMovimeiento
                           itemService={infoControl.idServiceItem}
                           sequencedetail={detail.sequence}
                           transport={detail?.transport}
@@ -613,6 +608,16 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         />
                       </div>
 
+                      {/* Guia | Tipo */}
+                      <div className={styles.fieldGroup}>
+                        <TipoGuia
+                          itemService={infoControl.idServiceItem}
+                          sequencedetail={detail.sequence}
+                          transport={detail?.transport}
+                          onUpdateServiceDetail={onUpdateServiceDetail}
+                          modalidad={"maritimo"}
+                        />
+                      </div>
                       {/* Placas */}
                       {/* <div className={styles.fieldGroup}>
                                     <label className={styles.fieldLabel}>
@@ -671,6 +676,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                               }`}
                 >
                   <div className={styles.fourColumnGrid}>
+
                     <div className={styles.firstColumn}>
                       {/* ORIGEN */}
                       {/* Pais de carga */}
@@ -702,7 +708,88 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         inputClassName={styles.textInput}
                        >                         
                        </InputCountry>
-                                                                                                          
+                                
+                      {/* Planta */}
+                      {detail.idTypeShipment !== 2  && (                        
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Planta
+                          </label>
+                          <input
+                            type="text"
+                            value={detail?.origin?.plant?.name}
+                            className={styles.textInput}
+                            onChange={(e) =>
+                              onUpdateServiceDetail(
+                                infoControl.idServiceItem, 
+                                detail.sequence, 
+                                'origin',
+                                  'plant', {
+                                    'name': e.target.value
+                                  }
+                              )
+                            }
+                          />                          
+                        </div>                        
+                      )}
+
+                    </div>  
+
+                    <div className={styles.secondColumn}>
+                      
+                      {[1, 3].includes(detail.idTypeShipment) ?
+                        /* Lugar de recoleccion */ 
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Lugar de recolección *
+                          </label>
+                          <input
+                            type="text"
+                            value={detail?.origin?.placeOfReceipt}
+                            className={styles.textInput}
+                            required
+                            onChange={(e) =>
+                              onUpdateServiceDetail(
+                                infoControl.idServiceItem,
+                                detail.sequence,
+                                "origin",
+                                "placeOfReceipt",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                        : 
+                        /* Puerto de recoleccion */
+                        <InputPort
+                          ports={portsOrigin}
+                          namePort={detail?.origin?.port?.port}
+                          codePort={detail?.origin?.port?.portKey}
+                          serviceIdItem={detail.sequence}
+                          type="origin"
+                          label="Puerto de carga"
+                          groupClassName={styles.fieldGroup}
+                          labelClassName={styles.fieldLabel}
+                          inputClassName={styles.textInput}
+                          onChangePort={(port) => {
+                            onUpdateServiceFormData(
+                              infoControl.idServiceItem,
+                              detail.sequence,
+                              "origin",
+                              {
+                                ...(detail.origin ?? {}),
+                                port: {
+                                  idPort: port?._Id,
+                                  port: port?.name_port ?? "",
+                                  portKey: port?.port_code ?? ""
+                                }
+                              },
+                            );
+                          }}
+                        />
+                        
+                      }
+
                       {/* Llegada a planta  */}
                       {detail.idTypeShipment !== 2  && (                        
                         <div className={styles.fieldGroup}>
@@ -711,71 +798,24 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           </label>
                           <input
                             type="datetime-local"
-                            value={detail?.origin}
+                            value={detail?.origin?.plant?.arrivalDate}
                             className={styles.textInput}
-                            readOnly
+                            onChange={(e) =>
+                              onUpdateServiceDetail(
+                                infoControl.idServiceItem, 
+                                detail.sequence, 
+                                'origin',
+                                  'plant', {
+                                    'arrivalDate': e.target.value
+                                  }
+                              )
+                            }
                           />                          
                         </div>                        
                       )}
-                    </div>  
-                    <div className={styles.secondColumn}>
-                      {[2, 4].includes(detail.idTypeShipment) ?  
-                          <InputPort
-                            ports={portsOrigin}
-                            namePort={detail?.origin?.port?.port}
-                            codePort={detail?.origin?.port?.portKey}
-                            serviceIdItem={detail.sequence}
-                            type="origin"
-                            label="Puerto de carga"
-                            groupClassName={styles.fieldGroup}
-                            labelClassName={styles.fieldLabel}
-                            inputClassName={styles.textInput}
-                            onChangePort={(port) => {
-                              onUpdateServiceFormData(
-                                infoControl.idServiceItem,
-                                detail.sequence,
-                                "origin",
-                                {
-                                  ...(detail.origin ?? {}),
-                                  port: {
-                                    idPort: port?._Id,
-                                    port: port?.name_port ?? "",
-                                    portKey: port?.port_code ?? ""
-                                  }
-                                },
-                              );
-                            }}
-                          />
-                      : 
-                      /* Lugar de recoleccion */
-                      <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Lugar de recoleccion
-                          </label>
-                          <input
-                            type="text"
-                            value={detail?.origin?.placeOfReceipt}
-                            className={styles.textInput}
-                            readOnly
-                          />
-                      </div>
-                      }
 
-                      {/* Salida de planta */}
-                      {detail.idTypeShipment !== 2  && (
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                                Salida de planta
-                          </label>
-                          <input
-                            type="datetime-local"
-                            value={detail?.origin}
-                            className={styles.textInput}
-                            readOnly
-                          />
-                      </div>
-                      )}                      
                     </div>      
+                    
                     <div className={styles.thirdColumn}>
                       {/* ETD (Salida estimada) */}
                       <div className={styles.fieldGroup}>
@@ -796,7 +836,33 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           }
                         />
                       </div>
+
+                      {/* Salida de planta */}
+                      {detail.idTypeShipment !== 2  && (                        
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Salida de planta
+                          </label>
+                          <input
+                            type="datetime-local"
+                            value={detail?.origin?.plant?.departureDate}
+                            className={styles.textInput}
+                            onChange={(e) =>
+                              onUpdateServiceDetail(
+                                infoControl.idServiceItem, 
+                                detail.sequence, 
+                                'origin',
+                                  'plant', {
+                                    'departureDate': e.target.value
+                                  }
+                              )
+                            }
+                          />                          
+                        </div>                        
+                      )}
+
                     </div> 
+
                     <div className={styles.fourthColumn}>
                       {/* Despacho / recoleccion */}
                       <div className={styles.fieldGroup}>
@@ -1083,24 +1149,12 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 
               <div className={styles.serviceCard}>
                 <h2 className="title"> Contenedor </h2>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Tipo de contenedor</th>
-                      <th>Número de contenedor</th>
-                      <th>Seal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {detail.containers?.map((container, index) => (
-                      <tr key={index}>
-                        <td>{container.type}</td>
-                        <td>{container.number}</td>
-                        <td>{container.seal}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                
+                <Containers 
+                  infoControl={infoControl} 
+                  detail={detail}
+                  onUpdateServiceFormData={onUpdateServiceFormData}
+                />
 
               </div>
 
