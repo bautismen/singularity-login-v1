@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, Save, Edit2, ChevronDown, ChevronUp, X, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
-import { Operation, Customer, Service, ServiceOperation, ServiceDetail } from '../types/operations';
+import { Operation, Customer, Service, ServiceOperation, ServiceDetail, HistoryStatus } from '../types/operations';
 import { createOperation, getControls, getOperations, updateOperation } from '../services/operationsService';
 import styles from './Operations.module.css';
 import { useAuth } from '../contexts/AuthContext';
@@ -258,8 +258,9 @@ export default function Operations() {
         Customer: {} as Customer,
         Controls: [] as Control[],
         Services: [] as ServiceOperation[],
-        OperationStatus: 'Alta referencia',
         Observations: '',
+        OperationStatus: 'Alta referencia',
+        HistoryStatus: [] as HistoryStatus[],
         CreatedAt: new Date,
         CreatedBy: {
           UserId: user?._id || '',

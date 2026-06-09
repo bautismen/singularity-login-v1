@@ -1,39 +1,39 @@
 import { PricingControlSupplier, PricingControlStatusControl } from "./pricingControl";
 
 export interface Customer {
-    idCustomer: string;
-    name: string;
-    rfc: string;
+  idCustomer: string;
+  name: string;
+  rfc: string;
 }
 
 export interface Service {
-    _id: number;
-    service_name: string;
-    category: number;
-    email_service_name: string;
-    status: number;
-    archived: boolean;
-    data_state: number;
+  _id: number;
+  service_name: string;
+  category: number;
+  email_service_name: string;
+  status: number;
+  archived: boolean;
+  data_state: number;
 }
 
 export interface ServiceOperation {
-    idServiceItem: number;
-    idControl?: string | null;
-    control?: string | null;
-    idService: number;
-    nameService: string;
-    // supplier: string;
-    observationsService: string;
-    isShipment: boolean;
-    serviceDetail: ServiceDetail[];
+  idServiceItem: number;
+  idControl?: string | null;
+  control?: string | null;
+  idService: number;
+  nameService: string;
+  // supplier: string;
+  observationsService: string;
+  isShipment: boolean;
+  serviceDetail: ServiceDetail[];
 }
 
-export interface Transport{
+export interface Transport {
   idTransport: string;
   nameTransport: string;
-//   typeTransport: number;
-//   carrier: string;
-//   typeUnit: string;
+  //   typeTransport: number;
+  //   carrier: string;
+  //   typeUnit: string;
 }
 
 export interface ServiceDetail {
@@ -53,55 +53,66 @@ export interface ServiceDetail {
   origin?: any;
   destination?: any;
   goods?: any;
-  
-//   // Fechas
-//   departureDateAproximate?: Date;
-//   arrivalDateAproximate?: Date;
+}
 
-//   // Transporte
-//   masterBill?: string;
-//   incoterm?: string;
+export interface UserInfo {
+  userId: string;
+  name: string;
+}
 
-//   // Ubicaciones
-//   origin?: {
-//     city?: string;
-//     portCode?: string;
-//     country?: string;
-//   };
-
-//   destination?: {
-//     city?: string;
-//     portCode?: string;
-//     country?: string;
-//   };
-
-//   // Comentarios
-//   comments?: string;
-
-//   // Extras dinámicos
-//   extraData?: any;
+export interface HistoryStatus {
+  status: string;
+  statusDate: Date;
+  updatedBy: UserInfo;
 }
 
 export interface Operation {
-    id: string;
-    idreference?: number;
-    reference: string;
-    customer: Customer;
-    services: ServiceOperation[];
-    operationStatus: 'created' | 'pending' | 'completed' | 'failed';
-    observations?: string;
-    listaparafacturar: boolean;
-    createdAt: Date;
-    createdBy: {
-        userId: string;
-        name: string;
-    };
-    updatedAt: Date;
-    updatedBy: {
-        userId: string;
-        name: string;
-    };
-    status: 1 | 2; // 1: activo, 2: inactivo, ;
-    archived: boolean;
-    dataState: number;
+  id: string;
+  idReference?: number;
+  reference: string;
+  customer: Customer;
+  services: ServiceOperation[];
+  observations?: string;
+  operationStatus: 'created' | 'pending' | 'completed' | 'failed';
+  historyStatus: HistoryStatus[];
+  listaParaFactura: boolean;
+  iCveMaestroOperaciones: number;
+  createdAt: Date;
+  createdBy: UserInfo;
+  updatedAt: Date;
+  updatedBy: UserInfo;
+  status: 1 | 2; // 1: activo, 2: inactivo, ;
+  archived: boolean;
+  dataState: number;
 }
+
+export const formatDateTimeLocal = (
+  value?: string | Date | null
+): string => {
+
+  if (!value) return '';
+
+  const date = new Date(value);
+
+  if (isNaN(date.getTime())) return '';
+
+  const year = date.getUTCFullYear();
+
+  const month = String(
+    date.getUTCMonth() + 1
+  ).padStart(2, '0');
+
+  const day = String(
+    date.getUTCDate()
+  ).padStart(2, '0');
+
+  const hours = String(
+    date.getUTCHours()
+  ).padStart(2, '0');
+
+  const minutes = String(
+    date.getUTCMinutes()
+  ).padStart(2, '0');
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};

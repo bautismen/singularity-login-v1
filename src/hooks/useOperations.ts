@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Operation, Customer, Service, ServiceOperation, ServiceDetail } from '../types/operations';
+import { Operation, Customer, Service, ServiceOperation, ServiceDetail, HistoryStatus, UserInfo } from '../types/operations';
 import { useAuth } from '../contexts/AuthContext';
 
 export interface OperationsFormData {
@@ -8,19 +8,15 @@ export interface OperationsFormData {
     Reference: string,
     Customer: Customer,
     Services: ServiceOperation[],
-    OperationStatus: string,
     Observations: string,
+    OperationStatus: string,
+    HistoryStatus: HistoryStatus[],
     ListaParaFacturar: boolean,
+    ICveMaestroOperaciones: number,
     CreatedAt: Date,
-    CreatedBy: {
-        UserId: string,
-        Name: string
-    },
+    CreatedBy: UserInfo,
     UpdatedAt: Date,
-    UpdateBy: {
-        UserId: string,
-        Name: string
-    },
+    UpdateBy: UserInfo,
     Status: number,
     Archived: boolean,
     DataState: number,
@@ -36,9 +32,18 @@ const [formData, setFormData] = useState<OperationsFormData>({
     Reference: '',
     Customer: {} as Customer,
     Services: [] as ServiceOperation[],
-    OperationStatus: 'Alta referencia' as 'Alta referencia' | 'pending' | 'completed' | 'failed',
     Observations: '',
+    OperationStatus: 'Alta referencia' as 'Alta referencia' | 'pending' | 'completed' | 'failed',
+    HistoryStatus: [{
+      status: 'Alta referencia',
+      statusDate: new Date,
+      updatedBy: {
+        UserId: user?._id || '',
+        Name: user?.name || ''
+      },
+    }],
     ListaParaFacturar: false,
+    ICveMaestroOperaciones: 0,
     CreatedAt: new Date,
     CreatedBy: {
       UserId: user?._id || '',
@@ -61,9 +66,18 @@ const resetFormData = () => {
         Reference: '',
         Customer: {} as Customer,
         Services: [] as ServiceOperation[],
-        OperationStatus: 'Alta referencia' as 'Alta referencia' | 'pending' | 'completed' | 'failed',
         Observations: '',
+        OperationStatus: 'Alta referencia' as 'Alta referencia' | 'pending' | 'completed' | 'failed',
+        HistoryStatus: [{
+          status: 'Alta referencia',
+          statusDate: new Date,
+          updatedBy: {
+            UserId: user?._id || '',
+            Name: user?.name || ''
+          },
+        }],
         ListaParaFacturar: false,
+        ICveMaestroOperaciones: 0,
         CreatedAt: new Date,
         CreatedBy: {
         UserId: user?._id || '',
@@ -83,7 +97,7 @@ const resetFormData = () => {
 const setCompleteFormData = ( operation: Operation, selectedCustomer: Customer) => {
     setFormData({
       Id: operation.id,
-      IdReference: operation.idReference,
+      IdReference: operation.idReference || 0,
       Reference: operation.reference,
       Customer: selectedCustomer ? {
         idCustomer: selectedCustomer.id,
@@ -91,9 +105,10 @@ const setCompleteFormData = ( operation: Operation, selectedCustomer: Customer) 
         rfc: selectedCustomer.fiscalData.taxId
       } : operation.customer,
       Services: operation.services,
-      OperationStatus: operation.operationStatus,
-      ListaParaFacturar: operation.listaParaFacturar || false,
       Observations: operation.observations || '',
+      OperationStatus: operation.operationStatus,
+      ListaParaFacturar: operation.listaParaFactura || false,
+      ICveMaestroOperaciones: operation.iCveMaestroOperaciones,
       CreatedAt: operation.createdAt,
       CreatedBy: operation.createdBy,
       UpdatedAt: Date,

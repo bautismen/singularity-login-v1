@@ -1,6 +1,6 @@
 import styles from '../../pages/Operations.module.css';
-import { Plus, Trash2, Eye, X , Copy, Search, Trash} from 'lucide-react';
-
+import { Plus, Trash2, Eye, X, Copy, Search, Trash } from 'lucide-react';
+import { formatDateTimeLocal } from "../../types/operations";
 
 export const TipoEnvio = ({ itemService, sequencedetail, detail, onUpdateServiceFormData }) => {
 
@@ -255,11 +255,11 @@ export const TipoGuia = ({ itemService, sequencedetail, transport, onUpdateServi
               // readOnly
               // required
               onChange={(e) => {
-                onUpdateServiceDetail(itemService, sequencedetail, 'transport', 
+                onUpdateServiceDetail(itemService, sequencedetail, 'transport',
                   'guide', {
-                    'type': e.target.value
-                  }
-                ) 
+                  'type': e.target.value
+                }
+                )
               }
               }
             >
@@ -280,11 +280,11 @@ export const TipoGuia = ({ itemService, sequencedetail, transport, onUpdateServi
             id="guide"
             value={transport?.guide?.guide || ''}
             onChange={(e) => {
-              onUpdateServiceDetail(itemService, sequencedetail, 'transport', 
+              onUpdateServiceDetail(itemService, sequencedetail, 'transport',
                 'guide', {
-                  'guide': e.target.value
-                }
-              ) 
+                'guide': e.target.value
+              }
+              )
             }
             }
           />
@@ -304,7 +304,7 @@ export const UnidadMedida = ({ itemService, sequencedetail, cargo, onUpdateServi
         {/* Unidad */}
         <select
           value={cargo?.idUnitMeasurement || ''}
-          className= {styles.measureSelect}
+          className={styles.measureSelect}
           onChange={(e) => {
             onUpdateServiceFormData(
               itemService,
@@ -331,7 +331,7 @@ export const UnidadMedida = ({ itemService, sequencedetail, cargo, onUpdateServi
         <input
           type="number"
           value={cargo?.volumeTotal || 0}
-          className= {styles.measureInput}
+          className={styles.measureInput}
           onChange={(e) => {
             onUpdateServiceFormData(
               itemService,
@@ -339,7 +339,7 @@ export const UnidadMedida = ({ itemService, sequencedetail, cargo, onUpdateServi
               'cargo',
               [{
                 ...(cargo || {}),
-                volumeTotal: Number(e.target.value)                
+                volumeTotal: Number(e.target.value)
               }]
             );
           }}
@@ -440,7 +440,7 @@ export const Cargo = ({ infoControl, detail, onUpdateServiceFormData }) => {
         <tr>
           <th className={styles.colItem}>Item</th>
           <th className={styles.colCargo}>Mercancía</th>
-          <th className={styles.colDescription}>Descripción</th>
+          {/* <th className={styles.colDescription}>Descripción</th> */}
           <th className={styles.colPieces}>Piezas</th>
           <th className={styles.colMeasure}>Unidad de medida</th>
           <th className={styles.colCargo}>Tipo de carga</th>
@@ -475,8 +475,8 @@ export const Cargo = ({ infoControl, detail, onUpdateServiceFormData }) => {
                 }
               />
             </td>
-            <td>
-              {/* Descripción */}
+            {/* <td>
+              {/* Descripción * 
               <input
                 className={styles.textTable}
                 value={cargo?.description || ''}
@@ -492,7 +492,7 @@ export const Cargo = ({ infoControl, detail, onUpdateServiceFormData }) => {
                   )
                 }
               />
-            </td>
+            </td> */}
             <td>
               {/* Piezas */}
               <input
@@ -612,7 +612,7 @@ export const Containers = ({ infoControl, detail, onUpdateServiceFormData }) => 
                   )
                 }
               />
-            </td> 
+            </td>
           </tr>
         ))}
       </tbody>
@@ -620,29 +620,29 @@ export const Containers = ({ infoControl, detail, onUpdateServiceFormData }) => 
   )
 };
 
-export const ReferencesAduanal = ({infoControl, detail,onUpdateServiceFormData}) => {
-   return (
-    <div> 
+export const ReferencesAduanal = ({ infoControl, detail, onUpdateServiceFormData }) => {
+  return (
+    <div>
       <div className="flex flex-1 gap-2 border border-gray-200 dark:border-gray-700 rounded-tr-xl rounded-tl-xl p-2 w-1/4">
         <button type="button" className={styles.iconButton} >
           <Plus size={18} />
-        </button>      
+        </button>
         <button type="button" className={styles.iconButton}>
           <Copy size={18} />
-        </button>  
-          <button type="button" className={styles.iconButton}>
+        </button>
+        <button type="button" className={styles.iconButton}>
           <Trash size={18} />
-        </button>           
+        </button>
         <div className="relative w-50">
           <input
             type="text"
-            className={styles.textTable}/>
+            className={styles.textTable} />
           <Search
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300"
             size={18}
           />
-        </div>     
-        
+        </div>
+
       </div>
       <table className={styles.table}>
         <thead>
@@ -670,7 +670,7 @@ export const ReferencesAduanal = ({infoControl, detail,onUpdateServiceFormData})
               <td>
                 {/* checkbox */}
                 <input
-                type='checkbox'
+                  type='checkbox'
                 />
               </td>
               <td>
@@ -776,7 +776,7 @@ export const ReferencesAduanal = ({infoControl, detail,onUpdateServiceFormData})
                     type="button"
                     className={styles.iconButton}
                     title="delete"
-                    //onClick={() => onRemoveMerchandise(service.idServiceItem, merch)}
+                  //onClick={() => onRemoveMerchandise(service.idServiceItem, merch)}
                   >
                     <Eye size={14} />
                   </button>
@@ -784,7 +784,7 @@ export const ReferencesAduanal = ({infoControl, detail,onUpdateServiceFormData})
                     type="button"
                     className={styles.iconButton}
                     title="ver"
-                    //onClick={() => onOpenMerchandiseModal(service, merch)}
+                  //onClick={() => onOpenMerchandiseModal(service, merch)}
                   >
                     <X size={14} />
                   </button>
@@ -796,4 +796,24 @@ export const ReferencesAduanal = ({infoControl, detail,onUpdateServiceFormData})
       </table>
     </div>
   )
+};
+
+export const ComponentDate = ({itemService, sequencedetail, data, node, field, onUpdateServiceDetail}) => {
+  return (
+    <input
+      type="datetime-local"
+      value={formatDateTimeLocal(data) || ""}
+      className={styles.textInput}
+      onChange={(e) =>
+        onUpdateServiceDetail(
+          itemService,
+          sequencedetail,
+          node,
+          field,
+          e.target.value
+        )
+      }
+    />
+  )
+
 };
