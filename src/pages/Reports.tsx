@@ -432,6 +432,7 @@ const handlecreate = async () => {
     );
 
     setisviewResult(true);
+    setIsOpenParam(false);
 
   } catch (error) {
     showError('Error al generar el reporte:' + error);
@@ -439,8 +440,7 @@ const handlecreate = async () => {
     setisviewResult(false);
 
   } finally {
-    setLoading(false);
-    setIsOpenParam(false);
+    setLoading(false);    
   }
 };
 
