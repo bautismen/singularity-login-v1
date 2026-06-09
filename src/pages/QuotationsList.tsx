@@ -12,9 +12,10 @@ import {  GrCloudDownload  } from "react-icons/gr";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
-const USERS_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/users`;
-const REQUEST_TYPES_API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/catalog-request-types`;
-const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const USERS_API_URL = `${import.meta.env.VITE_API_CATALOGS}/v1/kl/catalog/general/User`;
+const REQUEST_TYPES_API_URL = `${import.meta.env.VITE_API_CATALOGS}/v1/kl/catalog/operations/TypeResquet`;
+const API_KEY = import.meta.env.VITE_APIKEYSL;
+const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 
 interface QuotationsListProps {
   onCreateNew: () => void;
@@ -102,8 +103,9 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
       const response = await fetch(USERS_API_URL, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          'Authorization': `Bearer ${API_TOKENSL}`,
           'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
         },
       });
 
@@ -112,7 +114,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
       }
 
       const data = await response.json();
-      setUsers(data);
+      setUsers(data.data);
     } catch (error) {
       showError(t('user.errorLoad'));  
       throw new Error('Error al cargar usuarios');
@@ -124,8 +126,9 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
       const response = await fetch(REQUEST_TYPES_API_URL, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          'Authorization': `Bearer ${API_TOKENSL}`,
           'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
         },
       });      
 
@@ -133,7 +136,7 @@ export function QuotationsList({ onCreateNew, onEdit, onView , highlightId}: Quo
         showError(t('quote.errors.loadTypesRequest'));  
       }
       const data = await response.json();
-      setRequestTypes(data);
+      setRequestTypes(data.data);
     } catch (error) {
       showError(t('quote.errors.loadTypesRequest'));  
       throw new Error('Error loading request types:');
