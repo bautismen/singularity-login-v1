@@ -198,7 +198,38 @@ export const GeneralDataSection: React.FC<GeneralDataSectionProps> = ({
               <span className={styles.required}>*</span>
               {t('quote.client')}
             </label>
-            <select
+            <input
+              list='customers-list'
+              value={formData.client ||''}
+              className={styles.clientSelect}
+              disabled={loading || mode === 'view' || mode === 'edit' || formData.idStatusRequest >= 2}
+              required
+              placeholder={t('quote.selectClient')}
+              onChange={(e) => {
+                const selectedText = e.target.value;
+                const customer = customers.find((c) => {
+                  const label = c.branchName
+                    ? `${c.branchName}, ${c.fiscalData?.businessName}`
+                    : c.fiscalData?.businessName;
+                  return label === selectedText;
+                });
+                onChangeFormData({
+                  customerId: customer?.id || '',
+                  client: selectedText,                 
+                  customerCategory: customer?.clientLevelId,
+                });
+              }} />
+            <datalist id='customers-list'>
+              {customers.map((customer) => {
+                const label = customer.branchName
+                  ? `${customer.branchName}, ${customer.fiscalData?.businessName}`
+                  : customer.fiscalData?.businessName;
+                return (
+                  <option key={customer.id} value={label} />
+                );
+              })}
+            </datalist>
+            {/*<select
               value={formData.customerId}
               className={styles.clientSelect}
               disabled={loading || mode === 'view' || mode === 'edit' || formData.idStatusRequest >= 2}
@@ -220,7 +251,7 @@ export const GeneralDataSection: React.FC<GeneralDataSectionProps> = ({
                     : customer.fiscalData?.businessName}
                 </option>
               ))}
-            </select>
+            </select>*/}
           </div>
         ) : (
           <div className={styles.formGroup}>

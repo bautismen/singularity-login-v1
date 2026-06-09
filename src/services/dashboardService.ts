@@ -97,7 +97,7 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
   return await response.json();
 }
 
-const DASHBOARD_API_URL = import.meta.env.VITE_API_URL;
+const DASHBOARD_API_URL = import.meta.env.VITE_API_QUOTERATE;
 const API_TOKENSL = import.meta.env.VITE_TOKENSL;
 const API_KEYSL = import.meta.env.VITE_APIKEYSL;
 

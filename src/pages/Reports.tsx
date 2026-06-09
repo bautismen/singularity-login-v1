@@ -5,9 +5,12 @@ import styles from './Reports.module.css';
 import { useAuth } from '../contexts/AuthContext';
 import { Report } from '../types/reports';
 import { reportsServices } from '../services/reportsService';
-import { getExecutives } from '../services/executiveService';
+import { getExecutivesByDepartment } from '../services/executiveService';
 import { getCustomers } from '../services/customerService';
 import * as XLSX from 'xlsx-js-style';
+import { useReactToPrint } from "react-to-print";
+import { useNotification } from '../contexts/NotificationContext';
+import { Shower } from '@mui/icons-material';
 
 export function Reports() {
   
@@ -43,6 +46,8 @@ export function Reports() {
   const [displayValues, setDisplayValues] = useState<{ [key: string]: string }>({});
   const [isOpen, setIsOpen] = useState(true);
   const contentRef = useRef(null);
+  const [isOpenParam, setIsOpenParam] = useState(true);
+  const contentParam = useRef(null);
   const [title, settitle] = useState('');
   const { t, language } = useLanguage();
   const { user } = useAuth();
@@ -55,7 +60,10 @@ export function Reports() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const totalPages = Math.ceil(reportResult.length / pageSize);
-  const paginatedData = reportResult.slice(
+  const componentPDF = useRef(null);
+  const [searchReport, setsearchReport] = useState('');
+  const [filteredReportResult, setFilteredReportResult] = useState<any[]>([]);
+  const paginatedData = filteredReportResult.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -65,6 +73,7 @@ export function Reports() {
   };
   const [currentPageTop, setCurrentPageTop] = useState(1);
   const [pageSizeTop, setPageSizeTop] = useState(10);
+  const { showError, showWarning, showInfo } = useNotification();
 
   const totalPagesTop = Math.ceil(filteredItems.length / pageSizeTop);
 
@@ -89,6 +98,13 @@ export function Reports() {
 }, [searchQuery, filter, controlData]);
 
 useEffect(() => {
+  if (reportResult) {
+    const filteredReportResult = filterReportResult (reportResult, searchReport);
+    setFilteredReportResult(filteredReportResult);
+  }
+}, [searchReport, reportResult]);
+
+useEffect(() => {
   const loadCatalogs = async () => {
     if (!idSelected) return;
 
@@ -99,8 +115,8 @@ useEffect(() => {
 
     for (const p of report.parameter) {
       if (p.type === 'catalogo') {
-        if (p.catalog === 'Ejecutivos') {
-          newCatalogs[p.catalog] = await getExecutives();
+        if (p.catalog === 'EjecutivosPricing') {
+          newCatalogs[p.catalog] = await getExecutivesByDepartment("Pricing");
         }
         if (p.catalog === 'Clientes') {
           newCatalogs[p.catalog] = await getCustomers();
@@ -114,6 +130,32 @@ useEffect(() => {
   loadCatalogs();
 }, [idSelected]);
 
+useEffect(() => {
+  if (!idSelected || !controlData) return;
+
+  const report = controlData.find(
+    (r: any) => r.id_report === idSelected
+  );
+
+  if (!report) return;
+
+  const mapping =
+    language === 'es'
+      ? report.dataset?.mapping?.es
+      : report.dataset?.mapping?.en;
+
+  const mappingParsed =
+    typeof mapping === 'string'
+      ? JSON.parse(mapping)
+      : mapping || {};
+
+  setHeaderMapping(mappingParsed);
+
+  // Opcional: actualizar también el título
+  settitle(report.name_report);
+
+}, [language, idSelected, controlData]);
+
 const loadData = async () => {
   try {
     setLoading(true);
@@ -121,7 +163,7 @@ const loadData = async () => {
     setControlData(data);
   } catch (error) {
     setLoading(false);
-    console.error('Error fetching control data:', error);
+    showError('Error fetching control data:' + error);
   }  
 }
 
@@ -145,6 +187,22 @@ const filterData = () => {
     setLoading(false);
   };
 
+const filterReportResult = (
+  data: any[],
+  query: string
+) => {
+
+  if (!query.trim()) return data;
+
+  return data.filter((row) =>
+    Object.values(row).some((value) =>
+      String(value ?? '')
+        .toLowerCase()
+        .includes(query.toLowerCase())
+    )
+  );
+};
+
 const AVATAR_SRC = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAzWWaigVY2dG2LPf68xDU_iE3Ecmfu1NLAtbyJRmpbZde8gihW52xYdqDvsVzhOZriVSDpLqjIWa5bxnWxN7W0BSERckk9S4V-oCjG0c0Stmtrk4U0rEWN1aFSdXQe0QDnsy9G8wDYh78jztkotskRvIfbdDo8MU7iBqy7wA0AvDzpDtYkmFyYiyeIXLvdlsYKLRQotGUa94PQxp0E4iqrEsbOBz_wzpQ3E-onuSBnEKab9Dn34B9DmzKHml-tcgu_oYm8L7u1nDg';
 
 const HEADERS = [ t('report.header1'), t('report.header2') , t('report.header3') , t('report.header4') , t('report.header6') ];
@@ -162,14 +220,7 @@ const toggleSelected = (id: string) => {
         setidReport(r.id);
         settitle(r.name_report);
         setIsOpen(false);
-        setisviewParameters(true);
-        const mapping = language === 'es' ? r.dataset?.mapping.es : r.dataset?.mapping.en;
-        const mappingParsed =
-        typeof mapping === 'string'
-        ? JSON.parse(mapping)
-        : mapping || {};
-        
-        setHeaderMapping(mappingParsed);
+        setisviewParameters(true);       
         return { ...r, selected: true };
       }
       return { ...r, selected: false };
@@ -245,7 +296,11 @@ const renderParameter = (id: string) => {
              <datalist id={`catalog-${p.name}`}>
               {catalogs[p.catalog]?.map((dat: any, index: number) => (
                 <option
-                  key={dat.id ?? dat._id ?? `${p.name}-option-${index}`}
+                  key={
+                    p.catalog === 'EjecutivosPricing'
+                      ? dat._Iduser
+                      : (dat._Id ?? dat.id ?? `${p.name}-option-${index}`)
+                  }
                   value={getOptionLabel(p.catalog, dat)}
                 />
               ))}
@@ -259,23 +314,30 @@ const renderParameter = (id: string) => {
 };
 
 const handleDatalistChange = (name: string, catalog: string, inputText: string) => {
-  // Muestra el texto en el input
   setDisplayValues(prev => ({ ...prev, [name]: inputText }));
 
-  // Busca el item por el texto y guarda su ID
   const match = catalogs[catalog]?.find(
     (item: any) => getOptionLabel(catalog, item) === inputText
   );
 
+  // ✅ Resuelve el ID correcto según el catálogo
+  const resolveId = (item: any): string => {
+    if (!item) return '';
+    if (catalog === 'EjecutivosPricing') return String(item._Iduser ?? '');
+    return String(item._Id ?? item.id ?? '');
+  };
+
   setFormValues(prev => ({
     ...prev,
-    [name]: match ? String(match.id ?? match._Id ?? '') : ''
+    [name]: match ? resolveId(match) : ''
   }));
 };
 
 const getOptionLabel = (catalog: string, dat: any) => {
   switch (catalog) {
     case 'Ejecutivos':
+      return `${dat.nombre} ${dat.apellido_paterno} ${dat.apellido_materno}`;
+    case 'EjecutivosPricing':
       return `${dat.nombre} ${dat.apellido_paterno} ${dat.apellido_materno}`;
     case 'Clientes':
       return dat.fiscalData?.businessName;
@@ -288,14 +350,15 @@ const handleInputChange = (name: string, value: string) => {
   setFormValues(prev => ({ ...prev, [name]: value }));
 };
 
-const buildParams = (): Record<string, string> | null => {
+const buildParams = (): Record<string, string | number> | null => {
+
   const report = controlData?.find(
     a => a.id_report === idSelected
   );
 
   if (!report?.parameter) return null;
 
-  const params: Record<string, string> = {};
+  const params: Record<string, string | number> = {};
 
   for (const p of report.parameter) {
 
@@ -321,30 +384,103 @@ const buildParams = (): Record<string, string> | null => {
         formValues[p.name]?.trim();
 
       if (value) {
-        params[p.name] = value;
-      }
 
+        if (p.type === 'int') {
+          params[p.name] = parseInt(value, 10);
+        } else {
+          params[p.name] = value;
+        }
+
+      }
     }
   }
 
   return params;
 };
 
-const handlecreate = () => {
-  setLoading(true);
-  const params = buildParams();
-  reportsServices.getReport(idReport, params)
-    .then(result => {
-      setReportResult(Array.isArray(result) ? result : [result]);
-      setisviewResult(true);   
-    })
-    .catch(error => {
-      console.error('Error al generar el reporte:', error);
-      setisviewResult(false);      
-    })
-    .finally(() => {
+const handlecreate = async () => {
+  try {
+    setLoading(true);
+
+    const params = buildParams();
+
+    if(!params || Object.keys(params).length === 0) {
+      showWarning(t('report.mesage1'));
+      setisviewResult(false);
       setLoading(false);
-    });
+      setIsOpenParam(true);
+      return;
+    }
+
+    const result = await reportsServices.getReport(
+      idReport,
+      params
+    );
+    
+    if (result.length === 0) {
+      showInfo(t('report.mesage2'));
+      setisviewResult(false);
+      setLoading(false);
+      setIsOpenParam(true);
+      return;
+    }
+
+    setReportResult(
+      Array.isArray(result)
+        ? result
+        : [result]
+    );
+
+    setisviewResult(true);
+    setIsOpenParam(false);
+
+  } catch (error) {
+    showError('Error al generar el reporte:' + error);
+
+    setisviewResult(false);
+
+  } finally {
+    setLoading(false);    
+  }
+};
+
+const parseDate = (value: string): Date | null => {
+  if (!value || typeof value !== 'string') return null;
+
+  const clean = value.trim();
+
+  // yyyy-mm-dd o yyyy/mm/dd
+  let match = clean.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if (match) {
+    const [, y, m, d] = match;
+    return new Date(Number(y), Number(m) - 1, Number(d));
+  }
+
+  // dd-mm-yyyy | dd/mm/yyyy | mm-dd-yyyy | mm/dd/yyyy
+  match = clean.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (match) {
+    let [, p1, p2, y] = match;
+
+    const n1 = Number(p1);
+    const n2 = Number(p2);
+
+    // Si el primer número es > 12 asumimos dd-mm-yyyy
+    if (n1 > 12) {
+      return new Date(Number(y), n2 - 1, n1);
+    }
+
+    // Si el segundo número es > 12 asumimos mm-dd-yyyy
+    if (n2 > 12) {
+      return new Date(Number(y), n1 - 1, n2);
+    }
+
+    // Ambiguo (05-06-2025)
+    // Por defecto lo tratamos como dd-mm-yyyy
+    return new Date(Number(y), n2 - 1, n1);
+  }
+
+  const date = new Date(clean);
+  return isNaN(date.getTime()) ? null : date;
 };
 
 const exportToExcel = () => {
@@ -377,9 +513,13 @@ const exportToExcel = () => {
   XLSX.utils.sheet_add_aoa(
     worksheet,
     [
-      [title],
-      [`Generado por ${user?.name}`],
-      [],
+      [title.toUpperCase()],
+      [
+        `${t('report.generatedby')}: ${user?.name}`,
+      ],
+      [
+        `${t('report.generationdate')}: ${new Date().toLocaleString(language === 'es' ? 'es-MX' : 'en-US')}`,
+      ],      
       mappedHeaders
     ],
     { origin: 'A1' }
@@ -412,19 +552,35 @@ const exportToExcel = () => {
     wch: Math.max(h.length + 5, 20)
   }));
 
+  // ===== FILTROS =====
+  // La fila 4 contiene los encabezados
+  const rangeH = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+
+  worksheet['!autofilter'] = {
+    ref: XLSX.utils.encode_range({
+      s: { r: 3, c: 0 }, // A4
+      e: {
+        r: rangeH.e.r,
+        c: mappedHeaders.length - 1
+      }
+    })
+  };
+
   // ===== ESTILOS =====
 
   // Título fila 1
   if (worksheet['A1']) {
     worksheet['A1'].s = {
       font: {
-        sz: 16,
-        bold: true
+        sz: 14,
+        bold: true,
+        color: { rgb: '037F8C' },
+        fontName: 'Arial',
       },
       alignment: {
-        horizontal: 'center',
+        horizontal: 'left',
         vertical: 'center'
-      }
+      }       
     };
   }
 
@@ -432,11 +588,26 @@ const exportToExcel = () => {
   if (worksheet['A2']) {
     worksheet['A2'].s = {
       font: {
-        sz: 14,
-        bold: true
+        sz: 9,
+        fontName: 'Arial',
+        bold: true,
+
       },
       alignment: {
-        horizontal: 'center',
+        horizontal: 'left',
+        vertical: 'center'
+      }
+    };
+  }
+
+  if (worksheet['A3']) {
+    worksheet['A3'].s = {
+      font: {
+        sz: 9,
+        fontName: 'Arial',
+      },
+      alignment: {
+        horizontal: 'left',
         vertical: 'center'
       }
     };
@@ -452,15 +623,90 @@ const exportToExcel = () => {
     if (worksheet[cellRef]) {
       worksheet[cellRef].s = {
         font: {
-          bold: true
+          bold: true,
+          sz: 10,
+          fontName: 'Arial',
+            color: { rgb: 'FFFFFF' }
+        },
+        fill: {
+          fgColor: { rgb: '037F8C' },
         },
         alignment: {
-          horizontal: 'center',
+          horizontal: 'left',
           vertical: 'center'
+        },
+        border: {
+          top: {
+            style: 'thin',
+            color: { rgb: '000000' }
+          },
+          bottom: {
+            style: 'thin',
+            color: { rgb: '000000' }
+          },
+          left: {
+            style: 'thin',
+            color: { rgb: '000000' }
+          },
+          right: {
+            style: 'thin',
+            color: { rgb: '000000' }
+          }
         }
       };
     }
   });
+  
+  // Datos desde fila 5 (Arial 8 + detección de tipos)
+  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+
+  for (let row = 4; row <= range.e.r; row++) {
+    for (let col = 0; col <= range.e.c; col++) {
+      const cellRef = XLSX.utils.encode_cell({
+        r: row,
+        c: col
+      });
+
+      const cell = worksheet[cellRef];
+
+      if (!cell) continue;
+
+      const value = cell.v;
+
+      // Detectar números
+      if (
+        typeof value === 'string' &&
+        value.trim() !== '' &&
+        !isNaN(Number(value))
+      ) {
+        cell.v = Number(value);
+        cell.t = 'n';
+        cell.z = '#,##0.00';
+      }
+
+      // Detectar fechas
+      else if (typeof value === 'string') {
+        const parsedDate = parseDate(value);
+
+        if (parsedDate) {
+          const date = new Date(parsedDate);
+          cell.v = date;
+          cell.t = 'd';
+          cell.z = 'dd/mm/yyyy';
+        }
+      }
+
+      // Estilo Arial 8
+      cell.s = {
+        ...(cell.s || {}),
+        font: {
+          ...(cell.s?.font || {}),
+          fontName: 'Arial',
+          sz: 8
+        }
+      };
+    }
+  }
 
   // Crear workbook
   const workbook = XLSX.utils.book_new();
@@ -468,7 +714,7 @@ const exportToExcel = () => {
   XLSX.utils.book_append_sheet(
     workbook,
     worksheet,
-    'Reporte'
+    'SingularityReports'
   );
 
   // Descargar
@@ -478,7 +724,11 @@ const exportToExcel = () => {
   );
 };
 
- if (loading && !controlData) {
+const printPdf = useReactToPrint({
+    contentRef:  componentPDF,
+  })
+
+ if (loading) {
     return (
       <div className={styles.formContainer}>
         <div className={styles.loading}>
@@ -495,16 +745,11 @@ const exportToExcel = () => {
           <h2 className={styles.title}>{t('report.title')}</h2>
           <p className={styles.subtitle}>
             {t('report.subtitle')}
-          </p>    
-          <div className={styles.buttonGroup}>
-            <button className={styles.headerButton}>
-                <Filter size={16} />                
-              </button>
-          </div>          
+          </p>                  
         </div>        
         <div className={styles.searchBar}>
           {/* Search */}         
-            <Search size={20} className={styles.icon} />
+            <Search size={20} />
             <input
               type="text"
               placeholder={t('report.seartoogle')}
@@ -531,7 +776,7 @@ const exportToExcel = () => {
           </div>          
         </div>
          
-      <div className={styles.headercard}>
+      <div className={isOpen ? styles.headercard : styles.headercardhover}>
           <div className={styles.headerRow}>
           <h4 className={styles.tdreport}>{title}</h4>
           <button onClick={() => setIsOpen(!isOpen)} className={styles.iconbutonlucide}>
@@ -571,7 +816,7 @@ const exportToExcel = () => {
           <thead>
             <tr className={styles.trheader}>
               {HEADERS.map((h, index) => (
-                <th key={`${h}-${index}`} className={`${styles.thheader} ${h === 'ACCIÓN' ? styles.thheaderCenter : ''}`}>
+                <th key={`${h}-${index}`} className={styles.thheader}>
                   {h}
                 </th>
               ))}
@@ -581,18 +826,10 @@ const exportToExcel = () => {
             {paginatedTopData?.map(r => (
               <tr key={r.id_report}  className={`${styles.trbody} ${
                 r.selected ? styles.trbodySelected : styles.trbodyHover}`} onClick={() => toggleSelected(r.id_report)}>
-                <td className={styles.tdid}>{r.id_report}</td>
+                <td className= {styles.tdid}>{r.id_report}</td>
                 <td className={styles.tdcategory}>
                   <span
-                    className={`${styles.spancategory} ${
-                      r.category.toLowerCase() === 'pricing'
-                        ? styles.Pricing
-                        : r.category.toLowerCase() === 'operations'
-                        ? styles.Operations
-                        : r.category.toLowerCase() === 'customer'
-                        ? styles.Customer
-                        : ''
-                    }`}
+                    className={styles.spancategory}
                   >{r.category}</span>
                 </td>
                 <td className={styles.tdreport}>{r.name_report}</td>
@@ -604,7 +841,7 @@ const exportToExcel = () => {
         </table>
         <div className={styles.divMostrar}>
 
-          <p className="text-[10px] font-bold text-gray-400 tracking-widest">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {t('report.show')} {Math.min(currentPageTop * pageSizeTop, filteredItems.length)} {t('report.show4')} {filteredItems.length} {t('report.show2')}
           </p>
 
@@ -662,25 +899,39 @@ const exportToExcel = () => {
     </div>
     </div>
       </section>
-      <section className={styles.seccionparameter} hidden={!isviewParameters}>
-        <div className={styles.divparameter}>
+      <section className={styles.seccionparameter} hidden={!isviewParameters}>      
+        <div className={styles.divparameter}>          
           <div className={styles.diviconparameter}>
             <span className={styles.spaniconparameter}><SlidersHorizontal  size={20} /></span>
           </div>
-          <div>
+          <div className={styles.parameterContent}>
             <h3 className={styles.h3parameter}>{t('report.titleparameter')}</h3>
             <p className={styles.subtitleParameter}>{t('report.subtitleparameter')}</p>
           </div>
+          <button onClick={() => setIsOpenParam(!isOpenParam)} className={styles.iconbutonlucide2}>
+              {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>                   
         </div>
-        <div className="grid grid-cols-1 gap-x-12 gap-y-10 w-full">
-          {idSelected && renderParameter(idSelected)}
-        </div>
-        <div className="mt-12 flex justify-end">
-          <button className="bg-[#00685d] text-white px-8 py-3.5 rounded-lg font-bold text-sm shadow-xl hover:shadow-[#00685d]/20 transition-all flex items-center gap-2" onClick={() => {
-                handlecreate();                 
-              }}>
-            <span className="material-symbols-outlined text-lg"><BarChart2 size={20} /></span> {t('report.button')}
-          </button>
+        <div
+          ref={contentParam}
+          style={{
+            maxHeight: isOpenParam
+            ? contentParam.current?.scrollHeight + "px"
+              : "0px",
+              overflow: "hidden",
+              transition: "max-height 0.3s ease",
+          }}
+        >
+          <div className={styles.divParameter2}>
+            {idSelected && renderParameter(idSelected)}
+          </div>
+          <div className={styles.divbuttonparameter}>
+            <button className="bg-[#00685d] text-white px-8 py-3.5 rounded-lg font-bold text-sm shadow-xl hover:shadow-[#00685d]/20 transition-all flex items-center gap-2" onClick={() => {
+                  handlecreate();                 
+                }}>
+              <span className="material-symbols-outlined text-lg"><BarChart2 size={20} /></span> {t('report.button')}
+            </button>
+          </div>
         </div>
       </section>
 
@@ -695,9 +946,9 @@ const exportToExcel = () => {
       <button className="bg-[#d3e2f5] text-[#3c5d8a] px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all" onClick={exportToExcel}>
       <span className="material-symbols-outlined text-lg"><Table size={20} /></span> Excel
                               </button>
-      <button className="bg-[#5c6c84] text-white px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all">
+      {/*<button className="bg-[#5c6c84] text-white px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all" onClick={printPdf}>
       <span className="material-symbols-outlined text-lg"><FileText size={20} /></span> PDF
-      </button>
+      </button>*/}
       <span className={styles.headerActionsLabel2}>
               {t('report.show')}:
         </span>
@@ -717,19 +968,27 @@ const exportToExcel = () => {
           </select>
       </div>
       </div>
-      <div className="overflow-x-auto">
-     {reportResult.length > 0 && (() => {
-      // ✅ Excluir _id de los encabezados
-      const headers = Object.keys(reportResult[0])
-        .filter(h => h !== '_id');
+      <div className={styles.searchBar2}>
+          {/* Search */}         
+            <Search size={20} />
+            <input
+              type="text"              
+              className="searchInput"
+               onChange={(e) => setsearchReport(e.target.value)}
+            />                        
+        </div>    
+      <div className={styles.tableResultWrapper}>
+        {reportResult.length > 0 && (() => {
+          const headers = Object.keys(reportResult[0])
+            .filter(h => h !== '_id');
 
-          return (
-            <table className="w-full text-left">
-              <thead>
+          return (            
+            <table ref={componentPDF} className={styles.tableResult}>
+              <thead className={styles.tableResultHead}>
                 <tr className={styles.trheader}>
                   {headers.map(h => (
                     <th key={h} className={styles.thheader}>
-                    {headerMapping[h] || h}
+                      {headerMapping[h] || h}
                     </th>
                   ))}
                 </tr>
@@ -738,7 +997,7 @@ const exportToExcel = () => {
                 {paginatedData.map((row, i) => (
                   <tr key={i} className={styles.trbody}>
                     {headers.map(h => (
-                      <td key={h} className={styles.tdResult}>
+                      <td key={h} className={styles.tdResult} title={String(row[h] ?? '')}>
                         {row[h] ?? '—'}
                       </td>
                     ))}
@@ -747,10 +1006,10 @@ const exportToExcel = () => {
               </tbody>
             </table>
           );
-      })()}
+        })()}
       </div>
       <div className={styles.divMostrar}>
-        <p className="text-[10px] font-bold text-gray-400 tracking-widest">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           {t('report.show')} {Math.min(currentPage * pageSize, reportResult.length)} {t('report.show4')} {reportResult.length} {t('report.show3')}
         </p>
         <div className="flex items-center gap-2">

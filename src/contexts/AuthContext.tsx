@@ -19,6 +19,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const API_BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auth`;
 
+const API_CATALOGS = import.meta.env.VITE_API_CATALOGS;
+const API_TOKENSL = import.meta.env.VITE_TOKENSL;
+const API_KEYSL = import.meta.env.VITE_APIKEYSL;
+
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,22 +35,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const token = localStorage.getItem('authToken');
         if (token) {
-          const response = await fetch(`${API_BASE_URL}/me`, {
+          const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/auth/autoken/${token}`, {
+            method: 'GET',
             headers: {
-              'Authorization': `Bearer ${token}`,
-            },
+              'Authorization': `Bearer ${API_TOKENSL}`,
+              'Content-Type': 'application/json',
+              'x-api-key': API_KEYSL,
+            },          
           });
 
           if (response.ok) {
-            const currentUser = await response.json();
-            if (mounted) {
+             const data = await response.json();
+            const currentUser = data.data;
               setUser({
                 _id: currentUser._id,
                 email: currentUser.email,
                 name: currentUser.name,
                 roles: currentUser.roles,
-              });
-            }
+              });            
           } else {
             localStorage.removeItem('authToken');
           }
@@ -90,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const signIn = async (email: string, password: string) => {
+  /*const signIn = async (email: string, password: string) => {
     const response = await fetch(`${API_BASE_URL}/signin`, {
       method: 'POST',
       headers: {
@@ -112,9 +119,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       name: authUser.name,
       roles: authUser.roles,
     });
+  };*/
+
+  const signIn = async (email: string, password: string) => {   
+    const response = await fetch(`${API_CATALOGS}/v1/kl/catalog/auth/signin`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${API_TOKENSL}`,
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEYSL,
+        },
+         body: JSON.stringify({
+            user: email,
+            password: password
+          }),
+        });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Credenciales inválidas');
+    }
+    const data = await response.json();
+
+    localStorage.setItem('authToken', data.data.token);
+    setUser({
+      _id: data.data._id,
+      email: data.data.email,
+      name: data.data.name,
+      roles: data.data.roles,
+    });
   };
 
-  const signOut = async () => {
+  /*const signOut = async () => {
     const token = localStorage.getItem('authToken');
     if (token) {
       try {
@@ -128,6 +164,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error('Error signing out:', error);
       }
+      localStorage.removeItem('authToken');
+    }
+    setUser(null);
+  };*/
+
+   const signOut = async () => {
+    const token = localStorage.getItem('authToken');
+    if (token) {      
       localStorage.removeItem('authToken');
     }
     setUser(null);

@@ -1,7 +1,11 @@
 .container {
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  background: var(--background);
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  max-width: 100%;
+  min-height: 100vh;
+  margin: 0;
 }
 .Pricing {
   background-color: #d3e2f5;
@@ -19,6 +23,7 @@
   display: flex;
   align-items: center;
   margin-bottom: 1.5rem;
+  margin: 1.5rem 2rem;
 }
 
 .dark .header {
@@ -112,9 +117,18 @@
 .headercard {
   margin-top: 1rem;           /* mt-4 */
   background-color: var(--surface);  /* bg-white */
+  border-radius: 0.6rem;     /* rounded-xl */
+  border: 1px solid var(--border);  /* border + border-gray-200 */
+  overflow: hidden;           /* overflow-hidden */
+  margin: 1.5rem 2rem;
+}
+.headercardhover {
+  margin-top: 1rem;           /* mt-4 */
+  background-color: var(--hover);  /* bg-white */
   border-radius: 0.75rem;     /* rounded-xl */
   border: 1px solid var(--border);  /* border + border-gray-200 */
   overflow: hidden;           /* overflow-hidden */
+  margin: 1.5rem 2rem;
 }
 .table {
   width: 100%;        /* w-full */
@@ -129,10 +143,15 @@
   border-bottom: 1px solid #334155; /* gray-700 */
 }
 .thheader {
-  padding: 0.75rem 1.5rem;   /* py-3 px-6 */
-  font-size: 15px;           /* text-[15px] */
-  font-weight: bold;         /* font-bold */
-  letter-spacing: 0.1em;     /* tracking-widest */
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  font-size: .75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-align: left;
   color: var(--text-primary);
 }
 .thheaderCenter {
@@ -145,47 +164,55 @@
   transition: background-color 0.2s ease;
 }
 .trbody:hover {
-  background-color: var(--hover);
+  background-color: #037f8C;
 }
 .trbodySelected {
-  background-color: rgba(16, 185, 129, 0.3); /* bg-emerald-50/30 */
+  background-color:#037f8C; /* bg-emerald-50/30 */
 }
 .tdid {
-  padding-left: 1.5rem;   /* px-6 */
+  padding-left: 1.5rem;
   padding-right: 1.5rem;
-  padding-top: 1rem;      /* py-4 */
+  padding-top: 1rem;
   padding-bottom: 1rem;
-  font-size: 0.75rem;     /* text-xs */
-  font-weight: 700;       /* font-bold */
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;       /* font-bold */
   color: var(--text-secondary);
 }
 .tdcategory {
-  padding-left: 1.5rem;   /* px-6 */
+   padding-left: 1.5rem;
   padding-right: 1.5rem;
-  padding-top: 1rem;      /* py-4 */
+  padding-top: 1rem;
   padding-bottom: 1rem;
+  font-size: 0.75rem;
+  line-height: 1rem;  
 }
 .spancategory {
-  padding: 0.25rem 0.5rem;  /* py-1 px-2 */
-  border-radius: 0.25rem;    /* rounded */
-  font-size: 10px;           /* text-[10px] */
-  font-weight: 700;          /* font-bold */
-  text-transform: uppercase; /* uppercase */
+   padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+   color: var(--text-secondary);
+  font-weight: 600;          /* font-bold */
 }
 .tdreport {
-  padding-left: 1.5rem;   /* px-6 */
+  padding-left: 1.5rem;
   padding-right: 1.5rem;
-  padding-top: 1rem;      /* py-4 */
+  padding-top: 1rem;
   padding-bottom: 1rem;
-  font-size: 0.875rem;    /* text-sm */
+  font-size: 0.75rem;
+  line-height: 1rem;
   color: var(--text-secondary);
 }
 .tddescription {
-  padding-left: 1.5rem;   /* px-6 */
+   padding-left: 1.5rem;
   padding-right: 1.5rem;
-  padding-top: 1rem;      /* py-4 */
+  padding-top: 1rem;
   padding-bottom: 1rem;
-  font-size: 0.875rem;     /* text-xs */
+  font-size: 0.75rem;
+  line-height: 1rem;
   color: var(--text-secondary);
 }
 .tdcreation {
@@ -197,6 +224,14 @@
   display: flex;          /* flex */
   align-items: center;    /* items-center */
   gap: 0.5rem;            /* gap-2 */
+}
+.trbody:hover td,
+.trbody:hover span {
+  color: #fff !important;
+}
+.trbodySelected td,
+.trbodySelected span {
+  color: #fff !important;
 }
 .avatar {
   width: 1.5rem;             /* w-6 */
@@ -310,6 +345,11 @@
   color: var(--text-secondary);
 }
 
+.iconbutonlucide2 {
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+
 .filterTitle {
   font-size: 0.875rem;
   font-weight: 600;
@@ -327,10 +367,14 @@
 .seccionparameter {
   background-color: var(--surface);
   border-radius: 1rem;
-  padding: 2rem;
+  padding-left: 2rem;
+  padding-top: 1rem;
+  padding-bottom: 2rem;
   border: 1px solid var(--border);
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
    margin-bottom: 2rem;
+   max-width: 100%;
+   margin: 1.5rem 2rem;
 }
 
 .divparameter {
@@ -369,6 +413,7 @@
 
 .section {
   margin-bottom: 2rem;
+  max-width: 100%;
 }
 
 .loading {
@@ -394,9 +439,36 @@
 }
 
 .searchBar {
+ flex: 1;
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  transition: border-color 0.2s;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  color: var(--text-secondary);
+  margin: 1.5rem 2rem;
+}
+
+.searchBar2 {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  transition: border-color 0.2s;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  color: var(--text-secondary);
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  margin-left: 1.25rem;
+  margin-right: 1.25rem;
 }
 
 .searchInput {
@@ -553,16 +625,7 @@
 }
 
 :global(.dark) .subtitleParameter {  
-  background-color: #1e293b; /* gray-800 */
-  border-bottom: 1px solid #334155; /* gray-700 */
-}
-
-.seccionResult {
-  background-color: var(--surface); /* bg-white */
-  border-radius: 1rem;       /* rounded-2xl */
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
-  border: 1px solid var(--border); /* border border-gray-200 */
-  overflow: hidden;          /* overflow-hidden */
+  background-color: #1e293b; /* gray-800 */  
 }
 
 .headerActions {
@@ -597,12 +660,109 @@
   color: var(--text-secondary);
 }
 
+/* ── Sección resultado: controla el desborde ── */
+.seccionResult {
+  background-color: var(--surface);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  /* ✅ Limita el ancho máximo al viewport disponible */
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 1.5rem 2rem;
+}
+
+/* ── Contenedor del overflow de la tabla ── */
+.tableResultWrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 60vh;
+  -webkit-overflow-scrolling: touch;
+
+ width: 100%;
+  min-width: 320px;
+  max-width: 1200px;
+
+  margin: 0 auto;
+}
+
+/* ── Tabla de resultados ── */
+.tableResult {    
+  text-align: left;
+  border-collapse: collapse;
+  max-width: 200px;
+}
+
+/* ── Header sticky al hacer scroll vertical ── */
+.tableResultHead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #f9fafb;
+  white-space: nowrap;       /* evita que el header se parta */
+  max-width: 1200px;
+}
+
+:global(.dark) .tableResultHead th {
+  background-color: #1e293b;
+}
+
+/* ── Celdas sin wrap para datos ── */
 .tdResult {
-  padding-left: 2rem;     /* px-8 */
-  padding-right: 2rem;
-  padding-top: 1.25rem;   /* py-5 */
-  padding-bottom: 1.25rem;
-  font-size: 0.75rem;     /* text-xs */
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  font-size: 0.75rem;
   line-height: 1rem;
   color: var(--text-secondary);
+  white-space: nowrap;       /* ✅ evita salto de línea en celdas */
+  max-width: 250px;          /* ✅ limita ancho máximo por celda */
+  overflow: hidden;
+  text-overflow: ellipsis;   /* ✅ muestra ... si el texto es muy largo */
+}
+
+/* 2. Tablets (Portrait) y Móviles grandes - 480px a 768px */
+@media screen and (min-width: 480px) {
+   .tableResultWrapper {
+     max-width: 480px;
+  }
+}
+
+/* 3. Tablets (Landscape) y Portátiles pequeños - 768px a 1024px */
+@media screen and (min-width: 768px) {
+    .tableResultWrapper {
+     max-width: 768px;
+  }
+}
+
+/* 4. Laptops y Escritorios - 1024px a 1200px */
+@media screen and (min-width: 1024px) {
+    .tableResultWrapper {
+     max-width: 1024px;
+  }
+}
+  
+/* 5. Pantallas Grandes (TV / Escritorio) - 1200px en adelante */
+@media screen and (min-width: 1200px) {
+    .tableResultWrapper {
+     max-width: 1200px;
+  }
+}
+
+.divParameter2 {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  column-gap: 3rem; /* gap-x-12 */
+  row-gap: 2.5rem;  /* gap-y-10 */
+  width: 100%;      /* w-full */  
+  padding-right: 2rem;   /* px-8 */
+}
+
+.divbuttonparameter {
+  margin-top: 3rem;      /* mt-12 */
+  display: flex;         /* flex */
+  justify-content: flex-end; /* justify-end */
+  padding-right: 2rem;   /* px-8 */
 }

@@ -95,8 +95,9 @@ export const PackagingModal: React.FC<PackagingModalProps> = ({
               />
             </div>
 
-            {/* Largo / Alto */}
+            {/* Largo / Ancho */}
             <div className={styles.formGrid}>
+              {/* Largo */}
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                   <span className={styles.required}>*</span>
@@ -111,24 +112,7 @@ export const PackagingModal: React.FC<PackagingModalProps> = ({
                   }}
                 />
               </div>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <span className={styles.required}>*</span>
-                  {t('quote.height')} ({dimensionUnit})
-                </label>
-                <input
-                  type="number" min="1" step="any"
-                  className={styles.input} id="package-height" required
-                  onKeyDown={(e) => {
-                    if (e.key === '-' || e.key === 'e') e.preventDefault();
-                    if (e.currentTarget.value.length >= 6 && e.key !== 'Backspace' && e.key !== 'Delete') e.preventDefault();
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Ancho / Peso */}
-            <div className={styles.formGrid}>
+              {/* Ancho */}
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                   <span className={styles.required}>*</span>
@@ -142,7 +126,27 @@ export const PackagingModal: React.FC<PackagingModalProps> = ({
                     if (e.currentTarget.value.length >= 6 && e.key !== 'Backspace' && e.key !== 'Delete') e.preventDefault();
                   }}
                 />
+              </div>              
+            </div>
+
+            {/* Alto / Peso */}
+            <div className={styles.formGrid}>
+              {/* Alto */}
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  <span className={styles.required}>*</span>
+                  {t('quote.height')} ({dimensionUnit}) 
+                </label>
+                <input
+                  type="number" min="1" step="any"
+                  className={styles.input} id="package-height" required
+                  onKeyDown={(e) => {
+                    if (e.key === '-' || e.key === 'e') e.preventDefault();
+                    if (e.currentTarget.value.length >= 6 && e.key !== 'Backspace' && e.key !== 'Delete') e.preventDefault();
+                  }}
+                />
               </div>
+              {/* Peso */}
               <div className={styles.formGroup}>
                 <label className={styles.label}>
                   <span className={styles.required}>*</span>
@@ -158,7 +162,6 @@ export const PackagingModal: React.FC<PackagingModalProps> = ({
                 />
               </div>
             </div>
-
           </div>
 
           {/* Footer */}
