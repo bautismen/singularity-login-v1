@@ -9,6 +9,7 @@ import { ControlsPricingForm } from './ControlsPricingForm';
 import { useAuth } from '../contexts/AuthContext';
 import styles from './ControlsPricing.module.css';
 import { getExecutivesByDepartment } from '../services/executiveService';
+import {catalogService } from '../services/catalogsService';
 
   //se añade parte de los documentos
 import {DocumentTypeDTO,  SectionDTO} from "../types/digitization";
@@ -23,6 +24,7 @@ export function ControlsPricing() {
   const { t } = useLanguage();
   const { showInfo, showError, showWarning} = useNotification();
   const [requests, setRequests] = useState<ResquetQuote[]>([]);
+  const [requestsbase, setRequestsBase] = useState<ResquetQuote[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<ResquetQuote[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,15 +35,24 @@ export function ControlsPricing() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [isOpenFecha, setIsOpenFecha] = useState(false);
   const [isOpenEjecutivo, setIsOpenEjecutivo] = useState(false);
+  const [isOpenStatus, setIsOpenStatus] = useState(false);
+  const [isOpenTipoSol, setIsOpenTipoSol] = useState(false);
+  const [isOpenOrderBy, setIsOpenOrderBy] = useState(false);
   const contentRefFecha = useRef(null);
   const contentRefEjecutivo = useRef(null);
-
+  const contentRefStatus = useRef(null);
+  const contentRefTipoSol = useRef(null);
+  const contentRefOrderBy = useRef(null);
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [executiveFilter, setExecutiveFilter] = useState<string>('todos');
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [selectedExecutive, setSelectedExecutive] = useState<string>('');
   const [users, setUsers] = useState<any[]>([]);
   const [showDocumentsModal, setShowDocumentsModal] = useState(false);
   const [selectedRequestForDocs, setSelectedRequestForDocs] = useState<ResquetQuote | null>(null);
+  const [orderBy, setOrderBy] = useState<string>('');
+  const [requestTypeFilters, setRequestTypeFilters] = useState<number[]>([]);
+  const [requestTypes, setRequestTypes] = useState<any[]>([]);
 
   //se añade parte de los documentos
   const [previewFiles, setPreviewFiles] = useState<File[]>([]);
@@ -69,11 +80,12 @@ export function ControlsPricing() {
     loadRequests();
     loadUsers();
     loadCatalogs();
+    loadRequestTypes();
   }, []);
 
   useEffect(() => {
     filterRequests();
-  }, [requests, searchQuery,dateFilter, executiveFilter,selectedExecutive]);
+  }, [requests, searchQuery,dateFilter, executiveFilter,selectedExecutive, statusFilter, requestTypeFilters ,orderBy]);
 
   useEffect(() => {
   if (documentTypes.length > 0 && sections.length > 0) {
@@ -104,6 +116,21 @@ const setDefaultFilters = () => {
       setUsers(data);
     } catch (error) {
       console.error('Error loading users:', error);
+    }
+    finally {
+      //setLoading(false);
+    }
+  };
+
+  const loadRequestTypes = async () => {
+    try {
+       //setLoading(true);     
+      const requestTypesRes = await catalogService.getTypeRequests();      
+
+      const data = requestTypesRes;      
+      setRequestTypes(data.data);
+    } catch (error) {
+      console.error('Error loading request types:', error);
     }
     finally {
       //setLoading(false);
@@ -415,13 +442,29 @@ const closeDocumentsModal = () => {
         "beatriz.gonzalez@kromlogistica.com",
         "erick.barrientos@kromlogistica.com"  ,
         "elsa.caicero@kromlogistica.com"
-      ];
+      ];      
 
       if (!excludedEmails.includes(user.email)) {
         filtered = filtered.filter(r =>
           r.assignedTo?.some(a => a.idUser === user._id)
         );
       }
+
+      setRequestsBase(filtered);
+
+      const excludedEstatus = [
+        6,
+        9,
+        7,        
+        10        
+      ];
+      
+      if (statusFilter.length === 0) {
+        filtered = filtered.filter(
+          r => !excludedEstatus.includes(r.idStatusRequest)
+        );
+      }
+
       setRequests(filtered);
 
       // Precargar conteos de documentos
@@ -470,8 +513,12 @@ const closeDocumentsModal = () => {
     return <ControlsPricingForm requestId={selectedRequestId} controlId={selectedControlId} onBack={handleBackToList} />;
   }
 
-  const filterRequests = () => {
+  const filterRequests = () => {    
     let filtered = [...requests];
+
+     if (statusFilter.length > 0) {
+      filtered = [...requestsbase];
+     }
 
     if (searchQuery) {
       filtered = filtered.filter(r =>
@@ -480,6 +527,10 @@ const closeDocumentsModal = () => {
         r.customer?.prospectName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.assignedTo?.some(assigned => assigned.pricingControlNumbers?.some(controlNumber => controlNumber?.control?.toLowerCase().includes(searchQuery.toLowerCase())))
       );
+    }
+
+    if (statusFilter.length > 0) {
+      filtered = filtered.filter(q => statusFilter.includes(q.idStatusRequest.toString()));      
     }
 
     if (dateFilter !== 'all') {
@@ -521,8 +572,24 @@ const closeDocumentsModal = () => {
         );      
     }
 
+    if (requestTypeFilters.length > 0) {
+      filtered = filtered.filter(q => requestTypeFilters.includes(q.idRequestType));
+    } 
+
+     if(orderBy === "desc"){
+      filtered = filtered.sort((a, b) => b.id.localeCompare(a.id));
+    }
+
 
     setFilteredRequests(filtered);
+  };
+
+  const handleRequesStatus = (idStatus: string) => {
+    setStatusFilter(prev =>
+      prev.includes(idStatus)
+        ? prev.filter(id => id !== idStatus)
+        : [...prev, idStatus]
+    );
   };
 
   const getCategoryMedal = (category: number) => {
@@ -619,6 +686,17 @@ const destination =
     setDateFilter('all');
     setExecutiveFilter('todos');
     setSelectedExecutive('');
+    setRequestTypeFilters([]);
+    setStatusFilter([]);
+    setOrderBy('');
+  };
+
+   const handleRequestTypeToggle = (typeId: number) => {
+    setRequestTypeFilters(prev =>
+      prev.includes(typeId)
+        ? prev.filter(id => id !== typeId)
+        : [...prev, typeId]
+    );
   };
 
   return (
@@ -627,7 +705,117 @@ const destination =
         <div className={styles.filtersPanel}>
           <div className={styles.filtersPanelHeader}>
             <h3>{t('ctrlpricing.refineSearch')}</h3>
-          </div>          
+          </div>
+
+          <div className={styles.filterSection}>
+            <div className={styles.headerRow}>
+              <h4 className={styles.filterTitle}>{t('quote.statusSearch')}</h4>
+              <button onClick={() => setIsOpenStatus(!isOpenStatus)} className={styles.iconbutonlucide}>
+              {isOpenStatus ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+            </div>
+             <div
+              ref={contentRefStatus}
+              style={{
+                maxHeight: isOpenStatus
+                  ? contentRefStatus.current?.scrollHeight + "px"
+                  : "0px",
+                overflow: "hidden",
+                transition: "max-height 0.3s ease",
+              }}
+            >     
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="1"
+                  checked={statusFilter.includes('1')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.creada')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="2"
+                  checked={statusFilter.includes('2')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.sent')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="3"
+                  checked={statusFilter.includes('3')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.assigned')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="4"
+                  checked={statusFilter.includes('4')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.partialquoted')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="5"
+                  checked={statusFilter.includes('5')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.quoted')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="6"
+                  checked={statusFilter.includes('6')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.declined')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="8"
+                  checked={statusFilter.includes('8')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.accepted')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="9"
+                  checked={statusFilter.includes('9')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.rejected')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="10"
+                  checked={statusFilter.includes('10')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.cancelled')}</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="checkbox"
+                  value="7"
+                  checked={statusFilter.includes('7')}
+                  onChange={(e) => handleRequesStatus(e.target.value)}
+                />
+                <span>{t('quote.expired')}</span>
+              </label>
+            </div>
+          </div>                  
 
           <div className={styles.filterSection}>
             <div className={styles.headerRow}>
@@ -760,7 +948,64 @@ const destination =
                 </select>
               )}
               </div>
-          </div>          
+          </div>
+
+          <div className={styles.filterSection}>
+            <div className={styles.headerRow}>
+              <h4 className={styles.filterTitle}>{t('quote.requestType')}</h4>
+              <button onClick={() => setIsOpenTipoSol(!isOpenTipoSol)} className={styles.iconbutonlucide}>
+              {isOpenTipoSol ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+            </div>
+             <div
+              ref={contentRefTipoSol}
+              style={{
+                maxHeight: isOpenTipoSol
+                  ? contentRefTipoSol.current?.scrollHeight + "px"
+                  : "0px",
+                overflow: "hidden",
+                transition: "max-height 0.3s ease",
+              }}> 
+              {requestTypes.map((type) => (
+                <label key={type._Id} className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={requestTypeFilters.includes(type._Id)}
+                    onChange={() => handleRequestTypeToggle(type._Id)}
+                  />
+                  <span className={styles.radioLabel}>{type.request_type_name.toUpperCase()}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.filterSection}>
+            <div className={styles.headerRow}>
+              <h4 className={styles.filterTitle}>{t('quote.orderBy')}</h4>
+              <button     
+              onClick={() => setIsOpenOrderBy(!isOpenOrderBy)}          
+              className={styles.iconbutonlucide}>
+              {isOpenOrderBy ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+            </div>
+            <div ref={contentRefOrderBy}
+              style={{
+                maxHeight: isOpenOrderBy ? contentRefOrderBy.current?.scrollHeight + "px" : "0px",
+                overflow:"hidden",
+                transition:  "max-height 0.3s ease"
+              }} >
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="radio"    
+                  value="desc" 
+                  checked={orderBy === 'desc'}            
+                  onChange={(e) => setOrderBy(e.target.value)}
+                />
+               <span className={styles.radioLabel}>{t('quote.orderDesc')}</span>
+              </label>
+            
+            </div>
+          </div>       
 
           <div className={styles.filterActions}>
             <button
