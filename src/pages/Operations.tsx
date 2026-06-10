@@ -227,7 +227,7 @@ export default function Operations() {
           name: loadedControls[0].services[0].nameService,
         });
 
-      // toggleSection('services');
+      toggleSection('services');
     }
 
     setCompleteFormData(operation, selectedCustomer);
@@ -562,7 +562,7 @@ export default function Operations() {
             ? shipment.cargo
             : [{ idcargo: 1, name: '', units: 0, weight: 0, volume: 0, classification: [], stowable: 0, shipmentTypeCargo: '', idUnitMeasurement: 1, unitMeasurement: '', idUnitWeight: 1, unitWeight: '' }],
         detailType: 'shipment',
-        sequence: secuencia
+        idDetail: secuencia
       }));
 
     }
@@ -572,7 +572,7 @@ export default function Operations() {
       detail = [{
         ...service.orderService,
         detailType: 'orderService',
-        sequence: secuencia
+        idDetail: secuencia
       }];
     }
 
@@ -604,7 +604,7 @@ export default function Operations() {
             ? detail.cargo
             : [{ idcargo: 1, name: '', units: 0, weight: 0, volume: 0, classification: [], stowable: 0, shipmentTypeCargo: '', idUnitMeasurement: 1, unitMeasurement: '', idUnitWeight: 1, unitWeight: '' }],
         detailType: 'detail',
-        sequence: secuencia
+        idDetail: secuencia
       }));
 
     }
@@ -616,7 +616,7 @@ export default function Operations() {
       idService: service.idService,
       nameService: service.nameService,
       observationsService: service.observationsService || '',
-      isShipment: service.shipments?.length > 0 ? true : false,
+      category: service.category,
       serviceDetail: detail
     };
   };
@@ -698,7 +698,7 @@ export default function Operations() {
       // typeShipment: service.typeShipment,
       nameService: service.nameService,
       observationsService: service.observationsService || '',
-      isShipment: service.shipments?.length > 0 ? true : false,
+      category: service.category,
       serviceDetail: service.serviceDetail,
     };
 

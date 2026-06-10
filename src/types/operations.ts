@@ -23,8 +23,7 @@ export interface ServiceOperation {
   idService: number;
   nameService: string;
   // supplier: string;
-  observationsService: string;
-  isShipment: boolean;
+  category: number;
   serviceDetail: ServiceDetail[];
 }
 

@@ -93,10 +93,10 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
   const airServiceControl = formData.Services?.find((s) => s.idControl === info.id && s.idServiceItem === info.item);
   const detail = airServiceControl?.serviceDetail?.[currentIndex];
   const [accordionOpen, setAccordionOpen] = React.useState({
-    [`envio-${detail?.sequence}`]: true,
-    [`transporte-${detail?.sequence}`]: false,
-    [`origin-${detail?.sequence}`]: false,
-    [`destination-${detail?.sequence}`]: false,
+    [`envio-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
+    [`transporte-${detail?.idDetail}`]: mode=== 'edit' ? true : false,
+    [`origin-${detail?.idDetail}`]: mode=== 'edit' ? true : false,
+    [`destination-${detail?.idDetail}`]: mode=== 'edit' ? true : false,
   });
   const formatDateForInput = (date: string) => date ? date.split('T')[0] : '';
 
@@ -108,7 +108,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
         if (detail?.origin?.country?.idCountry === undefined || detail?.origin?.country?.idCountry === "") {
           onUpdateServiceFormData(
             airServiceControl.idServiceItem,
-            detail.sequence,
+            detail.idDetail,
             "origin",
             {
               ...(detail?.origin ?? {}),
@@ -135,7 +135,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
         if (!airportSelected) {
           onUpdateServiceFormData(
             airServiceControl.idServiceItem,
-            detail.sequence,
+            detail.idDetail,
             "origin",
             {
               ...(detail.origin ?? {}),
@@ -152,7 +152,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
 
         onUpdateServiceFormData(
           airServiceControl.idServiceItem,
-          detail.sequence,
+          detail.idDetail,
           "origin",
           {
             ...(detail.origin ?? {}),
@@ -177,7 +177,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
         if (detail?.destination?.country?.idCountry === undefined || detail?.destination?.country?.idCountry === "") {
           onUpdateServiceFormData(
             airServiceControl.idServiceItem,
-            detail.sequence,
+            detail.idDetail,
             "destination",
             {
               ...(detail?.destination ?? {}),
@@ -204,7 +204,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
         if (!airportSelected) {
           onUpdateServiceFormData(
             airServiceControl.idServiceItem,
-            detail.sequence,
+            detail.idDetail,
             "destination",
             {
               ...(detail?.destination ?? {}),
@@ -221,7 +221,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
 
         onUpdateServiceFormData(
           airServiceControl.idServiceItem,
-          detail.sequence,
+          detail.idDetail,
           "destination",
           {
             ...(detail.destination ?? {}),
@@ -271,7 +271,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
     const newDetail = structuredClone(detail);
 
     let newsequence = airServiceControl.serviceDetail.length + 1;
-    newDetail.sequence = newsequence;    // Nuevo detail
+    newDetail.idDetail = newsequence;    // Nuevo detail
 
     setCurrentIndex(airServiceControl?.serviceDetail?.length);
     onDuplicateDetail(idServiceItem, newsequence, newDetail);
@@ -284,7 +284,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
       <span key={airServiceControl?.idServiceItem} className={styles.serviceItem}>
         {detail && (
           <div
-            key={detail.sequence}
+            key={detail.idDetail}
             id="mainFormCard"
             className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-4 bg-white dark:bg-[#1e293b]"
           >
@@ -329,7 +329,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                   // disabled={isDisabled}
                   onClick={() => {
                     console.log('remove', airServiceControl, currentIndex)
-                    onRemoveDetail(airServiceControl?.idServiceItem, detail.sequence)
+                    onRemoveDetail(airServiceControl?.idServiceItem, detail.idDetail)
                     prevPage();
                     console.log(currentIndex)
                     //setCurrentIndex()
@@ -344,7 +344,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
             <span key={currentIndex + 1} className={styles.serviceItem}>
               <div className={styles.serviceCard}>
                 <div className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
-                  onClick={() => toggleAccordion(`envio-${detail.sequence}`)}>
+                  onClick={() => toggleAccordion(`envio-${detail.idDetail}`)}>
                   <div className="flex items-center gap-3">
                     <span className="dark:text-white">
                       <Package />
@@ -356,7 +356,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                                     text-primary
                                     chevron-icon
                                     dark:text-white
-                                    ${accordionOpen[`envio-${detail.sequence}`] ? "rotate-180" : ""}
+                                    ${accordionOpen[`envio-${detail.idDetail}`] ? "rotate-180" : ""}
                                   `}
                     id="envios-chevron">
                     <ChevronUp />
@@ -364,7 +364,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                 </div>
 
                 <div className={`${styles.accordionContent} 
-                                  ${!accordionOpen[`envio-${detail.sequence}`]
+                                  ${!accordionOpen[`envio-${detail.idDetail}`]
                     ? styles.collapsed
                     : ""}`}>
                   <div className={styles.fourColumnGrid}>
@@ -373,7 +373,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                       <div className={styles.fieldGroup}>
                         <TipoEnvio
                           itemService={airServiceControl.idServiceItem}
-                          sequencedetail={detail.sequence}
+                          sequencedetail={detail.idDetail}
                           detail={detail}
                           onUpdateServiceFormData={onUpdateServiceFormData}
                         />
@@ -385,7 +385,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                       <div className={styles.fieldGroup}>
                         <TipoOperacion
                           itemService={airServiceControl.idServiceItem}
-                          sequencedetail={detail.sequence}
+                          sequencedetail={detail.idDetail}
                           detail={detail}
                           onUpdateServiceFormData={onUpdateServiceFormData}
                         />
@@ -397,7 +397,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                       <div className={styles.fieldGroup}>
                         <Incoterm
                           itemService={airServiceControl.idServiceItem}
-                          sequencedetail={detail.sequence}
+                          sequencedetail={detail.idDetail}
                           detail={detail}
                           onUpdateServiceFormData={onUpdateServiceFormData}
                           incoterms={incoterms}
@@ -415,7 +415,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           onChange={(e) =>
                             onUpdateServiceFormData(
                               airServiceControl.idServiceItem,
-                              detail.sequence,
+                              detail.idDetail,
                               "masterGuide",
                               e.target.value.toUpperCase(),
                             )
@@ -430,7 +430,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                 <div
                   className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
                   onClick={() =>
-                    toggleAccordion(`transporte-${detail.sequence}`)
+                    toggleAccordion(`transporte-${detail.idDetail}`)
                   }
                 >
                   <div className="flex items-center gap-3">
@@ -444,7 +444,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                                 text-primary
                                 chevron-icon
                                 dark:text-white
-                                ${accordionOpen[`transporte-${detail.sequence}`] ? "rotate-180" : ""}
+                                ${accordionOpen[`transporte-${detail.idDetail}`] ? "rotate-180" : ""}
                               `}
                     id="transporte-chevron">
                     <ChevronUp />
@@ -453,14 +453,14 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
 
                 <div
                   className={`accordion-content
-                              ${!accordionOpen[`transporte-${detail.sequence}`] ? styles.collapsed : ""}`}>
+                              ${!accordionOpen[`transporte-${detail.idDetail}`] ? styles.collapsed : ""}`}>
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
                       {/* Transportista */}
                       <div className={styles.fieldGroup}>
                         <Transportista
                           itemService={airServiceControl.idServiceItem}
-                          sequencedetail={detail.sequence}
+                          sequencedetail={detail.idDetail}
                           transport={detail?.transport}
                           onUpdateServiceDetail={onUpdateServiceDetail}
                           transportista={suppliers.filter(
@@ -482,7 +482,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           onChange={(e) =>
                             onUpdateServiceDetail(
                               airServiceControl.idServiceItem,
-                              detail.sequence,
+                              detail.idDetail,
                               'transport',
                               'nameTransport',
                               e.target.value
@@ -507,7 +507,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           onChange={(e) =>
                             onUpdateServiceDetail(
                               airServiceControl.idServiceItem,
-                              detail.sequence,
+                              detail.idDetail,
                               'transport',
                               'bookingNumeber',
                               e.target.value
@@ -520,7 +520,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                       <div className={styles.fieldGroup}>
                         <TipoRuta
                           itemService={airServiceControl.idServiceItem}
-                          sequencedetail={detail.sequence}
+                          sequencedetail={detail.idDetail}
                           transport={detail?.transport}
                           onUpdateServiceDetail={onUpdateServiceDetail}
                         />
@@ -536,7 +536,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                         </label>
                         <ComponentDate
                           itemService={airServiceControl.idServiceItem}
-                          sequencedetail={detail.sequence}
+                          sequencedetail={detail.idDetail}
                           data={detail?.transport?.shippingDate}
                           node={'transport'}
                           field={'shippingDate'}
@@ -548,7 +548,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                       <div className={styles.fieldGroup}>
                         <TipoGuia
                           itemService={airServiceControl.idServiceItem}
-                          sequencedetail={detail.sequence}
+                          sequencedetail={detail.idDetail}
                           transport={detail?.transport}
                           onUpdateServiceDetail={onUpdateServiceDetail}
                           modalidad={"aereo"}
@@ -575,7 +575,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                       <div className={styles.fieldGroup}>
                         <TipoUnidad
                           itemService={airServiceControl.idServiceItem}
-                          sequencedetail={detail.sequence}
+                          sequencedetail={detail.idDetail}
                           transport={detail?.transport}
                           onUpdateServiceDetail={onUpdateServiceDetail}
                           modalidad={"aereo"}
@@ -613,7 +613,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                 {/**ORIGEN */}
                 <div
                   className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
-                  onClick={() => toggleAccordion(`origin-${detail.sequence}`)}
+                  onClick={() => toggleAccordion(`origin-${detail.idDetail}`)}
                 >
                   <div className="flex items-center gap-3">
                     <span className="dark:text-white">
@@ -626,14 +626,14 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                                 text-primary
                                 chevron-icon
                                 dark:text-white
-                                ${accordionOpen[`origin-${detail.sequence}`] ? "rotate-180" : ""}
+                                ${accordionOpen[`origin-${detail.idDetail}`] ? "rotate-180" : ""}
                               `}
                     id="origin-chevron"
                   >
                     <ChevronDown />
                   </span>
                 </div>
-                <div className={`${styles.accordionContent} ${!accordionOpen[`origin-${detail.sequence}`] ? styles.collapsed : ""}`}>
+                <div className={`${styles.accordionContent} ${!accordionOpen[`origin-${detail.idDetail}`] ? styles.collapsed : ""}`}>
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
                       {/* ORIGEN */}
@@ -642,7 +642,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                         type="origin"
                         countries={countries}
                         selectedCountryId={detail?.origin?.country?.idCountry}
-                        serviceIdItem={detail.sequence}
+                        serviceIdItem={detail.idDetail}
                         isDisabled={false}
                         placeholder={t("quote.select")}
                         label={t("operations.countryCharge")}
@@ -658,7 +658,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           console.log('onChangeCountry', changes)
                           onUpdateServiceDetail(
                             airServiceControl.idServiceItem,
-                            detail.sequence,
+                            detail.idDetail,
                             "origin",
                             "country",
                             changes
@@ -682,7 +682,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                             onChange={(e) =>
                               onUpdateServiceDetail(
                                 airServiceControl.idServiceItem, 
-                                detail.sequence, 
+                                detail.idDetail, 
                                 'origin',
                                   'plant', {
                                     'name': e.target.value
@@ -702,7 +702,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           airports={airportsOrigin}
                           nameAirport={detail?.origin?.airport?.airport}
                           codeAirport={detail?.origin?.airport?.airportKey}
-                          serviceIdItem={detail.sequence}
+                          serviceIdItem={detail.idDetail}
                           label="Aeropuerto de carga"
                           groupClassName={styles.fieldGroup}
                           labelClassName={styles.fieldLabel}
@@ -710,7 +710,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           onChangeAirport={(airport) => {
                             onUpdateServiceFormData(
                               airServiceControl.idServiceItem,
-                              detail.sequence,
+                              detail.idDetail,
                               "origin",
                               {
                                 ...(detail.origin ?? {}),
@@ -737,7 +737,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                             onChange={(e) =>
                               onUpdateServiceDetail(
                                 airServiceControl.idServiceItem,
-                                detail.sequence,
+                                detail.idDetail,
                                 "origin",
                                 "placeOfReceipt",
                                 e.target.value
@@ -760,7 +760,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                             onChange={(e) =>
                               onUpdateServiceFormData(
                                 airServiceControl.idServiceItem,
-                                detail.sequence,
+                                detail.idDetail,
                                 "origin",
                                 {
                                   ...(detail.origin ?? {}),
@@ -783,7 +783,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                         </label>
                         <ComponentDate
                           itemService={airServiceControl.idServiceItem}
-                          sequencedetail={detail.sequence}
+                          sequencedetail={detail.idDetail}
                           data={detail?.departureDateAproximate || ''}
                           node={'origin'}
                           field={'departureDateAproximate'}
@@ -804,7 +804,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                             onChange={(e) =>
                               onUpdateServiceFormData(
                                 airServiceControl.idServiceItem,
-                                detail.sequence,
+                                detail.idDetail,
                                 "origin",
                                 {
                                   ...(detail.origin ?? {}),
@@ -828,7 +828,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                         </label>
                         <ComponentDate
                           itemService={airServiceControl.idServiceItem}
-                          sequencedetail={detail.sequence}
+                          sequencedetail={detail.idDetail}
                           data={detail?.origin?.dispatchOrCollectionDate}
                           node={'origin'}
                           field={'dispatchOrCollectionDate'}
@@ -843,7 +843,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                 <div
                   className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
                   onClick={() =>
-                    toggleAccordion(`destination-${detail.sequence}`)
+                    toggleAccordion(`destination-${detail.idDetail}`)
                   }
                 >
                   <div className="flex items-center gap-3">
@@ -862,7 +862,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                   </span>
                 </div>
 
-                <div className={`${styles.accordionContent} ${!accordionOpen[`destination-${detail.sequence}`] ? styles.collapsed : ""}`}>
+                <div className={`${styles.accordionContent} ${!accordionOpen[`destination-${detail.idDetail}`] ? styles.collapsed : ""}`}>
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
                       {/*DESTINO */}
@@ -871,7 +871,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                         type="destination"
                         countries={countries}
                         selectedCountryId={detail.destination?.country?.idCountry}
-                        serviceIdItem={detail.sequence}
+                        serviceIdItem={detail.idDetail}
                         isDisabled={false}
                         placeholder={t("quote.select")}
                         label="Pais de descarga"
@@ -885,7 +885,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                         onChangeCountry={({ changes }) => {
                           onUpdateServiceDetail(
                             airServiceControl.idServiceItem,
-                            detail.sequence,
+                            detail.idDetail,
                             "destination",
                             "country",
                             changes
@@ -932,7 +932,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           airports={airportsDestination}
                           nameAirport={detail?.destination?.airport?.airport}
                           codeAirport={detail?.destination?.airport?.airportKey}
-                          serviceIdItem={detail.sequence}
+                          serviceIdItem={detail.idDetail}
                           label={t("operations.airportDischarge")}
                           groupClassName={styles.fieldGroup}
                           labelClassName={styles.fieldLabel}
@@ -940,7 +940,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           onChangeAirport={(airport) => {
                             onUpdateServiceFormData(
                               airServiceControl.idServiceItem,
-                              detail.sequence,
+                              detail.idDetail,
                               "destination",
                               {
                                 ...(detail.destination ?? {}),
@@ -966,7 +966,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                             onChange={(e) =>
                               onUpdateServiceDetail(
                                 airServiceControl.idServiceItem,
-                                detail.sequence,
+                                detail.idDetail,
                                 "destination",
                                 "placeOfReceipt",
                                 e.target.value
@@ -987,7 +987,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           onChange={(e) =>
                               onUpdateServiceDetail(
                                 airServiceControl.idServiceItem, 
-                                detail.sequence, 
+                                detail.idDetail, 
                                 'destination',
                                 'deliveryDate',
                                 e.target.value
@@ -1022,7 +1022,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                             onChange={(e) =>
                               onUpdateServiceDetail(
                                 airServiceControl.idServiceItem, 
-                                detail.sequence, 
+                                detail.idDetail, 
                                 'destination',
                                   'plant', {
                                     'arrivalDate': e.target.value
@@ -1075,7 +1075,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                     onChange={(e) =>
                       onUpdateServiceFormData(
                         airServiceControl.idServiceItem,
-                        detail.sequence,
+                        detail.idDetail,
                         "comments",
                         e.target.value,
                       )

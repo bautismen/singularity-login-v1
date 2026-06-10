@@ -139,7 +139,7 @@ const updateFormData = (changes:
         service.idServiceItem === idServiceItem ? {
           ...service,
           serviceDetail: service.serviceDetail?.map(detail =>
-            detail.sequence === detailId ? {
+            detail.idDetail === detailId ? {
               ...detail,
               [field]:
                 value !== null &&
@@ -164,7 +164,7 @@ const updateFormData = (changes:
         service.idServiceItem === idServiceItem ? {
           ...service,
           serviceDetail: service.serviceDetail.map(detail =>
-            detail.sequence === detailId ? {
+            detail.idDetail === detailId ? {
               ...detail,
               [collection]: {
                 ...detail[collection],
@@ -206,13 +206,13 @@ const updateFormData = (changes:
 
   };
 
-  const removeDetail = (idServiceItem: number, sequence: number) => {
+  const removeDetail = (idServiceItem: number, idDetail: number) => {
     setFormData(prev => ({
       ...prev,
       Services: prev.Services.map(service => service.idServiceItem === idServiceItem ? 
         {
           ...service,
-          serviceDetail: service.serviceDetail.filter(det => det.sequence !== sequence)
+          serviceDetail: service.serviceDetail.filter(det => det.idDetail !== idDetail)
 
         } : service
       )
