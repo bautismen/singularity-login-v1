@@ -110,6 +110,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
     origin: {},
     destination: {},
   };
+  formData.Services?.map((s)=> s.serviceDetail.length === 0 ? s.serviceDetail=[detail] : null)
   const [accordionOpen, setAccordionOpen] = React.useState({
     [`envio-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
     [`transporte-${detail?.idDetail}`]: mode=== 'edit' ? true : false,

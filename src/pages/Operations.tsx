@@ -217,7 +217,8 @@ export default function Operations() {
         services: operation.services
       }));
 
-    setServicesOperation(loadedServices)
+    setServicesOperation('Edit',loadedServices, operation)
+    console.log(loadedServices)
 
     if (loadedControls.length > 0) {
       setActiveTab({
@@ -233,7 +234,6 @@ export default function Operations() {
     setCompleteFormData(operation, selectedCustomer);
 
     setIsFormOpen(true);
-
     
   }
 
@@ -307,9 +307,7 @@ export default function Operations() {
       showError(t("operations.alreadyadded"));
       return;
     }
-
-    console.log('Controles ', control, controlsOperation)
-
+    //console.log('Controles ', control, controlsOperation)
     const normalizedServices = control.services.map((service) =>
       normalizeService(service, control)
     );
@@ -374,19 +372,24 @@ export default function Operations() {
     }
   };
 
-  const removeControl = (_idcontrol: string, item: number) => {
+  const removeControl = (controlOperation: any, item: number) => {
+    const _idcontrol= controlOperation._id ?? undefined
+    console.log(_idcontrol, item, controlsOperation, controlOperation, controlsClient)
+
     updateFormData((prev) => ({
       ...prev,
       Services:
         prev.Services.filter(
-          (service) =>
-            service.idControl !== _idcontrol || service.idServiceItem !== item,
+          (service) => _idcontrol !== undefined ? 
+           (service.idControl !== _idcontrol || service.idServiceItem !== item) :
+           (service !== controlOperation)
         ) || [],
     }));
 
-    setControlsClient((prevControl) => {
+    if (_idcontrol !== undefined) {
+      setControlsClient((prevControl) => {
       const selectedControls = controlsOperation
-        .filter((c) => c._id === _idcontrol)
+        .filter((c) =>  c._id === _idcontrol)
         .map((c) => ({
           ...c,
           services:
@@ -429,20 +432,22 @@ export default function Operations() {
         },
         prevControl,
       );
-    });
+      });
+    }    
     // controlsClient.push(controlsOperation.find(c => c._id === _idcontrol) as PricingControl); // Volver a agregar el control eliminado a la lista de controles disponibles para el cliente
     // Eliminar el control seleccionado de la lista de controles asociados a la operación
-    setControlsOperation((co) =>
-      co
-        .map((c) =>
-          c._id === _idcontrol
-            ? {
-                ...c,
-                services: c.services?.filter((s) => s.idServiceItem !== item),
-              }
-            : c,
-        )
-        .filter((c) => c.services?.length > 0),
+    setControlsOperation((co) =>      
+      co.map((c) => c._id !== undefined && c._id === _idcontrol ? 
+          {
+            ...c,
+            services: c.services?.filter((s) => s.idServiceItem !== item),
+          } : c)
+          .filter((c) => {
+            if(c._id === undefined) {                          
+              return  !c.services?.some((service) => controlOperation.services?.some((cs) => String(cs.idService) === String(service.idService)));              
+            }
+            return c.services?.length > 0 
+          })
     );
 
     if (controlsOperation.length === 0) {
@@ -451,14 +456,14 @@ export default function Operations() {
   };
 
   const addService = () => {
-
+    console.log('Service', service, controlsOperation)
     if (service === undefined || service._id === undefined ||
       service._id === '' || service.service_name === '') {
       showWarning(t('operations.selectServiceWarning'));
       return;
     }
 
-    if (controlsOperation?.some(s => s._id === service._id)) {
+    if (controlsOperation?.some((controlOp) => controlOp._id === undefined ? controlOp.services?.some((ser) => ser.idService === service._id) : false)){
       showError(t('operations.alreadyadded'));
       return;
     }
@@ -474,7 +479,7 @@ export default function Operations() {
         serviceDetail: [] as ServiceDetail[],
       }],
     }
-  
+
     updateFormData((prev) => ({
       ...prev,
       Services: [...prev.Services, ...controlOperationConverted.services],
@@ -949,7 +954,7 @@ export default function Operations() {
                                   value={controlService.idcontrol}
                                   key={`${controlService._id}-${service.idServiceItem}`}
                                   className="ml-1 text-gray-500 hover:text-red-500 dark:text-gray-300"
-                                  onClick={() => { removeControl(controlService._id as string, service.idServiceItem as number) }}
+                                  onClick={() => { removeControl(controlService, service.idServiceItem as number) }}
                                 >
                                   ✕
                                 </button>
