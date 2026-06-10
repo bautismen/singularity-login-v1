@@ -1,5 +1,5 @@
 import  React, { useEffect, useRef, useState } from 'react';
-import { Search, Filter,SlidersHorizontal, BarChart2,ChevronUp, ChevronDown, ChevronLeft, ChevronRight,Table,FileText } from 'lucide-react';
+import { Search, Filter,SlidersHorizontal, BarChart2,ChevronUp, ChevronDown, ChevronLeft, ChevronRight,Table,FileText, RotateCcw } from 'lucide-react';
 import {useLanguage } from "../contexts/LanguageContext";
 import styles from './Reports.module.css';
 import { useAuth } from '../contexts/AuthContext';
@@ -277,6 +277,19 @@ const renderParameter = (id: string) => {
                 list={`catalog-${p.name}`}
                 className={styles.select}
                 value={displayValues[p.name] ?? ""}
+                onClick={() => {
+                  if (displayValues[p.name]) {
+                    setDisplayValues(prev => ({
+                      ...prev,
+                      [p.name]: ''
+                    }));
+
+                    setFormValues(prev => ({
+                      ...prev,
+                      [p.name]: ''
+                    }));
+                  }
+                }}
                 onChange={(e) =>
                   handleDatalistChange(p.name, p.catalog, e.target.value)
                 }
@@ -432,7 +445,7 @@ const handlecreate = async () => {
     );
 
     setisviewResult(true);
-    setIsOpenParam(false);
+    setIsOpenParam(false);    
 
   } catch (error) {
     showError('Error al generar el reporte:' + error);
@@ -738,6 +751,40 @@ const printPdf = useReactToPrint({
     );
   }
 
+  const clearParams = () => {
+  const report = controlData?.find(
+    a => a.id_report === idSelected
+  );
+
+  if (!report?.parameter) return;
+
+  const formCleared: Record<string, string> = {};
+  const displayCleared: Record<string, string> = {};
+
+  report.parameter.forEach((p: any) => {
+    if (p.type === 'date') {
+      formCleared[`${p.name}_start`] = '';
+      formCleared[`${p.name}_end`] = '';
+    } else {
+      formCleared[p.name] = '';
+
+      if (p.type === 'catalogo') {
+        displayCleared[p.name] = '';
+      }
+    }
+  });
+
+  setFormValues(prev => ({
+    ...prev,
+    ...formCleared
+  }));
+
+  setDisplayValues(prev => ({
+    ...prev,
+    ...displayCleared
+  }));
+};
+
   return (
     <div className={styles.container}>
       <section className={styles.section}>
@@ -880,7 +927,7 @@ const printPdf = useReactToPrint({
                   </button>
                 </React.Fragment>
               ))
-            }
+            }            
 
             <button
               onClick={() =>
@@ -926,7 +973,10 @@ const printPdf = useReactToPrint({
             {idSelected && renderParameter(idSelected)}
           </div>
           <div className={styles.divbuttonparameter}>
-            <button className="bg-[#00685d] text-white px-8 py-3.5 rounded-lg font-bold text-sm shadow-xl hover:shadow-[#00685d]/20 transition-all flex items-center gap-2" onClick={() => {
+            <button className={styles.botonparameter} onClick={clearParams}>
+              <span className="material-symbols-outlined text-lg"><RotateCcw size={20} /></span>
+            </button>
+            <button className={styles.botonparameter} onClick={() => {
                   handlecreate();                 
                 }}>
               <span className="material-symbols-outlined text-lg"><BarChart2 size={20} /></span> {t('report.button')}
@@ -944,8 +994,8 @@ const printPdf = useReactToPrint({
       <div className="flex gap-2">
         
       <button className="bg-[#d3e2f5] text-[#3c5d8a] px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all" onClick={exportToExcel}>
-      <span className="material-symbols-outlined text-lg"><Table size={20} /></span> Excel
-                              </button>
+        <span className="material-symbols-outlined text-lg"><Table size={20} /></span> Excel
+      </button>
       {/*<button className="bg-[#5c6c84] text-white px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all" onClick={printPdf}>
       <span className="material-symbols-outlined text-lg"><FileText size={20} /></span> PDF
       </button>*/}
