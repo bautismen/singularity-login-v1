@@ -36,6 +36,7 @@ import { catalogService } from '../../services/catalogsService';
 
 
 export interface FreightFormProps {
+  mode:             'create' | 'edit' | 'view';
   // Catálogos
   incoterms: any[];
   suppliers: any[];
@@ -74,6 +75,7 @@ export interface FreightFormProps {
 }
 
 export const FreightForm: React.FC<FreightFormProps> = ({
+  mode, 
   incoterms,
   suppliers,
   countries,
@@ -87,20 +89,43 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 }) => {
   const { t } = useLanguage();
 
+ 
+
   const infoControl = formData.Services?.find(
-    (s) => s.idControl === info.id && s.idServiceItem === info.item,
+    (s) =>  (s.idControl ? (s.idControl === info.id && s.idServiceItem === info.item) : 
+            (s.idService === info.idService && s.idServiceItem === info.item ))
   );
   
-  //console.log('infoControl', infoControl, formData.Services)
+  console.log('FreightForm',formData, info)
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const detail = infoControl?.serviceDetail?.[currentIndex]; //currentDetail
+  const detail = infoControl?.serviceDetail?.[currentIndex] || 
+    {
+    sequence: 1,
+    idTypeShipment: 1,
+    typeShipment: "",
+    idTypeOperation: 1,
+    typeOperation: "",
+    typeShippingReference: "",
+    shippingReferenceNumber: "",
+    shippingDate: new Date,
+    masterGuide: "",
+    //consignee?: ;
+    idIncoterm: 1,
+    incoterm: "",
+    //transport?: {},
+    origin: {},
+    destination: {},
+    //goods?: 
+    }; 
+
+   formData.Services?.map((s)=> s.serviceDetail.length === 0 ? s.serviceDetail=[detail] : null)
 
   const [accordionOpen, setAccordionOpen] = React.useState({
-    [`envio-${detail?.sequence}`]: true,
-    [`transporte-${detail?.sequence}`]: false,
-    [`origin-${detail?.sequence}`]: false,
-    [`destination-${detail?.sequence}`]: false,
+    [`envio-${detail?.sequence}`]: mode=== 'edit' ? true : true,
+    [`transporte-${detail?.sequence}`]: mode=== 'edit' ? true : false,
+    [`origin-${detail?.sequence}`]: mode=== 'edit' ? true : false,
+    [`destination-${detail?.sequence}`]: mode=== 'edit' ? true : false,
   });
   const [portsOrigin, setPortsOrigin] = useState<Port[]>([]);
   const [portsDestination, setPortsDestination] = useState<Port[]>([]);
@@ -289,7 +314,6 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 <button
                   type="button"
                   className={styles.iconButton}
-                  // disabled={isDisabled}
                   onClick={() =>
                     duplicateCard(infoControl?.idServiceItem, detail)
                   }
@@ -348,8 +372,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
               <div className={styles.serviceCard}>
                 <div
                   className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
-                  onClick={() => toggleAccordion(`envio-${detail.sequence}`)}
-                >
+                  onClick={() => toggleAccordion(`envio-${detail.sequence}`)}>
                   <div className="flex items-center gap-3">
                     <span className="dark:text-white">
                       <Package />
@@ -381,7 +404,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       {/* Modalidad */}
                       <div className={styles.fieldGroup}>
                         <TipoEnvio
-                          itemService={infoControl.idServiceItem}
+                          itemService={infoControl?.idServiceItem}
                           sequencedetail={detail.sequence}
                           detail={detail}
                           onUpdateServiceFormData={onUpdateServiceFormData}

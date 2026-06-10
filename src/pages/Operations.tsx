@@ -296,20 +296,19 @@ export default function Operations() {
   };
 
   const addControl = () => {
-    if (
-      control === undefined ||
-      control._id === undefined ||
-      control._id === "" ||
-      control.control === ""
-    ) {
+
+    if (control === undefined || control._id === undefined ||
+        control._id === "" || control.control === "") {
       showWarning(t("operations.selectControlWarning"));
       return;
     }
-
+    
     if (controlsOperation?.some((c) => c._id === control?._id && c.services === control.services)) {
       showError(t("operations.alreadyadded"));
       return;
     }
+
+    console.log('Controles ', control, controlsOperation)
 
     const normalizedServices = control.services.map((service) =>
       normalizeService(service, control)
@@ -459,17 +458,36 @@ export default function Operations() {
       return;
     }
 
-    if (servicesOperation?.some(s => s._id === service._id)) {
+    if (controlsOperation?.some(s => s._id === service._id)) {
       showError(t('operations.alreadyadded'));
       return;
     }
 
-    setServicesOperation([
-      ...servicesOperation, {
-        _id: service._id,
-        service_name: service.service_name
-      }
-    ] as Service[]);
+    const controlOperationConverted : any = {
+       //id y control no van por no venir de un control      
+      services: [{
+        idServiceItem: 1,        
+        idService: service._id,
+        nameService: service.service_name,
+        isShipment: true,
+        observationsService: "",
+        serviceDetail: [] as ServiceDetail[],
+      }],
+    }
+  
+    updateFormData((prev) => ({
+      ...prev,
+      Services: [...prev.Services, ...controlOperationConverted.services],
+    }));
+
+    setControlsOperation((prev) => {       
+        return [
+          ...prev,
+          controlOperationConverted,
+        ];      
+    });
+    
+    console.log('formData ', formData, controlsOperation)
 
   };
 
@@ -499,7 +517,7 @@ export default function Operations() {
 
     // Shipments
     if (service.shipments?.length > 0) {
-      detail = service.shipments.map((shipment: any) => ({
+      detail = service.shipments?.map((shipment: any) => ({
         ...shipment,
         transport:
           shipment.transports
@@ -747,114 +765,12 @@ export default function Operations() {
             <div className={styles.twoColumnGrid}>
 
               <div className={styles.leftColumn}>
-
-                {/* Referencia */}
                 <div className={styles.fieldGroup}>
-                  <label htmlFor="reference" className={styles.fieldLabel}>
-                    {t('operations.reference')}
-                  </label>
-                  <input
-                    type="text"
-                    id="reference"
-                    name="reference"
-                    value={formData.Reference}
-                    onChange={(e) => updateFormData({ ...formData, Reference: e.target.value })} //setformData
-                    className={styles.textInput}
-                    placeholder={`ATV${new Date().getFullYear().toString().slice(-2)}-00000`}
-                    disabled
-                  />
-                </div>
-
-                {/* Controles */}
-                <div className={styles.fieldGroup}>
-                  <div className="border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-surface-container-low">
-                    <label className="block font-label-caps text-label-caps text-primary px-3 py-2 dark:text-white">
-                      {t('operations.controls')}
-                    </label>
-
-                    <div className="bg-surface-container-low border-b dark:border-gray-600 border-outline-variant p-2 flex items-center gap-2">
-                      <select
-                        className="min-h-[30px] w-full p-2 rounded-lg bg-transparent text-black dark:text-white
-                                     border border-gray-300 dark:border-gray-700 
-                                     hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
-                                     focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
-                                     outline-none appearance-none text-body-sm transition-colors"
-                        onChange={(e) => {
-                          const dataC = JSON.parse(e.target.value);
-                          setControl({
-                            ...control,
-                            _id: dataC.id,
-                            control: dataC.control,
-                            services: dataC.services,
-                            suppliers: dataC.suppliers,
-                          })
-                        }}
-
-                      // multiple
-                      >
-                        <option className="bg-white text-black dark:bg-[#1e293b] dark:text-white appearance-none" value="">
-                          {t('operations.selectControl')}
-                        </option>
-                        {controlsClient.map(controlCliente => (
-                          <option className="bg-white text-black dark:bg-[#1e293b] dark:text-white appearance-none"
-                            key={controlCliente.id}
-                            value={JSON.stringify({
-                              id: controlCliente.id || controlCliente._id,
-                              control: controlCliente.control,
-                              services: controlCliente.services,
-                              suppliers: controlCliente.suppliers
-                            })}>
-                            {controlCliente.control}
-                          </option>
-                        ))} {/* Controles relacionados al cliente */}
-                      </select>
-                      <button type="button"
-                        className={styles.btnAddSearch}
-                        onClick={addControl}
-                        disabled={loading || disabled}
-                      >
-                        <Plus size={16} />
-                        {/* {t('operations.addControl')} */}
-                      </button>
-                    </div>
-
-                    <div className="p-2 flex flex-wrap gap-2 min-h-[120px] content-start">
-                      {controlsOperation.length > 0 ? (
-                        controlsOperation?.map(controlService => (
-                          controlService.services?.map(service => (
-                            <span key={`${controlService._id}-${service.idServiceItem}`}
-                              className="border border-[#14b8a6] bg-transparent rounded-full
-                                       flex items-center gap-1 px-3 py-1 text-xs
-                                       dark:bg-[#374151] dark:text-white"
-                            >
-                              {controlService.control} {service.nameService}
-                              <button
-                                type="button"
-                                value={controlService.idcontrol}
-                                key={`${controlService._id}-${service.idServiceItem}`}
-                                className="ml-1 text-gray-500 hover:text-red-500 dark:text-gray-300"
-                                onClick={() => { removeControl(controlService._id as string, service.idServiceItem as number) }}
-                              >
-                                ✕
-                              </button>
-                            </span>
-                          ))
-                        ))
-                      ) : (
-                        <span className=''></span>
-                      )
-                      }
-                    </div>
-
+                   {/* Referencia */}
+                  <div>                        
+                    <span className={styles.controlBadge}>{formData.Reference=== '' ? 'ATVSSSS12939' :'ATVS12SSS939' } </span>                        
                   </div>
-                </div>
-
-              </div>
-
-              <div className={styles.rightColumn}>
-
-                {/* Cliente */}
-                <div className={styles.fieldGroup}>
+                  {/* Cliente */}
                   <label htmlFor="customer" className={styles.fieldLabel}>
                     {t('operations.customer')}
                   </label>
@@ -880,13 +796,32 @@ export default function Operations() {
                   </select>
                 </div>
 
-                {/* Servicios */}
+                {/* Controles */}
                 <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>
+                    Servicios
+                  </label>
+                  <div className={styles.statusField}>
+                    <span className={styles.statusText}>Tiene número de control</span>
+                    <label className={styles.switch}>
+                      <input
+                        type="checkbox"
+                        checked={formData.ListaParaFacturar === true}
+                        onChange={(e) => updateFormData({
+                          ...formData,
+                          ListaParaFacturar: e.target.checked ? true : false
+                        })} />
+                      <span className={styles.slider}></span>
+                    </label>
+                  </div>
+
+                  {formData.ListaParaFacturar ? 
+                  (
+                    /* Controles */
                   <div className="border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-surface-container-low">
                     <label className="block font-label-caps text-label-caps text-primary px-3 py-2 dark:text-white">
-                      {t('operations.services')}
+                      {t('operations.controls')}
                     </label>
-
                     <div className="bg-surface-container-low border-b dark:border-gray-600 border-outline-variant p-2 flex items-center gap-2">
                       <select
                         className="min-h-[30px] w-full p-2 rounded-lg bg-transparent text-black dark:text-white
@@ -894,88 +829,174 @@ export default function Operations() {
                                      hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
                                      focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
                                      outline-none appearance-none text-body-sm transition-colors"
-                        onChange={(e) =>
-                          setService({
-                            ...service,
-                            _id: e.target.value,
-                            service_name: e.target.options[e.target.selectedIndex].text
-                          })}
+                        onChange={(e) => {
+                          const dataC = JSON.parse(e.target.value);
+                          setControl({
+                            ...control,
+                            _id: dataC.id,
+                            control: dataC.control,
+                            services: dataC.services,
+                            suppliers: dataC.suppliers,
+                          })
+                        }}
                       >
                         <option className="bg-white text-black dark:bg-[#1e293b] dark:text-white appearance-none" value="">
-                          {t('operations.selectService')}
+                          {t('operations.selectControl')}
                         </option>
-                        {servicesData.map(service => (
+                        {controlsClient.map(controlCliente => (
                           <option className="bg-white text-black dark:bg-[#1e293b] dark:text-white appearance-none"
-                            key={service._Id} value={service._Id}>
-                            {service.service_name}
+                            key={controlCliente.id}
+                            value={JSON.stringify({
+                              id: controlCliente.id || controlCliente._id,
+                              control: controlCliente.control,
+                              services: controlCliente.services,
+                              suppliers: controlCliente.suppliers
+                            })}>
+                            {controlCliente.control}
                           </option>
-                        ))}  {/* Servicios relacionados a la operación */}
+                        ))} {/* Controles relacionados al cliente */}
                       </select>
                       <button type="button"
                         className={styles.btnAddSearch}
-                        onClick={addService}
-                        disabled={loading || disabled}
-                      >
+                        onClick={addControl}
+                        disabled={loading || disabled}>
                         <Plus size={16} />
+                        {/* {t('operations.addControl')} */}
                       </button>
-                    </div>
-
-                    <div className="p-2 flex flex-wrap gap-2 min-h-[120px] content-start">
-                      {servicesOperation.length > 0 ? (
-                        servicesOperation?.map(service => (
-                          <span key={`${service._id}-${service.service_name}`}
-                            className="border border-[#14b8a6] bg-transparent rounded-full
-                                       flex items-center gap-1 px-3 py-1 text-xs
-                                       dark:bg-[#374151] dark:text-white"
-                          >
-                            {service.service_name}
-                            <button
-                              type="button"
-                              value={service._id}
-                              className="ml-1 text-gray-500 hover:text-red-500 dark:text-gray-300"
-                              onClick={(e) => { removeService(service._id as number) }}>
-                              ✕
-                            </button>
-                          </span>
-
-                        ))
-                      ) : (
-                        <span className=''></span>
-                      )
-                      }
-
-                    </div>
-
+                    </div>                    
                   </div>
-                </div>
+                  ) :                    
+                  (
+                    /* Servicios */
+                  <div className={styles.fieldGroup}>
+                    <div className="border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-surface-container-low">
+                      <label className="block font-label-caps text-label-caps text-primary px-3 py-2 dark:text-white">
+                        {t('operations.services')}
+                      </label>
+                      <div className="bg-surface-container-low border-b dark:border-gray-600 border-outline-variant p-2 flex items-center gap-2">
+                        <select className="min-h-[30px] w-full p-2 rounded-lg bg-transparent text-black dark:text-white
+                                      border border-gray-300 dark:border-gray-700 
+                                      hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
+                                      focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
+                                      outline-none appearance-none text-body-sm transition-colors"
+                          onChange={(e) => {
+                            setService({
+                              ...service,
+                              _id: Number(e.target.value),
+                              service_name: e.target.options[e.target.selectedIndex].text
+                            })}}>
+                          <option className="bg-white text-black dark:bg-[#1e293b] dark:text-white appearance-none" value="">
+                            {t('operations.selectService')}
+                          </option>
+                          {servicesData.map(service => (
+                            <option className="bg-white text-black dark:bg-[#1e293b] dark:text-white appearance-none"
+                              key={service._Id} value={service._Id}>
+                              {service.service_name}
+                            </option>
+                          ))}  
+                        </select>
+                        <button type="button"
+                          className={styles.btnAddSearch}
+                          onClick={addService}
+                          disabled={loading || disabled}>
+                          <Plus size={16} />
+                        </button>
+                      </div>
 
+                      {/*<div className="p-2 flex flex-wrap gap-2 min-h-[120px] content-start">
+                        {servicesOperation.length > 0 ? (
+                          servicesOperation?.map(service => (
+                            <span key={`${service._id}-${service.service_name}`}
+                              className="border border-[#14b8a6] bg-transparent rounded-full
+                                        flex items-center gap-1 px-3 py-1 text-xs
+                                        dark:bg-[#374151] dark:text-white"
+                            >
+                              {service.service_name}
+                              <button
+                                type="button"
+                                value={service._id}
+                                className="ml-1 text-gray-500 hover:text-red-500 dark:text-gray-300"
+                                onClick={(e) => { removeService(service._id as number) }}>
+                                ✕
+                              </button>
+                            </span>
+
+                          ))
+                        ) : (
+                          <span className=''></span>
+                        )
+                        }
+                      </div>*/}
+                    </div>
+                  </div>
+                  )}
+
+                  {/* Servicios y Controles*/}  
+                  <div className={styles.fieldGroup}>                  
+                    <div className="border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-surface-container-low">                      
+                      <div className="p-2 flex flex-wrap gap-2 min-h-[120px] content-start">
+                        {controlsOperation.length > 0 ? (
+                          controlsOperation?.map(controlService => (
+                            controlService.services?.map(service => (
+                              <span key={`${controlService._id}-${service.idServiceItem}`}
+                                className="border border-[#14b8a6] bg-transparent rounded-full
+                                        flex items-center gap-1 px-3 py-1 text-xs
+                                        dark:bg-[#374151] dark:text-white"
+                              >
+                                {controlService.control} {service.nameService}
+                                <button
+                                  type="button"
+                                  value={controlService.idcontrol}
+                                  key={`${controlService._id}-${service.idServiceItem}`}
+                                  className="ml-1 text-gray-500 hover:text-red-500 dark:text-gray-300"
+                                  onClick={() => { removeControl(controlService._id as string, service.idServiceItem as number) }}
+                                >
+                                  ✕
+                                </button>
+                              </span>
+                            ))
+                          ))
+                        ) : (
+                          <span className=''></span>
+                        )
+                        }
+                      </div>
+                    </div>   
+                  </div>
+
+                </div>
               </div>
 
-            </div>
+              <div className={styles.rightColumn}>
 
-            {/* Observaciones*/}
-            <div className="bg-surface-container-low px-6 -mt-10 -mb-3 py-5">
-              <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
-                {t('operations.observations')}
-              </label>
-              <textarea
-                type="textarea"
-                id="observations"
-                name="observations"
-                value={formData.Observations}
-                onChange={(e) => {
-                  console.log(formData)
-                  updateFormData({ ...formData, Observations: e.target.value })
-                } //setformdata
-                }
-                className="min-h-[30px] w-full p-2 rounded-lg
-                           bg-transparent text-black dark:text-white
-                           border border-gray-300 dark:border-gray-700
-                           hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
-                           focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
-                           outline-none appearance-none text-body-sm transition-colors"
-              />
-            </div>
+                {/* Observaciones*/}
+                <div className={styles.fieldGroup}>
+                  <label htmlFor="observations" className="block font-label-caps text-label-caps text-primary px-1 py-2 dark:text-white">
+                    {t('operations.observations')}
+                  </label>
+                  <textarea
+                    type="textarea"
+                    id="observations"
+                    name="observations"
+                    value={formData.Observations}
+                    onChange={(e) => {
+                      console.log(formData)
+                      updateFormData({ ...formData, Observations: e.target.value })
+                    } //setformdata
+                    }
+                    className="min-h-[30px] w-full p-2 rounded-lg
+                              bg-transparent text-black dark:text-white
+                              border border-gray-300 dark:border-gray-700
+                              hover:border-[#14b8a6] hover:dark:border-[#14b8a6] 
+                              focus:border-[#14b8a6] focus:ring-1 focus:ring-[#14b8a6]
+                              outline-none appearance-none text-body-sm transition-colors"
+                  />
+                </div> 
+
+                             
+              </div>
+
+            </div>            
 
             <div className={styles.twoColumnGrid}>
               <div className={styles.leftColumn}>
@@ -1044,20 +1065,22 @@ export default function Operations() {
                       {controlsOperation.length > 0 ? (
                         controlsOperation?.map(controlService => (
                           controlService.services?.map(service => (
-                            <div key={`${controlService._id}-${service.idServiceItem}`}
+                            <div key={`${controlService._id}${service.idServiceItem}`}
                               className={`${styles.tabItem} ${activeTab.item === service.idServiceItem && activeTab.id === controlService._id ? styles.active : ''}`}
                               onClick={() => {
                                 setActiveTab({
                                   id: controlService._id,
                                   idService: service.idService,
-                                  item: service.idServiceItem,
+                                  item: service.idServiceItem || 1,
                                   name: service.nameService
                                 });
+                               
                                 const newService = buildOperationService(controlService, service);
+                                 console.log('Active tab',activeTab, newService)
                                 updateFormData(prev => {
                                   const exists = prev.Services?.some(
                                     s => s.IdControl === newService.IdControl &&
-                                      s.IdServiceItem === newService.IdServiceItem
+                                    s.IdServiceItem === newService.IdServiceItem
                                   );
 
                                   if (exists) return prev;
@@ -1067,7 +1090,7 @@ export default function Operations() {
                                   };
                                 });
                               }}>
-                              {controlService.control}-{service.nameService}
+                              {controlService.control} {service.nameService}
                             </div>
                           ))
                         ))
@@ -1112,8 +1135,9 @@ export default function Operations() {
 
                 {/*ServiceForm && <ServiceForm {...formProps} />*/}
                 {
-                  [1, 2, 3, 4, 10, 11].includes(parseInt(activeTab.idService)) ?
+                  [1, 2, 3, 4, 10, 11].includes(Number(activeTab.idService)) ?
                     (<FreightForm
+                      mode={editingOperation ? 'edit' : 'create'}
                       incoterms={incoterm}
                       suppliers={supplier}
                       countries={countries}

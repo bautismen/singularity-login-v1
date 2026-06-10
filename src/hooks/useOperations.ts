@@ -132,12 +132,13 @@ const updateFormData = (changes:
 };
 
  const updateServiceFormData = (idServiceItem: number, detailId: number, field: string, value: any) => {
+  console.log('updateServiceFormData',idServiceItem, detailId, field, value,formData)
     setFormData(formData => ({ 
       ...formData,
       Services: formData.Services.map(service =>
         service.idServiceItem === idServiceItem ? {
           ...service,
-          serviceDetail: service.serviceDetail.map(detail =>
+          serviceDetail: service.serviceDetail?.map(detail =>
             detail.sequence === detailId ? {
               ...detail,
               [field]:
@@ -152,10 +153,7 @@ const updateFormData = (changes:
           )
         } : service
       )
-    }));
-    
-    console.log('updateServiceFormData', formData);
-
+    }));    
   };
 
   const updateServiceDetail = (idServiceItem: number, detailId: number, collection: string, field: string, value: any) => {

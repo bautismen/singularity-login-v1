@@ -1005,6 +1005,16 @@ details[open]{
   width: 180px;
 }
 
+.controlBadge {
+  padding: 0.25rem 0.75rem;
+  background: #037F8C;
+  color: white;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+
 @media (max-width: 1024px) {
   .container {
     padding: 1.25rem 1.5rem;
