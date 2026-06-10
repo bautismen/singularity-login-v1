@@ -36,6 +36,7 @@ import {
 import { Airport } from "../../types/airport";
 
 export interface AirFreightFormProps {
+  mode:             'create' | 'edit' | 'view';
   // Catálogos
   incoterms: any[];
   suppliers: any[];
@@ -74,6 +75,7 @@ export interface AirFreightFormProps {
 }
 
 export const AirFreightForm: React.FC<AirFreightFormProps> = ({
+  mode, 
   incoterms,
   suppliers,
   countries,
@@ -90,8 +92,24 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [airportsOrigin, setAirportsOrigin] = useState<Airport[]>([]);
   const [airportsDestination, setAirportsDestination] = useState<Airport[]>([]);
-  const airServiceControl = formData.Services?.find((s) => s.idControl === info.id && s.idServiceItem === info.item);
-  const detail = airServiceControl?.serviceDetail?.[currentIndex];
+  const airServiceControl = formData.Services?.find((s) => (s.idControl ? (s.idControl === info.id && s.idServiceItem === info.item) :
+                            (s.idService === info.idService && s.idServiceItem === info.item)));
+  const detail = airServiceControl?.serviceDetail?.[currentIndex] || 
+  {
+    sequence: 1,
+    idTypeShipment: 1,
+    typeShipment: "",
+    idTypeOperation: 1,
+    typeOperation: "",
+    typeShippingReference: "",
+    shippingReferenceNumber: "",
+    shippingDate: new Date,
+    masterGuide: "",
+    idIncoterm: 1,
+    incoterm: "",
+    origin: {},
+    destination: {},
+  };
   const [accordionOpen, setAccordionOpen] = React.useState({
     [`envio-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
     [`transporte-${detail?.idDetail}`]: mode=== 'edit' ? true : false,
@@ -246,12 +264,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
     }));
   };
 
-  // function updateCounter() {
-  //   document.getElementById('pageCounter').textContent = `${currentVersion} de ${totalVersions}`;
-  // }
-
   const nextPage = () => {
-    console.log(airportsOrigin, airportsDestination)
     if (currentIndex < airServiceControl?.serviceDetail.length - 1) {
       setCurrentIndex((prev) => prev + 1);
     }
