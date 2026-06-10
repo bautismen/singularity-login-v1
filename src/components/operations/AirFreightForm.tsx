@@ -96,7 +96,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                             (s.idService === info.idService && s.idServiceItem === info.item)));
   const detail = airServiceControl?.serviceDetail?.[currentIndex] || 
   {
-    sequence: 1,
+    idDetail: 1,
     idTypeShipment: 1,
     typeShipment: "",
     idTypeOperation: 1,
