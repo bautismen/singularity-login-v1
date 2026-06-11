@@ -88,39 +88,31 @@ export const FreightForm: React.FC<FreightFormProps> = ({
   onRemoveDetail
 }) => {
   const { t } = useLanguage();
-
- 
-
   const infoControl = formData.Services?.find(
     (s) =>  (s.idControl ? (s.idControl === info.id && s.idServiceItem === info.item) : 
-            (s.idService === info.idService && s.idServiceItem === info.item ))
-  );
-  
-  console.log('FreightForm',formData, info)
-
+            (s.idService === info.idService && s.idServiceItem === info.item )));  
+  console.log('FreightForm formData: ',formData, 'infoControl: ', infoControl)
   const [currentIndex, setCurrentIndex] = useState(0);
   const detail = infoControl?.serviceDetail?.[currentIndex] || 
-    {
-    idDetail: 1,
-    idTypeShipment: 1,
-    typeShipment: "",
-    idTypeOperation: 1,
-    typeOperation: "",
-    typeShippingReference: "",
-    shippingReferenceNumber: "",
-    shippingDate: new Date,
-    masterGuide: "",
-    //consignee?: ;
-    idIncoterm: 1,
-    incoterm: "",
-    //transport?: {},
-    origin: {},
-    destination: {},
-    //goods?: 
-    }; 
-
-   formData.Services?.map((s)=> s.serviceDetail.length === 0 ? s.serviceDetail=[detail] : null)
-
+  {
+  idDetail: 1,
+  idTypeShipment: 1,
+  typeShipment: "",
+  idTypeOperation: 1,
+  typeOperation: "",
+  typeShippingReference: "",
+  shippingReferenceNumber: "",
+  shippingDate: new Date,
+  masterGuide: "",
+  //consignee?: ;
+  idIncoterm: 1,
+  incoterm: "",
+  //transport?: {},
+  origin: {},
+  destination: {},
+  //goods?: 
+  }; 
+  formData.Services?.map((s)=> s.serviceDetail.length === 0 ? s.serviceDetail=[detail] : s)
   const [accordionOpen, setAccordionOpen] = React.useState({
     [`envio-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
     [`transporte-${detail?.idDetail}`]: mode=== 'edit' ? true : false,

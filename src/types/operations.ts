@@ -36,7 +36,7 @@ export interface Transport {
 }
 
 export interface ServiceDetail {
-  sequence: number;
+  idDetail: number;
   idTypeShipment: number;
   typeShipment?: string;
   idTypeOperation: number;
