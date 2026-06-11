@@ -41,6 +41,7 @@ export default function Operations() {
   const [editingOperation, setEditingOperation] = useState<Operation | null>(null);
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
+  const [hasControlNumber, setHasControlNumber] = useState(false);
   const [activeTab, setActiveTab] = useState<Record<string, string>>({
     id: '',
     idService: '',
@@ -146,14 +147,11 @@ export default function Operations() {
     setControlsClient([]);
     setControl({} as PricingControl);
     setControlsOperation([]);
-
     setServicesOperation([]);
     setService({} as Service);
-
     setEditingOperation(null);
     resetFormData();
     setIsFormOpen(true);
-
     setCollapsedSections({
       services: false,
       expedientes: false
@@ -164,52 +162,40 @@ export default function Operations() {
     setActiveTab({ id: '', idService: '', item: '', name: '' })
     setServicesOperation([]);
     setService({} as Service);
-
     setEditingOperation(operation);
-
     const selectedCustomer = customers.find(
       c => c.id === operation.customer.idCustomer
     );
-
     const controlsClient = controlsData.filter(control => {
       return control.id_customer === selectedCustomer.id;
     });
-
     setControlsClient(controlsClient);
-
     // Asignar los controles de la operación al estado controlsOperation para mostrarlos en el formulario
     const loadedControls = operation.services.reduce((acc, service) => {
-
-      if (!service.idControl) return acc;
-
+      if (!service.idControl) return [{
+         _id: null,
+        control: null,
+        services: operation.services
+      }];
       const existingControl = acc.find(
         c => String(c._id) === String(service.idControl)
       );
-
-      const normalizedService =
-        normalizeService(service);
-
+      const normalizedService = normalizeService(service);
       if (!existingControl) {
-
         acc.push({
           _id: service.idControl,
           idService: '',
           control: service.control,
           services: [normalizedService]
         });
-
       } else {
-
         existingControl.services.push(normalizedService);
       }
-
       return acc;
-
     }, []);
 
     setControlsOperation(loadedControls)
-
-    const loadedServices = operation.services
+    /*const loadedServices = operation.services
       .filter(os => os.idControl === null)
       .map(c => ({
         _id: null,
@@ -217,8 +203,8 @@ export default function Operations() {
         services: operation.services
       }));
 
-    setServicesOperation('Edit',loadedServices, operation)
-    console.log(loadedServices)
+    setServicesOperation(loadedServices);*/
+    console.log('Edit',loadedControls, operation)
 
     if (loadedControls.length > 0) {
       setActiveTab({
@@ -227,28 +213,22 @@ export default function Operations() {
           item: loadedControls[0].services[0].idServiceItem,
           name: loadedControls[0].services[0].nameService,
         });
-
       toggleSection('services');
     }
-
     setCompleteFormData(operation, selectedCustomer);
-
-    setIsFormOpen(true);
-    
+    setIsFormOpen(true);    
   }
 
   function handleCustomerChange(selectedCustomerId: string) {
-
+    console.log('customer',selectedCustomerId)
     setControl({} as PricingControl);
     setControlsOperation([]);
-
     setServicesOperation([]);
     setService({} as Service);
-
     setEditingOperation(null);
 
     const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
-
+    console.log ('selectedCustomer', selectedCustomer)
     if (!selectedCustomer) {
       updateFormData({ //setFormData
         ...formData,
@@ -281,9 +261,9 @@ export default function Operations() {
     updateFormData({
       ...formData,
       Customer: {
-        IdCustomer: selectedCustomer.id,
-        Name: selectedCustomer.fiscalData.businessName,
-        RFC: selectedCustomer.fiscalData.taxId
+        idCustomer: selectedCustomer.id,
+        name: selectedCustomer.fiscalData.businessName,
+        rfc: selectedCustomer.fiscalData.taxId
       },
     });
 
@@ -455,7 +435,7 @@ export default function Operations() {
   };
 
   const addService = () => {
-    console.log('Service', service, controlsOperation)
+    //console.log('Service', service, controlsOperation)
     if (service === undefined || service._id === undefined ||
       service._id === '' || service.service_name === '') {
       showWarning(t('operations.selectServiceWarning'));
@@ -470,7 +450,7 @@ export default function Operations() {
     const controlOperationConverted : any = {
        //id y control no van por no venir de un control      
       services: [{
-        idServiceItem: 1,        
+        idServiceItem: controlsOperation.length + 1,        
         idService: service._id,
         nameService: service.service_name,
         isShipment: true,
@@ -489,10 +469,7 @@ export default function Operations() {
           ...prev,
           controlOperationConverted,
         ];      
-    });
-    
-    console.log('formData ', formData, controlsOperation)
-
+    });    
   };
 
   const removeService = (_idservice: number) => {
@@ -774,11 +751,54 @@ export default function Operations() {
                   <div>                        
                     <span className={styles.controlBadge}>{formData.Reference=== '' ? 'ATVSSSS12939' :'ATVS12SSS939' } </span>                        
                   </div>
-                  {/* Cliente */}
+                  {/* Cliente */}                  
                   <label htmlFor="customer" className={styles.fieldLabel}>
-                    {t('operations.customer')}
+                  {t('operations.customer')} | RFC Tax ID
                   </label>
-                  <select
+                  <div className='className="flex items-center inline-flex  '> 
+                    <input
+                    list='customers-list'
+                    type="text"
+                    value={formData.Customer.name}
+                    className={styles.textInput}
+                    required
+                    placeholder='select customer'                   
+                    onChange={(e) => {     
+                      console.log('change ',  e.target.value)
+                      const selected = customers.find(c => c.fiscalData?.businessName === e.target.value);
+                      if (selected) {
+                        handleCustomerChange(selected.id); 
+                      } else {
+                        updateFormData({
+                          Customer: {
+                            idCustomer: '',
+                            name: e.target.value, // mantener lo que escribe mientras tipea
+                            rfc: ''
+                          }
+                        });
+                      }
+                    }}>
+                    </input>                  
+                    <datalist id='customers-list'>
+                      {customers.map((customer) => {
+                        return(
+                          <option key={customer.id} value={customer.fiscalData?.businessName}
+                          label={`${customer.fiscalData.businessName} | ${customer.fiscalData.taxId}`} >
+                          </option>)
+                      })}
+                    </datalist>                    
+                    <div className="relative ">                                           
+                      <input
+                        disabled
+                        type="text"
+                        className={styles.textInput}
+                        value={formData.Customer.rfc}
+                      />
+                    </div>
+                  </div>
+                  
+
+                  {/*<select
                     value={formData.Customer.idCustomer}
                     onChange={(e) => handleCustomerChange(e.target.value)}
                     className={styles.selectInput}
@@ -797,7 +817,7 @@ export default function Operations() {
                         {customer.fiscalData.businessName} | {customer.fiscalData.taxId}
                       </option>
                     ))}
-                  </select>
+                  </select>*/}
                 </div>
 
                 {/* Controles / Servicios*/}
@@ -810,16 +830,14 @@ export default function Operations() {
                     <label className={styles.switch}>
                       <input
                         type="checkbox"
-                        checked={formData.TieneControl === true}
-                        onChange={(e) => updateFormData({
-                          ...formData,
-                          TieneControl: e.target.checked ? true : false
-                        })} />
+                        checked={hasControlNumber}
+                        onChange={(e) => setHasControlNumber(!hasControlNumber) 
+                        } />
                       <span className={styles.slider}></span>
                     </label>
                   </div>
 
-                  {formData.TieneControl ? 
+                  {hasControlNumber ? 
                   (
                     /* Controles */
                   <div className="border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-surface-container-low">
@@ -942,7 +960,7 @@ export default function Operations() {
                         {controlsOperation.length > 0 ? (
                           controlsOperation?.map(controlService => (
                             controlService.services?.map(service => (
-                              <span key={`${controlService._id}-${service.idServiceItem}`}
+                              <span key={`${controlService._id ?? 'service'}-${service.idService}-${service.idServiceItem}`}
                                 className="border border-[#14b8a6] bg-transparent rounded-full
                                         flex items-center gap-1 px-3 py-1 text-xs
                                         dark:bg-[#374151] dark:text-white"
@@ -951,7 +969,7 @@ export default function Operations() {
                                 <button
                                   type="button"
                                   value={controlService.idcontrol}
-                                  key={`${controlService._id}-${service.idServiceItem}`}
+                                  key={`${controlService._id ?? 'service'}-${service.idService}-${service.idServiceItem}`}
                                   className="ml-1 text-gray-500 hover:text-red-500 dark:text-gray-300"
                                   onClick={() => { removeControl(controlService, service.idServiceItem as number) }}
                                 >
@@ -1069,7 +1087,7 @@ export default function Operations() {
                       {controlsOperation.length > 0 ? (
                         controlsOperation?.map(controlService => (
                           controlService.services?.map(service => (
-                            <div key={`${controlService._id}${service.idServiceItem}`}
+                            <div key={`${controlService._id ?? 'service'}-${service.idService}--${service.idServiceItem}`}
                               className={`${styles.tabItem} ${activeTab.item === service.idServiceItem && activeTab.id === controlService._id ? styles.active : ''}`}
                               onClick={() => {
                                 setActiveTab({
@@ -1080,7 +1098,7 @@ export default function Operations() {
                                 });
                                
                                 const newService = buildOperationService(controlService, service);
-                                 console.log('Active tab',activeTab, newService)
+                                console.log('Active tab',activeTab)
                                 updateFormData(prev => {
                                   const exists = prev.Services?.some(
                                     s => s.IdControl === newService.IdControl &&
