@@ -57,6 +57,7 @@ const [formData, setFormData] = useState<OperationsFormData>({
     Status: 1,
     Archived: false,
     DataState: 1,
+    TieneControl: false
 });
 
 const resetFormData = () => {

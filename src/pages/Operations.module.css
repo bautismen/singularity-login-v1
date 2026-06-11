@@ -1014,6 +1014,10 @@ details[open]{
   font-weight: 500;
 }
 
+.required {
+  color: #ef4444;
+  font-size: 1 rem;
+}
 
 @media (max-width: 1024px) {
   .container {

@@ -28,11 +28,17 @@ export interface ServiceOperation {
 }
 
 export interface Transport {
-  idTransport: string;
+  idCarrier: string;
+  carrier: string;
+  typeCarrier: number;
+  bookingNumeber: string;
+  bookingDate?: Date;
+  typeUnit: string;
   nameTransport: string;
-  //   typeTransport: number;
-  //   carrier: string;
-  //   typeUnit: string;
+  typeOfMovement: string;
+  typeRoute: string;
+  guide: any;
+  moreInformationTransport: any;
 }
 
 export interface ServiceDetail {
@@ -41,9 +47,6 @@ export interface ServiceDetail {
   typeShipment?: string;
   idTypeOperation: number;
   typeOperation?: string;
-  typeShippingReference?: string;
-  shippingReferenceNumber?: string;
-  shippingDate?: Date;
   masterGuide?: string;
   consignee?: boolean;
   idIncoterm?: number;
@@ -51,7 +54,9 @@ export interface ServiceDetail {
   transport?: any;
   origin?: any;
   destination?: any;
-  goods?: any;
+  comments?: string;
+  containers?: any;
+  cargo?: any;
 }
 
 export interface UserInfo {
@@ -74,7 +79,7 @@ export interface Operation {
   observations?: string;
   operationStatus: 'created' | 'pending' | 'completed' | 'failed';
   historyStatus: HistoryStatus[];
-  listaParaFactura: boolean;
+  listaParaFacturar: boolean;
   iCveMaestroOperaciones: number;
   createdAt: Date;
   createdBy: UserInfo;

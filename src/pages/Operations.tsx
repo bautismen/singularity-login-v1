@@ -256,7 +256,6 @@ export default function Operations() {
         IdReference: 0,
         Reference: '',
         Customer: {} as Customer,
-        Controls: [] as Control[],
         Services: [] as ServiceOperation[],
         Observations: '',
         OperationStatus: 'Alta referencia',
@@ -801,26 +800,26 @@ export default function Operations() {
                   </select>
                 </div>
 
-                {/* Controles */}
+                {/* Controles / Servicios*/}
                 <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel}>
-                    Servicios
+                    {t("operations.services")}
                   </label>
                   <div className={styles.statusField}>
                     <span className={styles.statusText}>Tiene número de control</span>
                     <label className={styles.switch}>
                       <input
                         type="checkbox"
-                        checked={formData.ListaParaFacturar === true}
+                        checked={formData.TieneControl === true}
                         onChange={(e) => updateFormData({
                           ...formData,
-                          ListaParaFacturar: e.target.checked ? true : false
+                          TieneControl: e.target.checked ? true : false
                         })} />
                       <span className={styles.slider}></span>
                     </label>
                   </div>
 
-                  {formData.ListaParaFacturar ? 
+                  {formData.TieneControl ? 
                   (
                     /* Controles */
                   <div className="border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-surface-container-low">

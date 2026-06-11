@@ -1,18 +1,19 @@
 import styles from '../../pages/Operations.module.css';
 import { Plus, Trash2, Eye, X, Copy, Search, Trash } from 'lucide-react';
-import { formatDateTimeLocal } from "../../types/operations";
+import { formatDateTimeLocal } from '../../types/operations';
 
-export const TipoEnvio = ({ itemService, sequencedetail, detail, onUpdateServiceFormData }) => {
+export const TipoEnvio = ({ itemService, sequencedetail, detail, onUpdateServiceFormData, label, required }) => {
 
   return (
     <>
       <label className={styles.fieldLabel}>
-        Modalidad *
+        {required ? <span className={styles.required}>* </span> : ""} {label}
       </label>
       <select
         value={detail.idTypeShipment || ""}
         className={styles.selectInput}
-        required
+        disabled = {sequencedetail === 1 ? true : false }
+        required = {required}
         onChange={(e) => {
           onUpdateServiceFormData(itemService, sequencedetail, 'idTypeShipment', Number(e.target.value))
           onUpdateServiceFormData(itemService, sequencedetail, 'typeShipment', e.target.options[e.target.selectedIndex].text)
@@ -53,18 +54,18 @@ export const TipoEnvio = ({ itemService, sequencedetail, detail, onUpdateService
 //   );
 // };
 
-export const TipoOperacion = ({ itemService, sequencedetail, detail, onUpdateServiceFormData }) => {
+export const TipoOperacion = ({ itemService, sequencedetail, detail, onUpdateServiceFormData, label, required }) => {
 
   return (
     <>
       <label className={styles.fieldLabel}>
-        Tipo operación / Operation type
+        {required ? <span className={styles.required}>* </span> : ""} {label}
       </label>
       <select
         value={detail.idTypeOperation || ''}
         className={styles.selectInput}
-        // readOnly
-        required
+        disabled = {sequencedetail === 1 ? true : false }
+        required = {required}
         onChange={(e) => {
           onUpdateServiceFormData(itemService, sequencedetail, 'idTypeOperation', Number(e.target.value))
           onUpdateServiceFormData(itemService, sequencedetail, 'typeOperation', e.target.options[e.target.selectedIndex].text)
@@ -81,18 +82,18 @@ export const TipoOperacion = ({ itemService, sequencedetail, detail, onUpdateSer
   );
 };
 
-export const Incoterm = ({ itemService, sequencedetail, detail, onUpdateServiceFormData, incoterms }) => {
+export const Incoterm = ({ itemService, sequencedetail, detail, onUpdateServiceFormData, incoterms, label, required }) => {
 
   return (
     <>
       <label className={styles.fieldLabel}>
-        Incoterm
+        {required ? <span className={styles.required}>* </span> : ""} {label}
       </label>
       <select
         value={detail.idIncoterm || ''}
         className={styles.selectInput}
-        // readOnly
-        // required
+        disabled = {sequencedetail === 1 ? true : false }
+        required = {required}
         onChange={(e) => {
           onUpdateServiceFormData(itemService, sequencedetail, 'idIncoterm', Number(e.target.value))
           onUpdateServiceFormData(itemService, sequencedetail, 'incoterm', e.target.options[e.target.selectedIndex].text)
@@ -108,18 +109,18 @@ export const Incoterm = ({ itemService, sequencedetail, detail, onUpdateServiceF
   );
 };
 
-export const Transportista = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, transportista }) => {
+export const Transportista = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, transportista, label, required }) => {
 
   return (
     <>
       <label className={styles.fieldLabel}>
-        Transportista *
+        {required ? <span className={styles.required}>* </span> : ""} {label}
       </label>
       <select
         value={transport?.idcarrier || ''}
         className={styles.selectInput}
-        // readOnly
-        required
+        disabled = {false}
+        required = {required}
         onChange={(e) => {
           onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'idcarrier', e.target.value)
           onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'carrier', e.target.options[e.target.selectedIndex].text)
@@ -136,7 +137,7 @@ export const Transportista = ({ itemService, sequencedetail, transport, onUpdate
   );
 };
 
-export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, modalidad }) => {
+export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, modalidad, label, required }) => {
 
   const tipoUnidad = [
     { value: "Buque", name: "Buque", modalidad: "maritimo" },
@@ -156,13 +157,13 @@ export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateSer
   return (
     <>
       <label className={styles.fieldLabel}>
-        Tipo unidad
+        {required ? <span className={styles.required}>* </span> : ""} {label}
       </label>
       <select
         value={transport?.typeUnit || ''}
         className={styles.selectInput}
-        // readOnly
-        required
+        disabled = {false}
+        required = {required}
         onChange={(e) => {
           onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'typeUnit', e.target.options[e.target.selectedIndex].text)
         }
@@ -179,18 +180,18 @@ export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateSer
   );
 };
 
-export const TipoRuta = ({ itemService, sequencedetail, transport, onUpdateServiceDetail }) => {
+export const TipoRuta = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, label, required }) => {
 
   return (
     <>
       <label className={styles.fieldLabel}>
-        Tipo ruta *
+        {required ? <span className={styles.required}>* </span> : ""} {label}
       </label>
       <select
         value={transport?.typeRoute || ''}
         className={styles.selectInput}
-        // readOnly
-        required
+        disabled = {false}
+        required = {required}
         onChange={(e) => {
           onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'typeRoute', e.target.options[e.target.selectedIndex].text)
         }
@@ -204,18 +205,18 @@ export const TipoRuta = ({ itemService, sequencedetail, transport, onUpdateServi
   );
 };
 
-export const TipoMovimeiento = ({ itemService, sequencedetail, transport, onUpdateServiceDetail }) => {
+export const TipoMovimeiento = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, label, required }) => {
 
   return (
     <>
       <label className={styles.fieldLabel}>
-        Tipo movimiento *
+        {required ? <span className={styles.required}>* </span> : ""} {label}
       </label>
       <select
         value={transport?.typeOfMovement || ''}
         className={styles.selectInput}
-        // readOnly
-        required
+        disabled = {false}
+        required = {required}
         onChange={(e) => {
           onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'typeOfMovement', e.target.options[e.target.selectedIndex].text)
         }
@@ -229,7 +230,7 @@ export const TipoMovimeiento = ({ itemService, sequencedetail, transport, onUpda
   );
 };
 
-export const TipoGuia = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, modalidad }) => {
+export const TipoGuia = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, modalidad, label, required }) => {
 
   const tipoGuia = [
     //<option value="Master_Bill_Of_Lading">MBL</option>
@@ -244,7 +245,9 @@ export const TipoGuia = ({ itemService, sequencedetail, transport, onUpdateServi
   return (
     <>
       <div className="flex flex-col gap-1">
-        <label className="text-label-md font-label-md text-on-surface-variant">Tipo | Guía</label>
+        <label className="text-label-md font-label-md text-on-surface-variant">
+          {required ? <span className={styles.required}>* </span> : ""} {label}
+        </label>
         <div className="flex items-center bg-surface-container focus-within:border-secondary transition-all">
           {/* <!-- Dropdown for Tipo --> */}
           <div className="relative w-1/2">
@@ -252,8 +255,8 @@ export const TipoGuia = ({ itemService, sequencedetail, transport, onUpdateServi
               value={transport?.guide?.type || ''}
               className={styles.selectInput}
               id="type"
-              // readOnly
-              // required
+              disabled = {false}
+              required = {required}
               onChange={(e) => {
                 onUpdateServiceDetail(itemService, sequencedetail, 'transport',
                   'guide', {
@@ -278,6 +281,8 @@ export const TipoGuia = ({ itemService, sequencedetail, transport, onUpdateServi
             type="text"
             className={styles.textInput}
             id="guide"
+            disabled = {false}
+            required = {required}
             value={transport?.guide?.guide || ''}
             onChange={(e) => {
               onUpdateServiceDetail(itemService, sequencedetail, 'transport',
@@ -448,7 +453,7 @@ export const Cargo = ({ infoControl, detail, onUpdateServiceFormData }) => {
       </thead>
       <tbody>
         {detail.cargo?.map((cargo, index) => (
-          <tr key={cargo.idcargo ? cargo.idcargo : 1}>
+          <tr key={cargo.idcargo ? cargo.idcargo : index + 1}>
             <td>
               {/* Item */}
               <label className="px-2 py-1">
@@ -550,12 +555,11 @@ export const Containers = ({ infoControl, detail, onUpdateServiceFormData }) => 
       </thead>
       <tbody>
         {detail.containers?.map((container, index) => (
-          <tr key={container.idContainer + index}>
+          <tr key={container.idcontainer ? container.idcontainer : index + 1}>
             <td>
               {/* Item */}
               <label className="px-2 py-1">
                 # {index + 1}
-                {/* # {container.idcontainer ? container.idcontainer : index + 1} */}
               </label>
             </td>
             <td>
@@ -798,22 +802,29 @@ export const ReferencesAduanal = ({ infoControl, detail, onUpdateServiceFormData
   )
 };
 
-export const ComponentDate = ({itemService, sequencedetail, data, node, field, onUpdateServiceDetail}) => {
+export const ComponentDate = ({itemService, sequencedetail, data, node, field, onUpdateServiceDetail, label, required }) => {
   return (
-    <input
-      type="datetime-local"
-      value={formatDateTimeLocal(data) || ""}
-      className={styles.textInput}
-      onChange={(e) =>
-        onUpdateServiceDetail(
-          itemService,
-          sequencedetail,
-          node,
-          field,
-          e.target.value
-        )
-      }
-    />
+    <>
+      <label className={styles.fieldLabel}>
+          {required ? <span className={styles.required}>* </span> : ""} {label}
+      </label>
+      <input
+        type="datetime-local"
+        value={formatDateTimeLocal(data) || ""}
+        className={styles.textInput}
+        disabled = {false}
+        required = {required}
+        onChange={(e) =>
+          onUpdateServiceDetail(
+            itemService,
+            sequencedetail,
+            node,
+            field,
+            e.target.value
+          )
+        }
+      />
+    </>
   )
 
 };
