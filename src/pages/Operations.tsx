@@ -1100,7 +1100,7 @@ export default function Operations() {
                           ))
                         ))
                       ) : (<></>)}
-                      {servicesOperation.length > 0 ? (
+                      {/*servicesOperation.length > 0 ? (
                         servicesOperation?.map(serviceOperation => (
                           <div key={`${serviceOperation._id}-${serviceOperation.service_name}`}
                             className={`${styles.tabItem} ${activeTab.item === serviceOperation._id ? styles.active : ''}`}
@@ -1133,7 +1133,7 @@ export default function Operations() {
                       ) : (
                         <span className=''>
                         </span>)
-                      }
+                      */}
                     </div>
                   </div>
                 </div>
