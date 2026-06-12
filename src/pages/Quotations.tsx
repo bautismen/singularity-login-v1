@@ -1376,6 +1376,8 @@ export function Quotations({ mode = "create", quotationId, onBack }: QuotationsP
       licitation:    formData.isLicitation ? 1 : 0,
       dateCreated:   new Date().toISOString(),
       dateUpdated:   new Date().toISOString(),
+      archived: false, 
+      dataState: 1,
       createdBy: {
         idUser:       user?._id  || '',
         nameEmployee: user?.name || '',
