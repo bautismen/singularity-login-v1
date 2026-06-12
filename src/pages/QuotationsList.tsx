@@ -608,7 +608,7 @@ useEffect(() => {
                     onChange={(e) => setSelectedExecutive(e.target.value)}>
                     <option value="">{t('quote.selectExecutive')}</option>
                     {users.map((user) => (
-                      <option key={user._id} value={user._id}>
+                      <option key={user._Id} value={user._Id}>
                         {user.name}
                       </option>
                     ))}
