@@ -883,6 +883,12 @@ const translations = {
     "operations.destination": "Destino",
     "operations.collectionLocation": "Lugar de recolección",
     "operations.plantExit": "Salida de planta",
+    "operations.masterGuide": "Guia master",
+    "operations.plant": "Planta",
+    "operations.dispatchOrCollection": "Despacho / Recolección",
+    "operations.placeDischarge": "Lugar de descarga",
+    "operations.deliveryAtDestination": "Entrega en destino",
+    "operations.destinationDeparture": "Salida de destino",
   },
   en: {
     'app.title': 'Singularity',
@@ -1750,6 +1756,12 @@ const translations = {
     "operations.destination": "Destination",
     "operations.collectionLocation": "Collection location",
     "operations.plantExit": "Plant exit",
+    "operations.masterGuide": "Master guide",
+    "operations.plant": "Plant",
+    "operations.dispatchOrCollection": "Dispatch / Collection",
+    "operations.placeDischarge": "Discharge place",
+    "operations.deliveryAtDestination": "Delivery at destination",
+    "operations.destinationDeparture": "Destination departure",
   },
 };
 
