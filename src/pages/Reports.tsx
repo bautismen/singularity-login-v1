@@ -698,14 +698,23 @@ const exportToExcel = () => {
       }
 
       // Detectar fechas
-      else if (typeof value === 'string') {
-        const parsedDate = parseDate(value);
+      else if (typeof value === 'string') {        
+        const trimmedValue = value.trim();
 
-        if (parsedDate) {
-          const date = new Date(parsedDate);
-          cell.v = date;
-          cell.t = 'd';
-          cell.z = 'dd/mm/yyyy';
+        // Solo intentar convertir si parece una fecha
+        const isDateFormat =
+          /^(\d{2}[-/]\d{2}[-/]\d{4})$/.test(trimmedValue) || // dd-mm-yyyy | dd/mm/yyyy
+          /^(\d{4}[-/]\d{2}[-/]\d{2})$/.test(trimmedValue) || // yyyy-mm-dd | yyyy/mm/dd
+          /^(\d{2}[-/]\d{2}[-/]\d{2})$/.test(trimmedValue);   // dd-mm-yy | dd/mm/yy
+
+        const parsedDate = parseDate(value);
+        if (isDateFormat) {
+          if (parsedDate && !isNaN(parsedDate.getTime())) {
+            const date = new Date(parsedDate);
+            cell.v = date;
+            cell.t = 'd';
+            cell.z = 'dd/mm/yyyy';
+          }
         }
       }
 
