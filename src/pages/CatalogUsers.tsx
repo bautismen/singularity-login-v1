@@ -499,6 +499,16 @@ export function CatalogUsers() {
                       />
                       {' '}Clausule
                     </label>
+                    <label className="label" style={{ fontSize: '0.875rem', fontWeight: 'normal' }}>
+                      <input
+                        type="checkbox"
+                        className="checkbox"
+                        checked={formData.Roles.includes('comercial')}
+                        onChange={() => toggleRole('comercial')}
+                        disabled={loading}
+                      />
+                      {' '}Comercial
+                    </label>
                   </div>
                 </div>
               </div>
