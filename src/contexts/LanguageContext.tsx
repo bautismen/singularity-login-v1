@@ -858,7 +858,17 @@ const translations = {
     "operations.addService": "Agregar servicio",
     "operations.selectServiceWarning": "por favor, selecciona un servicio para agregar",
     "operations.observations": "Observaciones",
-    "operations.listaparafacturar": "Lista para facturar"
+    "operations.listaparafacturar": "Lista para facturar",
+    "CustomerVin.titlesectionCard":  "Configurar cliente Singularity - KB",
+    "CustomerVin.linkingTitle": "Vinculación clientes Singularity ↔ KB",
+    "CustomerVin.selectKbCustomer": "Elegir cliente KB...",
+    "CustomerVin.active": "Activa",
+    "CustomerVin.addKbCustomer": "Agregar cliente KB",
+    "CustomerVin.cancel": "Cancelar",
+    "CustomerVin.save": "Guardar",
+    "CustomerVin.kbLinkUpdated": "Vinculación KB actualizada correctamente",
+    "CustomerVin.kbLinkCreated": "Vinculación KB creada correctamente",
+    "CustomerVin.kbLinkSaveError": "Error al guardar Vinculación KB",
   },
   en: {
     'app.title': 'Singularity',
@@ -1701,7 +1711,17 @@ const translations = {
     "operations.addService": "Add service",
     "operations.selectServiceWarning": "Please select a service to add",
     "operations.observations": "Observations",
-    "operations.listaparafacturar": "Ready to invoice"
+    "operations.listaparafacturar": "Ready to invoice",
+    "CustomerVin.titlesectionCard": "Configure Singularity - KB Customer",
+    "CustomerVin.linkingTitle": "Singularity ↔ KB Customer Linking",
+    "CustomerVin.selectKbCustomer": "Select KB Customer...",
+    "CustomerVin.active": "Active",
+    "CustomerVin.addKbCustomer": "Add KB Customer",
+    "CustomerVin.cancel": "Cancel",
+    "CustomerVin.save": "Save",
+    "CustomerVin.kbLinkUpdated": "KB link updated successfully",
+    "CustomerVin.kbLinkCreated": "KB link created successfully",
+    "CustomerVin.kbLinkSaveError": "Error saving KB link",
   },
 };
 
