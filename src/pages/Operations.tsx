@@ -455,6 +455,7 @@ export default function Operations() {
         nameService: service.service_name,
         isShipment: true,
         observationsService: "",
+        currentIndex: 0, 
         serviceDetail: [] as ServiceDetail[],
       }],
     }
@@ -591,13 +592,14 @@ export default function Operations() {
     }
 
     return {
-      idServiceItem: service.idServiceItem,
+      idServiceItem: controlsOperation.length + 1 ,//service.idServiceItem,
       idControl: control?._id || service.idControl || null,
       control: control?.control || service.control || null,
       idService: service.idService,
       nameService: service.nameService,
       observationsService: service.observationsService || '',
       category: service.category,
+      currentIndex: 0, 
       serviceDetail: detail
     };
   };
@@ -760,16 +762,15 @@ export default function Operations() {
                   <label htmlFor="customer" className={styles.fieldLabel}>
                   {t('operations.customer')} | RFC Tax ID
                   </label>
-                  <div className='className="flex items-center inline-flex  '> 
+                  <div className='className="flex inline-flex  '> 
                     <input
                     list='customers-list'
                     type="text"
                     value={formData.Customer.name}
-                    className={styles.textInput}
+                    className={styles.textInputClient}
                     required
                     placeholder='select customer'                   
                     onChange={(e) => {     
-                      console.log('change ',  e.target.value)
                       const selected = customers.find(c => c.fiscalData?.businessName === e.target.value);
                       if (selected) {
                         handleCustomerChange(selected.id); 
@@ -792,7 +793,7 @@ export default function Operations() {
                           </option>)
                       })}
                     </datalist>                    
-                    <div className="relative ">                                           
+                    <div className=" ">                                           
                       <input
                         disabled
                         type="text"
@@ -1121,41 +1122,7 @@ export default function Operations() {
                             </div>
                           ))
                         ))
-                      ) : (<></>)}
-                      {/*servicesOperation.length > 0 ? (
-                        servicesOperation?.map(serviceOperation => (
-                          <div key={`${serviceOperation._id}-${serviceOperation.service_name}`}
-                            className={`${styles.tabItem} ${activeTab.item === serviceOperation._id ? styles.active : ''}`}
-                            onClick={() => {
-                              setActiveTab(
-                                {
-                                  id: serviceOperation._id,
-                                  idService: '',
-                                  item: '',
-                                  name: serviceOperation.service_name
-                                })
-                              const newService = buildOperationService(null, service);
-                              updateFormData(prev => { //setformdata
-                                const exists = prev.Services.some(
-                                  s =>
-                                    s.IdControl === newService.IdControl &&
-                                    s.IdServiceItem === newService.IdServiceItem
-                                );
-                                if (exists) return prev;
-                                return {
-                                  ...prev,
-                                  Services: [...prev.Services, newService]
-                                };
-                              }
-                              );
-                            }}>
-                            {serviceOperation._id}-{serviceOperation.service_name}
-                          </div>
-                        ))
-                      ) : (
-                        <span className=''>
-                        </span>)
-                      */}
+                      ) : (<></>)}                      
                     </div>
                   </div>
                 </div>

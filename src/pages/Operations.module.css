@@ -363,6 +363,21 @@
   color: var(--text-secondary);
 }
 
+.textInputClient {
+  text-align: left;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 0.2s;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+
+}
+
 .textInput,
 .selectInput {
   padding: 0.625rem 0.875rem;

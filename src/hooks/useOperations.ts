@@ -133,7 +133,6 @@ const updateFormData = (changes:
 };
 
  const updateServiceFormData = (idServiceItem: number, detailId: number, field: string, value: any) => {
-  console.log('updateServiceFormData',idServiceItem, detailId, field, value,formData)
     setFormData(formData => ({ 
       ...formData,
       Services: formData.Services.map(service =>
@@ -196,6 +195,7 @@ const updateFormData = (changes:
         service.idServiceItem === idServiceItem
           ? {
             ...service,
+            currentIndex: service.serviceDetail.length,
             serviceDetail: [
               ...service.serviceDetail,
               newDetail

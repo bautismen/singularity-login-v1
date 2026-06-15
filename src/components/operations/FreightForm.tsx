@@ -92,8 +92,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
     (s) =>  (s.idControl ? (s.idControl === info.id && s.idServiceItem === info.item) : 
             (s.idService === info.idService && s.idServiceItem === info.item )));  
   console.log('FreightForm formData: ',formData, 'infoControl: ', infoControl)
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const detail = infoControl?.serviceDetail?.[currentIndex] || 
+  //const [currentIndex, setCurrentIndex] = infoControl?.currentIndex || 0;
+  const detail = infoControl?.serviceDetail?.[infoControl.currentIndex] || 
   {
   idDetail: 1,
   idTypeShipment: 1,
@@ -112,6 +112,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
   destination: {},
   //goods?: 
   }; 
+  console.log('detail: ', detail);
   formData.Services?.map((s)=> s.serviceDetail.length === 0 ? s.serviceDetail=[detail] : s)
   const [accordionOpen, setAccordionOpen] = React.useState({
     [`envio-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
@@ -264,14 +265,36 @@ export const FreightForm: React.FC<FreightFormProps> = ({
   };
 
   const nextPage = () => {
-    if (currentIndex < infoControl.serviceDetail.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
+    if (infoControl.currentIndex < infoControl.serviceDetail.length - 1) {
+      onUpdateFormData(prev=>({
+        ...prev,
+        Services: prev.Services.map((ser) => 
+          ser.idServiceItem === infoControl?.idServiceItem ? 
+          {
+            ...ser,
+            currentIndex: infoControl.currentIndex + 1
+
+          } : ser
+        )
+      }));
+      //setCurrentIndex((prev) => prev + 1);
     }
   };
 
   const prevPage = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
+    if (infoControl.currentIndex > 0) {
+      onUpdateFormData(prev=>({
+        ...prev,
+        Services: prev.Services.map((ser) => 
+          ser.idServiceItem === infoControl?.idServiceItem ? 
+          {
+            ...ser,
+            currentIndex: infoControl.currentIndex - 1
+
+          } : ser
+        )
+      }));
+      //setCurrentIndex((prev) => prev - 1);
     }
   };
 
@@ -281,13 +304,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
     card.style.transform = "scale(0.98)";
 
     const newDetail = structuredClone(detail);
-
     let newsequence = infoControl.serviceDetail.length + 1;
-    // Nuevo detail
     newDetail.idDetail = newsequence;
-
-    setCurrentIndex(infoControl.serviceDetail.length);
-
+    console.log('idServiceItem: ',idServiceItem, 'newsequence', newsequence, 'newDetail', newDetail )
     onDuplicateDetail(idServiceItem, newsequence, newDetail);
   };
 
@@ -298,8 +317,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
           <div
             key={detail.idDetail}
             id="mainFormCard"
-            className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-4 bg-white dark:bg-[#1e293b]"
-          >
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-4 text-white bg-white dark:bg-[#1e293b]"
+          > {infoControl?.control} idServiceItem:  {infoControl?.idServiceItem}  idDetail: {detail.idDetail} currentIndex: {infoControl.currentIndex}
             {/* Header Card */}
             <div id="pageCounter">
               <div className={styles.serviceActions}>
@@ -314,7 +333,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 </button>
 
                 <span className="text-label-bold font-label-bold text-on-surface-variant dark:text-white">
-                  {currentIndex + 1} de{" "}
+                  {infoControl.currentIndex + 1} de{" "}
                   {infoControl?.serviceDetail?.length || 1}
                 </span>
 
@@ -330,7 +349,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     type="button"
                     className={styles.iconButton}
                     disabled={
-                      currentIndex === infoControl?.serviceDetail?.length - 1
+                      infoControl.currentIndex === infoControl?.serviceDetail?.length - 1
                     }
                     onClick={nextPage}
                   >
@@ -360,7 +379,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 
               </div> */}
             </div>
-            <span key={currentIndex + 1} className={styles.serviceItem}>
+            <span key={infoControl.currentIndex + 1} className={styles.serviceItem}>
               <div className={styles.serviceCard}>
                 <div
                   className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
