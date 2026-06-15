@@ -5,7 +5,7 @@ import styles from './Reports.module.css';
 import { useAuth } from '../contexts/AuthContext';
 import { Report } from '../types/reports';
 import { reportsServices } from '../services/reportsService';
-import { getExecutivesByDepartment } from '../services/executiveService';
+import { getExecutivesByDepartment, getExecutives } from '../services/executiveService';
 import { getCustomers } from '../services/customerService';
 import * as XLSX from 'xlsx-js-style';
 import { useReactToPrint } from "react-to-print";
@@ -15,7 +15,7 @@ import { Shower } from '@mui/icons-material';
 export function Reports() {
   
   
-  const CHIP_VALUES = ['All', 'Pricing', 'Operations', 'Customer'] as const;
+  const CHIP_VALUES = ['All', 'Pricing','Commercial', 'Operations', 'Customer'] as const;
   type Chip = typeof CHIP_VALUES[number];
   const CHIP_TRANSLATIONS: Record<Chip, { es: string; en: string }> = {
     All: {
@@ -25,6 +25,10 @@ export function Reports() {
     Pricing: {
       es: 'Pricing',
       en: 'Pricing'
+    },
+    Commercial: {
+      es: 'Comercial',
+      en: 'Commercial'
     },
     Operations: {
       es: 'Operaciones',
@@ -74,6 +78,12 @@ export function Reports() {
   const [currentPageTop, setCurrentPageTop] = useState(1);
   const [pageSizeTop, setPageSizeTop] = useState(10);
   const { showError, showWarning, showInfo } = useNotification();
+  const rolAdmin = ["admin"]
+  const isAdmin = user?.roles?.every(() => true) && rolAdmin.every(v => user?.roles?.includes(v));
+  const rolpricing = ["pricing"]
+  const isPricing = user?.roles?.every(() => true) && rolpricing.every(v => user?.roles?.includes(v));
+  const rolcomercial = ["comercial"]
+  const isComercial = user?.roles?.every(() => true) && rolcomercial.every(v => user?.roles?.includes(v));
 
   const totalPagesTop = Math.ceil(filteredItems.length / pageSizeTop);
 
@@ -121,6 +131,9 @@ useEffect(() => {
         if (p.catalog === 'Clientes') {
           newCatalogs[p.catalog] = await getCustomers();
         }
+        if (p.catalog === 'Ejecutivos') {
+          newCatalogs[p.catalog] = await getExecutives();
+        }
       }
     }
 
@@ -160,7 +173,28 @@ const loadData = async () => {
   try {
     setLoading(true);
     const data = await reportsServices.getall();
-    setControlData(data);
+     let filteredData = [];
+
+    if (isAdmin) {
+      // Ve todo
+      filteredData = data;
+    } else if (isPricing) {
+      // Solo Pricing
+      filteredData = data.filter(
+        (item: any) =>
+          item.category?.toLowerCase() === 'pricing'
+      );
+    } else if (isComercial) {
+      // Solo Comercial
+      filteredData = data.filter(
+        (item: any) =>
+          item.category?.toLowerCase() === 'comercial'
+      );
+    } else {
+      // No tiene permisos
+      filteredData = [];
+    }
+    setControlData(filteredData);
   } catch (error) {
     setLoading(false);
     showError('Error fetching control data:' + error);
@@ -310,7 +344,7 @@ const renderParameter = (id: string) => {
               {catalogs[p.catalog]?.map((dat: any, index: number) => (
                 <option
                   key={
-                    p.catalog === 'EjecutivosPricing'
+                    p.catalog === 'EjecutivosPricing' || p.catalog === 'Ejecutivos'
                       ? dat._Iduser
                       : (dat._Id ?? dat.id ?? `${p.name}-option-${index}`)
                   }
@@ -336,7 +370,7 @@ const handleDatalistChange = (name: string, catalog: string, inputText: string) 
   // ✅ Resuelve el ID correcto según el catálogo
   const resolveId = (item: any): string => {
     if (!item) return '';
-    if (catalog === 'EjecutivosPricing') return String(item._Iduser ?? '');
+    if (catalog === 'EjecutivosPricing' || catalog === 'Ejecutivos') return String(item._Iduser ?? '');
     return String(item._Id ?? item.id ?? '');
   };
 
