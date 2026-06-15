@@ -1,4 +1,5 @@
 import { Customer, Person, Company } from '../types/customer';
+import { vinCustomerSingularityKb } from '../types/vinCustomerSingularityKb.ts';
 
 const API_URL = import.meta.env.VITE_API_CATALOGS;
 const API_KEY = import.meta.env.VITE_APIKEYSL;
@@ -183,3 +184,83 @@ export async function createCompany(company: Partial<Company>) {
     throw error;
   }
 }
+
+export async function createVinCustomer(vincustomer: Partial<vinCustomerSingularityKb>): Promise<vinCustomerSingularityKb> {
+  
+  try {
+    const response = await fetch(`${API_URL}/v1/kl/catalog/general/add/VinCustomerSingularityKb`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${API_TOKENSL}`,
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
+          },
+          body: JSON.stringify(vincustomer),
+        });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || 'Failed to create vin customer');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating vin customer:', error);
+    throw error;
+  }
+}
+
+  export async function getVinculacionClienteKBSingularity(_id_customer: string) : Promise<vinCustomerSingularityKb[] | null> {
+        try {
+            const response = await fetch(`${API_URL}/v1/kl/catalog/general/view=VinCustomerSingularityKb&filtrer=${_id_customer}`, 
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${API_TOKENSL}`,
+                    'Content-Type': 'application/json',
+                    'x-api-key': API_KEY,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al obtener la vinculacion del cliente');
+            }
+        
+            const data = await response.json();
+            return data.data;
+
+        } catch (error) {
+            console.log('ERROR: ', error);
+            throw new Error('Failed to fetch');             
+        }
+    }
+
+    export async function updateVinCustomer(vincustomer: Partial<vinCustomerSingularityKb> ): Promise<any> {
+    try {
+      const response = await fetch(
+        `${API_URL}/v1/kl/catalog/general/VinCustomerSingularityKb`,
+        {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(vincustomer),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Unknown error' }));
+
+        throw new Error(
+          errorData.error || 'Failed to update VinCustomerSingularityKb'
+        );
+      }
+
+      return await response.json();
+
+    } catch (error) {
+      console.error('Error updating VinCustomerSingularityKb:', error);
+      throw error;
+    }
+}
+

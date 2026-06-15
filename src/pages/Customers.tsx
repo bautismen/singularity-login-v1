@@ -2,15 +2,19 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, Save, Edit2, ChevronDown, ChevronUp, X, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Customer, Person, Company, Contacts, Address, History, MEXICAN_STATES, CONTACT_TYPES } from '../types/customer';
-import { getCustomers, createCustomer, updateCustomer, getCompanies, createCompany } from '../services/customerService';
+import { getCustomers, createCustomer, updateCustomer, getCompanies, createCompany, createVinCustomer, updateVinCustomer,
+        getVinculacionClienteKBSingularity } from '../services/customerService';
 import styles from './Customers.module.css';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAuth } from '../contexts/AuthContext';
 import { catalogService } from '../services/catalogsService';
+import { CustomerKB } from '../types/customerKB';
+import { getCustomersKB } from '../services/krombaseService';
+import { vinCustomerSingularityKb } from '../types/vinCustomerSingularityKb';
 
 export default function Customers() { //{ onNavigate }: { onNavigate: (route: string) => void }
   const { t } = useLanguage();
-  const { showError, showWarning } = useNotification();
+  const { showError, showWarning, showSuccess } = useNotification();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -23,7 +27,15 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
     general: false,
     address: false,
     contacts: false,
+    customerVinSinKb: false,
   });
+  const [showConfigSingularityKBForm, setShowConfigSingularityKBForm] = useState(false);
+  const [vinCustomerKbActual, setVinCustomerKbActual] = useState<vinCustomerSingularityKb | null>(null);
+  const [isKbEnabled, setIsKbEnabled] = useState(false);
+  const [newClientKb, setNewClientKb] = useState('');
+  const [clientsKb, setClientsKb] = useState<CustomerKB[]>([]);
+  const [customersKB, setCustomersKB] = useState<CustomerKB[]>([]);
+
   const { user } = useAuth();
   const [showPersonForm, setShowPersonForm] = useState(false);
   const [showCompanyForm, setShowCompanyForm] = useState(false);
@@ -107,6 +119,7 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
   useEffect(() => {
     loadCustomers();
      loadCompanies();
+    loadCustomersKB();
   }, []);
 
   useEffect(() => {
@@ -189,6 +202,52 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
       }
     };
 
+    //consulta los clientes a krombase
+    async function loadCustomersKB() {
+    try {
+
+      const data = await getCustomersKB(2);
+      setCustomersKB(data);
+
+    } catch (error) {
+      console.error('Error loading customers KB:', error);
+    }
+  }
+
+      //consulta la vinculacion del cliente singularity y KB VinCustomerSingularityKb
+  const loadVinculacionCustomerKB = async (_id_customer: string) => {
+    try {
+      const data = await getVinculacionClienteKBSingularity(_id_customer);
+
+      if (data?.length) {
+
+        setVinCustomerKbActual(data[0]);
+
+        setIsKbEnabled(data[0].status === 'Activo');
+
+        setClientsKb(
+          customersKB.filter(kb =>
+            data[0].cliente_KB.some(v =>
+              v.i_cve_clienteempresa_KB === kb.i_Cve_ClienteEmpresa &&
+              v.i_cve_divisionmiempresa_KB === kb.i_Cve_DivisionMiEmpresa
+            )
+          )
+        );
+
+      } else {
+        setVinCustomerKbActual(null);
+        setIsKbEnabled(true);
+        setClientsKb([]);
+      }
+
+    } catch (error) {
+    console.error(error);
+    setVinCustomerKbActual(null);
+    setIsKbEnabled(true);
+    setClientsKb([]);
+}
+  };
+
   function toggleSection(section: string) {
     setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }));
   }
@@ -231,6 +290,7 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
   function handleEditCustomer(customer: Customer) {
   addHistory
   setEditingCustomer(customer);
+  loadVinculacionCustomerKB(customer.id);
 
   const selectedCompany = companies.find(c => c._Id === customer.companyId);
   // console.log(customer)
@@ -529,6 +589,110 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       Sector_name: selectedCompany.sector_name || ''
     });
   }
+
+/* ============================
+   VINCULACION CLIENTE KB SINGULARITY
+   ============================ */
+  // Agrega un cliente KB seleccionado desde el datalist, Evita duplicados utilizando la clave i_Cve_ClienteEmpresa y almacena el objeto completo para conservar RFC, nombre y demás datos.
+  const addClientKb = () => {
+    const value = newClientKb.trim();
+
+    if (!value) return;
+
+    const customer = customersKB.find(
+      c =>
+        `${c.i_Cve_ClienteEmpresa} - ${c.t_EmpresaCliente}` === value
+    );
+
+    if (!customer) {
+      return;
+    }
+
+    const exists = clientsKb.some(
+      c => c.i_Cve_ClienteEmpresa === customer.i_Cve_ClienteEmpresa
+    );
+
+    if (exists) {
+      setNewClientKb('');
+      return;
+    }
+
+    setClientsKb(prev => [...prev, customer]);
+    setNewClientKb('');
+  };
+
+  // Elimina una vinculación de cliente KB utilizando la clave única i_Cve_ClienteEmpresa.
+  const removeClientKb = (idClienteKB: number) => {
+    setClientsKb(prev =>
+      prev.filter(x => x.i_Cve_ClienteEmpresa !== idClienteKB)
+    );
+  };
+
+  const closeConfigSingularityKBForm = () => {
+    setNewClientKb('');
+    setShowConfigSingularityKBForm(false);
+  };
+
+  //filtra por taxid/rfc o si no tiene muestra todo
+  const customersKBFiltered =
+  formData.FiscalData.TaxId?.trim()
+    ? customersKB.filter(
+        customer =>
+          customer.t_RFCClienteFusion?.trim().toUpperCase() ===
+          formData.FiscalData.TaxId.trim().toUpperCase()
+      ) : customersKB;
+
+
+  const handleSaveCustomerKb = async () => {
+
+    const payload: vinCustomerSingularityKb = {
+      _id: vinCustomerKbActual?._id ?? null,
+      _idvincustomer: vinCustomerKbActual?._idvincustomer ?? 0,
+      _idcustomer: formData.IdCustomer,
+      _id_customer: formData.Id || '',
+      cliente_KB: clientsKb.map(x => ({
+        i_cve_clienteempresa_KB: x.i_Cve_ClienteEmpresa,
+        i_cve_divisionmiempresa_KB: x.i_Cve_DivisionMiEmpresa
+      })),
+      fiscal_data: {
+        taxid: formData.FiscalData.TaxId,
+        curp: formData.Curp
+      },
+      created_at:
+        vinCustomerKbActual?.created_at ?? new Date().toISOString(),
+      status: isKbEnabled ? 'Activo' : 'Inactivo',
+      data_state: formData.DataState,
+      archived: false
+    };
+
+    try {
+
+      setLoading(true);
+
+      if (vinCustomerKbActual?._id) {
+
+        await updateVinCustomer(payload);
+
+        showSuccess(t('CustomerVin.kbLinkUpdated'));
+
+      } else {
+
+        await createVinCustomer(payload);
+
+        showSuccess(t('CustomerVin.kbLinkCreated'));
+      }
+
+      closeConfigSingularityKBForm();
+
+    } catch (error) {
+      console.error(error);
+      showError(t('CustomerVin.kbLinkSaveError'));
+
+    } finally {
+
+      setLoading(false);
+    }
+  };
 
   if (isFormOpen) {
     return (
@@ -1005,7 +1169,109 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
               </div>
             )}
           </div>
+            {/*nueva seccion vinculacion del cliente con KB*/}
+            {formData.IdCustomer > 0 && (
+              <div className={styles.sectionCard}>
+                <div
+                  className={styles.sectionTitleCollapsible}
+                  onClick={() => toggleSection('customerKb')}
+                >
+                  <div className={styles.sectionTitleWithDot}>
+                    <span className={styles.greenDot}></span>
+                    <span>{t('CustomerVin.titlesectionCard')}</span>
+                  </div>
 
+                  {collapsedSections.customerVinSinKb ? (
+                    <ChevronDown size={20} />
+                  ) : (
+                    <ChevronUp size={20} />
+                  )}
+                </div>
+
+                {!collapsedSections.customerVinSinKb && (
+                  <div className={styles.sectionContent}>
+                    <div className={styles.clientKbInputContainer}>
+                      <input
+                        className={styles.clientKbInput}
+                        type="text"
+                        list="clientes-kb-list"
+                        value={newClientKb}
+                        placeholder={t('CustomerVin.selectKbCustomer')}
+                        onChange={(e) => setNewClientKb(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addClientKb();
+                          }
+                        }}
+                      />
+
+                      <datalist id="clientes-kb-list">
+                        {customersKBFiltered.map((customer) => (
+                          <option
+                            key={customer.i_Cve_ClienteEmpresa}
+                            value={`${customer.i_Cve_ClienteEmpresa} - ${customer.t_EmpresaCliente}`}
+                          >
+                            {customer.t_EmpresaCliente}
+                          </option>
+                        ))}
+                      </datalist>
+
+                      <button
+                        type="button"
+                        onClick={addClientKb}
+                        className={styles.addClientKbButton}
+                      >
+                        <Plus size={18} />
+                      </button>
+                        <div className={styles.customerActiveTitle}>
+                        <span>{t('CustomerVin.active')}</span>
+                      </div>
+                      <button
+                        type="button"
+                        className={`${styles.toggleSwitch} ${
+                          isKbEnabled ? styles.toggleSwitchActive : ''
+                        }`}
+                        onClick={() => setIsKbEnabled(!isKbEnabled)}
+                      >
+                        <div className={styles.toggleThumb}></div>
+                      </button>
+                    </div>
+
+                    <div className={styles.clientsKbContainer}>
+                      {clientsKb.map((clientKb) => (
+                        <span
+                          key={clientKb.i_Cve_ClienteEmpresa}
+                          className={styles.clientKbTag}
+                        >
+                          {clientKb.i_Cve_ClienteEmpresa} - {clientKb.t_EmpresaCliente}
+
+                          <button
+                            type="button"
+                            className={styles.removeClientKbButton}
+                            onClick={() =>
+                              removeClientKb(clientKb.i_Cve_ClienteEmpresa)
+                            }
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className={styles.modalActions}>
+                      <button
+                        type="button"
+                        className={styles.saveButton}
+                        onClick={handleSaveCustomerKb}
+                      >
+                        {t('CustomerVin.save')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
         </form>
 
         {showCompanyForm && ( /* aqui guarda la empresa */
