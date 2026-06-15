@@ -746,11 +746,16 @@ export default function Operations() {
             <div className={styles.twoColumnGrid}>
 
               <div className={styles.leftColumn}>
-                <div className={styles.fieldGroup}>
+                {editingOperation !== null && (
+                  <div className={styles.fieldGroup}>
                    {/* Referencia */}
                   <div>                        
-                    <span className={styles.controlBadge}>{formData.Reference=== '' ? 'ATVSSSS12939' :'ATVS12SSS939' } </span>                        
+                    <span className={styles.controlBadge}>{formData.Reference } </span>                        
                   </div>
+                </div>
+                ) }
+                
+                <div className={styles.fieldGroup}>
                   {/* Cliente */}                  
                   <label htmlFor="customer" className={styles.fieldLabel}>
                   {t('operations.customer')} | RFC Tax ID
