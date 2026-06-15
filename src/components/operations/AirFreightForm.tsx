@@ -89,12 +89,12 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
   onRemoveDetail
 }) => {
   const { t } = useLanguage();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  //const [currentIndex, setCurrentIndex] = useState(0);
   const [airportsOrigin, setAirportsOrigin] = useState<Airport[]>([]);
   const [airportsDestination, setAirportsDestination] = useState<Airport[]>([]);
   const airServiceControl = formData.Services?.find((s) => (s.idControl ? (s.idControl === info.id && s.idServiceItem === info.item) :
                             (s.idService === info.idService && s.idServiceItem === info.item)));
-  const detail = airServiceControl?.serviceDetail?.[currentIndex] || 
+  const detail = airServiceControl?.serviceDetail?.[airServiceControl.currentIndex] || 
   {
     idDetail: 1,
     idTypeShipment: 1,
@@ -265,14 +265,34 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
   };
 
   const nextPage = () => {
-    if (currentIndex < airServiceControl?.serviceDetail.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
+    if (airServiceControl.currentIndex < airServiceControl?.serviceDetail.length - 1) {
+      //setCurrentIndex((prev) => prev + 1);
+      onUpdateFormData(prev=>({
+        ...prev,
+        Services: prev.Services.map((ser) => 
+          ser.idServiceItem === airServiceControl?.idServiceItem ? 
+          {
+            ...ser,
+            currentIndex: airServiceControl.currentIndex + 1
+          } : ser
+        )
+      }));
     }
   };
 
   const prevPage = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
+    if (airServiceControl.currentIndex > 0) {
+      //setCurrentIndex((prev) => prev - 1);
+      onUpdateFormData(prev=>({
+        ...prev,
+        Services: prev.Services.map((ser) => 
+          ser.idServiceItem === airServiceControl?.idServiceItem ? 
+          {
+            ...ser,
+            currentIndex: airServiceControl.currentIndex - 1
+          } : ser
+        )
+      }));
     }
   };
 
@@ -282,14 +302,10 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
     card.style.transform = "scale(0.98)";
 
     const newDetail = structuredClone(detail);
-
     let newsequence = airServiceControl.serviceDetail.length + 1;
-    newDetail.idDetail = newsequence;    // Nuevo detail
-
-    setCurrentIndex(airServiceControl?.serviceDetail?.length);
+    newDetail.idDetail = newsequence;    
+    //setCurrentIndex(airServiceControl?.serviceDetail?.length);
     onDuplicateDetail(idServiceItem, newsequence, newDetail);
-
-    console.log('dupl', newDetail, newsequence,)
   };
 
   return (
@@ -312,7 +328,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                 </button>
 
                 <span className="text-label-bold font-label-bold text-on-surface-variant dark:text-white">
-                  {currentIndex + 1} de{" "}
+                  {airServiceControl.currentIndex + 1} de{" "}
                   {airServiceControl?.serviceDetail?.length || 1}
                 </span>
 
@@ -328,7 +344,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                     type="button"
                     className={styles.iconButton}
                     disabled={
-                      currentIndex === airServiceControl?.serviceDetail?.length - 1
+                      airServiceControl.currentIndex === airServiceControl?.serviceDetail?.length - 1
                     }
                     onClick={nextPage}
                   >
@@ -354,7 +370,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
               </div>
             </div>
             {/* Contenido */}
-            <span key={currentIndex + 1} className={styles.serviceItem}>
+            <span key={airServiceControl.currentIndex + 1} className={styles.serviceItem}>
               <div className={styles.serviceCard}>
                 <div className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
                   onClick={() => toggleAccordion(`envio-${detail.idDetail}`)}>

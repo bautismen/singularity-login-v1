@@ -306,7 +306,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
     const newDetail = structuredClone(detail);
     let newsequence = infoControl.serviceDetail.length + 1;
     newDetail.idDetail = newsequence;
-    console.log('idServiceItem: ',idServiceItem, 'newsequence', newsequence, 'newDetail', newDetail )
+    //console.log('idServiceItem: ',idServiceItem, 'newsequence', newsequence, 'newDetail', newDetail )
     onDuplicateDetail(idServiceItem, newsequence, newDetail);
   };
 
@@ -317,8 +317,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
           <div
             key={detail.idDetail}
             id="mainFormCard"
-            className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-4 text-white bg-white dark:bg-[#1e293b]"
-          > {infoControl?.control} idServiceItem:  {infoControl?.idServiceItem}  idDetail: {detail.idDetail} currentIndex: {infoControl.currentIndex}
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-4 bg-white dark:bg-[#1e293b]"
+          > 
             {/* Header Card */}
             <div id="pageCounter">
               <div className={styles.serviceActions}>
