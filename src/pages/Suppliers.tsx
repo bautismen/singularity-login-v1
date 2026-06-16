@@ -45,9 +45,9 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
     Contacts: [] as Contact[],
     Addresses: [] as Address[],
     History: [] as History[],
-    CreatedAt: Date,
+    CreatedAt: new Date,
     UpdatedAt: Date,
-    CreatedBy: {IdUser: user?._id, Name: user?.name},
+    CreatedBy: {idUser: user?._id, name: user?.name},
     Status: 1 as 1 | 0,//'activo' as 'activo' | 'inactivo',
     Archived: false,
     DataState: 1
@@ -188,9 +188,9 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
       Contacts: [],
       Addresses: [],
       History: [],
-      CreatedAt: Date,
+      CreatedAt: new Date,
       UpdatedAt: Date,
-      CreatedBy: {IdUser: user._id, Name: user?.name},
+      CreatedBy: {idUser: user._id, name: user?.name},
       Status: 1,
       Archived: false,
       DataState: 1
@@ -385,7 +385,7 @@ export default function Suppliers() { //{ onNavigate }: { onNavigate: (route: st
         Country: selectedCompany.country || 'MX',
       },
       SectorId: selectedCompany.sector_id || 0,
-      Sector_name: selectedCompany.sector_name || ''
+      Sector_name: selectedCompany.sector || ''
     });
   }
 
