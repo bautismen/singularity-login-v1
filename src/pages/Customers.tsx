@@ -119,7 +119,7 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
   useEffect(() => {
     loadCustomers();
      loadCompanies();
-    loadCustomersKB();
+    //loadCustomersKB();
   }, []);
 
   useEffect(() => {
@@ -290,7 +290,7 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
   function handleEditCustomer(customer: Customer) {
   addHistory
   setEditingCustomer(customer);
-  loadVinculacionCustomerKB(customer.id);
+  //loadVinculacionCustomerKB(customer.id);
 
   const selectedCompany = companies.find(c => c._Id === customer.companyId);
   // console.log(customer)
@@ -1170,7 +1170,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
               </div>
             )}
           </div>
-            {/*nueva seccion vinculacion del cliente con KB*/}
+            {/*
             {formData.IdCustomer > 0 && (
               <div className={styles.sectionCard}>
                 <div
@@ -1273,6 +1273,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                 )}
               </div>
             )}
+              */}
         </form>
 
         {showCompanyForm && ( /* aqui guarda la empresa */
