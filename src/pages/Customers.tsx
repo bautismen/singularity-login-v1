@@ -652,6 +652,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       _id_customer: formData.Id || '',
       cliente_KB: clientsKb.map(x => ({
         i_cve_clienteempresa_KB: x.i_Cve_ClienteEmpresa,
+        t_empresacliente_KB: x.t_EmpresaCliente,
         i_cve_divisionmiempresa_KB: x.i_Cve_DivisionMiEmpresa
       })),
       fiscal_data: {
