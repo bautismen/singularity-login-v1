@@ -70,7 +70,7 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
     Sector_id: 0,
     Sector_name: '',
     History: [] as History[],
-    CreatedAt: Date,
+    CreatedAt: new Date,
     UpdatedAt: Date,
     CreatedBy: {IdUser: user?._id, Name: user?.name},
     Status: 1 as 1 | 0,//'activo' as 'activo' | 'inactivo',
@@ -277,7 +277,7 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
       Sector_id: 0,
       Sector_name: '',
       History: [],
-      CreatedAt: Date,
+      CreatedAt: new Date,
       UpdatedAt: Date,
       CreatedBy: {IdUser: user._id, Name: user?.name},
       Status: 1,
@@ -586,7 +586,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       },
       IsPersonaFisica: selectedCompany.rfc_taxid.length === 13 ? true : false,
       Sector_id: selectedCompany.sector_id || 0,
-      Sector_name: selectedCompany.sector_name || ''
+      Sector_name: selectedCompany.sector || ''
     });
   }
 
@@ -652,6 +652,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
       _id_customer: formData.Id || '',
       cliente_KB: clientsKb.map(x => ({
         i_cve_clienteempresa_KB: x.i_Cve_ClienteEmpresa,
+        t_empresacliente_KB: x.t_EmpresaCliente,
         i_cve_divisionmiempresa_KB: x.i_Cve_DivisionMiEmpresa
       })),
       fiscal_data: {
@@ -935,7 +936,7 @@ async function handleSaveCustomer(e: React.FormEvent<HTMLFormElement>) {
                       setFormData({
                         ...formData,
                         // client_level: level,
-                        ClientLevelId: CLIENT_LEVEL_MAP[level],
+                        ClientLevelId: Number(e.target.value)
                       });
                     }}
                     className={styles.selectInput}
