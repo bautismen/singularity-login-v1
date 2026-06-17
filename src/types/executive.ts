@@ -7,9 +7,9 @@ export interface Executive {
   fecha_ingreso: string;
   email: string;
   departamento: string;
-  activo: boolean;
+  status: number;
   archivado: boolean;
-  estado: number;
+  data_state: number;
   created_at?: Date;
   updated_at?: Date;
   _iduser?: string;
@@ -24,9 +24,9 @@ export interface ExecutiveFormData {
   Fecha_ingreso: string;
   Email: string;
   Departamento: string;
-  Activo: boolean;
+  Status: number;
   _Iduser?: string;
-  Estado: Number;
+  data_state: Number;
   Archivado: boolean;
 }
 
