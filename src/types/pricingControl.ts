@@ -45,7 +45,9 @@ export interface PricingControl {
   comments_general?: string;
   _id_executive_pricing: string;
   complete_name_pricing: string;
-  reason_for_cancellation?: string; 
+  reason_for_cancellation?: string; ,
+  Archived?: boolean;
+  Data_state?: number;
 }
 
 export interface CreatePricingControlRequest {
@@ -113,6 +115,8 @@ export interface CreatePricingControlAPI {
   Complete_name_pricing: string;
   id_correspondent_country: string;
   correspondent_country: string;
+  Archived?: boolean;
+  Data_state?: number;
 }
 
 export interface QuotedControlRequest {

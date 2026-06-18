@@ -91,6 +91,7 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
   const [pricingQuotationRequest, setpricingQuotationRequest] = useState<any>(null);
   const [quotedratedata, setquotedratedata] = useState<any>(null);  
   const [currentControlId, setCurrentControlId] = useState<string | undefined>(controlId);
+  const [diferenteMes, setDiferenteMes] = useState(false);
 
 
   useEffect(() => {
@@ -202,7 +203,8 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         const expandedIds = new Set(request.services?.map((s: any) => s.idServiceItem) || []);
         setExpandedServices(expandedIds);
 
-        if(control.status_control?.id_status_control === 5 ||control.status_control?.id_status_control === 6 || request.idStatusRequest === 10)
+        if(control.status_control?.id_status_control === 5 || control.status_control?.id_status_control === 6 || 
+          request.idStatusRequest === 10 || control.status_control?.id_status_control === 10)
           {
             setDisabled(true);
           }
@@ -210,6 +212,19 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
           {
             setDisabled(false);
           }
+
+          const fechaEvaluar = new Date(control.creation_date);
+          const hoy = new Date();
+
+          if(fechaEvaluar.getMonth() === hoy.getMonth()){
+            
+            setDiferenteMes(true);
+
+          } else{
+            
+            setDiferenteMes(false);
+
+          }         
 
       } else {
         const request = await pricingControlService.getResquetById(requestId);
@@ -386,7 +401,9 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         Id_customer_lead:  CustomLeads.Id_customer_lead? CustomLeads.Id_customer_lead : '',
         Customer_lead:  CustomLeads.Customer_lead? CustomLeads.Customer_lead : '',
         Affair:  generalData.Affair || '',
-        Ref_atv:  generalData.Ref_atv || ''
+        Ref_atv:  generalData.Ref_atv || '',
+        Archived: controlData?.Archived || false,
+        Data_state: controlData?.Data_state || 1,
       };
 
       if (currentControlId) {
@@ -477,6 +494,28 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
         status_control_name: 'Declinada'
       });
       showSuccess('Control marcado como declinado');
+      loadData();
+    } catch (error) {
+      console.error('Error marking as decline:', error);
+      showError('Error al marcar como declinado');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlereplace = async (e: React.FormEvent) => {  
+     e.preventDefault();  
+    if (!currentControlId) return;     
+    try {
+      setLoading(true);
+      const response = await pricingControlService.change(currentControlId);
+
+        if (response?.atrribute.value) {                  
+
+          setCurrentControlId(response?.atrribute.value);
+
+        }  
+      showSuccess('Control sustituido');
       loadData();
     } catch (error) {
       console.error('Error marking as decline:', error);
@@ -1203,6 +1242,15 @@ export function ControlsPricingForm({ requestId, controlId, onBack }: ControlsPr
                 >
                   {t('ctrlpricing.quoted')}
                 </button>*/}
+
+                <button type="button"
+                  className={styles.btnQuote}
+                  onClick={handlereplace}
+                  disabled={loading ||Disabled}
+                  hidden={currentControlId ? diferenteMes : true}
+                >
+                  {t('ctrlpricing.replace')}
+                </button>
                 <button
                   type="button"
                     className={`

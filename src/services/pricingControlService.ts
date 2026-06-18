@@ -219,6 +219,36 @@ class PricingControlService {
       throw new Error(error.message || 'Error de conexión al crear control de pricing');
     }
   }
+
+  async change(IdControl: string): Promise<PricingControl> {    
+    try {    
+      const response = await fetch(
+        `${PRICING_API_URL}/operations/v1/kl/controlnumbers/quotationrequests/${IdControl}/change`,
+        {
+          method: 'POST',
+          headers: this.getHeaders2(),          
+        }
+      );  
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+
+        try {
+          const error = JSON.parse(errorText);
+          throw new Error(error.message || error.error || 'Error al crear control de pricing');
+        } catch (e) {
+          throw new Error(errorText || 'Error al crear control de pricing');
+        }
+      }
+
+      const result = await response.json();    
+      return result;
+    } catch (error: any) {
+      console.error('Fetch error:', error);
+      throw new Error(error.message || 'Error de conexión al crear control de pricing');
+    }
+  }
   
 }
 
