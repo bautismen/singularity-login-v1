@@ -37,7 +37,7 @@ export const useCatalogs = () => {
       setCustomers(customersData.filter((c: any) => c.status === 1 || c.dataState === 1));
       setRequestTypes(requestTypesData.data.filter((r: any) => r.status === 1));
       setAvailableServices(servicesData.data.filter((s: any) => s.status === 1));
-      setAvailableExecutives(executivesData.filter((e: any) => e.estado === 1 && e.activo === true));
+      setAvailableExecutives(executivesData.filter((e: any) => e.status === 1));
       setIncoterms(incotermsData.data.filter((i: any) => i.status === 1));
       setCountries(countriesData.data.filter((co: any) => co.status === 1));
     } catch {
