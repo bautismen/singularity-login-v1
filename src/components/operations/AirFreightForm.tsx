@@ -112,10 +112,14 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
   };
   formData.Services?.map((s)=> s.serviceDetail.length === 0 ? s.serviceDetail=[detail] : s)
   const [accordionOpen, setAccordionOpen] = React.useState({
-    [`envio-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
-    [`transporte-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
-    [`origin-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
-    [`destination-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
+    // [`envio-${detail?.idDetail}`]: mode === 'edit' ? true : true,
+    // [`transporte-${detail?.idDetail}`]: mode === 'edit' ? true : true,
+    // [`origin-${detail?.idDetail}`]: mode === 'edit' ? true : true,
+    // [`destination-${detail?.idDetail}`]: mode === 'edit' ? true : true,
+    [`envio`]: true,
+    [`transporte`]: true,
+    [`origin`]: true,
+    [`destination`]: true,
   });
   console.log('Air formData: ',formData, ' airServiceControl: ', airServiceControl)
 
@@ -373,7 +377,8 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
             <span key={airServiceControl.currentIndex + 1} className={styles.serviceItem}>
               <div className={styles.serviceCard}>
                 <div className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
-                  onClick={() => toggleAccordion(`envio-${detail.idDetail}`)}>
+                  onClick={() => toggleAccordion(`envio`)}>
+                    {/* toggleAccordion(`envio-${detail.idDetail}`) */}
                   <div className="flex items-center gap-3">
                     <span className="dark:text-white">
                       <Package />
@@ -385,7 +390,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                                     text-primary
                                     chevron-icon
                                     dark:text-white
-                                    ${accordionOpen[`envio-${detail.idDetail}`] ? "rotate-180" : ""}
+                                    ${accordionOpen[`envio`] ? "rotate-180" : ""}
                                   `}
                     id="envios-chevron">
                     <ChevronUp />
@@ -393,7 +398,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                 </div>
 
                 <div className={`${styles.accordionContent} 
-                                  ${!accordionOpen[`envio-${detail.idDetail}`]
+                                  ${!accordionOpen[`envio`]
                     ? styles.collapsed
                     : ""}`}>
                   <div className={styles.fourColumnGrid}>
@@ -465,7 +470,8 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                 <div
                   className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
                   onClick={() =>
-                    toggleAccordion(`transporte-${detail.idDetail}`)
+                    // toggleAccordion(`transporte-${detail.idDetail}`)
+                    toggleAccordion(`transporte`)
                   }
                 >
                   <div className="flex items-center gap-3">
@@ -479,7 +485,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                                 text-primary
                                 chevron-icon
                                 dark:text-white
-                                ${accordionOpen[`transporte-${detail.idDetail}`] ? "rotate-180" : ""}
+                                ${accordionOpen[`transporte`] ? "rotate-180" : ""}
                               `}
                     id="transporte-chevron">
                     <ChevronUp />
@@ -488,7 +494,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
 
                 <div
                   className={`accordion-content
-                              ${!accordionOpen[`transporte-${detail.idDetail}`] ? styles.collapsed : ""}`}>
+                              ${!accordionOpen[`transporte`] ? styles.collapsed : ""}`}>
                   <div className={styles.fourColumnGrid}>
                     
                     <div className={styles.firstColumn}>
@@ -653,8 +659,8 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                 {/**ORIGEN */}
                 <div
                   className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
-                  onClick={() => toggleAccordion(`origin-${detail.idDetail}`)}
-                >
+                  onClick={() => toggleAccordion(`origin`)}
+                > {/* toggleAccordion(`origin-${detail.idDetail}`) */}
                   <div className="flex items-center gap-3">
                     <span className="dark:text-white">
                       <MapPin />
@@ -666,14 +672,14 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                                 text-primary
                                 chevron-icon
                                 dark:text-white
-                                ${accordionOpen[`origin-${detail.idDetail}`] ? "rotate-180" : ""}
+                                ${accordionOpen[`origin`] ? "rotate-180" : ""}
                               `}
                     id="origin-chevron"
                   >
                     <ChevronDown />
                   </span>
                 </div>
-                <div className={`${styles.accordionContent} ${!accordionOpen[`origin-${detail.idDetail}`] ? styles.collapsed : ""}`}>
+                <div className={`${styles.accordionContent} ${!accordionOpen[`origin`] ? styles.collapsed : ""}`}>
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
                       {/* ORIGEN */}
@@ -881,7 +887,8 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                 <div
                   className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
                   onClick={() =>
-                    toggleAccordion(`destination-${detail.idDetail}`)
+                    // toggleAccordion(`destination-${detail.idDetail}`)
+                    toggleAccordion(`destination`)
                   }
                 >
                   <div className="flex items-center gap-3">
@@ -900,7 +907,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                   </span>
                 </div>
 
-                <div className={`${styles.accordionContent} ${!accordionOpen[`destination-${detail.idDetail}`] ? styles.collapsed : ""}`}>
+                <div className={`${styles.accordionContent} ${!accordionOpen[`destination`] ? styles.collapsed : ""}`}>
                   <div className={styles.fourColumnGrid}>
                     
                     <div className={styles.firstColumn}>

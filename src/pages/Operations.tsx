@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Save, Edit2, ChevronDown, ChevronUp, X, ArrowLeft, RefreshCw } from 'lucide-react';
+import { Search, Plus, Save, Edit2, ChevronDown, ChevronUp, RotateCcw, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { Operation, Customer, Service, ServiceOperation, ServiceDetail, HistoryStatus } from '../types/operations';
@@ -156,6 +156,13 @@ export default function Operations() {
       services: false,
       expedientes: false
     });
+    updateFormData({
+      Customer: {
+        idCustomer: '',
+        name: '',
+        rfc: ''
+      }
+    });
   }
 
   function handleEditOperation(operation: Operation) {
@@ -220,7 +227,7 @@ export default function Operations() {
   }
 
   function handleCustomerChange(selectedCustomerId: string) {
-    console.log('customer',selectedCustomerId)
+    //console.log('customer',selectedCustomerId)
     setControl({} as PricingControl);
     setControlsOperation([]);
     setServicesOperation([]);
@@ -592,7 +599,7 @@ export default function Operations() {
     }
 
     return {
-      idServiceItem: controlsOperation.length + 1 ,//service.idServiceItem,
+      idServiceItem: service.idServiceItem,
       idControl: control?._id || service.idControl || null,
       control: control?.control || service.control || null,
       idService: service.idService,
@@ -735,6 +742,15 @@ export default function Operations() {
                 <Save size={18} />
                 {loading ? t('catalog.saving') : t('catalog.save')}
               </button>
+              {/* {mode === "create" && ( */}
+              <button
+                type="button"
+                //disabled={saving}  
+                className={styles.resetHeaderButton}
+                onClick={handleNewOperation}>
+                <RotateCcw size={18} />
+              </button>
+            {/* )} */}
             </div>
           </div>
 
@@ -760,7 +776,7 @@ export default function Operations() {
                 <div className={styles.fieldGroup}>
                   {/* Cliente */}                  
                   <label htmlFor="customer" className={styles.fieldLabel}>
-                  {t('operations.customer')} | RFC Tax ID
+                  {t('operations.customer')} | RFC - Tax ID
                   </label>
                   <div className='className="flex inline-flex  '> 
                     <input
@@ -769,7 +785,7 @@ export default function Operations() {
                     value={formData.Customer.name}
                     className={styles.textInputClient}
                     required
-                    placeholder='select customer'                   
+                    placeholder='Select customer'                   
                     onChange={(e) => {     
                       const selected = customers.find(c => c.fiscalData?.businessName === e.target.value);
                       if (selected) {
@@ -792,7 +808,7 @@ export default function Operations() {
                           label={`${customer.fiscalData.businessName} | ${customer.fiscalData.taxId}`} >
                           </option>)
                       })}
-                    </datalist>                    
+                    </datalist>
                     <div className=" ">                                           
                       <input
                         disabled
@@ -830,7 +846,7 @@ export default function Operations() {
                 <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel}>
                     {t("operations.services")}
-                  </label>
+                  </label>                  
                   <div className={styles.statusField}>
                     <span className={styles.statusText}>Tiene número de control</span>
                     <label className={styles.switch}>
@@ -859,6 +875,7 @@ export default function Operations() {
                                      outline-none appearance-none text-body-sm transition-colors"
                         onChange={(e) => {
                           const dataC = JSON.parse(e.target.value);
+                          console.log('combo', dataC)
                           setControl({
                             ...control,
                             _id: dataC.id,
@@ -1094,7 +1111,7 @@ export default function Operations() {
                         controlsOperation?.map(controlService => (
                           controlService.services?.map(service => (
                             <div key={`${controlService._id ?? 'service'}-${service.idService}--${service.idServiceItem}`}
-                              className={`${styles.tabItem} ${activeTab.item === service.idServiceItem && activeTab.id === controlService._id ? styles.active : ''}`}
+                              className={`${styles.tabItem} ${activeTab.item === service.idServiceItem && activeTab.id === controlService._id && activeTab.name === service.nameService ? styles.active : ''}`}
                               onClick={() => {
                                 setActiveTab({
                                   id: controlService._id,

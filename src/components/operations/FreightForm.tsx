@@ -93,7 +93,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
             (s.idService === info.idService && s.idServiceItem === info.item )));  
   console.log('FreightForm formData: ',formData, 'infoControl: ', infoControl)
   //const [currentIndex, setCurrentIndex] = infoControl?.currentIndex || 0;
-  const detail = infoControl?.serviceDetail?.[infoControl.currentIndex] || 
+  const detail = infoControl?.serviceDetail?.[infoControl?.currentIndex] || 
   {
   idDetail: 1,
   idTypeShipment: 1,
@@ -115,10 +115,14 @@ export const FreightForm: React.FC<FreightFormProps> = ({
   console.log('detail: ', detail);
   formData.Services?.map((s)=> s.serviceDetail.length === 0 ? s.serviceDetail=[detail] : s)
   const [accordionOpen, setAccordionOpen] = React.useState({
-    [`envio-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
-    [`transporte-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
-    [`origin-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
-    [`destination-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
+    // [`envio-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
+    // [`transporte-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
+    // [`origin-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
+    // [`destination-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
+    [`envio`]: true,
+    [`transporte`]: true,
+    [`origin`]: true,
+    [`destination`]: true,
   });
   const [portsOrigin, setPortsOrigin] = useState<Port[]>([]);
   const [portsDestination, setPortsDestination] = useState<Port[]>([]);
@@ -383,8 +387,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
               <div className={styles.serviceCard}>
                 <div
                   className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
-                  onClick={() => toggleAccordion(`envio-${detail.idDetail}`)}
-                >
+                  onClick={() => toggleAccordion(`envio`)}
+                > {/* toggleAccordion(`envio-${detail.idDetail}`)} */}
                   <div className="flex items-center gap-3">
                     <span className="dark:text-white">
                       <Package />
@@ -396,8 +400,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                                 text-primary
                                 chevron-icon
                                 dark:text-white
-                                ${accordionOpen[`envio-${detail.idDetail}`] ? "rotate-180" : ""}
-                                `}
+                                ${accordionOpen[`envio`] ? "rotate-180" : ""}
+                                `} // ${accordionOpen[`envio-${detail.idDetail}`] ? "rotate-180" : ""}
                     id="envios-chevron"
                   >
                     <ChevronDown />
@@ -406,7 +410,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 
                 <div
                   className={`${styles.accordionContent}
-                              ${!accordionOpen[`envio-${detail.idDetail}`]
+                              ${!accordionOpen[`envio`]
                                   ? styles.collapsed
                                   : ""
                               }`}
@@ -480,7 +484,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 <div
                   className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
                   onClick={() =>
-                    toggleAccordion(`transporte-${detail.idDetail}`)
+                    // toggleAccordion(`transporte-${detail.idDetail}`)
+                    toggleAccordion(`transporte`)
                   }
                 >
                   <div className="flex items-center gap-3">
@@ -494,8 +499,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                                 text-primary
                                 chevron-icon
                                 dark:text-white
-                                ${accordionOpen[`transporte-${detail.idDetail}`] ? "rotate-180" : ""}
-                                `}
+                                ${accordionOpen[`transporte`] ? "rotate-180" : ""}
+                                `} //${accordionOpen[`transporte-${detail.idDetail}`] ? "rotate-180" : ""}
                     id="transporte-chevron"
                   >
                     <ChevronDown />
@@ -504,10 +509,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 
                 <div
                   className={`${styles.accordionContent}
-                              ${!accordionOpen[`transporte-${detail.idDetail}`]
+                              ${!accordionOpen[`transporte`]
                                   ? styles.collapsed
                                   : ""
-                              }`}
+                              }`} //${!accordionOpen[`transporte-${detail.idDetail}`]
                 >
                   <div className={styles.fourColumnGrid}>
 
@@ -728,8 +733,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 {/**ORIGEN */}         
                 <div
                   className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
-                  onClick={() => toggleAccordion(`origin-${detail.idDetail}`)}
-                >
+                  onClick={() => toggleAccordion(`origin`)}
+                > {/* toggleAccordion(`origin-${detail.idDetail}`) */}
                   <div className="flex items-center gap-3">
                     <span className="dark:text-white">
                       <MapPin />
@@ -741,8 +746,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                                 text-primary
                                 chevron-icon
                                 dark:text-white
-                                ${accordionOpen[`origin-${detail.idDetail}`] ? "rotate-180" : ""}
-                              `}
+                                ${accordionOpen[`origin`] ? "rotate-180" : ""}
+                              `} //${accordionOpen[`origin-${detail.idDetail}`] ? "rotate-180" : ""}
                     id="origin-chevron"
                   >
                     <ChevronDown />
@@ -751,10 +756,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 
                 <div
                   className={`${styles.accordionContent}
-                              ${!accordionOpen[`origin-${detail.idDetail}`]
+                              ${!accordionOpen[`origin`]
                                   ? styles.collapsed
                                   : ""
-                              }`}
+                              }`} //${!accordionOpen[`origin-${detail.idDetail}`]
                 >
                   <div className={styles.fourColumnGrid}>
 
@@ -960,7 +965,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 <div
                   className="bg-primary-container bg-opacity-5 px-6 py-3 flex items-center justify-between cursor-pointer hover:bg-opacity-10 transition-colors border-l-4 border-primary"
                   onClick={() =>
-                    toggleAccordion(`destination-${detail.idDetail}`)
+                    // toggleAccordion(`destination-${detail.idDetail}`)
+                    toggleAccordion(`destination`)
                   }
                 >
                   <div className="flex items-center gap-3">
@@ -982,10 +988,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 
                 <div
                   className={`${styles.accordionContent}
-                              ${!accordionOpen[`destination-${detail.idDetail}`]
+                              ${!accordionOpen[`destination`]
                                   ? styles.collapsed
                                   : ""
-                              }`}
+                              }`} //${!accordionOpen[`destination-${detail.idDetail}`]
                 >
                    <div className={styles.fourColumnGrid}>
 
