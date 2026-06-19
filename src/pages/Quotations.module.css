@@ -707,12 +707,18 @@
   border: 1px solid var(--border);
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: var(--text-primary);
+  caret-color: white;
   background: var(--hover);
   resize: vertical;
   min-height: 80px;
   font-family: inherit;
   transition: all 0.15s ease;
+}
+
+
+.textarea * {
+  color: inherit !important;
 }
 
 .textarea:focus {
