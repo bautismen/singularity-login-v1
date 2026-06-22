@@ -2,7 +2,7 @@ import styles from '../../pages/Operations.module.css';
 import { Plus, Trash2, Eye, X, Copy, Search, Trash } from 'lucide-react';
 import { formatDateTimeLocal } from '../../types/operations';
 
-export const TipoEnvio = ({ itemService, sequencedetail, detail, onUpdateServiceFormData, label, required }) => {
+export const TipoEnvio = ({ idControl, idService, itemService, sequencedetail, detail, onUpdateServiceFormData, label, required }) => {
 
   return (
     <>
@@ -15,8 +15,8 @@ export const TipoEnvio = ({ itemService, sequencedetail, detail, onUpdateService
         disabled = {sequencedetail === 1 ? true : false }
         required = {required}
         onChange={(e) => {
-          onUpdateServiceFormData(itemService, sequencedetail, 'idTypeShipment', Number(e.target.value))
-          onUpdateServiceFormData(itemService, sequencedetail, 'typeShipment', e.target.options[e.target.selectedIndex].text)
+          onUpdateServiceFormData(idControl, idService, itemService, sequencedetail, 'idTypeShipment', Number(e.target.value))
+          onUpdateServiceFormData(idControl, idService, itemService, sequencedetail, 'typeShipment', e.target.options[e.target.selectedIndex].text)
         }}>
         <option value="">Seleccionar ...</option>
         <option value={1}>Puerta a Puerta</option>
@@ -54,7 +54,7 @@ export const TipoEnvio = ({ itemService, sequencedetail, detail, onUpdateService
 //   );
 // };
 
-export const TipoOperacion = ({ itemService, sequencedetail, detail, onUpdateServiceFormData, label, required }) => {
+export const TipoOperacion = ({ idControl, idService,  itemService, sequencedetail, detail, onUpdateServiceFormData, label, required }) => {
 
   return (
     <>
@@ -67,8 +67,8 @@ export const TipoOperacion = ({ itemService, sequencedetail, detail, onUpdateSer
         disabled = {sequencedetail === 1 ? true : false }
         required = {required}
         onChange={(e) => {
-          onUpdateServiceFormData(itemService, sequencedetail, 'idTypeOperation', Number(e.target.value))
-          onUpdateServiceFormData(itemService, sequencedetail, 'typeOperation', e.target.options[e.target.selectedIndex].text)
+          onUpdateServiceFormData(idControl, idService, itemService, sequencedetail, 'idTypeOperation', Number(e.target.value))
+          onUpdateServiceFormData(idControl, idService, itemService, sequencedetail, 'typeOperation', e.target.options[e.target.selectedIndex].text)
         }
         }>
         <option value="">Seleccionar ...</option>
@@ -82,7 +82,7 @@ export const TipoOperacion = ({ itemService, sequencedetail, detail, onUpdateSer
   );
 };
 
-export const Incoterm = ({ itemService, sequencedetail, detail, onUpdateServiceFormData, incoterms, label, required }) => {
+export const Incoterm = ({ idControl, idService, itemService, sequencedetail, detail, onUpdateServiceFormData, incoterms, label, required }) => {
 
   return (
     <>
@@ -95,8 +95,8 @@ export const Incoterm = ({ itemService, sequencedetail, detail, onUpdateServiceF
         disabled = {sequencedetail === 1 ? true : false }
         required = {required}
         onChange={(e) => {
-          onUpdateServiceFormData(itemService, sequencedetail, 'idIncoterm', Number(e.target.value))
-          onUpdateServiceFormData(itemService, sequencedetail, 'incoterm', e.target.options[e.target.selectedIndex].text)
+          onUpdateServiceFormData(idControl, idService, itemService, sequencedetail, 'idIncoterm', Number(e.target.value))
+          onUpdateServiceFormData(idControl, idService, itemService, sequencedetail, 'incoterm', e.target.options[e.target.selectedIndex].text)
         }
         }
       >
@@ -109,7 +109,7 @@ export const Incoterm = ({ itemService, sequencedetail, detail, onUpdateServiceF
   );
 };
 
-export const Transportista = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, transportista, label, required }) => {
+export const Transportista = ({ idControl, idService, itemService, sequencedetail, transport, onUpdateServiceDetail, transportista, label, required }) => {
 
   return (
     <>
@@ -122,9 +122,9 @@ export const Transportista = ({ itemService, sequencedetail, transport, onUpdate
         disabled = {false}
         required = {required}
         onChange={(e) => {
-          onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'idcarrier', e.target.value)
-          onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'carrier', e.target.options[e.target.selectedIndex].text)
-          onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'typeCarrier', e.target.options[e.target.selectedIndex].dataset.type === 'Transporte' ? 'Linea transportista' : e.target.options[e.target.selectedIndex].dataset.type)
+          onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, 'transport', 'idcarrier', e.target.value)
+          onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, 'transport', 'carrier', e.target.options[e.target.selectedIndex].text)
+          onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, 'transport', 'typeCarrier', e.target.options[e.target.selectedIndex].dataset.type === 'Transporte' ? 'Linea transportista' : e.target.options[e.target.selectedIndex].dataset.type)
         }
         }
       >
@@ -137,7 +137,7 @@ export const Transportista = ({ itemService, sequencedetail, transport, onUpdate
   );
 };
 
-export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, modalidad, label, required }) => {
+export const TipoUnidad = ({ idControl, idService, itemService, sequencedetail, transport, onUpdateServiceDetail, modalidad, label, required }) => {
 
   const tipoUnidad = [
     { value: "Buque", name: "Buque", modalidad: "maritimo" },
@@ -165,7 +165,7 @@ export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateSer
         disabled = {false}
         required = {required}
         onChange={(e) => {
-          onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'typeUnit', e.target.options[e.target.selectedIndex].text)
+          onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, 'transport', 'typeUnit', e.target.options[e.target.selectedIndex].text)
         }
         }
       >
@@ -180,7 +180,7 @@ export const TipoUnidad = ({ itemService, sequencedetail, transport, onUpdateSer
   );
 };
 
-export const TipoRuta = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, label, required }) => {
+export const TipoRuta = ({ idControl, idService, itemService, sequencedetail, transport, onUpdateServiceDetail, label, required }) => {
 
   return (
     <>
@@ -193,7 +193,7 @@ export const TipoRuta = ({ itemService, sequencedetail, transport, onUpdateServi
         disabled = {false}
         required = {required}
         onChange={(e) => {
-          onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'typeRoute', e.target.options[e.target.selectedIndex].text)
+          onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, 'transport', 'typeRoute', e.target.options[e.target.selectedIndex].text)
         }
         }
       >
@@ -205,7 +205,7 @@ export const TipoRuta = ({ itemService, sequencedetail, transport, onUpdateServi
   );
 };
 
-export const TipoMovimeiento = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, label, required }) => {
+export const TipoMovimeiento = ({ idControl, idService, itemService, sequencedetail, transport, onUpdateServiceDetail, label, required }) => {
 
   return (
     <>
@@ -218,7 +218,7 @@ export const TipoMovimeiento = ({ itemService, sequencedetail, transport, onUpda
         disabled = {false}
         required = {required}
         onChange={(e) => {
-          onUpdateServiceDetail(itemService, sequencedetail, 'transport', 'typeOfMovement', e.target.options[e.target.selectedIndex].text)
+          onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, 'transport', 'typeOfMovement', e.target.options[e.target.selectedIndex].text)
         }
         }
       >
@@ -230,7 +230,7 @@ export const TipoMovimeiento = ({ itemService, sequencedetail, transport, onUpda
   );
 };
 
-export const TipoGuia = ({ itemService, sequencedetail, transport, onUpdateServiceDetail, modalidad, label, required }) => {
+export const TipoGuia = ({ idControl, idService, itemService, sequencedetail, transport, onUpdateServiceDetail, modalidad, label, required }) => {
 
   const tipoGuia = [
     //<option value="Master_Bill_Of_Lading">MBL</option>
@@ -258,7 +258,7 @@ export const TipoGuia = ({ itemService, sequencedetail, transport, onUpdateServi
               disabled = {false}
               required = {required}
               onChange={(e) => {
-                onUpdateServiceDetail(itemService, sequencedetail, 'transport',
+                onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, 'transport',
                   'guide', {
                   'type': e.target.value
                 }
@@ -285,7 +285,7 @@ export const TipoGuia = ({ itemService, sequencedetail, transport, onUpdateServi
             required = {required}
             value={transport?.guide?.guide || ''}
             onChange={(e) => {
-              onUpdateServiceDetail(itemService, sequencedetail, 'transport',
+              onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, 'transport',
                 'guide', {
                 'guide': e.target.value
               }
@@ -300,7 +300,7 @@ export const TipoGuia = ({ itemService, sequencedetail, transport, onUpdateServi
   )
 }
 
-export const UnidadMedida = ({ itemService, sequencedetail, cargo, onUpdateServiceFormData }) => {
+export const UnidadMedida = ({ idControl, idService, itemService, sequencedetail, cargo, onUpdateServiceFormData }) => {
 
   return (
     <>
@@ -311,9 +311,7 @@ export const UnidadMedida = ({ itemService, sequencedetail, cargo, onUpdateServi
           value={cargo?.idUnitMeasurement || ''}
           className={styles.measureSelect}
           onChange={(e) => {
-            onUpdateServiceFormData(
-              itemService,
-              sequencedetail,
+            onUpdateServiceFormData(idControl, idService, itemService, sequencedetail,
               'cargo',
               [{
                 ...(cargo || {}),
@@ -338,9 +336,7 @@ export const UnidadMedida = ({ itemService, sequencedetail, cargo, onUpdateServi
           value={cargo?.volumeTotal || 0}
           className={styles.measureInput}
           onChange={(e) => {
-            onUpdateServiceFormData(
-              itemService,
-              sequencedetail,
+            onUpdateServiceFormData(idControl, idService, itemService, sequencedetail,
               'cargo',
               [{
                 ...(cargo || {}),
@@ -356,7 +352,7 @@ export const UnidadMedida = ({ itemService, sequencedetail, cargo, onUpdateServi
   )
 };
 
-export const TipoCarga = ({ itemService, sequencedetail, cargo, onUpdateServiceFormData }) => {
+export const TipoCarga = ({ idControl, idService, itemService, sequencedetail, cargo, onUpdateServiceFormData }) => {
 
   return (
     <>
@@ -366,7 +362,8 @@ export const TipoCarga = ({ itemService, sequencedetail, cargo, onUpdateServiceF
         // readOnly
         required
         onChange={(e) => {
-          onUpdateServiceFormData(itemService, sequencedetail, 'cargo', [{
+          onUpdateServiceFormData(idControl, idService, itemService, sequencedetail, 
+            'cargo', [{
             ...(cargo || {}),
             typeCargo: e.target.value
           }])
@@ -381,7 +378,7 @@ export const TipoCarga = ({ itemService, sequencedetail, cargo, onUpdateServiceF
   );
 };
 
-export const TipoClasificacion = ({ itemService, sequencedetail, cargo, onUpdateServiceFormData }) => {
+export const TipoClasificacion = ({ idControl, idService, itemService, sequencedetail, cargo, onUpdateServiceFormData }) => {
 
   return (
     <>
@@ -391,7 +388,8 @@ export const TipoClasificacion = ({ itemService, sequencedetail, cargo, onUpdate
         // readOnly
         required
         onChange={(e) => {
-          onUpdateServiceFormData(itemService, sequencedetail, 'cargo', [{
+          onUpdateServiceFormData(idControl, idService, itemService, sequencedetail, 
+            'cargo', [{
             ...(cargo || {}),
             idUnitMeasurement: e.target.value,
             unitMeasurement: e.target.options[e.target.selectedIndex].text
@@ -410,7 +408,7 @@ export const TipoClasificacion = ({ itemService, sequencedetail, cargo, onUpdate
   );
 };
 
-export const TipoEmbalaje = ({ itemService, sequencedetail, cargo, onUpdateServiceFormData }) => {
+export const TipoEmbalaje = ({ idControl, idService, itemService, sequencedetail, cargo, onUpdateServiceFormData }) => {
 
   return (
     <>
@@ -420,7 +418,8 @@ export const TipoEmbalaje = ({ itemService, sequencedetail, cargo, onUpdateServi
         // readOnly
         required
         onChange={(e) => {
-          onUpdateServiceFormData(itemService, sequencedetail, 'cargo', [{
+          onUpdateServiceFormData(idControl, idService, itemService, sequencedetail,
+            'cargo', [{
             ...(cargo || {}),
             idUnitMeasurement: e.target.value,
             unitMeasurement: e.target.options[e.target.selectedIndex].text
@@ -437,7 +436,7 @@ export const TipoEmbalaje = ({ itemService, sequencedetail, cargo, onUpdateServi
   );
 };
 
-export const Cargo = ({ infoControl, detail, onUpdateServiceFormData }) => {
+export const Cargo = ({ idControl, idService, infoControl, detail, onUpdateServiceFormData }) => {
 
   return (
     <table className={styles.table}>
@@ -467,7 +466,7 @@ export const Cargo = ({ infoControl, detail, onUpdateServiceFormData }) => {
                 className={styles.textTable}
                 value={cargo?.name || ''}
                 onChange={(e) => {
-                  onUpdateServiceFormData(
+                  onUpdateServiceFormData(idControl, idService,
                     infoControl.idServiceItem,
                     detail.sequence,
                     'cargo',
@@ -519,6 +518,8 @@ export const Cargo = ({ infoControl, detail, onUpdateServiceFormData }) => {
             </td>
             <td>
               <UnidadMedida
+                idControl={infoControl?.idControl}
+                idService={infoControl?.idService}
                 itemService={infoControl.idServiceItem}
                 sequencedetail={detail.sequence}
                 cargo={cargo}
@@ -528,6 +529,8 @@ export const Cargo = ({ infoControl, detail, onUpdateServiceFormData }) => {
             <td>
               {/* Tipo de carga */}
               <TipoCarga
+                idControl={infoControl?.idControl}
+                idService={infoControl?.idService}
                 itemService={infoControl.idServiceItem}
                 sequencedetail={detail.sequence}
                 cargo={cargo}
@@ -541,7 +544,7 @@ export const Cargo = ({ infoControl, detail, onUpdateServiceFormData }) => {
   )
 }
 
-export const Containers = ({ infoControl, detail, onUpdateServiceFormData }) => {
+export const Containers = ({ idControl, idService, infoControl, detail, onUpdateServiceFormData }) => {
 
   return (
     <table className={styles.table}>
@@ -568,9 +571,7 @@ export const Containers = ({ infoControl, detail, onUpdateServiceFormData }) => 
                 className={styles.textTable}
                 value={container?.nameTypeContainer || ''}
                 onChange={(e) => {
-                  onUpdateServiceFormData(
-                    infoControl.idServiceItem,
-                    detail.sequence,
+                  onUpdateServiceFormData(idControl, idService, infoControl.idServiceItem, detail.sequence,
                     'containers',
                     [{
                       ...(detail.containers?.[detail.containers?.indexOf(container) ?? 0] ?? {}),
@@ -587,9 +588,7 @@ export const Containers = ({ infoControl, detail, onUpdateServiceFormData }) => 
                 className={styles.textTable}
                 value={container?.number || ''}
                 onChange={(e) =>
-                  onUpdateServiceFormData(
-                    infoControl.idServiceItem,
-                    detail.sequence,
+                  onUpdateServiceFormData(idControl, idService, infoControl.idServiceItem, detail.sequence,
                     'containers',
                     [{
                       ...(detail.containers?.[detail.containers?.indexOf(container) ?? 0] ?? {}),
@@ -605,9 +604,7 @@ export const Containers = ({ infoControl, detail, onUpdateServiceFormData }) => 
                 className={styles.textTable}
                 value={container?.seal || ''}
                 onChange={(e) =>
-                  onUpdateServiceFormData(
-                    infoControl.idServiceItem,
-                    detail.sequence,
+                  onUpdateServiceFormData(idControl, idService, infoControl.idServiceItem, detail.sequence,
                     'containers',
                     [{
                       ...(detail.containers?.[detail.containers?.indexOf(container) ?? 0] ?? {}),
@@ -624,7 +621,7 @@ export const Containers = ({ infoControl, detail, onUpdateServiceFormData }) => 
   )
 };
 
-export const ReferencesAduanal = ({ infoControl, detail, onUpdateServiceFormData }) => {
+export const ReferencesAduanal = ({ idControl, idService, infoControl, detail, onUpdateServiceFormData }) => {
   return (
     <div>
       <div className="flex flex-1 gap-2 border border-gray-200 dark:border-gray-700 rounded-tr-xl rounded-tl-xl p-2 w-1/4">
@@ -684,9 +681,7 @@ export const ReferencesAduanal = ({ infoControl, detail, onUpdateServiceFormData
                   className={styles.textTable}
                   value={reference?.reference || ''}
                   onChange={(e) => {
-                    onUpdateServiceFormData(
-                      infoControl.idServiceItem,
-                      detail.sequence,
+                    onUpdateServiceFormData(idControl, idService, infoControl.idServiceItem, detail.sequence,
                       'references',
                       [{
                         ...(detail.references?.[detail.references?.indexOf(reference) ?? 0] ?? {}),
@@ -704,9 +699,7 @@ export const ReferencesAduanal = ({ infoControl, detail, onUpdateServiceFormData
                   className={styles.textTable}
                   value={reference?.pediment || ''}
                   onChange={(e) =>
-                    onUpdateServiceFormData(
-                      infoControl.idServiceItem,
-                      detail.sequence,
+                    onUpdateServiceFormData(idControl, idService, infoControl.idServiceItem, detail.sequence,
                       'references',
                       [{
                         ...(detail.references?.[detail.references?.indexOf(reference) ?? 0] ?? {}),
@@ -723,9 +716,7 @@ export const ReferencesAduanal = ({ infoControl, detail, onUpdateServiceFormData
                   className={styles.textTable}
                   value={reference?.guide || ''}
                   onChange={(e) =>
-                    onUpdateServiceFormData(
-                      infoControl.idServiceItem,
-                      detail.sequence,
+                    onUpdateServiceFormData(idControl, idService, infoControl.idServiceItem, detail.sequence,
                       'references',
                       [{
                         ...(detail.references?.[detail.cargo?.indexOf(reference) ?? 0] ?? {}),
@@ -742,9 +733,7 @@ export const ReferencesAduanal = ({ infoControl, detail, onUpdateServiceFormData
                   className={styles.textTable}
                   value={reference?.supplier || ''}
                   onChange={(e) =>
-                    onUpdateServiceFormData(
-                      infoControl.idServiceItem,
-                      detail.sequence,
+                    onUpdateServiceFormData(idControl, idService, infoControl.idServiceItem, detail.sequence,
                       'references',
                       [{
                         ...(detail.references?.[detail.references?.indexOf(reference) ?? 0] ?? {}),
@@ -761,9 +750,7 @@ export const ReferencesAduanal = ({ infoControl, detail, onUpdateServiceFormData
                   className={styles.textTable}
                   value={reference?.invoice || ''}
                   onChange={(e) =>
-                    onUpdateServiceFormData(
-                      infoControl.idServiceItem,
-                      detail.sequence,
+                    onUpdateServiceFormData(idControl, idService, infoControl.idServiceItem, detail.sequence,
                       'references',
                       [{
                         ...(detail.references?.[detail.references?.indexOf(reference) ?? 0] ?? {}),
@@ -802,7 +789,7 @@ export const ReferencesAduanal = ({ infoControl, detail, onUpdateServiceFormData
   )
 };
 
-export const ComponentDate = ({itemService, sequencedetail, data, node, field, onUpdateServiceDetail, label, required }) => {
+export const ComponentDate = ({ idControl, idService, itemService, sequencedetail, data, node, field, onUpdateServiceDetail, label, required }) => {
   return (
     <>
       <label className={styles.fieldLabel}>
@@ -815,13 +802,7 @@ export const ComponentDate = ({itemService, sequencedetail, data, node, field, o
         disabled = {false}
         required = {required}
         onChange={(e) =>
-          onUpdateServiceDetail(
-            itemService,
-            sequencedetail,
-            node,
-            field,
-            e.target.value
-          )
+          onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, node, field, e.target.value)
         }
       />
     </>

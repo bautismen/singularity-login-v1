@@ -152,6 +152,7 @@ export default function Operations() {
     setEditingOperation(null);
     resetFormData();
     setIsFormOpen(true);
+    setHasControlNumber(false);
     setCollapsedSections({
       services: false,
       expedientes: false
@@ -233,9 +234,10 @@ export default function Operations() {
     setServicesOperation([]);
     setService({} as Service);
     setEditingOperation(null);
+    setHasControlNumber(false);
 
     const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
-    console.log ('selectedCustomer', selectedCustomer)
+    //console.log ('selectedCustomer', selectedCustomer)
     if (!selectedCustomer) {
       updateFormData({ //setFormData
         ...formData,
@@ -279,6 +281,11 @@ export default function Operations() {
     });
 
     setControlsClient(controlsClient);
+
+    if (controlsClient.length > 0){
+        setHasControlNumber(true)
+    }
+
   };
 
   const addControl = () => {
@@ -1121,7 +1128,7 @@ export default function Operations() {
                                 });
                                
                                 const newService = buildOperationService(controlService, service);
-                                console.log('Active tab',activeTab)
+                                //console.log('Active tab',activeTab)
                                 updateFormData(prev => {
                                   const exists = prev.Services?.some(
                                     s => s.IdControl === newService.IdControl &&

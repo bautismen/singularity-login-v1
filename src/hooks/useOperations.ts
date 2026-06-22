@@ -132,11 +132,13 @@ const updateFormData = (changes:
     }));
 };
 
- const updateServiceFormData = (idServiceItem: number, detailId: number, field: string, value: any) => {
+ const updateServiceFormData = (idControl: string, idService: number, idServiceItem: number, detailId: number, field: string, value: any) => {
+    console.log('idControl:',idControl, 'idService:', idService, 'idServiceItem:', idServiceItem, 'detailId:', detailId, 'field:', field, 'value:', value)
+    
     setFormData(formData => ({ 
       ...formData,
       Services: formData.Services.map(service =>
-        service.idServiceItem === idServiceItem ? {
+        service.idControl === idControl && service.idService === idService && service.idServiceItem === idServiceItem ? {
           ...service,
           serviceDetail: service.serviceDetail?.map(detail =>
             detail.idDetail === detailId ? {
@@ -156,12 +158,12 @@ const updateFormData = (changes:
     }));    
   };
 
-  const updateServiceDetail = (idServiceItem: number, detailId: number, collection: string, field: string, value: any) => {
+  const updateServiceDetail = (idControl: string, idService: number,idServiceItem: number, detailId: number, collection: string, field: string, value: any) => {
 
     setFormData(formData => ({
       ...formData,
       Services: formData.Services.map(service =>
-        service.idServiceItem === idServiceItem ? {
+        service.idControl === idControl && service.idService === idService && service.idServiceItem === idServiceItem ? {
           ...service,
           serviceDetail: service.serviceDetail.map(detail =>
             detail.idDetail === detailId ? {

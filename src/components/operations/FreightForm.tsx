@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLanguage } from "../../contexts/LanguageContext";
 import styles from "../../pages/Operations.module.css";
+import { catalogService } from '../../services/catalogsService';
 import { InputCountry } from "../InputCountry";
 import { InputPort } from "../InputPort";
 import { PricingControl } from "../../types/pricingControl";
@@ -8,7 +9,6 @@ import { OperationsFormData } from "../../hooks/useOperations";
 import { formatDateTimeLocal } from "../../types/operations";
 import {
   TipoEnvio,
-  // TipoReferencia,
   TipoOperacion,
   Incoterm,
   Transportista,
@@ -19,7 +19,7 @@ import {
   Cargo,
   Containers,
   ComponentDate
-} from "../operations/component";
+} from "./component";
 import {
   Copy,
   X,
@@ -32,8 +32,6 @@ import {
   Ship
 } from "lucide-react";
 import { Port } from "../../types/port";
-import { catalogService } from '../../services/catalogsService';
-
 
 export interface FreightFormProps {
   mode:             'create' | 'edit' | 'view';
@@ -51,12 +49,16 @@ export interface FreightFormProps {
       | ((prev: OperationsFormData) => Partial<OperationsFormData>),
   ) => void;
   onUpdateServiceFormData: (
+    idControl: string, 
+    idService: number,
     idServiceItem: number,
     detailId: number,
     field: string,
     value: any,
   ) => void;
   onUpdateServiceDetail: (
+    idControl: string, 
+    idService: number,
     idServiceItem: number,
     detailId: number,
     collection: string,
@@ -88,10 +90,12 @@ export const FreightForm: React.FC<FreightFormProps> = ({
   onRemoveDetail
 }) => {
   const { t } = useLanguage();
+  const [portsOrigin, setPortsOrigin] = useState<Port[]>([]);
+  const [portsDestination, setPortsDestination] = useState<Port[]>([]);
   const infoControl = formData.Services?.find(
     (s) =>  (s.idControl ? (s.idControl === info.id && s.idServiceItem === info.item) : 
-            (s.idService === info.idService && s.idServiceItem === info.item )));  
-  console.log('FreightForm formData: ',formData, 'infoControl: ', infoControl)
+            (s.idService === info.idService && s.idServiceItem === info.item)));  
+  //console.log('FreightForm formData: ',formData, 'infoControl: ', infoControl)
   //const [currentIndex, setCurrentIndex] = infoControl?.currentIndex || 0;
   const detail = infoControl?.serviceDetail?.[infoControl?.currentIndex] || 
   {
@@ -107,12 +111,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
   //consignee?: ;
   idIncoterm: 1,
   incoterm: "",
-  //transport?: {},
+  transport: {},
   origin: {},
   destination: {},
-  //goods?: 
   }; 
-  console.log('detail: ', detail);
   formData.Services?.map((s)=> s.serviceDetail.length === 0 ? s.serviceDetail=[detail] : s)
   const [accordionOpen, setAccordionOpen] = React.useState({
     // [`envio-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
@@ -124,16 +126,16 @@ export const FreightForm: React.FC<FreightFormProps> = ({
     [`origin`]: true,
     [`destination`]: true,
   });
-  const [portsOrigin, setPortsOrigin] = useState<Port[]>([]);
-  const [portsDestination, setPortsDestination] = useState<Port[]>([]);
-
+  
   //carga de puertos de origen
   useEffect(()=> {
     const fetchData = async () => {
       try {     
         if(detail?.origin?.country?.idCountry === undefined || detail?.origin?.country?.idCountry === ""){
           onUpdateServiceFormData(
-            infoControl.idServiceItem,
+            infoControl?.idControl,
+            infoControl?.idService,
+            infoControl?.idServiceItem,
             detail.idDetail,
             "origin",
             {
@@ -147,7 +149,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
           );
           setPortsOrigin([])
           return;  
-        }           
+        }    
+
         const result = await catalogService.getPortsByIdCountry(detail?.origin?.country?.idCountry);
         const portsResult = result ?? [];
         setPortsOrigin(portsResult);
@@ -159,7 +162,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
         );
         if (!portSelected) {
           onUpdateServiceFormData(
-            infoControl.idServiceItem,
+            infoControl?.idControl,
+            infoControl?.idService,
+            infoControl?.idServiceItem,
             detail.idDetail,
             "origin",
             {
@@ -174,8 +179,11 @@ export const FreightForm: React.FC<FreightFormProps> = ({
           setPortsOrigin([])
           return;
         }    
+
         onUpdateServiceFormData(
-          infoControl.idServiceItem,
+          infoControl?.idControl,
+          infoControl?.idService,
+          infoControl?.idServiceItem,
           detail.idDetail,
           "origin",
           {
@@ -200,7 +208,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
       try {  
         if(detail?.destination?.country?.idCountry === undefined || detail?.destination?.country?.idCountry === "") {
           onUpdateServiceFormData(
-            infoControl.idServiceItem,
+            infoControl?.idControl,
+            infoControl?.idService,
+            infoControl?.idServiceItem,
             detail.idDetail,
             "destination",
             {
@@ -224,9 +234,12 @@ export const FreightForm: React.FC<FreightFormProps> = ({
           (port) =>
             port.port_code?.toLowerCase() === portKeyCode.toLowerCase()
         );
+
         if (!portSelected) {
           onUpdateServiceFormData(
-            infoControl.idServiceItem,
+            infoControl?.idControl,
+            infoControl?.idService,
+            infoControl?.idServiceItem,
             detail.idDetail,
             "destination",
             {
@@ -241,8 +254,11 @@ export const FreightForm: React.FC<FreightFormProps> = ({
           setPortsDestination([]);
           return;
         }    
+
         onUpdateServiceFormData(
-          infoControl.idServiceItem,
+          infoControl?.idControl,
+          infoControl?.idService,
+          infoControl?.idServiceItem,
           detail.idDetail,
           "destination",
           {
@@ -277,7 +293,6 @@ export const FreightForm: React.FC<FreightFormProps> = ({
           {
             ...ser,
             currentIndex: infoControl.currentIndex + 1
-
           } : ser
         )
       }));
@@ -316,7 +331,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 
   return (
     <div className={styles.formRow}>
-      <span key={infoControl?.idServiceItem} className={styles.serviceItem}>
+      <span key={infoControl?.idControl && infoControl?.idServiceItem} className={styles.serviceItem}>
         {detail && (
           <div
             key={detail.idDetail}
@@ -326,13 +341,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
             {/* Header Card */}
             <div id="pageCounter">
               <div className={styles.serviceActions}>
-                <button
-                  type="button"
-                  className={styles.iconButton}
+                <button type="button" className={styles.iconButton}
                   onClick={() =>
                     duplicateCard(infoControl?.idServiceItem, detail)
-                  }
-                >
+                  }>
                   <Copy size={18} />
                 </button>
 
@@ -383,6 +395,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 
               </div> */}
             </div>
+
+            {/* Contenido */}
             <span key={infoControl.currentIndex + 1} className={styles.serviceItem}>
               <div className={styles.serviceCard}>
                 <div
@@ -402,26 +416,24 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                                 dark:text-white
                                 ${accordionOpen[`envio`] ? "rotate-180" : ""}
                                 `} // ${accordionOpen[`envio-${detail.idDetail}`] ? "rotate-180" : ""}
-                    id="envios-chevron"
-                  >
+                    id="envios-chevron">
                     <ChevronDown />
                   </span>
                 </div>
 
-                <div
-                  className={`${styles.accordionContent}
-                              ${!accordionOpen[`envio`]
-                                  ? styles.collapsed
-                                  : ""
-                              }`}
-                >
+                <div className={`${styles.accordionContent}
+                                 ${!accordionOpen[`envio`]
+                    ? styles.collapsed
+                    : ""}`}>
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
                       {/* Modalidad */}
                       <div className={styles.fieldGroup}>
                         <TipoEnvio
+                          idControl={infoControl?.idControl}
+                          idService={infoControl?.idService}
                           itemService={infoControl?.idServiceItem}
-                          sequencedetail={detail.idDetail}
+                          sequencedetail={detail?.idDetail}
                           detail={detail}
                           onUpdateServiceFormData={onUpdateServiceFormData}
                           label={t("operations.mode")}
@@ -434,8 +446,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       {/* Tipo operación */}
                       <div className={styles.fieldGroup}>
                         <TipoOperacion
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.idDetail}
+                          idControl={infoControl?.idControl}
+                          idService={infoControl?.idService}
+                          itemService={infoControl?.idServiceItem}
+                          sequencedetail={detail?.idDetail}
                           detail={detail}
                           onUpdateServiceFormData={onUpdateServiceFormData}
                           label={t("operations.operationtype")}
@@ -448,8 +462,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       {/* Incoterm */}
                       <div className={styles.fieldGroup}>
                         <Incoterm
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.idDetail}
+                          idControl={infoControl?.idControl}
+                          idService={infoControl?.idService}
+                          itemService={infoControl?.idServiceItem}
+                          sequencedetail={detail?.idDetail}
                           detail={detail}
                           onUpdateServiceFormData={onUpdateServiceFormData}
                           incoterms={incoterms}
@@ -465,11 +481,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         <label className={styles.fieldLabel}>{t("operations.masterGuide")}</label>
                         <input
                           type="text"
-                          value={detail?.masterGuide}
+                          value={detail?.masterGuide || ''}
                           onChange={(e) =>
                             onUpdateServiceFormData(
-                              infoControl.idServiceItem,
-                              detail.idDetail,
+                              infoControl?.idControl,
+                              infoControl?.idService,
+                              infoControl?.idServiceItem,
+                              detail?.idDetail,
                               "masterGuide",
                               e.target.value.toUpperCase()
                             )
@@ -501,27 +519,26 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                                 dark:text-white
                                 ${accordionOpen[`transporte`] ? "rotate-180" : ""}
                                 `} //${accordionOpen[`transporte-${detail.idDetail}`] ? "rotate-180" : ""}
-                    id="transporte-chevron"
-                  >
+                    id="transporte-chevron">
                     <ChevronDown />
                   </span>
                 </div>
 
                 <div
                   className={`${styles.accordionContent}
-                              ${!accordionOpen[`transporte`]
-                                  ? styles.collapsed
-                                  : ""
-                              }`} //${!accordionOpen[`transporte-${detail.idDetail}`]
-                >
+                              ${!accordionOpen[`transporte`] 
+                              ? styles.collapsed : ""}`}>
+                 {/* //${!accordionOpen[`transporte-${detail.idDetail}`] */}
                   <div className={styles.fourColumnGrid}>
 
                     <div className={styles.firstColumn}>
                       {/* Transportista */}
                       <div className={styles.fieldGroup}>
                         <Transportista
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.idDetail}
+                          idControl={infoControl?.idControl}
+                          idService={infoControl?.idService}
+                          itemService={infoControl?.idServiceItem}
+                          sequencedetail={detail?.idDetail}
                           transport={detail?.transport}
                           onUpdateServiceDetail={onUpdateServiceDetail}
                           transportista={suppliers.filter(
@@ -537,8 +554,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       {/* Tipo de unidad */}
                       <div className={styles.fieldGroup}>
                         <TipoUnidad
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.idDetail}
+                          idControl={infoControl?.idControl}
+                          idService={infoControl?.idService}
+                          itemService={infoControl?.idServiceItem}
+                          sequencedetail={detail?.idDetail}
                           transport={detail?.transport}
                           onUpdateServiceDetail={onUpdateServiceDetail}
                           modalidad={"maritimo"}
@@ -554,11 +573,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         </label>
                         <input
                           type="text"
-                          value={detail?.transport?.moreInformationTransport?.caat}
+                          value={detail?.transport?.moreInformationTransport?.caat || ''}
                           className={styles.textInput}
                           onChange={(e) =>
                             onUpdateServiceDetail(
-                              infoControl.idServiceItem,
+                              infoControl?.idControl,
+                              infoControl?.idService,
+                              infoControl?.idServiceItem,
                               detail.idDetail,
                               'transport',
                               'moreInformationTransport', {
@@ -583,8 +604,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           className={styles.textInput}
                           onChange={(e) =>
                             onUpdateServiceDetail(
-                              infoControl.idServiceItem, 
-                              detail.idDetail, 
+                              infoControl?.idControl,
+                              infoControl?.idService,
+                              infoControl?.idServiceItem, 
+                              detail?.idDetail, 
                               'transport', 
                               'bookingNumeber',
                               e.target.value
@@ -600,11 +623,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         </label>
                         <input
                           type="text"
-                          value={detail?.transport?.nameTransport}
+                          value={detail?.transport?.nameTransport || ''}
                           onChange={(e) =>
                             onUpdateServiceDetail(
-                              infoControl.idServiceItem, 
-                              detail.idDetail, 
+                              infoControl?.idControl,
+                              infoControl?.idService,
+                              infoControl?.idServiceItem, 
+                              detail?.idDetail, 
                               'transport', 
                               'nameTransport',
                               e.target.value
@@ -621,11 +646,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         </label>
                         <input
                           type="text"
-                          value={detail?.transport?.moreInformationTransport?.plates}
+                          value={detail?.transport?.moreInformationTransport?.plates || ''}
                           className={styles.textInput}
                           onChange={(e) =>
                             onUpdateServiceDetail(
-                              infoControl.idServiceItem,
+                              infoControl?.idControl,
+                              infoControl?.idService,
+                              infoControl?.idServiceItem,
                               detail.idDetail,
                               'transport',
                               'moreInformationTransport', {
@@ -643,8 +670,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       {/* Fecha reserva */}
                       <div className={styles.fieldGroup}>
                         <ComponentDate
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.idDetail}
+                          idControl={infoControl?.idControl}
+                          idService={infoControl?.idService}
+                          itemService={infoControl?.idServiceItem}
+                          sequencedetail={detail?.idDetail}
                           data={detail?.transport?.shippingDate}
                           node={'transport'}
                           field={'shippingDate'}
@@ -657,8 +686,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       {/* Guia | Tipo */}
                       <div className={styles.fieldGroup}>
                         <TipoGuia
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.idDetail}
+                          idControl={infoControl?.idControl}
+                          idService={infoControl?.idService}
+                          itemService={infoControl?.idServiceItem}
+                          sequencedetail={detail?.idDetail}
                           transport={detail?.transport}
                           onUpdateServiceDetail={onUpdateServiceDetail}
                           modalidad={"maritimo"}
@@ -674,11 +705,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         </label>
                         <input
                           type="datetime-local"
-                          value={formatDateTimeLocal(detail?.transport?.moreInformationTransport?.appointment)}
+                          value={formatDateTimeLocal(detail?.transport?.moreInformationTransport?.appointment) || ''}
                           className={styles.textInput}
                           onChange={(e) =>
                             onUpdateServiceDetail(
-                              infoControl.idServiceItem,
+                              infoControl?.idControl,
+                              infoControl?.idService,
+                              infoControl?.idServiceItem,
                               detail.idDetail,
                               'transport',
                               'moreInformationTransport', {
@@ -694,8 +727,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       {/* Tipo de ruta */}
                       <div className={styles.fieldGroup}>
                         <TipoRuta
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.idDetail}
+                          idControl={infoControl?.idControl}
+                          idService={infoControl?.idService}
+                          itemService={infoControl?.idServiceItem}
+                          sequencedetail={detail?.idDetail}
                           transport={detail?.transport}
                           onUpdateServiceDetail={onUpdateServiceDetail}
                           label={t("operations.routeType")}
@@ -706,8 +741,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       {/* Tipo de movimiento */}
                       <div className={styles.fieldGroup}>
                         <TipoMovimeiento
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.idDetail}
+                          idControl={infoControl?.idControl}
+                          idService={infoControl?.idService}
+                          itemService={infoControl?.idServiceItem}
+                          sequencedetail={detail?.idDetail}
                           transport={detail?.transport}
                           onUpdateServiceDetail={onUpdateServiceDetail}
                           label={t("operations.movementType")}
@@ -757,10 +794,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 <div
                   className={`${styles.accordionContent}
                               ${!accordionOpen[`origin`]
-                                  ? styles.collapsed
-                                  : ""
-                              }`} //${!accordionOpen[`origin-${detail.idDetail}`]
-                >
+                              ? styles.collapsed : ""}`}>
+                            {/* //${!accordionOpen[`origin-${detail.idDetail}`] */}
                   <div className={styles.fourColumnGrid}>
 
                     <div className={styles.firstColumn}>
@@ -782,8 +817,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         }}
                         onChangeCountry={({ changes }) => {
                           onUpdateServiceDetail(
-                            infoControl.idServiceItem,
-                            detail.idDetail,
+                            infoControl?.idControl,
+                            infoControl?.idService,
+                            infoControl?.idServiceItem,
+                            detail?.idDetail,
                             "origin",
                             "country",
                             changes
@@ -792,8 +829,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         groupClassName={styles.fieldGroup}
                         labelClassName={styles.fieldLabel}
                         inputClassName={styles.textInput}
-                       >                         
-                       </InputCountry>
+                      />
                                 
                       {/* Planta */}
                       {detail.idTypeShipment !== 2  && (                        
@@ -803,12 +839,14 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           </label>
                           <input
                             type="text"
-                            value={detail?.origin?.plant?.name}
+                            value={detail?.origin?.plant?.name || ''}
                             className={styles.textInput}
                             onChange={(e) =>
                               onUpdateServiceDetail(
-                                infoControl.idServiceItem, 
-                                detail.idDetail, 
+                                infoControl?.idControl,
+                                infoControl?.idService,
+                                infoControl?.idServiceItem, 
+                                detail?.idDetail, 
                                 'origin',
                                   'plant', {
                                     'name': e.target.value
@@ -831,12 +869,14 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           </label>
                           <input
                             type="text"
-                            value={detail?.origin?.placeOfReceipt}
+                            value={detail?.origin?.placeOfReceipt || ''}
                             className={styles.textInput}
                             required
                             onChange={(e) =>
                               onUpdateServiceDetail(
-                                infoControl.idServiceItem,
+                                infoControl?.idControl,
+                                infoControl?.idService,
+                                infoControl?.idServiceItem,
                                 detail.idDetail,
                                 "origin",
                                 "placeOfReceipt",
@@ -851,7 +891,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           ports={portsOrigin}
                           namePort={detail?.origin?.port?.port}
                           codePort={detail?.origin?.port?.portKey}
-                          serviceIdItem={detail.idDetail}
+                          serviceIdItem={detail?.idDetail}
                           type="origin"
                           label="Puerto de carga"
                           groupClassName={styles.fieldGroup}
@@ -859,7 +899,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           inputClassName={styles.textInput}
                           onChangePort={(port) => {
                             onUpdateServiceFormData(
-                              infoControl.idServiceItem,
+                              infoControl?.idControl,
+                              infoControl?.idService,
+                              infoControl?.idServiceItem,
                               detail.idDetail,
                               "origin",
                               {
@@ -884,11 +926,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           </label>
                           <input
                             type="datetime-local"
-                            value={formatDateTimeLocal(detail?.origin?.plant?.arrivalDate)}
+                            value={formatDateTimeLocal(detail?.origin?.plant?.arrivalDate) || ''}
                             className={styles.textInput}
                             onChange={(e) =>
                               onUpdateServiceDetail(
-                                infoControl.idServiceItem, 
+                                infoControl?.idControl,
+                                infoControl?.idService,
+                                infoControl?.idServiceItem, 
                                 detail.idDetail, 
                                 'origin',
                                   'plant', {
@@ -906,9 +950,11 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       {/* ETD (Salida estimada) */}
                       <div className={styles.fieldGroup}>
                         <ComponentDate
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.idDetail}
-                          data={detail?.departureDateAproximate || ''}
+                          idControl={infoControl?.idControl}
+                          idService={infoControl?.idService}
+                          itemService={infoControl?.idServiceItem}
+                          sequencedetail={detail?.idDetail}
+                          data={detail?.origin?.departureDateAproximate}
                           node={'origin'}
                           field={'departureDateAproximate'}
                           onUpdateServiceDetail={onUpdateServiceDetail}
@@ -925,12 +971,14 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           </label>
                           <input
                             type="datetime-local"
-                            value={formatDateTimeLocal(detail?.origin?.plant?.departureDate)}
+                            value={formatDateTimeLocal(detail?.origin?.plant?.departureDate) || ''}
                             className={styles.textInput}
                             onChange={(e) =>
                               onUpdateServiceDetail(
-                                infoControl.idServiceItem, 
-                                detail.idDetail, 
+                                infoControl?.idControl,
+                                infoControl?.idService,
+                                infoControl?.idServiceItem, 
+                                detail?.idDetail, 
                                 'origin',
                                   'plant', {
                                     'departureDate': e.target.value
@@ -947,8 +995,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       {/* Despacho / recoleccion */}
                       <div className={styles.fieldGroup}>
                         <ComponentDate
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.idDetail}
+                          idControl={infoControl?.idControl}
+                          idService={infoControl?.idService}
+                          itemService={infoControl?.idServiceItem}
+                          sequencedetail={detail?.idDetail}
                           data={detail?.origin?.dispatchOrCollectionDate}
                           node={'origin'}
                           field={'dispatchOrCollectionDate'}
@@ -989,26 +1039,21 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 <div
                   className={`${styles.accordionContent}
                               ${!accordionOpen[`destination`]
-                                  ? styles.collapsed
-                                  : ""
-                              }`} //${!accordionOpen[`destination-${detail.idDetail}`]
-                >
+                              ? styles.collapsed : ""}`}>
+                              {/* //${!accordionOpen[`destination-${detail.idDetail}`] */}
                    <div className={styles.fourColumnGrid}>
 
                     <div className={styles.firstColumn}>
                       {/*DESTINO */}
                       {/* Pais de descarga */}
                       <InputCountry
-                        groupClassName={styles.fieldGroup}
-                        labelClassName={styles.fieldLabel}
-                        inputClassName={styles.textInput}
                         type="destination"
                         countries={countries}
-                        selectedCountryId={detail.destination?.country?.idCountry}
+                        selectedCountryId={detail?.destination?.country?.idCountry}
                         serviceIdItem={detail.idDetail}
                         isDisabled={false}
                         placeholder={t("quote.select")}
-                        label="Pais de descarga"
+                        label="País de descarga"
                         mapCountryToChanges={(country) => {  
                             return {
                               idCountry: country?._Id ?? "",
@@ -1017,13 +1062,18 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         }}
                         onChangeCountry={({ changes }) => {
                           onUpdateServiceDetail(
-                            infoControl.idServiceItem,
+                            infoControl?.idControl,
+                            infoControl?.idService,
+                            infoControl?.idServiceItem,
                             detail.idDetail,
                             "destination",
                             "country",
                             changes,
                           );
                         }}
+                        groupClassName={styles.fieldGroup}
+                        labelClassName={styles.fieldLabel}
+                        inputClassName={styles.textInput}
                       />
 
                       {/* Planta */}
@@ -1034,11 +1084,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           </label>
                           <input
                             type="text"
-                            value={detail?.destination?.plant?.name}
+                            value={detail?.destination?.plant?.name || ''}
                             className={styles.textInput}
                             onChange={(e) =>
                               onUpdateServiceDetail(
-                                infoControl.idServiceItem, 
+                                infoControl?.idControl,
+                                infoControl?.idService,
+                                infoControl?.idServiceItem, 
                                 detail.idDetail, 
                                 'destination',
                                   'plant', {
@@ -1052,8 +1104,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         /* Entrega en destino */
                         <div className={styles.fieldGroup}>
                           <ComponentDate
-                            itemService={infoControl.idServiceItem}
-                            sequencedetail={detail.idDetail}
+                            idControl={infoControl?.idControl}
+                            idService={infoControl?.idService}
+                            itemService={infoControl?.idServiceItem}
+                            sequencedetail={detail?.idDetail}
                             data={detail?.destination?.deliveryDate}
                             node={'destination'}
                             field={'deliveryDate'}
@@ -1068,12 +1122,12 @@ export const FreightForm: React.FC<FreightFormProps> = ({
 
                     <div className={styles.secondColumn}>
                       {/* Puerto o Aeropuerto de descarga */}
-                      {[2, 3].includes(detail.idTypeShipment) ?                                                   
+                      {[2, 3].includes(detail?.idTypeShipment) ?                                                   
                         <InputPort
                           ports={portsDestination}
                           namePort={detail?.destination?.port?.port}
                           codePort={detail?.destination?.port?.portKey}
-                          serviceIdItem={detail.idDetail}
+                          serviceIdItem={detail?.idDetail}
                           type="destination"
                           label={t("operations.portDischarge")}
                           groupClassName={styles.fieldGroup}
@@ -1081,7 +1135,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           inputClassName={styles.textInput}
                           onChangePort={(port) => {
                             onUpdateServiceFormData(
-                              infoControl.idServiceItem,
+                              infoControl?.idControl,
+                              infoControl?.idService,
+                              infoControl?.idServiceItem,
                               detail.idDetail,
                               "destination",
                               {
@@ -1103,12 +1159,14 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           </label>
                           <input
                             type="text"
-                            value={detail?.destination?.placeOfReceipt}
+                            value={detail?.destination?.placeOfReceipt || ''}
                             className={styles.textInput}
                             required
                             onChange={(e) =>
                               onUpdateServiceDetail(
-                                infoControl.idServiceItem,
+                                infoControl?.idControl,
+                                infoControl?.idService,
+                                infoControl?.idServiceItem,
                                 detail.idDetail,
                                 "destination",
                                 "placeOfReceipt",
@@ -1127,11 +1185,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           </label>
                           <input
                             type="datetime-local"
-                            value={detail?.destination?.plant?.arrivalDate}
+                            value={detail?.destination?.plant?.arrivalDate || ''}
                             className={styles.textInput}
                             onChange={(e) =>
                               onUpdateServiceDetail(
-                                infoControl.idServiceItem, 
+                                infoControl?.idControl,
+                                infoControl?.idService,
+                                infoControl?.idServiceItem, 
                                 detail.idDetail, 
                                 'destination',
                                   'plant', {
@@ -1149,9 +1209,20 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           </label>
                           <input
                             type="datetime-local"
-                            value={detail?.destination}
+                            value={detail?.destination?.plant?.departureDate || ''}
                             className={styles.textInput}
-                            readOnly
+                            onChange={(e) =>
+                              onUpdateServiceDetail(
+                                infoControl?.idControl,
+                                infoControl?.idService,
+                                infoControl?.idServiceItem, 
+                                detail.idDetail, 
+                                'destination',
+                                  'plant', {
+                                    'departureDate': e.target.value
+                                  }
+                              )
+                            }
                           />
                         </div>
 
@@ -1164,8 +1235,10 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                       {/* ETA (Llegada estimada) */}
                       <div className={styles.fieldGroup}>
                         <ComponentDate
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.idDetail}
+                          idControl={infoControl?.idControl}
+                          idService={infoControl?.idService}
+                          itemService={infoControl?.idServiceItem}
+                          sequencedetail={detail?.idDetail}
                           data={detail?.destination?.estimatedArrivalDateETA}
                           node={'destination'}
                           field={'estimatedArrivalDateETA'}
@@ -1175,15 +1248,41 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         />
                       </div>
                      
-                      
+                      {/* Salida de planta */}
+                      {[1, 4].includes(detail.idTypeShipment) &&
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>
+                            Salida de planta
+                          </label>
+                          <input
+                            type="datetime-local"
+                            value={detail?.destination?.plant?.arrivalDate || ''}
+                            className={styles.textInput}
+                            onChange={(e) =>
+                              onUpdateServiceDetail(
+                                infoControl?.idControl,
+                                infoControl?.idService,
+                                infoControl?.idServiceItem, 
+                                detail.idDetail, 
+                                'destination',
+                                  'plant', {
+                                    'arrivalDate': e.target.value
+                                  }
+                              )
+                            }
+                          />
+                        </div>
+                      }
                     </div>
 
                     <div className={styles.fourthColumn}>
                       {/* ATA (Atraque) */}
                       <div className={styles.fieldGroup}>
                         <ComponentDate
-                          itemService={infoControl.idServiceItem}
-                          sequencedetail={detail.idDetail}
+                          idControl={infoControl?.idControl}
+                          idService={infoControl?.idService}
+                          itemService={infoControl?.idServiceItem}
+                          sequencedetail={detail?.idDetail}
                           data={detail?.destination?.arrivalDateATA}
                           node={'destination'}
                           field={'arrivalDateATA'}
@@ -1193,24 +1292,6 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         />
                       </div>
     
-                        
-                  
-
-                      {/* Salida de planta */}
-                      {[1, 4].includes(detail.idTypeShipment) &&
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel}>
-                            Salida de planta
-                          </label>
-                          <input
-                            type="datetime-local"
-                            value={detail?.origin}
-                            className={styles.textInput}
-                            readOnly
-                          />
-                        </div>
-                      }
-
                     </div>
 
                   </div>
@@ -1230,7 +1311,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                     className={styles.textArea}
                     onChange={(e) =>
                       onUpdateServiceFormData(
-                        infoControl.idServiceItem,
+                        infoControl?.idControl,
+                        infoControl?.idService,
+                        infoControl?.idServiceItem,
                         detail.idDetail,
                         "comments",
                         e.target.value,
@@ -1248,6 +1331,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 <h2 className="title"> Contenedor </h2>
                 
                 <Containers 
+                  idControl={infoControl?.idControl}
+                  idService={infoControl?.idService}
                   infoControl={infoControl} 
                   detail={detail}
                   onUpdateServiceFormData={onUpdateServiceFormData}
@@ -1259,6 +1344,8 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 <h2 className="title"> Mercancia </h2>
 
                 <Cargo 
+                  idControl={infoControl?.idControl}
+                  idService={infoControl?.idService}
                   infoControl={infoControl} 
                   detail={detail}
                   onUpdateServiceFormData={onUpdateServiceFormData}
