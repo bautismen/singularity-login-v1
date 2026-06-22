@@ -27,7 +27,7 @@ export interface DigitizationDocument {
   environment: string;
   environmentId: number;
 
-  status: "Activo" | "Inactivo";
+  status: 1 | 0;
   datastate: number;
   archived: boolean;
   visibility: "Privado" | "Publico";
