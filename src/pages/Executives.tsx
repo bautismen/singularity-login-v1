@@ -36,9 +36,9 @@ export function Executives() {
     Fecha_ingreso: '',
     Email: '',
     Departamento: '',
-    Activo: true,
+    Status: 1,
     _Iduser: '',
-    Estado: 1,
+    Data_state: 1,
     Archivado: false,
   });
 
@@ -82,11 +82,11 @@ export function Executives() {
     let filtered = [...executives];
 
     if (filter === 'active') {
-      filtered = filtered.filter((exec) => exec.activo && exec.estado === 1);
+      filtered = filtered.filter((exec) => exec.status === 1 && exec.data_state === 1);
     } else if (filter === 'inactive') {
-      filtered = filtered.filter((exec) => !exec.activo && exec.estado === 1);
+      filtered = filtered.filter((exec) => exec.status !== 1 && exec.data_state === 1);
     } else {
-      filtered = filtered.filter((exec) => exec.estado === 1);
+      filtered = filtered.filter((exec) => exec.data_state === 1);
     }
 
     if (searchTerm) {
@@ -188,9 +188,9 @@ export function Executives() {
       Fecha_ingreso: executive.fecha_ingreso,
       Email: executive.email,
       Departamento: executive.departamento,
-      Activo: executive.activo,
+      Status: executive.status,
       _Iduser: executive._Iduser || '',
-      Estado: executive.estado,
+      Data_state: executive.data_state,
       Archivado: executive.archivado,
     });
     setEditingId(executive._Id || null);
@@ -227,9 +227,9 @@ export function Executives() {
       Fecha_ingreso: '',
       Email: '',
       Departamento: '',
-      Activo: true,
+      Status: 1,
       _Iduser: '',
-      Estado: 1,
+      Data_state: 1,
       Archivado: false,
     });
     setEditingId(null);
@@ -482,8 +482,8 @@ export function Executives() {
             <div className={styles.toggleItem}>
               <label className={styles.label}>{t('exec.disponible')}</label>
               <div
-                className={`${styles.toggle} ${formData.Activo ? styles.active : ''}`}
-                onClick={() => setFormData({ ...formData, Activo: !formData.Activo })}>
+                className={`${styles.toggle} ${formData.Status ? styles.active : ''}`}
+                onClick={() => setFormData({...formData,Status: formData.Status === 1 ? 0 : 1})}>
                 <div className={styles.toggleThumb}></div>
               </div>
             </div>
@@ -586,11 +586,11 @@ export function Executives() {
                     {executive.departamento}</td>
                   <td>
                     <span className={`${styles.statusBadge} 
-                      ${executive.activo
+                      ${executive.status === 1
                         ? styles.statusActive
                         : styles.statusInactive
                       }`}>
-                      {executive.activo ? t('exec.disponible') : t('exec.noDisponible')}
+                      {executive.status === 1 ? t('exec.disponible') : t('exec.noDisponible')}
                     </span>
                   </td>
                   <td>

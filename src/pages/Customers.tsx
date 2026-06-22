@@ -4,6 +4,8 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { Customer, Person, Company, Contacts, Address, History, MEXICAN_STATES, CONTACT_TYPES } from '../types/customer';
 import { getCustomers, createCustomer, updateCustomer, getCompanies, createCompany, createVinCustomer, updateVinCustomer,
         getVinculacionClienteKBSingularity } from '../services/customerService';
+import { getCustomers, createCustomer, updateCustomer, getCompanies, createCompany, createVinCustomer, updateVinCustomer,
+        getVinculacionClienteKBSingularity } from '../services/customerService';
 import styles from './Customers.module.css';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,9 +13,13 @@ import { catalogService } from '../services/catalogsService';
 import { CustomerKB } from '../types/customerKB';
 import { getCustomersKB } from '../services/krombaseService';
 import { vinCustomerSingularityKb } from '../types/vinCustomerSingularityKb';
+import { CustomerKB } from '../types/customerKB';
+import { getCustomersKB } from '../services/krombaseService';
+import { vinCustomerSingularityKb } from '../types/vinCustomerSingularityKb';
 
 export default function Customers() { //{ onNavigate }: { onNavigate: (route: string) => void }
   const { t } = useLanguage();
+  const { showError, showWarning, showSuccess } = useNotification();
   const { showError, showWarning, showSuccess } = useNotification();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
@@ -28,7 +34,15 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
     address: false,
     contacts: false,
     customerVinSinKb: false,
+    customerVinSinKb: false,
   });
+  const [showConfigSingularityKBForm, setShowConfigSingularityKBForm] = useState(false);
+  const [vinCustomerKbActual, setVinCustomerKbActual] = useState<vinCustomerSingularityKb | null>(null);
+  const [isKbEnabled, setIsKbEnabled] = useState(false);
+  const [newClientKb, setNewClientKb] = useState('');
+  const [clientsKb, setClientsKb] = useState<CustomerKB[]>([]);
+  const [customersKB, setCustomersKB] = useState<CustomerKB[]>([]);
+
   const [showConfigSingularityKBForm, setShowConfigSingularityKBForm] = useState(false);
   const [vinCustomerKbActual, setVinCustomerKbActual] = useState<vinCustomerSingularityKb | null>(null);
   const [isKbEnabled, setIsKbEnabled] = useState(false);
@@ -70,6 +84,7 @@ export default function Customers() { //{ onNavigate }: { onNavigate: (route: st
     Sector_id: 0,
     Sector_name: '',
     History: [] as History[],
+    CreatedAt: new Date,
     CreatedAt: new Date,
     UpdatedAt: Date,
     CreatedBy: {IdUser: user?._id, Name: user?.name},

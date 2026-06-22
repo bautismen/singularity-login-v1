@@ -20,6 +20,8 @@ export interface QuotationRequest {
   };
   assignedTo : Executive[];
   services: Service[];
+  archived : boolean,
+  dataState: number
 }
 
 export interface Service {

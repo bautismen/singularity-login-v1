@@ -13,6 +13,7 @@ export interface vinCustomerSingularityKb {
 
 export interface ClienteKBItem {
     i_cve_clienteempresa_KB: number;
+    t_empresacliente_KB: string;
     i_cve_divisionmiempresa_KB: number;
 }
 

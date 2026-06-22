@@ -1,11 +1,11 @@
 import  React, { useEffect, useRef, useState } from 'react';
-import { Search, Filter,SlidersHorizontal, BarChart2,ChevronUp, ChevronDown, ChevronLeft, ChevronRight,Table,FileText } from 'lucide-react';
+import { Search, Filter,SlidersHorizontal, BarChart2,ChevronUp, ChevronDown, ChevronLeft, ChevronRight,Table,FileText, RotateCcw } from 'lucide-react';
 import {useLanguage } from "../contexts/LanguageContext";
 import styles from './Reports.module.css';
 import { useAuth } from '../contexts/AuthContext';
 import { Report } from '../types/reports';
 import { reportsServices } from '../services/reportsService';
-import { getExecutivesByDepartment } from '../services/executiveService';
+import { getExecutivesByDepartment, getExecutives } from '../services/executiveService';
 import { getCustomers } from '../services/customerService';
 import * as XLSX from 'xlsx-js-style';
 import { useReactToPrint } from "react-to-print";
@@ -15,7 +15,7 @@ import { Shower } from '@mui/icons-material';
 export function Reports() {
   
   
-  const CHIP_VALUES = ['All', 'Pricing', 'Operations', 'Customer'] as const;
+  const CHIP_VALUES = ['All', 'Pricing','Commercial', 'Operations', 'Customer'] as const;
   type Chip = typeof CHIP_VALUES[number];
   const CHIP_TRANSLATIONS: Record<Chip, { es: string; en: string }> = {
     All: {
@@ -25,6 +25,10 @@ export function Reports() {
     Pricing: {
       es: 'Pricing',
       en: 'Pricing'
+    },
+    Commercial: {
+      es: 'Comercial',
+      en: 'Commercial'
     },
     Operations: {
       es: 'Operaciones',
@@ -74,6 +78,12 @@ export function Reports() {
   const [currentPageTop, setCurrentPageTop] = useState(1);
   const [pageSizeTop, setPageSizeTop] = useState(10);
   const { showError, showWarning, showInfo } = useNotification();
+  const rolAdmin = ["admin"]
+  const isAdmin = user?.roles?.every(() => true) && rolAdmin.every(v => user?.roles?.includes(v));
+  const rolpricing = ["pricing"]
+  const isPricing = user?.roles?.every(() => true) && rolpricing.every(v => user?.roles?.includes(v));
+  const rolcomercial = ["comercial"]
+  const isComercial = user?.roles?.every(() => true) && rolcomercial.every(v => user?.roles?.includes(v));
 
   const totalPagesTop = Math.ceil(filteredItems.length / pageSizeTop);
 
@@ -121,6 +131,9 @@ useEffect(() => {
         if (p.catalog === 'Clientes') {
           newCatalogs[p.catalog] = await getCustomers();
         }
+        if (p.catalog === 'Ejecutivos') {
+          newCatalogs[p.catalog] = await getExecutives();
+        }
       }
     }
 
@@ -160,7 +173,28 @@ const loadData = async () => {
   try {
     setLoading(true);
     const data = await reportsServices.getall();
-    setControlData(data);
+     let filteredData = [];
+
+    if (isAdmin) {
+      // Ve todo
+      filteredData = data;
+    } else if (isPricing) {
+      // Solo Pricing
+      filteredData = data.filter(
+        (item: any) =>
+          item.category?.toLowerCase() === 'pricing'
+      );
+    } else if (isComercial) {
+      // Solo Comercial
+      filteredData = data.filter(
+        (item: any) =>
+          item.category?.toLowerCase() === 'comercial'
+      );
+    } else {
+      // No tiene permisos
+      filteredData = [];
+    }
+    setControlData(filteredData);
   } catch (error) {
     setLoading(false);
     showError('Error fetching control data:' + error);
@@ -277,6 +311,19 @@ const renderParameter = (id: string) => {
                 list={`catalog-${p.name}`}
                 className={styles.select}
                 value={displayValues[p.name] ?? ""}
+                onClick={() => {
+                  if (displayValues[p.name]) {
+                    setDisplayValues(prev => ({
+                      ...prev,
+                      [p.name]: ''
+                    }));
+
+                    setFormValues(prev => ({
+                      ...prev,
+                      [p.name]: ''
+                    }));
+                  }
+                }}
                 onChange={(e) =>
                   handleDatalistChange(p.name, p.catalog, e.target.value)
                 }
@@ -297,7 +344,7 @@ const renderParameter = (id: string) => {
               {catalogs[p.catalog]?.map((dat: any, index: number) => (
                 <option
                   key={
-                    p.catalog === 'EjecutivosPricing'
+                    p.catalog === 'EjecutivosPricing' || p.catalog === 'Ejecutivos'
                       ? dat._Iduser
                       : (dat._Id ?? dat.id ?? `${p.name}-option-${index}`)
                   }
@@ -323,7 +370,7 @@ const handleDatalistChange = (name: string, catalog: string, inputText: string) 
   // ✅ Resuelve el ID correcto según el catálogo
   const resolveId = (item: any): string => {
     if (!item) return '';
-    if (catalog === 'EjecutivosPricing') return String(item._Iduser ?? '');
+    if (catalog === 'EjecutivosPricing' || catalog === 'Ejecutivos') return String(item._Iduser ?? '');
     return String(item._Id ?? item.id ?? '');
   };
 
@@ -432,7 +479,7 @@ const handlecreate = async () => {
     );
 
     setisviewResult(true);
-    setIsOpenParam(false);
+    setIsOpenParam(false);    
 
   } catch (error) {
     showError('Error al generar el reporte:' + error);
@@ -685,14 +732,23 @@ const exportToExcel = () => {
       }
 
       // Detectar fechas
-      else if (typeof value === 'string') {
-        const parsedDate = parseDate(value);
+      else if (typeof value === 'string') {        
+        const trimmedValue = value.trim();
 
-        if (parsedDate) {
-          const date = new Date(parsedDate);
-          cell.v = date;
-          cell.t = 'd';
-          cell.z = 'dd/mm/yyyy';
+        // Solo intentar convertir si parece una fecha
+        const isDateFormat =
+          /^(\d{2}[-/]\d{2}[-/]\d{4})$/.test(trimmedValue) || // dd-mm-yyyy | dd/mm/yyyy
+          /^(\d{4}[-/]\d{2}[-/]\d{2})$/.test(trimmedValue) || // yyyy-mm-dd | yyyy/mm/dd
+          /^(\d{2}[-/]\d{2}[-/]\d{2})$/.test(trimmedValue);   // dd-mm-yy | dd/mm/yy
+
+        const parsedDate = parseDate(value);
+        if (isDateFormat) {
+          if (parsedDate && !isNaN(parsedDate.getTime())) {
+            const date = new Date(parsedDate);
+            cell.v = date;
+            cell.t = 'd';
+            cell.z = 'dd/mm/yyyy';
+          }
         }
       }
 
@@ -737,6 +793,40 @@ const printPdf = useReactToPrint({
       </div>
     );
   }
+
+  const clearParams = () => {
+  const report = controlData?.find(
+    a => a.id_report === idSelected
+  );
+
+  if (!report?.parameter) return;
+
+  const formCleared: Record<string, string> = {};
+  const displayCleared: Record<string, string> = {};
+
+  report.parameter.forEach((p: any) => {
+    if (p.type === 'date') {
+      formCleared[`${p.name}_start`] = '';
+      formCleared[`${p.name}_end`] = '';
+    } else {
+      formCleared[p.name] = '';
+
+      if (p.type === 'catalogo') {
+        displayCleared[p.name] = '';
+      }
+    }
+  });
+
+  setFormValues(prev => ({
+    ...prev,
+    ...formCleared
+  }));
+
+  setDisplayValues(prev => ({
+    ...prev,
+    ...displayCleared
+  }));
+};
 
   return (
     <div className={styles.container}>
@@ -880,7 +970,7 @@ const printPdf = useReactToPrint({
                   </button>
                 </React.Fragment>
               ))
-            }
+            }            
 
             <button
               onClick={() =>
@@ -926,7 +1016,10 @@ const printPdf = useReactToPrint({
             {idSelected && renderParameter(idSelected)}
           </div>
           <div className={styles.divbuttonparameter}>
-            <button className="bg-[#00685d] text-white px-8 py-3.5 rounded-lg font-bold text-sm shadow-xl hover:shadow-[#00685d]/20 transition-all flex items-center gap-2" onClick={() => {
+            <button className={styles.botonparameter} onClick={clearParams}>
+              <span className="material-symbols-outlined text-lg"><RotateCcw size={20} /></span>
+            </button>
+            <button className={styles.botonparameter} onClick={() => {
                   handlecreate();                 
                 }}>
               <span className="material-symbols-outlined text-lg"><BarChart2 size={20} /></span> {t('report.button')}
@@ -944,8 +1037,8 @@ const printPdf = useReactToPrint({
       <div className="flex gap-2">
         
       <button className="bg-[#d3e2f5] text-[#3c5d8a] px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all" onClick={exportToExcel}>
-      <span className="material-symbols-outlined text-lg"><Table size={20} /></span> Excel
-                              </button>
+        <span className="material-symbols-outlined text-lg"><Table size={20} /></span> Excel
+      </button>
       {/*<button className="bg-[#5c6c84] text-white px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:brightness-95 transition-all" onClick={printPdf}>
       <span className="material-symbols-outlined text-lg"><FileText size={20} /></span> PDF
       </button>*/}
