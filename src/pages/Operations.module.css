@@ -381,6 +381,16 @@
   color: var(--text-secondary);
 }
 
+/* Se activa via data-invalid que pone el hook automáticamente */
+[data-invalid="true"] {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 1px #ef4444;
+}
+
+.inputError {
+  border-color: #ef4444;
+}
+
 .textInputClient {
   text-align: left;
   width: 100%;

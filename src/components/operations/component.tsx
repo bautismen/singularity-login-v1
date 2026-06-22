@@ -1,6 +1,8 @@
 import styles from '../../pages/Operations.module.css';
 import { Plus, Trash2, Eye, X, Copy, Search, Trash } from 'lucide-react';
 import { formatDateTimeLocal } from '../../types/operations';
+import { useLanguage } from "../../contexts/LanguageContext";
+
 
 export const TipoEnvio = ({ idControl, idService, itemService, sequencedetail, detail, onUpdateServiceFormData, label, required }) => {
 
@@ -12,8 +14,9 @@ export const TipoEnvio = ({ idControl, idService, itemService, sequencedetail, d
       <select
         value={detail.idTypeShipment || ""}
         className={styles.selectInput}
-        disabled = {sequencedetail === 1 ? true : false }
+        //disabled = {sequencedetail === 1 ? true : false }
         required = {required}
+        data-error-message="Tipo de envio requerido"
         onChange={(e) => {
           onUpdateServiceFormData(idControl, idService, itemService, sequencedetail, 'idTypeShipment', Number(e.target.value))
           onUpdateServiceFormData(idControl, idService, itemService, sequencedetail, 'typeShipment', e.target.options[e.target.selectedIndex].text)
@@ -64,8 +67,9 @@ export const TipoOperacion = ({ idControl, idService,  itemService, sequencedeta
       <select
         value={detail.idTypeOperation || ''}
         className={styles.selectInput}
-        disabled = {sequencedetail === 1 ? true : false }
+        //disabled = {sequencedetail === 1 ? true : false }
         required = {required}
+        data-error-message="Tipo de operación requerido"
         onChange={(e) => {
           onUpdateServiceFormData(idControl, idService, itemService, sequencedetail, 'idTypeOperation', Number(e.target.value))
           onUpdateServiceFormData(idControl, idService, itemService, sequencedetail, 'typeOperation', e.target.options[e.target.selectedIndex].text)
@@ -92,8 +96,9 @@ export const Incoterm = ({ idControl, idService, itemService, sequencedetail, de
       <select
         value={detail.idIncoterm || ''}
         className={styles.selectInput}
-        disabled = {sequencedetail === 1 ? true : false }
+        //disabled = {sequencedetail === 1 ? true : false }
         required = {required}
+        data-error-message="Incoterm requerido"
         onChange={(e) => {
           onUpdateServiceFormData(idControl, idService, itemService, sequencedetail, 'idIncoterm', Number(e.target.value))
           onUpdateServiceFormData(idControl, idService, itemService, sequencedetail, 'incoterm', e.target.options[e.target.selectedIndex].text)
@@ -110,7 +115,7 @@ export const Incoterm = ({ idControl, idService, itemService, sequencedetail, de
 };
 
 export const Transportista = ({ idControl, idService, itemService, sequencedetail, transport, onUpdateServiceDetail, transportista, label, required }) => {
-
+  const { t } = useLanguage();  
   return (
     <>
       <label className={styles.fieldLabel}>
@@ -121,6 +126,7 @@ export const Transportista = ({ idControl, idService, itemService, sequencedetai
         className={styles.selectInput}
         disabled = {false}
         required = {required}
+        data-error-message={t("operations.carrierRequired")}
         onChange={(e) => {
           onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, 'transport', 'idcarrier', e.target.value)
           onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, 'transport', 'carrier', e.target.options[e.target.selectedIndex].text)
@@ -164,6 +170,7 @@ export const TipoUnidad = ({ idControl, idService, itemService, sequencedetail, 
         className={styles.selectInput}
         disabled = {false}
         required = {required}
+        data-error-message="Tipo de unidad requerido"
         onChange={(e) => {
           onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, 'transport', 'typeUnit', e.target.options[e.target.selectedIndex].text)
         }
@@ -192,6 +199,7 @@ export const TipoRuta = ({ idControl, idService, itemService, sequencedetail, tr
         className={styles.selectInput}
         disabled = {false}
         required = {required}
+        data-error-message="Tipo de ruta requerido"
         onChange={(e) => {
           onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, 'transport', 'typeRoute', e.target.options[e.target.selectedIndex].text)
         }
@@ -257,6 +265,7 @@ export const TipoGuia = ({ idControl, idService, itemService, sequencedetail, tr
               id="type"
               disabled = {false}
               required = {required}
+              data-error-message="Tipo de guia requerido"
               onChange={(e) => {
                 onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, 'transport',
                   'guide', {
@@ -790,6 +799,7 @@ export const ReferencesAduanal = ({ idControl, idService, infoControl, detail, o
 };
 
 export const ComponentDate = ({ idControl, idService, itemService, sequencedetail, data, node, field, onUpdateServiceDetail, label, required }) => {
+  const { t } = useLanguage();  
   return (
     <>
       <label className={styles.fieldLabel}>
@@ -801,6 +811,7 @@ export const ComponentDate = ({ idControl, idService, itemService, sequencedetai
         className={styles.textInput}
         disabled = {false}
         required = {required}
+        data-error-message={t('operations.dateRequired')}
         onChange={(e) =>
           onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, node, field, e.target.value)
         }

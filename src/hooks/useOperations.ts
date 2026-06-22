@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Operation, Customer, Service, ServiceOperation, ServiceDetail, HistoryStatus, UserInfo } from '../types/operations';
 import { useAuth } from '../contexts/AuthContext';
 

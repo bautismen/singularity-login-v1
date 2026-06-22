@@ -110,7 +110,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             <div className="flex-shrink-0 mt-0.5">
               {getIcon(notification.type)}
             </div>
-            <div className="flex-1 text-sm font-medium">
+            <div className="flex-1 text-sm font-medium whitespace-pre-line">
               {notification.message}
             </div>
             <button

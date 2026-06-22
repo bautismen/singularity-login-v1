@@ -32,6 +32,8 @@ import {
   Plane
 } from "lucide-react";
 import { Airport } from "../../types/airport";
+import { useSubFormValidator } from "../../hooks/useSubFormValidator";
+
 
 export interface AirFreightFormProps {
   mode:             'create' | 'edit' | 'view';
@@ -40,7 +42,12 @@ export interface AirFreightFormProps {
   suppliers: any[];
   countries: any[];
   //info
-  info: object;
+  info:  {
+    id: string;
+    idService: string;
+    item: number;
+    name: string;
+  };
   controlsData: PricingControl[];
   formData: OperationsFormData;
   onUpdateFormData: (
@@ -116,15 +123,20 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
   };
   formData.Services?.map((s)=> s.serviceDetail.length === 0 ? s.serviceDetail=[detail] : s)
   const [accordionOpen, setAccordionOpen] = React.useState({
-    // [`envio-${detail?.idDetail}`]: mode === 'edit' ? true : true,
-    // [`transporte-${detail?.idDetail}`]: mode === 'edit' ? true : true,
-    // [`origin-${detail?.idDetail}`]: mode === 'edit' ? true : true,
-    // [`destination-${detail?.idDetail}`]: mode === 'edit' ? true : true,
     [`envio`]: true,
     [`transporte`]: true,
     [`origin`]: true,
     [`destination`]: true,
   });
+  //lee required del DOM automáticamente
+    const {containerRef , getFieldError} = useSubFormValidator(
+      `freight-${info.id}-${info.item}`,
+      {
+        serviceItem: airServiceControl?.idServiceItem,
+        detailId: detail?.idDetail,
+      }
+    );
+  console.log('Air formData: ',formData, ' airServiceControl: ', airServiceControl)
 
   //use effect de carga de aeropuertos origen
   useEffect(() => {
@@ -328,7 +340,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
   };
 
   return (
-    <div className={styles.formRow}>
+    <div ref={containerRef} className={styles.formRow}>
       <span key={airServiceControl?.idControl && airServiceControl?.idServiceItem} className={styles.serviceItem}>
         {detail && (
           <div
@@ -805,6 +817,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                             value={detail?.origin?.placeOfReceipt || ''}
                             className={styles.textInput}
                             required
+                            data-error-message="Lugar de recolección requerido"
                             onChange={(e) =>
                               onUpdateServiceDetail(
                                 airServiceControl?.idControl,
@@ -1066,6 +1079,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                             value={detail?.destination?.placeOfReceipt || ''}
                             className={styles.textInput}
                             required
+                            data-error-message="Lugar de descarga requerido"
                             onChange={(e) =>
                               onUpdateServiceDetail(
                                 airServiceControl?.idControl,

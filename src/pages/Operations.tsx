@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Search, Plus, Save, Edit2, ChevronDown, ChevronUp, RotateCcw, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -17,10 +17,24 @@ import { OtherServiceForm } from '../components/operations/OtherServiceForm'
 import { useOperations } from '../hooks/useOperations'
 import { useCatalogs } from "../hooks/useCatalogs";
 import { AirFreightForm } from '../components/operations/AirFreightForm';
+import { useOperationsValidation } from '../contexts/OperationsValidationContext';
+import { OperationsValidationProvider } from '../contexts/OperationsValidationContext';
 
 
 export default function Operations() {
+  return(
+    <OperationsValidationProvider>
+        <OperationsInner />
+    </OperationsValidationProvider>    
+  ) 
+}
+
+//al usar useContext el provider debe declararse antes de iniciar el create context, solo puede leer un valor de un Provider que esté arriba en el árbol de componentes, en un componente diferente al que declara el Provider.
+function OperationsInner () {
+  const { runAllValidators, clearErrors } = useOperationsValidation(); //aqui creamos el useContext para las validaciones
   const { t } = useLanguage();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const formMainRef = useRef<HTMLFormElement>(null);  
   const { showError, showWarning } = useNotification();
   const [operations, setOperations] = useState<Operation[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -37,7 +51,6 @@ export default function Operations() {
   const { countries } = useCatalogs();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
-  const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingOperation, setEditingOperation] = useState<Operation | null>(null);
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
@@ -53,6 +66,7 @@ export default function Operations() {
     expedientes: false
   });
   const { user } = useAuth();
+  let errors = [] ;
 
   const {
     formData,
@@ -606,7 +620,7 @@ export default function Operations() {
     }
 
     return {
-      idServiceItem: service.idServiceItem,
+      idServiceItem: service.idServiceItem, // controlsOperation.length + 1 , //
       idControl: control?._id || service.idControl || null,
       control: control?.control || service.control || null,
       idService: service.idService,
@@ -632,16 +646,43 @@ export default function Operations() {
   }
 
   async function handleSaveOperation(e: React.FormEvent) {
-
+    /*if(errors.length === 0 && !formMainRef.current?.reportValidity()) {       
+        return; 
+    }*/
     try {
       setLoading(true);
       e.preventDefault();
-
-      if (controlsOperation.length === 0 && servicesOperation.length === 0) {
-        showWarning("Se debe agregar un control o servicio a la operación");
+      errors = runAllValidators();
+      if(formData.Customer === undefined || formData.Customer.name.length === 0 ) {
+        showWarning(t('operations.customerRequired'));
         return;
       }
-
+          
+     if (controlsOperation.length === 0 && servicesOperation.length === 0) {
+        showWarning(t("operations.warnings.servicesRequired"));
+        return;
+      }           
+            
+      if(errors.length > 0) {
+        const firstError = errors.find(error => error.serviceItem !== undefined);
+        if(firstError) {
+          const serviceError = formData.Services.find(service => service.idServiceItem === firstError.serviceItem);
+          if (serviceError) {
+            setActiveTab({
+              id: serviceError.idControl ?? null,
+              idService: serviceError.idService,
+              item: serviceError.idServiceItem ,
+              name: serviceError.nameService
+            });
+            setCollapsedSections(prev => ({ ...prev, services: true }));
+          }
+        }
+        showWarning(t("operations.warnings.fieldsRequired", {values: {count: errors.length}}) 
+          + `\n ${errors.map(e => e.message).join('\n')}`);
+        return;
+      }
+      clearErrors();
+      
       const dataToSave = {
         ...formData,
         UpdatedAt: null,
@@ -685,7 +726,6 @@ export default function Operations() {
   }
 
   function buildOperationService(control: any, service: any): ServiceOperation {
-
     return {
       idServiceItem: service.idServiceItem,
       idControl: control?._id || null,
@@ -701,35 +741,12 @@ export default function Operations() {
 
   }
 
-  // function buildOperationData(): Operation {
-  //   return {
-  //     Id: formData.Id,
-  //     IdReference: formData.IdReference,
-  //     Reference: formData.Reference,  
-  //     Customer: formData.Customer,
-  //     Services: [
-  //       ...controlsOperation.flatMap(control =>
-  //         control.services?.map(service => buildOperationService(control, service)) || []
-  //       ),
-  //       ...servicesOperation.map(service => buildOperationService(null, service))
-  //     ],
-  //     OperationStatus: formData.OperationStatus,
-  //     Observations: formData.Observations,
-  //     CreatedAt: formData.CreatedAt,
-  //     CreatedBy: formData.CreatedBy,
-  //     UpdatedAt: formData.UpdatedAt,
-  //     UpdateBy: formData.UpdateBy,
-  //     Status: formData.Status,
-  //     Archived: formData.Archived,
-  //     DataState: formData.DataState,
-  //   }
-  // }
-
+   
 
   if (isFormOpen) {
     return (
-      <>
-        <form onSubmit={handleSaveOperation} className={styles.formContainer}>
+      <>       
+        <form ref={formMainRef} noValidate onSubmit={handleSaveOperation} className={styles.formContainer}>
 
           <div className={styles.formHeaderRow}>
 
@@ -785,14 +802,14 @@ export default function Operations() {
                   <label htmlFor="customer" className={styles.fieldLabel}>
                   {t('operations.customer')} | RFC - Tax ID
                   </label>
-                  <div className='className="flex inline-flex  '> 
+                  <div className='className="flex inline-flex'> 
                     <input
                     list='customers-list'
                     type="text"
                     value={formData.Customer.name}
                     className={styles.textInputClient}
                     required
-                    placeholder='Select customer'                   
+                    placeholder= {t('operations.customerRequired')}                 
                     onChange={(e) => {     
                       const selected = customers.find(c => c.fiscalData?.businessName === e.target.value);
                       if (selected) {
@@ -855,7 +872,7 @@ export default function Operations() {
                     {t("operations.services")}
                   </label>                  
                   <div className={styles.statusField}>
-                    <span className={styles.statusText}>Tiene número de control</span>
+                    <span className={styles.statusText}>{t("operations.hasControlNumber")}</span>
                     <label className={styles.switch}>
                       <input
                         type="checkbox"
@@ -1117,24 +1134,21 @@ export default function Operations() {
                       {controlsOperation.length > 0 ? (
                         controlsOperation?.map(controlService => (
                           controlService.services?.map(service => (
-                            <div key={`${controlService._id ?? 'service'}-${service.idService}--${service.idServiceItem}`}
-                              className={`${styles.tabItem} ${activeTab.item === service.idServiceItem && activeTab.id === controlService._id && activeTab.name === service.nameService ? styles.active : ''}`}
+                            <div key={`${controlService._id ?? 'service'}-${service.idService}-${service.idServiceItem}`}
+                              className={`${styles.tabItem} ${activeTab.item === service.idServiceItem && activeTab.id === controlService._id && activeTab.name === service.nameService ? styles.active : ''}`}                              
                               onClick={() => {
                                 setActiveTab({
                                   id: controlService._id,
                                   idService: service.idService,
                                   item: service.idServiceItem || 1,
                                   name: service.nameService
-                                });
-                               
+                                });                               
                                 const newService = buildOperationService(controlService, service);
-                                //console.log('Active tab',activeTab)
                                 updateFormData(prev => {
                                   const exists = prev.Services?.some(
                                     s => s.IdControl === newService.IdControl &&
                                     s.IdServiceItem === newService.IdServiceItem
                                   );
-
                                   if (exists) return prev;
                                   return {
                                     ...prev,
@@ -1144,32 +1158,87 @@ export default function Operations() {
                               }}>
                               {controlService.control} {service.nameService}
                             </div>
-                          ))
-                        ))
+                        ))))
                       ) : (<></>)}                      
                     </div>
                   </div>
                 </div>
 
-                {/*ServiceForm && <ServiceForm {...formProps} />*/}
-                {
-                  [1, 2, 3, 4, 10, 11].includes(Number(activeTab.idService)) ?
-                    (<FreightForm
-                      mode={editingOperation ? 'edit' : 'create'}
-                      incoterms={incoterm}
-                      suppliers={supplier}
-                      countries={countries}
-                      info={activeTab}
-                      controlsData={controlsData}
-                      formData={formData}
-                      onUpdateFormData={updateFormData}
-                      onUpdateServiceFormData={updateServiceFormData}
-                      onUpdateServiceDetail={updateServiceDetail}
-                      onDuplicateDetail={duplicateDetail}
-                      onRemoveDetail={removeDetail}
-                    />) :
-                    [5].includes(parseInt(activeTab.idService)) ?
-                      (<AirFreightForm
+                {controlsOperation.map(controlService =>
+                  controlService.services?.map(service => {
+                    const isActive = activeTab.item === service.idServiceItem && activeTab.id === controlService._id;
+                    const serviceId = Number(service.idService);
+
+                    const serviceInfo = {
+                      id: controlService._id,
+                      idService: service.idService,
+                      item: service.idServiceItem,
+                      name: service.nameService,
+                    };
+
+                    return (
+                      <div
+                        key={`${controlService._id}-${service.idServiceItem}`}
+                        style={{ display: isActive ? 'block' : 'none' }}
+                      >
+                        {[1, 2, 3, 4, 10, 11].includes(serviceId) && (
+                          <FreightForm
+                          mode={editingOperation ? 'edit' : 'create'}
+                          incoterms={incoterm}
+                          suppliers={supplier}
+                          countries={countries}
+                          info={serviceInfo}
+                          controlsData={controlsData}
+                          formData={formData}
+                          onUpdateFormData={updateFormData}
+                          onUpdateServiceFormData={updateServiceFormData}
+                          onUpdateServiceDetail={updateServiceDetail}
+                          onDuplicateDetail={duplicateDetail}
+                          onRemoveDetail={removeDetail} />
+                        )}
+                        {[5].includes(serviceId) && (
+                          <AirFreightForm
+                          incoterms={incoterm}
+                          suppliers={supplier}
+                          countries={countries}
+                          info={serviceInfo}
+                          controlsData={controlsData}
+                          formData={formData}
+                          onUpdateFormData={updateFormData}
+                          onUpdateServiceFormData={updateServiceFormData}
+                          onUpdateServiceDetail={updateServiceDetail}
+                          onDuplicateDetail={duplicateDetail}
+                          onRemoveDetail={removeDetail}
+                        />
+                        )}
+                        {[17].includes(serviceId) && (
+                          <PrevioForm
+                            info={activeTab}
+                            controlsData={controlsData}
+                            formData={formData}
+                            onUpdateFormData={updateFormData}
+                            onUpdateServiceFormData={updateServiceFormData}
+                          />
+                        )}
+                        {![1,2,3,4,5,10,11,17].includes(serviceId) && (
+                          <OtherServiceForm
+                            incoterms={incoterm}
+                            info={activeTab}
+                            controlsData={controlsData}
+                            formData={formData}
+                            onUpdateFormData={updateFormData}
+                            onUpdateServiceFormData={updateServiceFormData} />
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+
+                {/*<div style={{display: activeTab ? 'block' : 'none'}}>                  
+                  {
+                    [1, 2, 3, 4, 10, 11].includes(Number(activeTab.idService)) ?
+                      (<FreightForm
+                        mode={editingOperation ? 'edit' : 'create'}
                         incoterms={incoterm}
                         suppliers={supplier}
                         countries={countries}
@@ -1182,23 +1251,37 @@ export default function Operations() {
                         onDuplicateDetail={duplicateDetail}
                         onRemoveDetail={removeDetail}
                       />) :
-                      [17].includes(parseInt(activeTab.idService)) ?
-                        (<PrevioForm
+                      [5].includes(parseInt(activeTab.idService)) ?
+                        (<AirFreightForm
+                          incoterms={incoterm}
+                          suppliers={supplier}
+                          countries={countries}
                           info={activeTab}
                           controlsData={controlsData}
                           formData={formData}
                           onUpdateFormData={updateFormData}
                           onUpdateServiceFormData={updateServiceFormData}
+                          onUpdateServiceDetail={updateServiceDetail}
+                          onDuplicateDetail={duplicateDetail}
+                          onRemoveDetail={removeDetail}
                         />) :
-                        <OtherServiceForm
-                          incoterms={incoterm}
-                          info={activeTab}
-                          controlsData={controlsData}
-                          formData={formData}
-                          onUpdateFormData={updateFormData}
-                          onUpdateServiceFormData={updateServiceFormData} />
-                }
-
+                        [17].includes(parseInt(activeTab.idService)) ?
+                          (<PrevioForm
+                            info={activeTab}
+                            controlsData={controlsData}
+                            formData={formData}
+                            onUpdateFormData={updateFormData}
+                            onUpdateServiceFormData={updateServiceFormData}
+                          />) :
+                          <OtherServiceForm
+                            incoterms={incoterm}
+                            info={activeTab}
+                            controlsData={controlsData}
+                            formData={formData}
+                            onUpdateFormData={updateFormData}
+                            onUpdateServiceFormData={updateServiceFormData} />
+                  }
+                </div>*/}
               </div>
             )}
           </div>
@@ -1310,4 +1393,5 @@ export default function Operations() {
       )}
     </div>
   );
+
 }

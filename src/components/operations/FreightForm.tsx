@@ -32,6 +32,8 @@ import {
   Ship
 } from "lucide-react";
 import { Port } from "../../types/port";
+import { useSubFormValidator } from "../../hooks/useSubFormValidator";
+
 
 export interface FreightFormProps {
   mode:             'create' | 'edit' | 'view';
@@ -40,7 +42,12 @@ export interface FreightFormProps {
   suppliers: any[];
   countries: any[];
   //info
-  info: object;
+  info: {
+    id: string;
+    idService: string;
+    item: number;
+    name: string;
+  };
   controlsData: PricingControl[];
   formData: OperationsFormData;
   onUpdateFormData: (
@@ -115,6 +122,17 @@ export const FreightForm: React.FC<FreightFormProps> = ({
   origin: {},
   destination: {},
   }; 
+
+  //lee required del DOM automáticamente
+  const {containerRef , getFieldError} = useSubFormValidator(
+    `freight-${info.id}-${info.item}`,
+    {
+      serviceItem: infoControl?.idServiceItem,
+      detailId: detail?.idDetail,
+    }
+  );
+  //const [currentIndex, setCurrentIndex] = infoControl?.currentIndex || 0;
+ 
   formData.Services?.map((s)=> s.serviceDetail.length === 0 ? s.serviceDetail=[detail] : s)
   const [accordionOpen, setAccordionOpen] = React.useState({
     // [`envio-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
@@ -330,7 +348,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
   };
 
   return (
-    <div className={styles.formRow}>
+    <div ref={containerRef} className={styles.formRow}>
       <span key={infoControl?.idControl && infoControl?.idServiceItem} className={styles.serviceItem}>
         {detail && (
           <div
@@ -421,10 +439,12 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                   </span>
                 </div>
 
-                <div className={`${styles.accordionContent}
-                                 ${!accordionOpen[`envio`]
-                    ? styles.collapsed
-                    : ""}`}>
+                <div
+                  className={`${styles.accordionContent}
+                              ${!accordionOpen[`envio`]
+                                  ? styles.collapsed
+                                  : ""
+                              }`}>
                   <div className={styles.fourColumnGrid}>
                     <div className={styles.firstColumn}>
                       {/* Modalidad */}
@@ -868,10 +888,13 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                             <span className={styles.required}>* </span> {t("operations.collectionLocation")}
                           </label>
                           <input
+                            id={`freq-${info.id}`}
                             type="text"
                             value={detail?.origin?.placeOfReceipt || ''}
                             className={styles.textInput}
                             required
+                            className={`${styles.selectInput} ${getFieldError(infoControl?.idServiceItem, detail?.idDetail, 'idTypeShipment') ? styles.inputError : ''}`}
+                            data-error-message="lugar de recoleccion requerido" 
                             onChange={(e) =>
                               onUpdateServiceDetail(
                                 infoControl?.idControl,
@@ -1157,7 +1180,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           <label className={styles.fieldLabel}>
                             {t("operations.placeDischarge")}
                           </label>
-                          <input
+                          <input                           
                             type="text"
                             value={detail?.destination?.placeOfReceipt || ''}
                             className={styles.textInput}
