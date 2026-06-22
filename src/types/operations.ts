@@ -121,3 +121,28 @@ export const formatDateTimeLocal = (
 
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
+
+export const toDateTimeLocal = (
+  value?: string | Date | null
+): string => {
+  if (!value) return "";
+
+  const date = new Date(value);
+
+  if (isNaN(date.getTime())) return "";
+
+  const offset = date.getTimezoneOffset();
+
+  const local = new Date(date.getTime() - offset * 60000);
+
+  return local.toISOString().slice(0, 16);
+};
+
+export const toUtcISOString = (
+  value?: string
+): string | null => {
+
+  if (!value) return null;
+
+  return new Date(value).toISOString();
+};

@@ -38,8 +38,8 @@ const [formData, setFormData] = useState<OperationsFormData>({
       status: 'Alta referencia',
       statusDate: new Date,
       updatedBy: {
-        UserId: user?._id || '',
-        Name: user?.name || ''
+        userId: user?._id || '',
+        name: user?.name || ''
       },
     }],
     ListaParaFacturar: false,
@@ -73,8 +73,8 @@ const resetFormData = () => {
           status: 'Alta referencia',
           statusDate: new Date,
           updatedBy: {
-            UserId: user?._id || '',
-            Name: user?.name || ''
+            userId: user?._id || '',
+            name: user?.name || ''
           },
         }],
         ListaParaFacturar: false,
@@ -133,7 +133,7 @@ const updateFormData = (changes:
 };
 
  const updateServiceFormData = (idControl: string, idService: number, idServiceItem: number, detailId: number, field: string, value: any) => {
-    console.log('idControl:',idControl, 'idService:', idService, 'idServiceItem:', idServiceItem, 'detailId:', detailId, 'field:', field, 'value:', value)
+    //console.log('idControl:',idControl, 'idService:', idService, 'idServiceItem:', idServiceItem, 'detailId:', detailId, 'field:', field, 'value:', value)
     
     setFormData(formData => ({ 
       ...formData,

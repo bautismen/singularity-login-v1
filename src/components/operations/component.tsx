@@ -1,6 +1,6 @@
 import styles from '../../pages/Operations.module.css';
 import { Plus, Trash2, Eye, X, Copy, Search, Trash } from 'lucide-react';
-import { formatDateTimeLocal } from '../../types/operations';
+import { toDateTimeLocal, toUtcISOString } from '../../types/operations';
 import { useLanguage } from "../../contexts/LanguageContext";
 
 
@@ -445,7 +445,7 @@ export const TipoEmbalaje = ({ idControl, idService, itemService, sequencedetail
   );
 };
 
-export const Cargo = ({ idControl, idService, infoControl, detail, onUpdateServiceFormData }) => {
+export const Cargo = ({ idControl, idService, idServiceItem, detail, onUpdateServiceFormData }) => {
 
   return (
     <table className={styles.table}>
@@ -475,9 +475,7 @@ export const Cargo = ({ idControl, idService, infoControl, detail, onUpdateServi
                 className={styles.textTable}
                 value={cargo?.name || ''}
                 onChange={(e) => {
-                  onUpdateServiceFormData(idControl, idService,
-                    infoControl.idServiceItem,
-                    detail.sequence,
+                  onUpdateServiceFormData(idControl, idService, idServiceItem, detail.idDetail,
                     'cargo',
                     [{
                       ...(detail.cargo?.[detail.cargo?.indexOf(cargo) ?? 0] ?? {}),
@@ -513,9 +511,7 @@ export const Cargo = ({ idControl, idService, infoControl, detail, onUpdateServi
                 className={styles.smallInput}
                 value={cargo?.pieces || cargo?.numberOfPieces || ''}
                 onChange={(e) =>
-                  onUpdateServiceFormData(
-                    infoControl.idServiceItem,
-                    detail.sequence,
+                  onUpdateServiceFormData(idControl, idService, idServiceItem, detail.idDetail,
                     'cargo',
                     [{
                       ...(detail.cargo?.[detail.cargo?.indexOf(cargo) ?? 0] ?? {}),
@@ -527,10 +523,10 @@ export const Cargo = ({ idControl, idService, infoControl, detail, onUpdateServi
             </td>
             <td>
               <UnidadMedida
-                idControl={infoControl?.idControl}
-                idService={infoControl?.idService}
-                itemService={infoControl.idServiceItem}
-                sequencedetail={detail.sequence}
+                idControl={idControl}
+                idService={idService}
+                itemService={idServiceItem}
+                sequencedetail={detail.idDetail}
                 cargo={cargo}
                 onUpdateServiceFormData={onUpdateServiceFormData}
               />
@@ -538,10 +534,10 @@ export const Cargo = ({ idControl, idService, infoControl, detail, onUpdateServi
             <td>
               {/* Tipo de carga */}
               <TipoCarga
-                idControl={infoControl?.idControl}
-                idService={infoControl?.idService}
-                itemService={infoControl.idServiceItem}
-                sequencedetail={detail.sequence}
+                idControl={idControl}
+                idService={idService}
+                itemService={idServiceItem}
+                sequencedetail={detail.idDetail}
                 cargo={cargo}
                 onUpdateServiceFormData={onUpdateServiceFormData}
               />
@@ -553,7 +549,7 @@ export const Cargo = ({ idControl, idService, infoControl, detail, onUpdateServi
   )
 }
 
-export const Containers = ({ idControl, idService, infoControl, detail, onUpdateServiceFormData }) => {
+export const Containers = ({ idControl, idService, idServiceItem, detail, onUpdateServiceFormData }) => {
 
   return (
     <table className={styles.table}>
@@ -580,7 +576,7 @@ export const Containers = ({ idControl, idService, infoControl, detail, onUpdate
                 className={styles.textTable}
                 value={container?.nameTypeContainer || ''}
                 onChange={(e) => {
-                  onUpdateServiceFormData(idControl, idService, infoControl.idServiceItem, detail.sequence,
+                  onUpdateServiceFormData(idControl, idService, idServiceItem, detail.idDetail,
                     'containers',
                     [{
                       ...(detail.containers?.[detail.containers?.indexOf(container) ?? 0] ?? {}),
@@ -597,7 +593,7 @@ export const Containers = ({ idControl, idService, infoControl, detail, onUpdate
                 className={styles.textTable}
                 value={container?.number || ''}
                 onChange={(e) =>
-                  onUpdateServiceFormData(idControl, idService, infoControl.idServiceItem, detail.sequence,
+                  onUpdateServiceFormData(idControl, idService, idServiceItem, detail.idDetail,
                     'containers',
                     [{
                       ...(detail.containers?.[detail.containers?.indexOf(container) ?? 0] ?? {}),
@@ -613,7 +609,7 @@ export const Containers = ({ idControl, idService, infoControl, detail, onUpdate
                 className={styles.textTable}
                 value={container?.seal || ''}
                 onChange={(e) =>
-                  onUpdateServiceFormData(idControl, idService, infoControl.idServiceItem, detail.sequence,
+                  onUpdateServiceFormData(idControl, idService, idServiceItem, detail.idDetail,
                     'containers',
                     [{
                       ...(detail.containers?.[detail.containers?.indexOf(container) ?? 0] ?? {}),
@@ -807,13 +803,13 @@ export const ComponentDate = ({ idControl, idService, itemService, sequencedetai
       </label>
       <input
         type="datetime-local"
-        value={formatDateTimeLocal(data) || ""}
+        value={toDateTimeLocal(data)}
         className={styles.textInput}
         disabled = {false}
         required = {required}
         data-error-message={t('operations.dateRequired')}
         onChange={(e) =>
-          onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, node, field, e.target.value)
+          onUpdateServiceDetail(idControl, idService, itemService, sequencedetail, node, field, toUtcISOString(e.target.value))
         }
       />
     </>

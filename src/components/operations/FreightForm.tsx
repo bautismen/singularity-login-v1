@@ -6,7 +6,7 @@ import { InputCountry } from "../InputCountry";
 import { InputPort } from "../InputPort";
 import { PricingControl } from "../../types/pricingControl";
 import { OperationsFormData } from "../../hooks/useOperations";
-import { formatDateTimeLocal } from "../../types/operations";
+import { toDateTimeLocal, toUtcISOString } from "../../types/operations";
 import {
   TipoEnvio,
   TipoOperacion,
@@ -122,17 +122,6 @@ export const FreightForm: React.FC<FreightFormProps> = ({
   origin: {},
   destination: {},
   }; 
-
-  //lee required del DOM automáticamente
-  const {containerRef , getFieldError} = useSubFormValidator(
-    `freight-${info.id}-${info.item}`,
-    {
-      serviceItem: infoControl?.idServiceItem,
-      detailId: detail?.idDetail,
-    }
-  );
-  //const [currentIndex, setCurrentIndex] = infoControl?.currentIndex || 0;
- 
   formData.Services?.map((s)=> s.serviceDetail.length === 0 ? s.serviceDetail=[detail] : s)
   const [accordionOpen, setAccordionOpen] = React.useState({
     // [`envio-${detail?.idDetail}`]: mode=== 'edit' ? true : true,
@@ -144,7 +133,16 @@ export const FreightForm: React.FC<FreightFormProps> = ({
     [`origin`]: true,
     [`destination`]: true,
   });
-  
+  //lee required del DOM automáticamente
+  const {containerRef , getFieldError} = useSubFormValidator(
+    `freight-${info.id}-${info.item}`,
+    {
+      serviceItem: infoControl?.idServiceItem,
+      detailId: detail?.idDetail,
+    }
+  );
+  //const [currentIndex, setCurrentIndex] = infoControl?.currentIndex || 0;
+ 
   //carga de puertos de origen
   useEffect(()=> {
     const fetchData = async () => {
@@ -694,9 +692,9 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           idService={infoControl?.idService}
                           itemService={infoControl?.idServiceItem}
                           sequencedetail={detail?.idDetail}
-                          data={detail?.transport?.shippingDate}
+                          data={detail?.transport?.booking_date}
                           node={'transport'}
-                          field={'shippingDate'}
+                          field={'booking_date'} //'shippingDate'
                           onUpdateServiceDetail={onUpdateServiceDetail}
                           label={t("operations.bookingDate")}
                           required={true}
@@ -725,7 +723,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                         </label>
                         <input
                           type="datetime-local"
-                          value={formatDateTimeLocal(detail?.transport?.moreInformationTransport?.appointment) || ''}
+                          value={toDateTimeLocal(detail?.transport?.moreInformationTransport?.appointment)}
                           className={styles.textInput}
                           onChange={(e) =>
                             onUpdateServiceDetail(
@@ -735,7 +733,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                               detail.idDetail,
                               'transport',
                               'moreInformationTransport', {
-                              'appointment': e.target.value
+                              'appointment': toUtcISOString(e.target.value)
                             }
                             )
                           }
@@ -949,7 +947,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           </label>
                           <input
                             type="datetime-local"
-                            value={formatDateTimeLocal(detail?.origin?.plant?.arrivalDate) || ''}
+                            value={toDateTimeLocal(detail?.origin?.plant?.arrivalDate)}
                             className={styles.textInput}
                             onChange={(e) =>
                               onUpdateServiceDetail(
@@ -959,7 +957,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                                 detail.idDetail, 
                                 'origin',
                                   'plant', {
-                                    'arrivalDate': e.target.value
+                                    'arrivalDate': toUtcISOString(e.target.value)
                                   }
                               )
                             }
@@ -994,7 +992,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           </label>
                           <input
                             type="datetime-local"
-                            value={formatDateTimeLocal(detail?.origin?.plant?.departureDate) || ''}
+                            value={toDateTimeLocal(detail?.origin?.plant?.departureDate)}
                             className={styles.textInput}
                             onChange={(e) =>
                               onUpdateServiceDetail(
@@ -1004,7 +1002,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                                 detail?.idDetail, 
                                 'origin',
                                   'plant', {
-                                    'departureDate': e.target.value
+                                    'departureDate': toUtcISOString(e.target.value)
                                   }
                               )
                             }
@@ -1208,7 +1206,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           </label>
                           <input
                             type="datetime-local"
-                            value={detail?.destination?.plant?.arrivalDate || ''}
+                            value={toDateTimeLocal(detail?.destination?.plant?.arrivalDate)}
                             className={styles.textInput}
                             onChange={(e) =>
                               onUpdateServiceDetail(
@@ -1218,7 +1216,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                                 detail.idDetail, 
                                 'destination',
                                   'plant', {
-                                    'arrivalDate': e.target.value
+                                    'arrivalDate': toUtcISOString(e.target.value)
                                   }
                               )
                             }
@@ -1232,7 +1230,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           </label>
                           <input
                             type="datetime-local"
-                            value={detail?.destination?.plant?.departureDate || ''}
+                            value={toDateTimeLocal(detail?.destination?.plant?.departureDate)}
                             className={styles.textInput}
                             onChange={(e) =>
                               onUpdateServiceDetail(
@@ -1242,7 +1240,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                                 detail.idDetail, 
                                 'destination',
                                   'plant', {
-                                    'departureDate': e.target.value
+                                    'departureDate': toUtcISOString(e.target.value)
                                   }
                               )
                             }
@@ -1279,7 +1277,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                           </label>
                           <input
                             type="datetime-local"
-                            value={detail?.destination?.plant?.arrivalDate || ''}
+                            value={toDateTimeLocal(detail?.destination?.plant?.arrivalDate)}
                             className={styles.textInput}
                             onChange={(e) =>
                               onUpdateServiceDetail(
@@ -1289,7 +1287,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                                 detail.idDetail, 
                                 'destination',
                                   'plant', {
-                                    'arrivalDate': e.target.value
+                                    'departureDate': toUtcISOString(e.target.value)
                                   }
                               )
                             }
@@ -1356,7 +1354,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 <Containers 
                   idControl={infoControl?.idControl}
                   idService={infoControl?.idService}
-                  infoControl={infoControl} 
+                  idServiceItem={infoControl?.idServiceItem}
                   detail={detail}
                   onUpdateServiceFormData={onUpdateServiceFormData}
                 />
@@ -1369,7 +1367,7 @@ export const FreightForm: React.FC<FreightFormProps> = ({
                 <Cargo 
                   idControl={infoControl?.idControl}
                   idService={infoControl?.idService}
-                  infoControl={infoControl} 
+                  idServiceItem={infoControl?.idServiceItem} 
                   detail={detail}
                   onUpdateServiceFormData={onUpdateServiceFormData}
                 />

@@ -6,7 +6,7 @@ import { InputCountry } from "../InputCountry";
 import { InputAirport } from "../InputAirport";
 import { PricingControl } from "../../types/pricingControl";
 import { OperationsFormData } from "../../hooks/useOperations";
-import { formatDateTimeLocal } from "../../types/operations";
+import { toDateTimeLocal, toUtcISOString } from "../../types/operations";
 import {
   TipoEnvio,
   TipoGuia,
@@ -627,9 +627,9 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           idService={airServiceControl?.idService}
                           itemService={airServiceControl?.idServiceItem}
                           sequencedetail={detail?.idDetail}
-                          data={detail?.transport?.shippingDate}
+                          data={detail?.transport?.booking_date}
                           node={'transport'}
-                          field={'shippingDate'}
+                          field={'booking_date'}
                           onUpdateServiceDetail={onUpdateServiceDetail}
                           label={t("operations.bookingDate")}
                           required={true}
@@ -841,7 +841,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           </label>
                           <input
                             type="datetime-local"
-                            value={formatDateTimeLocal(detail?.origin?.plant?.arrivalDate) || ''}
+                            value={toDateTimeLocal(detail?.origin?.plant?.arrivalDate)}
                             className={styles.textInput}
                             onChange={(e) =>
                               onUpdateServiceFormData(
@@ -853,7 +853,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                                 {
                                   ...(detail.origin ?? {}),
                                   plant: {
-                                    arrivalDate: e.target.value
+                                    arrivalDate: toUtcISOString(e.target.value)
                                   }
                                 }
                               )
@@ -888,7 +888,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           </label>
                           <input
                             type="datetime-local"
-                            value={formatDateTimeLocal(detail?.origin?.plant?.departureDate) || ''}
+                            value={toDateTimeLocal(detail?.origin?.plant?.departureDate)}
                             className={styles.textInput}
                             onChange={(e) =>
                               onUpdateServiceFormData(
@@ -900,7 +900,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                                 {
                                   ...(detail.origin ?? {}),
                                   plant: {
-                                    departureDate: e.target.value
+                                    departureDate: toUtcISOString(e.target.value)
                                   }
                                 }
                               )
@@ -1103,7 +1103,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           </label>
                           <input
                             type="datetime-local"
-                            value={detail?.destination?.plant?.arrivalDate || ''}
+                            value={toDateTimeLocal(detail?.destination?.plant?.arrivalDate)}
                             className={styles.textInput}
                             onChange={(e) =>
                               onUpdateServiceDetail(
@@ -1113,7 +1113,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                                 detail.idDetail, 
                                 'destination',
                                   'plant', {
-                                    'arrivalDate': e.target.value
+                                    'arrivalDate': toUtcISOString(e.target.value)
                                   }
                               )
                             }
@@ -1149,7 +1149,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                           </label>
                           <input
                             type="datetime-local"
-                            value={detail?.destination?.plant?.arrivalDate || ''}
+                            value={toDateTimeLocal(detail?.destination?.plant?.arrivalDate)}
                             className={styles.textInput}
                             onChange={(e) =>
                               onUpdateServiceDetail(
@@ -1159,7 +1159,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                                 detail.idDetail, 
                                 'destination',
                                   'plant', {
-                                    'arrivalDate': e.target.value
+                                    'arrivalDate': toUtcISOString(e.target.value)
                                   }
                               )
                             }
