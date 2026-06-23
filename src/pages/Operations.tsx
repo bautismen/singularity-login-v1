@@ -393,7 +393,6 @@ function OperationsInner () {
 
   const removeControl = (controlOperation: any, item: number) => {
     const _idcontrol= controlOperation._id ?? undefined
-    console.log(_idcontrol, item, controlsOperation, controlOperation, controlsClient)
 
     updateFormData((prev) => ({
       ...prev,

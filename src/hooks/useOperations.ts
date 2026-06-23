@@ -191,35 +191,49 @@ const updateFormData = (changes:
 
   };
 
-  const duplicateDetail = (idServiceItem: number, detailId: number, newDetail: object) => {
+  const duplicateDetail = (idControl: string, idService: number, 
+    idServiceItem: number, newDetail: object) => {
+    
     setFormData(prev => ({
       ...prev,
-      Services: prev.Services.map(service =>
-        service.idServiceItem === idServiceItem
-          ? {
-            ...service,
-            currentIndex: service.serviceDetail.length,
-            serviceDetail: [
-              ...service.serviceDetail,
-              newDetail
-            ]
-          }
-          : service
+      Services: prev.Services.map(service => 
+        service.idControl === idControl &&
+        service.idService === idService &&
+        service.idServiceItem === idServiceItem ? 
+        {
+          ...service,
+          currentIndex: service.serviceDetail.length ,
+          serviceDetail: [
+            ...service.serviceDetail,
+            newDetail
+          ]
+        }
+        : service
       )
     }));
 
   };
 
-  const removeDetail = (idServiceItem: number, idDetail: number) => {
+  const removeDetail = (idControl: string, idService: number, idServiceItem: number, idDetail: number) => {
+
     setFormData(prev => ({
       ...prev,
-      Services: prev.Services.map(service => service.idServiceItem === idServiceItem ? 
-        {
-          ...service,
-          serviceDetail: service.serviceDetail.filter(det => det.idDetail !== idDetail)
-
-        } : service
-      )
+      Services: prev.Services.filter((service) => {
+        if( service.idControl === idControl &&
+            service.idService === idService && 
+            service.idServiceItem === idServiceItem) {
+              if(service.serviceDetail.length === 1) {
+                return service.idControl !== idControl 
+                       && service.idService !== idService 
+                       && service.idServiceItem === idServiceItem;
+              }else {
+                return {
+                  ...service,
+                  serviceDetail: service.serviceDetail.filter(det => det.idDetail !== idDetail)
+                }
+              }                   
+        } return service
+      })
     })
     )
   };
