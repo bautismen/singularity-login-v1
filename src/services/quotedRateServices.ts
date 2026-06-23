@@ -216,3 +216,29 @@ export const updateStatusControlQuotedRate = async (
     throw error;
   }
 };
+
+export const archiveQuotedRate = async (
+  idquotedrate_: string,
+  archived_: boolean
+) => {
+  try {
+    const url =
+      `${VITE_API_QUOTEDRATE}` + `/idquotedrate/${idquotedrate_}/archived/${archived_}/update`;
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error?.message || "Error al archivar quoted rate");
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error("archiveQuotedRate error:", error);
+    throw error;
+  }
+};

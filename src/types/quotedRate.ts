@@ -40,6 +40,7 @@ export interface QuotedRate {
   previous_version_cuote: number | null;
   archived: boolean;
   data_state: number;
+  status: number;
 }
 
 export interface QuoteDetail {

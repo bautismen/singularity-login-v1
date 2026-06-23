@@ -25,7 +25,7 @@ import { UploadResponse } from "../types/digitization";
 import { pdfGeneratorQuotedRate } from "../types/pdfGenerator";
 //Servicio de la API
 import { uploadQuotedRate, updateQuotedRate,
-        updateStatusQuotedRate , GetQuotedRateByQuotationRequestAndControlInfo, updateStatusControlQuotedRate } from "../services/quotedRateServices";
+        updateStatusQuotedRate , GetQuotedRateByQuotationRequestAndControlInfo, updateStatusControlQuotedRate, archiveQuotedRate } from "../services/quotedRateServices";
 // Icons
 import {
         ArrowLeft, Save, Eye, FileText, User, Tag, Ship, Truck, Plane, Package, PlusCircle, Trash2, Search,
@@ -339,13 +339,7 @@ const customerAddress = useMemo(() => {
 const customerContacts = useMemo(() => {
     if (!customer?.contacts?.length) return [];
 
-    return customer.contacts
-        .filter((c: any) => Number(c?.status) === 1)
-        .sort((a: any, b: any) => {
-            const dateA = new Date(a?.valid_from?.$date || a?.valid_from || 0).getTime();
-            const dateB = new Date(b?.valid_from?.$date || b?.valid_from || 0).getTime();
-            return dateB - dateA; // más reciente primero
-        });
+    return customer.contacts;
 }, [customer]);
 
 useEffect(() => {
@@ -1311,6 +1305,8 @@ const handleSaveQuotedRate = async (
 
         let responseUpdateStatus;
 
+        let responseUpdateArchived;
+
         let idNewQuotedRate;
 
         try {
@@ -1379,6 +1375,19 @@ const handleSaveQuotedRate = async (
                 showError(
                     `${t('tvf.UpdateStatusError')} ${
                     responseUpdateStatus?.messageStatus ?? ''
+                    }`
+                );
+                }
+
+                responseUpdateArchived = validateResponse(
+                await archiveQuotedRate(current?._id, true) //archivando la tarifa de venta 
+                );
+
+                if (responseUpdateArchived?.codeStatus !== 200) { // code status 200 para update
+                isSuccess = false;
+                showError(
+                    `${t('tvf.UpdateArchivedError')} ${
+                    responseUpdateArchived?.messageStatus ?? ''
                     }`
                 );
                 }
@@ -1646,6 +1655,7 @@ const buildQuotedRatePayload = (
         previous_version_cuote:  previousVersionCuote,
         archived: false,
         data_state: 1,
+        status: 1,
     };
 };
 
