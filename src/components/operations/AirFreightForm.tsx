@@ -316,7 +316,6 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
   };
 
   const prevPage = () => {
-    console.log('prev',formData)
     if (airServiceControl.currentIndex > 0) {
       onUpdateFormData(prev=>({
         ...prev,
@@ -366,7 +365,7 @@ export const AirFreightForm: React.FC<AirFreightFormProps> = ({
                   </button>
 
                   <span className="text-label-bold font-label-bold text-on-surface-variant dark:text-white">
-                    {airServiceControl?.currentIndex ? (airServiceControl?.currentIndex + 1) : 0} de{" "}
+                    {airServiceControl?.currentIndex + 1} de{" "}
                     {airServiceControl?.serviceDetail?.length || 0}
                   </span>
 
