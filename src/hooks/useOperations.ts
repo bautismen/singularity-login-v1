@@ -105,7 +105,7 @@ const setCompleteFormData = ( operation: Operation, selectedCustomer: Customer) 
         name: selectedCustomer.fiscalData.businessName,
         rfc: selectedCustomer.fiscalData.taxId
       } : operation.customer,
-      Services: operation.services,
+      Services: operation.services || [],
       Observations: operation.observations || '',
       OperationStatus: operation.operationStatus,
       ListaParaFacturar: operation.listaParaFactura || false,
@@ -121,6 +121,7 @@ const setCompleteFormData = ( operation: Operation, selectedCustomer: Customer) 
       Archived: operation.archived,
       DataState: operation.dataState,
     })
+     
 }
 
 const updateFormData = (changes: 

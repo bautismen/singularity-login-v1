@@ -185,13 +185,17 @@ function OperationsInner () {
     setServicesOperation([]);
     setService({} as Service);
     setEditingOperation(operation);
+
     const selectedCustomer = customers.find(
       c => c.id === operation.customer.idCustomer
     );
+
     const controlsClient = controlsData.filter(control => {
       return control.id_customer === selectedCustomer.id;
     });
+
     setControlsClient(controlsClient);
+
     // Asignar los controles de la operación al estado controlsOperation para mostrarlos en el formulario
     const loadedControls = operation.services.reduce((acc, service) => {
       if (!service.idControl) return [{
@@ -199,9 +203,11 @@ function OperationsInner () {
         control: null,
         services: operation.services
       }];
+
       const existingControl = acc.find(
         c => String(c._id) === String(service.idControl)
       );
+
       const normalizedService = normalizeService(service);
       if (!existingControl) {
         acc.push({
@@ -214,6 +220,7 @@ function OperationsInner () {
         existingControl.services.push(normalizedService);
       }
       return acc;
+      
     }, []);
 
     setControlsOperation(loadedControls)
@@ -237,6 +244,11 @@ function OperationsInner () {
         });
       toggleSection('services');
     }
+
+    operation.services.map(s =>
+      s.currentIndex = 0
+     )
+
     setCompleteFormData(operation, selectedCustomer);
     setIsFormOpen(true);    
   }
@@ -589,7 +601,7 @@ function OperationsInner () {
     if (service.serviceDetail?.length > 0) {
       detail = service.serviceDetail.map((detail: any) => ({
         ...detail,
-        transports:
+        transport:
           detail.transports?.length > 0
             ? detail.transports
             : [{}],
@@ -734,6 +746,7 @@ function OperationsInner () {
       // idTypeShipment: service.idTypeShipment,
       // typeShipment: service.typeShipment,
       nameService: service.nameService,
+      currentIndex: 0,
       observationsService: service.observationsService || '',
       category: service.category,
       serviceDetail: service.serviceDetail,
